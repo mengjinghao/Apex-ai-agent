@@ -1,6 +1,7 @@
 plugins {
     id("apex.suite.apk")
     id("apex.android.application.compose")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -30,7 +31,11 @@ android {
 }
 
 dependencies {
-    // SDK deps auto-injected by apex.suite.apk convention plugin
     implementation(project(":sdk:common-ui"))
     implementation(project(":core:integration"))
+    implementation(project(":domain"))
+
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.squareup.okhttp)
 }

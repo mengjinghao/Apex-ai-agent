@@ -1,40 +1,48 @@
 package com.apex.apk.multiagent
 
 import android.app.Application
-import com.apex.sdk.auth.ApkIdentity
-import com.apex.sdk.auth.ApkIdentityRegistry
 import com.apex.sdk.bridge.BridgeConnection
+import com.apex.sdk.bridge.TypedServiceRegistry
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
+import com.apex.sdk.common.ApkIdentity
+import com.apex.sdk.common.ApkIdentityRegistry
 import com.apex.sdk.watchdog.HeartbeatReporter
 import com.apex.sdk.watchdog.Watchdog
 
 class MultiAgentApplication : Application() {
 
-    private val heartbeat = HeartbeatReporter("multi-agent")
+    private val heartbeat = HeartbeatReporter(ApexSuite.ApkId.MULTI_AGENT)
+    private lateinit var facade: MultiAgentServiceFacade
 
     override fun onCreate() {
         super.onCreate()
         ApkIdentityRegistry.register(
             ApkIdentity(
-                id = "multi-agent",
+                id = ApexSuite.ApkId.MULTI_AGENT,
                 packageName = packageName,
-                displayName = "MultiAgent",
+                displayName = "Apex Multi-Agent",
                 defaultProcess = ApexSuite.MAIN_PROCESS,
                 hostsForegroundService = true
             )
         )
-        ApexLog.i("multi-agent", "[Application] onCreate (pid=${android.os.Process.myPid()})")
+        ApexLog.i(ApexSuite.ApkId.MULTI_AGENT, "[Application] onCreate (pid=${android.os.Process.myPid()})")
+
+        facade = MultiAgentServiceFacade(this)
+        TypedServiceRegistry.register<MultiAgentServiceFacade>(facade)
+
         heartbeat.start()
-        BridgeConnection.bindToRegistry(this) { connected ->
-            ApexLog.i("multi-agent", "[Application] bridge bound = $connected")
-        }
         Watchdog.start()
+
+        BridgeConnection.bindToRegistry(this) { connected ->
+            ApexLog.i(ApexSuite.ApkId.MULTI_AGENT, "[Application] bridge bound = $connected")
+        }
     }
 
     override fun onTerminate() {
         heartbeat.stop()
         BridgeConnection.unbind(this)
+        Watchdog.stop()
         super.onTerminate()
     }
 }

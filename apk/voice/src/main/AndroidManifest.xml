@@ -9,6 +9,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- 语音识别所需 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- TTS 在某些设备上需要 MODIFY_AUDIO_SETTINGS -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
     <application
         android:name=".VoiceApplication"
         android:allowBackup="false"
