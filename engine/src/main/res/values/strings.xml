@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">apexEngine</string>
+    <string name="engine_service_notification_title">apex Engine</string>
+    <string name="engine_service_notification_text">Engine is running</string>
+</resources>

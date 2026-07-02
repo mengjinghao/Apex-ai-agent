@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Aura 水母帧动画 — typing 形态
+  4 帧循环,每帧 220ms。由 AuraMascotView 加载并播放。
+  自动生成,请勿手动编辑。
+-->
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+    <item android:drawable="@drawable/aura_typing_f1" android:duration="220" />
+    <item android:drawable="@drawable/aura_typing_f2" android:duration="220" />
+    <item android:drawable="@drawable/aura_typing_f3" android:duration="220" />
+    <item android:drawable="@drawable/aura_typing_f4" android:duration="220" />
+</animation-list>

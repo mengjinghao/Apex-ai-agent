@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="burst_mode"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/burst_mode_title"
+        android:shortcutLongLabel="@string/burst_mode_title">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.apex.agent"
+            android:targetClass="com.apex.agent.MainActivity" />
+    </shortcut>
+</shortcuts>

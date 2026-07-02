@@ -1,0 +1,24 @@
+{
+  "name": "code-generator",
+  "version": "1.0.0",
+  "description": "代码生成系统，包括代码生成算法、代码优化建议和编程辅助功能",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node dist/example.js",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "code generation",
+    "code optimization",
+    "programming assistant",
+    "TypeScript",
+    "JavaScript"
+  ],
+  "author": "Trae AI",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

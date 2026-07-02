@@ -1,0 +1,284 @@
+[versions]
+# 核心版本
+kotlin = "2.0.21"
+agp = "8.5.2"
+# AndroidX
+core-ktx = "1.10.1"
+appcompat = "1.6.1"
+material = "1.9.0"
+lifecycle = "2.6.1"
+navigation = "2.5.3"
+room = "2.5.1"
+datastore = "1.0.0"
+work = "2.8.1"
+activity = "1.8.2"
+# Compose
+compose-bom = "2024.06.00"
+accompanist = "0.32.0"
+glance = "1.0.0"
+# 网络
+okhttp = "4.11.0"
+retrofit = "2.9.0"
+moshi = "1.15.0"
+jsoup = "1.16.1"
+# 数据库
+objectbox = "3.7.1"
+# AI/ML
+onnxruntime = "1.17.1"
+mlkit = "16.0.0"
+# 文件处理
+commons-compress = "1.24.0"
+commons-io = "2.13.0"
+zip4j = "2.11.5"
+junrar = "7.5.5"
+pdfbox = "2.0.27.0"
+poi = "5.2.3"
+# Supabase 云端同步
+supabase = "2.6.3"
+
+# 工具
+gson = "2.10.1"
+uuid = "0.8.2"
+kotlin-logging = "5.1.0"
+slf4j = "2.0.9"
+# 权限
+shizuku = "13.1.5"
+libsu = "6.0.0"
+# 其他
+exoplayer = "2.18.7"
+coil = "2.3.0"
+glide = "4.15.1"
+zxing = "3.5.2"
+mcp = "1.1.0"
+hilt = "2.51.1"
+hnswlib = "1.2.1"
+java-diff-utils = "4.12"
+apksig = "7.4.2"
+apk-parser = "2.6.10"
+axml = "2.0.0"
+zipalign-java = "1.2.1"
+androidsvg = "1.4"
+android-gif-drawable = "1.2.25"
+android-image-cropper = "4.5.0"
+kotlinx-serialization = "1.5.1"
+hjson = "3.0.0"
+jieba-analysis = "1.0.2"
+nanohttpd = "2.3.1"
+reorderable = "2.5.1"
+swipe = "1.2.0"
+kotlinx-coroutines = "1.7.2"
+viewpager2 = "1.0.0"
+recyclerview = "1.3.0"
+preference = "1.2.1"
+security-crypto = "1.1.0-alpha06"
+bcprov = "1.78"
+window = "1.0.0"
+webkit = "1.6.1"
+itextpdf = "5.5.10"
+taskerpluginlibrary = "0.4.10"
+junit = "4.13.2"
+archunit = "1.2.1"
+androidx-test-ext-junit = "1.1.5"
+androidx-test-espresso-core = "3.5.1"
+mockito = "5.3.1"
+mockito-kotlin = "5.1.0"
+mockito-android = "5.3.1"
+desugar-jdk-libs = "2.0.3"
+
+[libraries]
+# Gradle 插件（供 build-logic convention plugins 使用）
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+# Compose BOM（供 convention plugins 统一引用）
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
+
+# AndroidX
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+google-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+# Compose
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
+androidx-compose-animation-core = { group = "androidx.compose.animation", name = "animation-core" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+# 网络
+squareup-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+squareup-okhttp-sse = { group = "com.squareup.okhttp3", name = "okhttp-sse", version.ref = "okhttp" }
+squareup-okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+squareup-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+squareup-retrofit-converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit" }
+squareup-moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshi" }
+jsoup-jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+# 数据库
+objectbox-kotlin = { group = "io.objectbox", name = "objectbox-kotlin", version.ref = "objectbox" }
+objectbox-processor = { group = "io.objectbox", name = "objectbox-processor", version.ref = "objectbox" }
+# AI/ML
+microsoft-onnxruntime-android = { group = "com.microsoft.onnxruntime", name = "onnxruntime-android", version.ref = "onnxruntime" }
+# 文件处理
+apache-commons-compress = { group = "org.apache.commons", name = "commons-compress", version.ref = "commons-compress" }
+apache-commons-io = { group = "commons-io", name = "commons-io", version.ref = "commons-io" }
+lingala-zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
+junrar-junrar = { group = "com.github.junrar", name = "junrar", version.ref = "junrar" }
+tomroush-pdfbox-android = { group = "com.tom-roush", name = "pdfbox-android", version.ref = "pdfbox" }
+apache-poi = { group = "org.apache.poi", name = "poi", version.ref = "poi" }
+apache-poi-ooxml = { group = "org.apache.poi", name = "poi-ooxml", version.ref = "poi" }
+apache-poi-scratchpad = { group = "org.apache.poi", name = "poi-scratchpad", version.ref = "poi" }
+# 权限
+rikka-shizuku-api = { group = "dev.rikka.shizuku", name = "api", version.ref = "shizuku" }
+rikka-shizuku-provider = { group = "dev.rikka.shizuku", name = "provider", version.ref = "shizuku" }
+topjohnwu-libsu-core = { group = "com.github.topjohnwu.libsu", name = "core", version.ref = "libsu" }
+topjohnwu-libsu-service = { group = "com.github.topjohnwu.libsu", name = "service", version.ref = "libsu" }
+topjohnwu-libsu-nio = { group = "com.github.topjohnwu.libsu", name = "nio", version.ref = "libsu" }
+# 工具
+google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+benasher44-uuid = { group = "com.benasher44", name = "uuid", version.ref = "uuid" }
+oshai-kotlin-logging-jvm = { group = "io.github.oshai", name = "kotlin-logging-jvm", version.ref = "kotlin-logging" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+# 其他
+google-exoplayer = { group = "com.google.android.exoplayer", name = "exoplayer", version.ref = "exoplayer" }
+google-exoplayer-core = { group = "com.google.android.exoplayer", name = "exoplayer-core", version.ref = "exoplayer" }
+google-exoplayer-ui = { group = "com.google.android.exoplayer", name = "exoplayer-ui", version.ref = "exoplayer" }
+coil-kt-coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-kt-coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coil" }
+bumptech-glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+google-zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+modelcontextprotocol-mcp = { group = "io.modelcontextprotocol.sdk", name = "mcp", version.ref = "mcp" }
+# 测试
+junit-junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-test-espresso-core" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version = "1.5.2" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version = "1.5.0" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockito-kotlin" }
+mockito-android = { group = "org.mockito", name = "mockito-android", version.ref = "mockito-android" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+google-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+google-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+google-hilt-android-gradle-plugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hilt" }
+archunit = { group = "com.tngtech.archunit", name = "archunit-junit4", version.ref = "archunit" }
+# 其他依赖
+github-jelmerk-hnswlib-core = { group = "com.github.jelmerk", name = "hnswlib-core", version.ref = "hnswlib" }
+github-jelmerk-hnswlib-utils = { group = "com.github.jelmerk", name = "hnswlib-utils", version.ref = "hnswlib" }
+java-diff-utils = { group = "io.github.java-diff-utils", name = "java-diff-utils", version.ref = "java-diff-utils" }
+android-tools-apksig = { group = "com.android.tools.build", name = "apksig", version.ref = "apksig" }
+net-dongliu-apk-parser = { group = "net.dongliu", name = "apk-parser", version.ref = "apk-parser" }
+github-sable-axml = { group = "com.github.Sable", name = "axml", version.ref = "axml" }
+github-iyxan23-zipalign-java = { group = "com.github.iyxan23", name = "zipalign-java", version.ref = "zipalign-java" }
+caverock-androidsvg = { group = "com.caverock", name = "androidsvg-aar", version.ref = "androidsvg" }
+pl-droidsonroids-android-gif-drawable = { group = "pl.droidsonroids.gif", name = "android-gif-drawable", version.ref = "android-gif-drawable" }
+vanniktech-android-image-cropper = { group = "com.vanniktech", name = "android-image-cropper", version.ref = "android-image-cropper" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+hjson = { group = "org.hjson", name = "hjson", version.ref = "hjson" }
+jieba-analysis = { group = "com.huaban", name = "jieba-analysis", version.ref = "jieba-analysis" }
+nanohttpd = { group = "org.nanohttpd", name = "nanohttpd", version.ref = "nanohttpd" }
+reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderable" }
+swipe = { group = "me.saket.swipe", name = "swipe", version.ref = "swipe" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference" }
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
+bcprov-jdk18on = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bcprov" }
+androidx-window = { group = "androidx.window", name = "window", version.ref = "window" }
+androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
+itextpdf-itextg = { group = "com.itextpdf", name = "itextg", version.ref = "itextpdf" }
+joaomgcd-taskerpluginlibrary = { group = "com.joaomgcd", name = "taskerpluginlibrary", version.ref = "taskerpluginlibrary" }
+google-accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
+android-desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar-jdk-libs" }
+google-mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkit" }
+google-mlkit-text-recognition-chinese = { group = "com.google.mlkit", name = "text-recognition-chinese", version.ref = "mlkit" }
+google-mlkit-text-recognition-japanese = { group = "com.google.mlkit", name = "text-recognition-japanese", version.ref = "mlkit" }
+google-mlkit-text-recognition-korean = { group = "com.google.mlkit", name = "text-recognition-korean", version.ref = "mlkit" }
+google-mlkit-text-recognition-devanagari = { group = "com.google.mlkit", name = "text-recognition-devanagari", version.ref = "mlkit" }
+
+# Supabase
+supabase-kt-postgres = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt", version.ref = "supabase" }
+supabase-kt-gotrue = { group = "io.github.jan-tennert.supabase", name = "gotrue-kt", version.ref = "supabase" }
+supabase-kt-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt", version.ref = "supabase" }
+supabase-kt-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt", version.ref = "supabase" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.27" }
+
+[bundles]
+compose = [
+    "androidx-compose-ui",
+    "androidx-compose-ui-graphics",
+    "androidx-compose-ui-tooling-preview",
+    "androidx-compose-material3",
+    "androidx-activity-compose"
+]
+network = [
+    "squareup-okhttp",
+    "squareup-okhttp-sse",
+    "squareup-okhttp-logging",
+    "squareup-retrofit",
+    "squareup-retrofit-converter-moshi",
+    "squareup-moshi-kotlin"
+]
+shizuku = [
+    "rikka-shizuku-api",
+    "rikka-shizuku-provider"
+]
+libsu = [
+    "topjohnwu-libsu-core",
+    "topjohnwu-libsu-service",
+    "topjohnwu-libsu-nio"
+]
+file-processing = [
+    "apache-commons-compress",
+    "apache-commons-io",
+    "lingala-zip4j",
+    "junrar-junrar",
+    "tomroush-pdfbox-android"
+]
+office = [
+    "apache-poi",
+    "apache-poi-ooxml",
+    "apache-poi-scratchpad"
+]
+logging = [
+    "oshai-kotlin-logging-jvm",
+    "slf4j-api",
+    "slf4j-simple"
+]
+test = [
+    "junit-junit",
+    "androidx-test-ext-junit",
+    "androidx-test-espresso-core"
+]

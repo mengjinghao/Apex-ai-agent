@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 内置技能插件不需要单独声明，由 BurstPluginLoader 动态加载 -->
+</manifest>

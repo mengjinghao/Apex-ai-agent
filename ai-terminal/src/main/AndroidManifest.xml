@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 存储权限 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" android:minSdkVersion="33"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" android:minSdkVersion="33"/>
+    <!-- 系统设置修改权限（需用户手动授权） -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <!-- 前台服务权限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" android:minSdkVersion="34"/>
+    <uses-permission android:name="android.permission.RUN_IN_BACKGROUND" />
+
+    <application>
+        <service
+            android:name="com.ai.assistance.aiterminal.terminal.service.TerminalService"
+            android:exported="true"
+            android:process=":terminal_process" />
+    </application>
+
+</manifest>

@@ -1,0 +1,290 @@
+package com.ai.assistance.aiterminal.terminal.ai
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
+
+enum class DeepSeekModel(val modelId: String, val description: String) {
+    V4_PRO("deepseek-v4-pro", "1.6T MoE, 49B active, best for complex agent tasks"),
+    V4_FLASH("deepseek-v4-flash", "284B MoE, 13B active, fast & cheap"),
+    V4_PRO_MAX("deepseek-v4-pro-max", "Highest agentic performance variant")
+}
+
+enum class ReasoningEffort(val value: String) {
+    LOW("low"),
+    MEDIUM("medium"),
+    HIGH("high"),
+    MAX("max")
+}
+
+data class ToolDefinition(
+    val name: String,
+    val description: String,
+    val parameters: Map<String, Any>
+)
+
+data class DeepSeekToolCall(
+    val toolCallId: String,
+    val functionName: String,
+    val arguments: String
+)
+
+class DeepSeekApi(
+    private val apiKey: String,
+    private val model: DeepSeekModel = DeepSeekModel.V4_PRO,
+    private val reasoningEffort: ReasoningEffort? = ReasoningEffort.MAX,
+    private val maxTokens: Int = 8192,
+    private val temperature: Double = 0.3
+) : LLMAPI {
+    companion object {
+        private const val API_URL = "https://api.deepseek.com/chat/completions"
+        private const val TAG = "DeepSeekApi"
+    }
+
+    override suspend fun generate(prompt: String): String = withContext(Dispatchers.IO) {
+        try {
+            val url = URL(API_URL)
+            val connection = url.openConnection() as HttpsURLConnection
+
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $apiKey")
+            connection.setRequestProperty("Accept", "application/json")
+            connection.connectTimeout = 30000
+            connection.readTimeout = 60000
+            connection.doOutput = true
+
+            val escapedPrompt = prompt
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t")
+                .replace("\r", "\\r")
+
+            val requestBody = buildJsonBody(escapedPrompt, null)
+
+            OutputStreamWriter(connection.outputStream).use { writer ->
+                writer.write(requestBody)
+                writer.flush()
+            }
+
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                extractContentFromResponse(response)
+            } else {
+                val error = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+                "Error: HTTP $responseCode - model=${model.modelId}, ${error.take(300)}"
+            }
+        } catch (e: Exception) {
+            "Error: ${e.message}"
+        }
+    }
+
+    suspend fun generateWithTools(
+        prompt: String,
+        tools: List<ToolDefinition>,
+        toolChoice: String = "auto"
+    ): FunctionCallResponse = withContext(Dispatchers.IO) {
+        try {
+            val url = URL(API_URL)
+            val connection = url.openConnection() as HttpsURLConnection
+
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $apiKey")
+            connection.setRequestProperty("Accept", "application/json")
+            connection.connectTimeout = 30000
+            connection.readTimeout = 120000
+            connection.doOutput = true
+
+            val escapedPrompt = prompt
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t")
+                .replace("\r", "\\r")
+
+            val toolsJson = tools.joinToString(",") { tool ->
+                buildString {
+                    append("""
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "${tool.name}",
+                                "description": "${tool.description}",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                    """.trimIndent())
+                    var first = true
+                    tool.parameters.forEach { (key, value) ->
+                        if (!first) append(",")
+                        first = false
+                        when (value) {
+                            is String -> append("""
+                                "$key": {"type": "string", "description": "$value"}
+                            """.trimIndent())
+                            is Map<*, *> -> {
+                                val paramMap = value as Map<String, String>
+                                append("""
+                                    "$key": {"type": "${paramMap["type"] ?: "string"}", "description": "${paramMap["description"] ?: key}"}
+                                """.trimIndent())
+                            }
+                            else -> append("""
+                                "$key": {"type": "string", "description": "$value"}
+                            """.trimIndent())
+                        }
+                    }
+                    append("""
+                                    },
+                                    "required": [${tool.parameters.keys.joinToString(",") { "\"$it\"" }}]
+                                }
+                            }
+                        }
+                    """.trimIndent())
+                }
+            }
+
+            val requestBody = """
+                {
+                    "model": "${model.modelId}",
+                    "messages": [{"role": "user", "content": "$escapedPrompt"}],
+                    "temperature": $temperature,
+                    "max_tokens": $maxTokens,
+                    "tools": [$toolsJson],
+                    "tool_choice": "$toolChoice"
+                    ${if (reasoningEffort != null) ",\"reasoning_effort\": \"${reasoningEffort.value}\"" else ""}
+                }
+            """.trimIndent()
+
+            OutputStreamWriter(connection.outputStream).use { writer ->
+                writer.write(requestBody)
+                writer.flush()
+            }
+
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                parseFunctionCallResponse(response)
+            } else {
+                val error = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+                FunctionCallResponse(
+                    content = "Error: HTTP $responseCode",
+                    toolCalls = emptyList(),
+                    isToolCall = false
+                )
+            }
+        } catch (e: Exception) {
+            FunctionCallResponse(
+                content = "Error: ${e.message}",
+                toolCalls = emptyList(),
+                isToolCall = false
+            )
+        }
+    }
+
+    private fun buildJsonBody(escapedPrompt: String, toolsJson: String?): String {
+        val toolsBlock = if (toolsJson != null) ",\"tools\": [$toolsJson]" else ""
+        val reasoningBlock = if (reasoningEffort != null) ",\"reasoning_effort\": \"${reasoningEffort.value}\"" else ""
+        return """
+            {
+                "model": "${model.modelId}",
+                "messages": [{"role": "user", "content": "$escapedPrompt"}],
+                "temperature": $temperature,
+                "max_tokens": $maxTokens
+                $reasoningBlock
+                $toolsBlock
+            }
+        """.trimIndent()
+    }
+
+    data class FunctionCallResponse(
+        val content: String,
+        val toolCalls: List<DeepSeekToolCall>,
+        val isToolCall: Boolean
+    )
+
+    private fun parseFunctionCallResponse(response: String): FunctionCallResponse {
+        val content = extractContentFromResponse(response)
+        val toolCalls = mutableListOf<DeepSeekToolCall>()
+
+        val toolCallsPattern = "\"tool_calls\"\\s*:\\s*\\[".toRegex()
+        if (toolCallsPattern.containsMatchIn(response)) {
+            val idPattern = "\"id\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+            val namePattern = "\"name\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+            val argsPattern = "\"arguments\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+
+            val ids = idPattern.findAll(response).map { it.groupValues[1] }.toList()
+            val names = namePattern.findAll(response).map { it.groupValues[1] }.toList()
+            val args = argsPattern.findAll(response).map {
+                it.groupValues[1].replace("\\n", "\n").replace("\\\"", "\"")
+            }.toList()
+
+            val count = minOf(ids.size, names.size, args.size)
+            for (i in 0 until count) {
+                toolCalls.add(DeepSeekToolCall(
+                    toolCallId = ids[i],
+                    functionName = names[i],
+                    arguments = args[i]
+                ))
+            }
+        }
+
+        return FunctionCallResponse(
+            content = content,
+            toolCalls = toolCalls,
+            isToolCall = toolCalls.isNotEmpty()
+        )
+    }
+
+    private fun extractContentFromResponse(response: String): String {
+        val contentPattern = "\"content\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+        val match = contentPattern.find(response)
+        val content = match?.groupValues?.get(1)
+            ?.replace("\\n", "\n")
+            ?.replace("\\\"", "\"")
+            ?.replace("\\t", "\t")
+            ?.replace("\\r", "\r")
+            ?.replace("\\\\", "\\")
+        if (content != null) return content
+
+        val nullContent = "\"content\":\\s*null".toRegex()
+        if (nullContent.containsMatchIn(response)) return ""
+
+        val reasoningPattern = "\"reasoning_content\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+        val reasoningMatch = reasoningPattern.find(response)
+        if (reasoningMatch != null) {
+            return reasoningMatch.groupValues.get(1)
+                .replace("\\n", "\n")
+                .replace("\\\"", "\"")
+        }
+
+        return extractFromStreamedResponse(response)
+    }
+
+    private fun extractFromStreamedResponse(response: String): String {
+        val lines = response.lines()
+        val contents = mutableListOf<String>()
+        for (line in lines) {
+            if (line.startsWith("data: ")) {
+                val jsonStr = line.removePrefix("data: ").trim()
+                if (jsonStr == "[DONE]") continue
+                val deltaMatch = "\"content\"\\s*:\\s*\"([^\"]*)\"".toRegex().find(jsonStr)
+                deltaMatch?.let {
+                    contents.add(it.groupValues.get(1))
+                }
+            }
+        }
+        return if (contents.isNotEmpty()) {
+            contents.joinToString("")
+                .replace("\\n", "\n")
+                .replace("\\\"", "\"")
+        } else {
+            "No content found in response"
+        }
+    }
+}

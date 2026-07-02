@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Aura 水母帧动画 — celebrating 形态
+  4 帧循环,每帧 380ms。由 AuraMascotView 加载并播放。
+  自动生成,请勿手动编辑。
+-->
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+    <item android:drawable="@drawable/aura_celebrating_f1" android:duration="380" />
+    <item android:drawable="@drawable/aura_celebrating_f2" android:duration="380" />
+    <item android:drawable="@drawable/aura_celebrating_f3" android:duration="380" />
+    <item android:drawable="@drawable/aura_celebrating_f4" android:duration="380" />
+</animation-list>

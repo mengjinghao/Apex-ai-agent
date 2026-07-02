@@ -1,0 +1,119 @@
+*.iml
+.gradle
+.gradle-local
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/app/release
+/captures.externalNativeBuild
+.cxx
+local.properties
+node_modules
+package-lock.json
+pnpm-lock.yaml
+temp.json
+temp
+build
+/app/src/main/jniLibs
+/app/src/main/assets/models
+/app/src/main/assets/subpack
+/app/libs/*
+!/app/libs/.keep
+
+.env
+.env.*
+!.env.*.example
+tools/github/.env
+
+app/src/main/assets/pets
+
+.gradle
+.idea
+.cursor
+.vscode
+.kotlin
+.windsurf
+
+tmp
+AGENTS.md
+CLAUDE.md
+
+gradle/gradle-8.7-bin.zip
+gradle/gradle-8.7/*
+gradle/gradle-8.7
+
+mnn/build/*
+mnn/build
+kls_database.db
+.claude
+.codex
+operit-pc-agent.zip
+.uv-caches
+
+# generated toolpkg bundles
+*.toolpkg
+.venv
+
+# 新增的 Gradle 缓存目录
+.gradle_local/
+.gradle_temp/
+
+# 构建输出和临时文件
+build_output.txt
+*.log
+
+# 临时报告文档
+*_REPORT.md
+*_FIX_REPORT.mdnul
+tmp_nul
+ nul.tmp
+nul
+
+# Gradle 缓存目录
+.gradle_home/
+.gradle-cache/
+.gradle-project/
+.gradle-user/
+
+# IDE 和工具目录
+.skills/
+.trae/
+
+# 构建相关
+build-agent/
+build-log.txt
+build.bat
+build-run.bat
+build-run.ps1
+
+# 临时脚本和文件
+EnvCheck.java
+FileUtilsPatchAgent.java
+env-check.gradle.kts
+env-check.ps1
+init-env.gradle.kts
+patch-aapt.gradle
+patch-agent.gradle
+agent-tasks.gradle
+fix_burst_task.ps1
+
+# 临时数据目录
+cloud-server/
+data/
+
+# 例外：源码包路径 com/apex/agent/data/burstmode/ 不属于临时数据目录
+!core/burst-kernel/src/main/java/com/apex/agent/data/
+!core/burst-kernel/src/main/java/com/apex/agent/data/**
+
+# 示例文件
+examples/
+
+# UI重构临时文件
+ui重构模板/
+新UItext/

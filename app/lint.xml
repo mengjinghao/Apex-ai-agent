@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- 正确性 -->
+    <issue id="MissingPermission" severity="error" />
+    <issue id="NewApi" severity="error" />
+    <issue id="UnsafeIntentLaunch" severity="error" />
+    <issue id="UnsafeOptInUsageError" severity="error" />
+    <issue id="WrongConstant" severity="error" />
+    <issue id="Range" severity="error" />
+    
+    <!-- 安全 -->
+    <issue id="ExportedContentProvider" severity="error" />
+    <issue id="ExportedReceiver" severity="error" />
+    <issue id="ExportedService" severity="error" />
+    <issue id="SetJavaScriptEnabled" severity="warning" />
+    <issue id="AllowBackup" severity="warning" />
+    <issue id="HardcodedDebugMode" severity="warning" />
+    <issue id="UnprotectedSMSBroadcastReceiver" severity="error" />
+    
+    <!-- 性能 -->
+    <issue id="ObsoleteSdkInt" severity="warning" />
+    <issue id="Recycle" severity="error" />
+    <issue id="UseSparseArrays" severity="warning" />
+    <issue id="WifiManagerLeak" severity="error" />
+    <issue id="WakelockTimeout" severity="error" />
+    
+    <!-- 可访问性 -->
+    <issue id="ContentDescription" severity="warning" />
+    <issue id="LabelFor" severity="warning" />
+    <issue id="TouchTargetSize" severity="warning" />
+    
+    <!-- 国际化 -->
+    <issue id="HardcodedText" severity="warning" />
+    
+    <!-- 可忽略 -->
+    <issue id="SameParameterValue" severity="ignore" />
+    <issue id="SameReturnValue" severity="ignore" />
+    <issue id="LocalVariableName" severity="ignore" />
+    <issue id="RedundantVisibilityModifier" severity="ignore" />
+</lint>

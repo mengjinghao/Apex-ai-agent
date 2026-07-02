@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Apex-Agent | 关于我们</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#ff2d78",
+                        secondary: "#00ffcc",
+                        tertiary: "#ffe04a",
+                        background: "#0a0a12",
+                        surface: "#0f0f1a",
+                        "surface-container": "#141422",
+                        "surface-container-low": "#111118",
+                        "surface-container-lowest": "#0a0a12",
+                        "surface-container-high": "#1e1e30",
+                        "surface-container-highest": "#28283e",
+                        "surface-variant": "#1e1e30",
+                        "on-surface": "#e8e0f0",
+                        "on-surface-variant": "#a098b0",
+                        "on-background": "#e8e0f0",
+                        "on-primary": "#1a0010",
+                        "primary-container": "#b3004e",
+                        "secondary-container": "#004d3d",
+                        "tertiary-container": "#665200",
+                        "on-primary-container": "#ffe0ec",
+                        "on-secondary-container": "#c0fff4",
+                        "on-tertiary-container": "#fff0c0",
+                        "primary-fixed": "#ffe0ec",
+                        "primary-fixed-dim": "#ff80aa",
+                        "secondary-fixed": "#c0fff4",
+                        "secondary-fixed-dim": "#00e6b8",
+                        "tertiary-fixed": "#fff0c0",
+                        "tertiary-fixed-dim": "#ffe04a",
+                        outline: "#5a5068",
+                        "outline-variant": "#302840"
+                    },
+                    fontFamily: {
+                        headline: ["Sora"],
+                        display: ["Sora"],
+                        body: ["Inter"],
+                        label: ["Space Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .neon-glow { text-shadow: 0 0 8px currentColor; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .liquid-orb {
+            filter: blur(80px);
+            position: absolute;
+            z-index: -1;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: move 20s infinite alternate;
+        }
+        @keyframes move {
+            from { transform: translate(-10%, -10%); }
+            to { transform: translate(10%, 10%); }
+        }
+        .marquee {
+            display: flex;
+            overflow: hidden;
+            user-select: none;
+            gap: 4rem;
+        }
+        .marquee-content {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-around;
+            min-width: 100%;
+            gap: 4rem;
+            animation: scroll 30s linear infinite;
+        }
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(5deg); }
+            66% { transform: translateY(10px) rotate(-5deg); }
+        }
+        .float-animation { animation: float 6s ease-in-out infinite; }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .pulse-ring::before {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            border: 2px solid currentColor;
+            border-radius: 50%;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #ff2d78, #00ffcc, #ffe04a, #ff2d78);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient-shift 4s ease infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-white overflow-x-hidden">
+    <div class="fixed top-0 left-0 h-1 bg-gradient-to-r from-primary via-secondary to-tertiary z-[100] transition-all duration-100 shadow-[0_0_10px_rgba(255,45,120,0.8)]" id="scroll-progress" style="width: 0%"></div>
+    
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute inset-0 opacity-30 mix-blend-overlay animate-pulse" style="background: radial-gradient(at 0% 0%, #ff2d78 0px, transparent 50%), radial-gradient(at 100% 0%, #00ffcc 0px, transparent 50%), radial-gradient(at 100% 100%, #ffe04a 0px, transparent 50%), radial-gradient(at 0% 100%, #ff2d78 0px, transparent 50%); filter: blur(100px);"></div>
+        <div class="liquid-orb bg-primary w-[500px] h-[500px] -top-48 -left-48"></div>
+        <div class="liquid-orb bg-secondary w-[400px] h-[400px] top-1/2 -right-24" style="animation-delay: -5s;"></div>
+        <div class="liquid-orb bg-tertiary w-[300px] h-[300px] bottom-0 left-1/4" style="animation-delay: -10s;"></div>
+    </div>
+    
+    <nav class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+        <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+            <a href="index.html" class="flex items-center gap-2">
+                <span class="text-2xl font-display font-black tracking-tighter text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)]">Apex-Agent</span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="index.html">首页</a>
+                <a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="features.html">功能</a>
+                <a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="docs.html">文档</a>
+                <a class="font-label text-primary font-bold border-b-2 border-primary pb-1" href="about.html">关于</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="download.html" class="px-5 py-2 rounded-full bg-primary text-on-primary font-bold scale-95 active:scale-90 transition-transform shadow-[0_0_16px_rgba(255,45,120,0.4)] hover:shadow-[0_0_24px_rgba(255,45,120,0.6)]">
+                    立即下载
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <main>
+        <section class="py-20 px-6 overflow-hidden relative">
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-label text-sm font-bold mb-6">
+                    <span class="material-symbols-outlined">group</span> 了解我们
+                </div>
+                <h1 class="font-headline text-5xl md:text-6xl font-extrabold mb-6">
+                    <span class="gradient-text">关于 Apex-Agent</span>
+                </h1>
+                <p class="text-xl text-on-surface-variant max-w-2xl mx-auto">
+                    我们致力于打造最强大的移动端 AI 自动化解决方案，让每个人都能享受 AI 带来的效率提升
+                </p>
+            </div>
+        </section>
+        
+        <section class="py-16 px-6 bg-surface-container-low/30">
+            <div class="marquee">
+                <div class="marquee-content">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                        <span class="font-headline font-bold text-xl">高效</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">security</span>
+                        <span class="font-headline font-bold text-xl">安全</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+                        <span class="font-headline font-bold text-xl">智能</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">open_source</span>
+                        <span class="font-headline font-bold text-xl">开源</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">cloud</span>
+                        <span class="font-headline font-bold text-xl">隐私</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                        <span class="font-headline font-bold text-xl">高效</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">security</span>
+                        <span class="font-headline font-bold text-xl">安全</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+                        <span class="font-headline font-bold text-xl">智能</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="py-24 px-6 max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="font-headline text-4xl md:text-5xl font-bold mb-4">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">我们的使命</span>
+                </h2>
+                <p class="text-xl text-on-surface-variant">让 AI 技术服务于每一个人</p>
+            </div>
+            
+            <div class="glass-card p-12 rounded-[2rem] mb-16 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-8 text-primary/10">
+                    <span class="material-symbols-outlined text-[12rem]">format_quote</span>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-2xl md:text-3xl font-light leading-relaxed mb-8">
+                        Apex-Agent 致力于为用户提供<strong class="text-primary font-bold">最强大、最智能</strong>的移动端自动化解决方案。我们相信，AI 技术应该<strong class="text-secondary font-bold">服务于每一个人</strong>，帮助他们从繁琐的任务中解放出来，专注于更有价值的创造。
+                    </p>
+                    <p class="text-xl text-on-surface-variant leading-relaxed">
+                        我们的使命是让每一位用户都能享受到 AI 带来的效率提升，无论他们是普通用户还是专业开发者。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="glass-card p-8 rounded-[2rem] text-center hover:border-primary/50 transition-all duration-500 group">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform relative">
+                        <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">psychology</span>
+                    </div>
+                    <h3 class="font-headline text-xl font-bold mb-4">AI 驱动</h3>
+                    <p class="text-on-surface-variant">融合最先进的大语言模型技术，打造智能化的自动化体验</p>
+                </div>
+                <div class="glass-card p-8 rounded-[2rem] text-center hover:border-secondary/50 transition-all duration-500 group">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-secondary/10 flex items-center justify-center text-secondary mb-6 group-hover:scale-110 transition-transform relative">
+                        <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">shield</span>
+                    </div>
+                    <h3 class="font-headline text-xl font-bold mb-4">隐私优先</h3>
+                    <p class="text-on-surface-variant">所有数据处理都在本地完成，真正保护用户隐私安全</p>
+                </div>
+                <div class="glass-card p-8 rounded-[2rem] text-center hover:border-tertiary/50 transition-all duration-500 group">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary mb-6 group-hover:scale-110 transition-transform relative">
+                        <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">open_source</span>
+                    </div>
+                    <h3 class="font-headline text-xl font-bold mb-4">开源精神</h3>
+                    <p class="text-on-surface-variant">开放源代码，欢迎社区贡献，共同推动技术进步</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="py-24 px-6 bg-surface-container-low/30">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="font-headline text-4xl md:text-5xl font-bold mb-4">
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-tertiary">核心价值</span>
+                    </h2>
+                    <p class="text-xl text-on-surface-variant">这些价值观驱动着我们前进</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="glass-card p-8 rounded-[2rem] flex items-start gap-6 hover:border-primary/50 transition-all">
+                        <div class="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline text-xl font-bold mb-2">创新驱动</h3>
+                            <p class="text-on-surface-variant">不断探索新技术，为用户提供更智能、更高效的解决方案。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-8 rounded-[2rem] flex items-start gap-6 hover:border-secondary/50 transition-all">
+                        <div class="w-16 h-16 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary flex-shrink-0">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">users</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline text-xl font-bold mb-2">用户至上</h3>
+                            <p class="text-on-surface-variant">始终将用户体验放在首位，倾听用户声音，持续改进产品。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-8 rounded-[2rem] flex items-start gap-6 hover:border-tertiary/50 transition-all">
+                        <div class="w-16 h-16 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary flex-shrink-0">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">lock</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline text-xl font-bold mb-2">隐私保护</h3>
+                            <p class="text-on-surface-variant">用户数据隐私是我们的底线，永远不会牺牲用户隐私换取便利。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-8 rounded-[2rem] flex items-start gap-6 hover:border-primary/50 transition-all">
+                        <div class="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">diversity_3</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline text-xl font-bold mb-2">开源共享</h3>
+                            <p class="text-on-surface-variant">相信技术的力量来源于分享，期待与社区共同成长。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="py-24 px-6 max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="font-headline text-4xl md:text-5xl font-bold mb-4">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-tertiary to-primary">联系我们</span>
+                </h2>
+                <p class="text-xl text-on-surface-variant">我们很乐意倾听您的想法</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="glass-card p-8 rounded-[2rem]">
+                    <h3 class="font-headline text-2xl font-bold mb-6 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">email</span>
+                        邮箱联系
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 bg-surface rounded-xl">
+                            <span class="material-symbols-outlined text-secondary">mail</span>
+                            <div>
+                                <p class="text-sm text-on-surface-variant">商务合作</p>
+                                <p class="text-on-surface font-bold">contact@apex-agent.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 bg-surface rounded-xl">
+                            <span class="material-symbols-outlined text-tertiary">support_agent</span>
+                            <div>
+                                <p class="text-sm text-on-surface-variant">技术支持</p>
+                                <p class="text-on-surface font-bold">support@apex-agent.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card p-8 rounded-[2rem]">
+                    <h3 class="font-headline text-2xl font-bold mb-6 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary">code</span>
+                        开源社区
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 bg-surface rounded-xl">
+                            <span class="material-symbols-outlined text-primary">code</span>
+                            <div>
+                                <p class="text-sm text-on-surface-variant">GitHub</p>
+                                <p class="text-on-surface font-bold">github.com/apex-agent</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 bg-surface rounded-xl">
+                            <span class="material-symbols-outlined text-secondary">forum</span>
+                            <div>
+                                <p class="text-sm text-on-surface-variant">社区论坛</p>
+                                <p class="text-on-surface font-bold">forum.apex-agent.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="py-24 px-6 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-30">
+                <div class="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-tertiary/20"></div>
+            </div>
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <h2 class="font-headline text-4xl md:text-5xl font-bold mb-6">准备好开始了吗？</h2>
+                <p class="text-xl text-on-surface-variant mb-12">加入我们，体验移动端 AI 自动化的未来</p>
+                <div class="flex flex-wrap gap-6 justify-center">
+                    <a href="download.html" class="group relative px-10 py-4 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold flex items-center gap-3 overflow-hidden transition-all hover:scale-105 active:scale-95">
+                        <span>立即下载</span>
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">download</span>
+                        <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </a>
+                    <a href="docs.html" class="px-10 py-4 rounded-xl border border-outline text-on-surface font-bold hover:bg-white/5 transition-all">
+                        查看文档
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="w-full py-12 bg-surface-container-lowest border-t border-outline-variant/30">
+        <div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+            <div class="flex flex-col gap-2 group cursor-help">
+                <span class="font-display font-bold text-primary text-xl tracking-tight">Apex-Agent</span>
+                <p class="font-body text-sm text-on-surface-variant">© 2024 Apex-Agent Team. 保留所有权利。<span class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-mono bg-primary/20 px-1 rounded">Project Code: APEX-ALPHA</span></p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-8">
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="index.html">首页</a>
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="features.html">功能</a>
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="docs.html">文档</a>
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="download.html">下载</a>
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="about.html">关于</a>
+            </div>
+            <div class="flex gap-4">
+                <a class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">share</span>
+                </a>
+                <a class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">code</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const orbs = document.querySelectorAll('.liquid-orb');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            orbs.forEach((orb, index) => {
+                const speed = (index + 1) * 20;
+                orb.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            const scrollProgress = document.getElementById('scroll-progress');
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / docHeight) * 100;
+            scrollProgress.style.width = `${progress}%`;
+            
+            if (window.scrollY > 50) {
+                nav.classList.add('py-2', 'shadow-xl');
+                nav.classList.remove('py-4');
+            } else {
+                nav.classList.add('py-4');
+                nav.classList.remove('py-2', 'shadow-xl');
+            }
+        });
+    </script>
+</body>
+</html>

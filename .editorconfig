@@ -1,0 +1,41 @@
+# EditorConfig — 统一代码风格
+# https://editorconfig.org/
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 140
+
+[*.{kt,kts}]
+# Kotlin 特定规则
+ij_kotlin_imports_layout = *
+ij_kotlin_name_count_to_use_star_import = 99
+ij_kotlin_name_count_to_use_star_import_for_members = 99
+# 禁止通配符 import
+ij_kotlin_imports_legacy_imports = false
+
+# 4 空格缩进（与团队约定一致）
+indent_size = 4
+
+[*.{yml,yaml,toml,json,xml,html,css,md}]
+indent_size = 2
+
+[*.{java,cpp,h,c}]
+indent_size = 4
+
+[Makefile]
+indent_style = tab
+
+# Gradle 文件
+[*.{gradle,gradle.kts,kts}]
+indent_size = 4
+
+# 构建脚本
+[*.sh]
+indent_size = 2

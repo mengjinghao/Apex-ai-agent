@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 外层大圆环（机器人爬的主环） -->
+    <path
+        android:pathData="M54,8 A46,46 0 1,1 54,100 A46,46 0 1,1 54,8"
+        android:strokeWidth="2.8"
+        android:strokeColor="#4ECDC4"
+        android:fillColor="transparent"/>
+
+    <!-- 内层装饰圆环 -->
+    <path
+        android:pathData="M54,22 A32,32 0 1,1 54,86 A32,32 0 1,1 54,22"
+        android:strokeWidth="2"
+        android:strokeColor="#4ECDC4"
+        android:fillColor="transparent"/>
+
+    <!-- 安卓机器人：爬在外层圆环上（姿态自然） -->
+    <!-- 机器人头部 -->
+    <path
+        android:pathData="M42,32 L66,32 L66,46 L42,46 Z"
+        android:fillColor="#4ECDC4"/>
+
+    <!-- 机器人头顶天线 -->
+    <path
+        android:pathData="M47,32 L47,26 M61,32 L61,26"
+        android:strokeWidth="1.5"
+        android:strokeColor="#4ECDC4"
+        android:strokeLineCap="round"/>
+
+    <!-- 机器人眼睛 -->
+    <path
+        android:pathData="M48,37 L50,37 M58,37 L60,37"
+        android:strokeWidth="2"
+        android:strokeColor="#1A1D22"
+        android:strokeLineCap="round"/>
+
+    <!-- 机器人身体（下半部分在圆环内侧） -->
+    <path
+        android:pathData="M44,46 L64,46 L64,62 L44,62 Z"
+        android:fillColor="#4ECDC4"/>
+
+    <!-- 机器人左臂（搭在圆环上） -->
+    <path
+        android:pathData="M44,50 L38,56"
+        android:strokeWidth="3"
+        android:strokeColor="#4ECDC4"
+        android:strokeLineCap="round"/>
+
+    <!-- 机器人右臂（搭在圆环上） -->
+    <path
+        android:pathData="M64,50 L70,56"
+        android:strokeWidth="3"
+        android:strokeColor="#4ECDC4"
+        android:strokeLineCap="round"/>
+
+    <!-- 机器人左腿 -->
+    <path
+        android:pathData="M49,62 L49,68"
+        android:strokeWidth="3"
+        android:strokeColor="#4ECDC4"
+        android:strokeLineCap="round"/>
+
+    <!-- 机器人右腿 -->
+    <path
+        android:pathData="M59,62 L59,68"
+        android:strokeWidth="3"
+        android:strokeColor="#4ECDC4"
+        android:strokeLineCap="round"/>
+
+</vector>

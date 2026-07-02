@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Apex-Agent | 文档</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#ff2d78",
+                        secondary: "#00ffcc",
+                        tertiary: "#ffe04a",
+                        background: "#0a0a12",
+                        surface: "#0f0f1a",
+                        "surface-container": "#141422",
+                        "surface-container-low": "#111118",
+                        "surface-container-lowest": "#0a0a12",
+                        "surface-container-high": "#1e1e30",
+                        "surface-container-highest": "#28283e",
+                        "surface-variant": "#1e1e30",
+                        "on-surface": "#e8e0f0",
+                        "on-surface-variant": "#a098b0",
+                        "on-background": "#e8e0f0",
+                        "on-primary": "#1a0010",
+                        "primary-container": "#b3004e",
+                        "secondary-container": "#004d3d",
+                        "tertiary-container": "#665200",
+                        "on-primary-container": "#ffe0ec",
+                        "on-secondary-container": "#c0fff4",
+                        "on-tertiary-container": "#fff0c0",
+                        "primary-fixed": "#ffe0ec",
+                        "primary-fixed-dim": "#ff80aa",
+                        "secondary-fixed": "#c0fff4",
+                        "secondary-fixed-dim": "#00e6b8",
+                        "tertiary-fixed": "#fff0c0",
+                        "tertiary-fixed-dim": "#ffe04a",
+                        outline: "#5a5068",
+                        "outline-variant": "#302840"
+                    },
+                    fontFamily: {
+                        headline: ["Sora"],
+                        display: ["Sora"],
+                        body: ["Inter"],
+                        label: ["Space Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .neon-glow { text-shadow: 0 0 8px currentColor; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .liquid-orb {
+            filter: blur(80px);
+            position: absolute;
+            z-index: -1;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: move 20s infinite alternate;
+        }
+        @keyframes move {
+            from { transform: translate(-10%, -10%); }
+            to { transform: translate(10%, 10%); }
+        }
+        .marquee {
+            display: flex;
+            overflow: hidden;
+            user-select: none;
+            gap: 4rem;
+        }
+        .marquee-content {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-around;
+            min-width: 100%;
+            gap: 4rem;
+            animation: scroll 30s linear infinite;
+        }
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        .code-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .code-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .code-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .code-content {
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+        .code-content pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        .code-content code {
+            background: none;
+            padding: 0;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content.open {
+            max-height: 500px;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-icon.open {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-white overflow-x-hidden">
+    <div class="fixed top-0 left-0 h-1 bg-gradient-to-r from-primary via-secondary to-tertiary z-[100] transition-all duration-100 shadow-[0_0_10px_rgba(255,45,120,0.8)]" id="scroll-progress" style="width: 0%"></div>
+    
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute inset-0 opacity-30 mix-blend-overlay animate-pulse" style="background: radial-gradient(at 0% 0%, #ff2d78 0px, transparent 50%), radial-gradient(at 100% 0%, #00ffcc 0px, transparent 50%), radial-gradient(at 100% 100%, #ffe04a 0px, transparent 50%), radial-gradient(at 0% 100%, #ff2d78 0px, transparent 50%); filter: blur(100px);"></div>
+        <div class="liquid-orb bg-primary w-[500px] h-[500px] -top-48 -left-48"></div>
+        <div class="liquid-orb bg-secondary w-[400px] h-[400px] top-1/2 -right-24" style="animation-delay: -5s;"></div>
+        <div class="liquid-orb bg-tertiary w-[300px] h-[300px] bottom-0 left-1/4" style="animation-delay: -10s;"></div>
+    </div>
+    
+    <nav class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+        <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+            <a href="index.html" class="flex items-center gap-2">
+                <span class="text-2xl font-display font-black tracking-tighter text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)]">Apex-Agent</span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="index.html">首页</a>
+                <a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="features.html">功能</a>
+                <a class="font-label text-primary font-bold border-b-2 border-primary pb-1" href="docs.html">文档</a>
+                <a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="about.html">关于</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="download.html" class="px-5 py-2 rounded-full bg-primary text-on-primary font-bold scale-95 active:scale-90 transition-transform shadow-[0_0_16px_rgba(255,45,120,0.4)] hover:shadow-[0_0_24px_rgba(255,45,120,0.6)]">
+                    立即下载
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <main>
+        <section class="py-20 px-6 overflow-hidden relative">
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary font-label text-sm font-bold mb-6">
+                    <span class="material-symbols-outlined">menu_book</span> 学习指南
+                </div>
+                <h1 class="font-headline text-5xl md:text-6xl font-extrabold mb-6">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary via-tertiary to-primary neon-glow">文档中心</span>
+                </h1>
+                <p class="text-xl text-on-surface-variant max-w-2xl mx-auto">
+                    从入门到精通，全面了解 Apex-Agent 的使用方法
+                </p>
+            </div>
+        </section>
+        
+        <section class="py-16 px-6 bg-surface-container-low/30">
+            <div class="marquee">
+                <div class="marquee-content">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                        <span class="font-headline font-bold text-xl">狂暴模式</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">groups</span>
+                        <span class="font-headline font-bold text-xl">多代理协作</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+                        <span class="font-headline font-bold text-xl">深度记忆</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">public</span>
+                        <span class="font-headline font-bold text-xl">网页自动化</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">security</span>
+                        <span class="font-headline font-bold text-xl">隐私保护</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                        <span class="font-headline font-bold text-xl">狂暴模式</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">groups</span>
+                        <span class="font-headline font-bold text-xl">多代理协作</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+                        <span class="font-headline font-bold text-xl">深度记忆</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="py-24 px-6 max-w-4xl mx-auto">
+            <div class="mb-16">
+                <h2 class="font-headline text-3xl font-bold mb-8 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">rocket_launch</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">快速开始</span>
+                </h2>
+                
+                <div class="space-y-6">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-headline text-xl font-bold mb-4 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">1</span>
+                            下载安装
+                        </h3>
+                        <p class="text-on-surface-variant mb-4">从官网下载最新的 APK 文件并安装到您的 Android 设备。</p>
+                        <div class="code-block">
+                            <div class="code-header">
+                                <div class="code-dots">
+                                    <div class="code-dot bg-red-500"></div>
+                                    <div class="code-dot bg-yellow-500"></div>
+                                    <div class="code-dot bg-green-500"></div>
+                                </div>
+                                <span class="text-sm text-on-surface-variant ml-2">终端</span>
+                            </div>
+                            <div class="code-content">
+                                <pre><code class="text-secondary"># 下载 APK
+adb install apex-agent.apk
+
+# 启动应用
+adb shell am start -n com.apex.agent/.MainActivity</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-headline text-xl font-bold mb-4 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary text-sm font-bold">2</span>
+                            授予权限
+                        </h3>
+                        <p class="text-on-surface-variant mb-4">首次启动时，请授予以下必要权限以确保应用正常运行。</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex items-center gap-3 p-3 bg-surface rounded-xl">
+                                <span class="material-symbols-outlined text-primary">accessibility</span>
+                                <span class="text-sm">无障碍权限</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-surface rounded-xl">
+                                <span class="material-symbols-outlined text-secondary">folder</span>
+                                <span class="text-sm">存储权限</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-surface rounded-xl">
+                                <span class="material-symbols-outlined text-tertiary">wifi</span>
+                                <span class="text-sm">网络权限</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-surface rounded-xl">
+                                <span class="material-symbols-outlined text-primary">notifications</span>
+                                <span class="text-sm">通知权限</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-headline text-xl font-bold mb-4 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary text-sm font-bold">3</span>
+                            配置 API
+                        </h3>
+                        <p class="text-on-surface-variant mb-4">在设置中配置您的 AI 模型 API 密钥以启用高级功能。</p>
+                        <div class="code-block">
+                            <div class="code-header">
+                                <div class="code-dots">
+                                    <div class="code-dot bg-red-500"></div>
+                                    <div class="code-dot bg-yellow-500"></div>
+                                    <div class="code-dot bg-green-500"></div>
+                                </div>
+                                <span class="text-sm text-on-surface-variant ml-2">config.json</span>
+                            </div>
+                            <div class="code-content">
+                                <pre><code class="text-tertiary">{
+  "api_base_url": "https://api.example.com",
+  "api_key": "your-api-key-here",
+  "model": "gpt-4",
+  "max_tokens": 2048
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-16">
+                <h2 class="font-headline text-3xl font-bold mb-8 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-secondary">auto_awesome</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-tertiary">核心功能</span>
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <button class="accordion-btn w-full p-6 flex items-center justify-between text-left" onclick="toggleAccordion(this)">
+                            <div class="flex items-center gap-4">
+                                <span class="material-symbols-outlined text-3xl text-primary">bolt</span>
+                                <div>
+                                    <h3 class="font-headline text-lg font-bold">狂暴模式</h3>
+                                    <p class="text-sm text-on-surface-variant">极速批量任务处理</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined accordion-icon text-on-surface-variant">expand_more</span>
+                        </button>
+                        <div class="accordion-content px-6">
+                            <div class="pb-6 text-on-surface-variant">
+                                <p class="mb-4">狂暴模式是 Apex-Agent 的核心功能，通过智能 CPU 调度和任务优化，实现高达 4 倍的任务处理速度提升。</p>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li>智能断点续传机制</li>
+                                    <li>批量任务并行处理</li>
+                                    <li>自动错误恢复与重试</li>
+                                    <li>实时进度监控</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <button class="accordion-btn w-full p-6 flex items-center justify-between text-left" onclick="toggleAccordion(this)">
+                            <div class="flex items-center gap-4">
+                                <span class="material-symbols-outlined text-3xl text-secondary">groups</span>
+                                <div>
+                                    <h3 class="font-headline text-lg font-bold">多代理协作</h3>
+                                    <p class="text-sm text-on-surface-variant">多 AI 协同工作</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined accordion-icon text-on-surface-variant">expand_more</span>
+                        </button>
+                        <div class="accordion-content px-6">
+                            <div class="pb-6 text-on-surface-variant">
+                                <p class="mb-4">多个专用 AI 代理协同工作，自动分解复杂任务并智能汇总结果。</p>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li>主代理：任务调度与协调</li>
+                                    <li>数据代理：信息处理与分析</li>
+                                    <li>网络代理：网页交互与采集</li>
+                                    <li>汇总代理：结果整合与输出</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <button class="accordion-btn w-full p-6 flex items-center justify-between text-left" onclick="toggleAccordion(this)">
+                            <div class="flex items-center gap-4">
+                                <span class="material-symbols-outlined text-3xl text-tertiary">psychology</span>
+                                <div>
+                                    <h3 class="font-headline text-lg font-bold">深度记忆</h3>
+                                    <p class="text-sm text-on-surface-variant">持久化学习与个性化</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined accordion-icon text-on-surface-variant">expand_more</span>
+                        </button>
+                        <div class="accordion-content px-6">
+                            <div class="pb-6 text-on-surface-variant">
+                                <p class="mb-4">多层记忆系统让 AI 真正理解用户，提供个性化的智能体验。</p>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li>短期记忆：实时对话上下文</li>
+                                    <li>长期记忆：用户偏好与习惯</li>
+                                    <li>知识图谱：概念关联与语义理解</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h2 class="font-headline text-3xl font-bold mb-8 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-tertiary">help</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-tertiary to-primary">常见问题</span>
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-headline text-lg font-bold mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">help</span>
+                            支持哪些 Android 版本？
+                        </h3>
+                        <p class="text-on-surface-variant">Apex-Agent 支持 Android 7.0 (API 24) 及以上版本，包括最新的 Android 14。</p>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-headline text-lg font-bold mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary">help</span>
+                            如何获取 API 密钥？
+                        </h3>
+                        <p class="text-on-surface-variant">您可以在 OpenAI、Claude 或其他 AI 服务提供商的官网申请 API 密钥。 Apex-Agent 支持多种 AI 模型。</p>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-headline text-lg font-bold mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-tertiary">help</span>
+                            我的数据是否安全？
+                        </h3>
+                        <p class="text-on-surface-variant">完全安全！所有数据处理都在您的设备本地完成，不会上传到任何服务器。我们重视您的隐私保护。</p>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="font-headline text-lg font-bold mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">help</span>
+                            应用耗电吗？
+                        </h3>
+                        <p class="text-on-surface-variant">Apex-Agent 采用了智能电源管理策略，在非活跃期间自动降低资源占用。狂暴模式虽然会提高性能，但也会注意控制功耗。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="py-24 px-6 bg-surface-container-low/30">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="font-headline text-4xl md:text-5xl font-bold mb-6">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary neon-glow">还有其他问题？</span>
+                </h2>
+                <p class="text-xl text-on-surface-variant mb-12">我们随时为您提供帮助</p>
+                <div class="flex flex-wrap gap-6 justify-center">
+                    <a href="about.html" class="group relative px-10 py-4 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold flex items-center gap-3 overflow-hidden transition-all hover:scale-105 active:scale-95">
+                        <span>联系我们</span>
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
+                        <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </a>
+                    <a href="download.html" class="px-10 py-4 rounded-xl border border-outline text-on-surface font-bold hover:bg-white/5 transition-all">
+                        立即下载
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="w-full py-12 bg-surface-container-lowest border-t border-outline-variant/30">
+        <div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+            <div class="flex flex-col gap-2 group cursor-help">
+                <span class="font-display font-bold text-primary text-xl tracking-tight">Apex-Agent</span>
+                <p class="font-body text-sm text-on-surface-variant">© 2024 Apex-Agent Team. 保留所有权利。<span class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-mono bg-primary/20 px-1 rounded">Project Code: APEX-ALPHA</span></p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-8">
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="index.html">首页</a>
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="features.html">功能</a>
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="docs.html">文档</a>
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="download.html">下载</a>
+                <a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="about.html">关于</a>
+            </div>
+            <div class="flex gap-4">
+                <a class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">share</span>
+                </a>
+                <a class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">code</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleAccordion(btn) {
+            const content = btn.nextElementSibling;
+            const icon = btn.querySelector('.accordion-icon');
+            content.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+        
+        document.addEventListener('mousemove', (e) => {
+            const orbs = document.querySelectorAll('.liquid-orb');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            orbs.forEach((orb, index) => {
+                const speed = (index + 1) * 20;
+                orb.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            const scrollProgress = document.getElementById('scroll-progress');
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / docHeight) * 100;
+            scrollProgress.style.width = `${progress}%`;
+            
+            if (window.scrollY > 50) {
+                nav.classList.add('py-2', 'shadow-xl');
+                nav.classList.remove('py-4');
+            } else {
+                nav.classList.add('py-4');
+                nav.classList.remove('py-2', 'shadow-xl');
+            }
+        });
+    </script>
+</body>
+</html>

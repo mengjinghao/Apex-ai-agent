@@ -1,0 +1,127 @@
+{
+  "repoName": "Apex Agent Plugin Repository",
+  "repoVersion": "1.0",
+  "repoUrl": "https://raw.githubusercontent.com/mengjinghao/Apex-agent/main/docs/plugin-repo-index.json",
+  "updatedAt": 1718000000000,
+  "plugins": [
+    {
+      "pluginId": "example.hello-world",
+      "name": "Hello World Plugin",
+      "description": "A simple example plugin that demonstrates the Apex Agent plugin API.",
+      "author": "Apex Team",
+      "tags": ["example", "demo", "tutorial"],
+      "categories": ["demo"],
+      "rating": 4.5,
+      "downloadCount": 1200,
+      "iconUrl": "",
+      "sourceUrl": "https://github.com/mengjinghao/Apex-agent-plugin-example",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "apkUrl": "https://github.com/mengjinghao/Apex-agent-plugin-example/releases/download/v1.0.0/hello-world-1.0.0.apk",
+          "checksum": "abc123def456abc123def456abc123def456abc123def456abc123def456abc1",
+          "checksumType": "SHA256",
+          "minApiVersion": "1.0.0",
+          "fileSize": 256000,
+          "publishedAt": 1717000000000,
+          "isCompatible": true,
+          "releaseNotes": "Initial release",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "pluginId": "tool.web-scraper",
+      "name": "Web Scraper",
+      "description": "Advanced web scraping and data extraction plugin. Supports CSS selectors, XPath, and JavaScript rendering.",
+      "author": "Apex Team",
+      "tags": ["web", "scraping", "data-extraction", "crawler"],
+      "categories": ["tool", "data"],
+      "rating": 4.2,
+      "downloadCount": 3400,
+      "sourceUrl": "https://github.com/mengjinghao/Apex-agent-web-scraper",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "apkUrl": "https://github.com/mengjinghao/Apex-agent-web-scraper/releases/download/v1.0.0/web-scraper-1.0.0.apk",
+          "checksum": "def456abc123def456abc123def456abc123def456abc123def456abc123def456",
+          "checksumType": "SHA256",
+          "minApiVersion": "1.0.0",
+          "fileSize": 512000,
+          "publishedAt": 1716900000000,
+          "isCompatible": true,
+          "releaseNotes": "Initial release with CSS selector support",
+          "dependencies": [
+            {
+              "pluginId": "llm.text-extractor",
+              "versionRange": ">=1.0.0",
+              "required": false
+            }
+          ]
+        },
+        {
+          "version": "1.1.0",
+          "apkUrl": "https://github.com/mengjinghao/Apex-agent-web-scraper/releases/download/v1.1.0/web-scraper-1.1.0.apk",
+          "checksum": "789abc123def789abc123def789abc123def789abc123def789abc123def789abc",
+          "checksumType": "SHA256",
+          "minApiVersion": "1.0.0",
+          "fileSize": 524000,
+          "publishedAt": 1718000000000,
+          "isCompatible": true,
+          "releaseNotes": "Added XPath support and improved error handling",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "pluginId": "llm.text-extractor",
+      "name": "Text Extractor",
+      "description": "Extract and structure text from various document formats (PDF, DOCX, HTML, Markdown).",
+      "author": "Apex Team",
+      "tags": ["text", "extraction", "pdf", "document"],
+      "categories": ["llm", "tool"],
+      "rating": 3.9,
+      "downloadCount": 1800,
+      "sourceUrl": "https://github.com/mengjinghao/Apex-agent-text-extractor",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "apkUrl": "https://github.com/mengjinghao/Apex-agent-text-extractor/releases/download/v1.0.0/text-extractor-1.0.0.apk",
+          "checksum": "123abc456def123abc456def123abc456def123abc456def123abc456def123abc",
+          "checksumType": "SHA256",
+          "minApiVersion": "1.0.0",
+          "fileSize": 384000,
+          "publishedAt": 1716800000000,
+          "isCompatible": true,
+          "releaseNotes": "Initial release",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "pluginId": "ui.dashboard-customizer",
+      "name": "Dashboard Customizer",
+      "description": "Customize the Apex Agent dashboard with themes, widgets, and custom layouts.",
+      "author": "Community",
+      "tags": ["ui", "dashboard", "theme", "customization"],
+      "categories": ["ui"],
+      "rating": 4.0,
+      "downloadCount": 890,
+      "sourceUrl": "https://github.com/community/apex-dashboard-customizer",
+      "versions": [
+        {
+          "version": "0.9.0",
+          "apkUrl": "https://github.com/community/apex-dashboard-customizer/releases/download/v0.9.0/dashboard-customizer-0.9.0.apk",
+          "checksum": "456def123abc456def123abc456def123abc456def123abc456def123abc456def",
+          "checksumType": "SHA256",
+          "minApiVersion": "1.0.0",
+          "fileSize": 1024000,
+          "publishedAt": 1717200000000,
+          "isCompatible": true,
+          "releaseNotes": "Beta release - widgets and themes support",
+          "dependencies": []
+        }
+      ]
+    }
+  ]
+}

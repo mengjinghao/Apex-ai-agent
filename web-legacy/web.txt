@@ -1,0 +1,807 @@
+<!-- Apex-Agent Landing Page - Liquid Glass Theme -->
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apex-Agent - 移动端AI自动化终极平台</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#ff2d78",
+                    "on-tertiary": "#1a1000",
+                    "tertiary-container": "#665200",
+                    "outline-variant": "#302840",
+                    "error-container": "#3d0f0f",
+                    "secondary-container": "#004d3d",
+                    "tertiary-fixed-dim": "#ffe04a",
+                    "on-primary": "#1a0010",
+                    "tertiary": "#ffe04a",
+                    "on-secondary-fixed-variant": "#004d4d",
+                    "surface-container-high": "#1e1e30",
+                    "secondary": "#00ffcc",
+                    "on-secondary-container": "#c0fff4",
+                    "on-primary-fixed-variant": "#8c0038",
+                    "on-tertiary-fixed": "#1a1000",
+                    "primary-container": "#b3004e",
+                    "secondary-fixed": "#c0fff4",
+                    "surface-container-highest": "#28283e",
+                    "secondary-fixed-dim": "#00e6b8",
+                    "surface-container": "#141422",
+                    "on-surface": "#e8e0f0",
+                    "on-error-container": "#ffa0a0",
+                    "on-error": "#1a0000",
+                    "on-background": "#e8e0f0",
+                    "surface-container-low": "#111118",
+                    "surface-variant": "#1e1e30",
+                    "on-secondary-fixed": "#001a1a",
+                    "background": "#0a0a12",
+                    "outline": "#5a5068",
+                    "surface-container-lowest": "#0a0a12",
+                    "on-surface-variant": "#a098b0",
+                    "inverse-primary": "#8c0038",
+                    "on-primary-container": "#ffe0ec",
+                    "surface-bright": "#1a1a2e",
+                    "surface-tint": "#ff2d78",
+                    "primary-fixed": "#ffe0ec",
+                    "inverse-surface": "#e8e0f0",
+                    "tertiary-fixed": "#fff0c0",
+                    "surface": "#0f0f1a",
+                    "error": "#ff4444",
+                    "surface-dim": "#0f0f1a",
+                    "on-tertiary-container": "#fff0c0",
+                    "inverse-on-surface": "#0a0a12",
+                    "on-primary-fixed": "#3d0020",
+                    "primary-fixed-dim": "#ff80aa",
+                    "on-tertiary-fixed-variant": "#665200",
+                    "on-secondary": "#001a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Sora"],
+                    "display": ["Sora"],
+                    "body": ["Inter"],
+                    "label": ["Space Grotesk"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neon-glow-text {
+            text-shadow: 0 0 8px currentColor;
+        }
+        .liquid-glass {
+            background: rgba(30, 30, 48, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+            33% { transform: translate(30px, -50px); opacity: 0.6; }
+            66% { transform: translate(-20px, 20px); opacity: 0.4; }
+        }
+        .orb {
+            animation: float 20s ease-in-out infinite alternate;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .entrance-anim {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(255, 45, 120, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 45, 120, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 45, 120, 0); }
+        }
+        .btn-pulse {
+            animation: pulse-glow 2s infinite;
+        }
+        .btn-click-scale:active {
+            transform: scale(0.92) !important;
+        }
+        .rotate-toggle {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .rotate-toggle.active {
+            transform: rotate(360deg);
+        }
+        .scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(255, 45, 120, 0.02) 50%);
+            background-size: 100% 4px;
+        }
+        .glass-card-hover {
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,45,120,0.15) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+            transform: translate(-50%, -50%);
+        }
+        .glass-card-hover:hover .glass-card-glow {
+            opacity: 1;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .entrance-anim, .orb, .animate-marquee, .btn-pulse, .rotate-toggle {
+                animation: none !important;
+                transition: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- Background Elements -->
+<div class="fixed inset-0 z-[-1] overflow-hidden">
+<!-- Drifting Orbs -->
+<div class="orb absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px]" data-parallax-speed="0.05"></div>
+<div class="orb absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-secondary/10 rounded-full blur-[120px]" data-parallax-speed="0.08" style="animation-delay: -5s;"></div>
+<div class="orb absolute top-[40%] left-[30%] w-[30%] h-[30%] bg-tertiary/5 rounded-full blur-[100px]" data-parallax-speed="0.03" style="animation-delay: -12s;"></div>
+<div class="absolute inset-0 scanline pointer-events-none opacity-20"></div>
+</div>
+<!-- Header -->
+<nav class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="text-2xl font-display font-black tracking-tighter text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)]">Apex-Agent</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Tech Stack</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Burst Mode</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Pricing</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="rotate-toggle material-symbols-outlined text-on-surface-variant hover:text-primary p-2 btn-click-scale" id="theme-toggle">dark_mode</button>
+<button class="bg-primary hover:bg-primary-container text-on-primary px-6 py-2 rounded-full font-bold transition-all btn-click-scale shadow-[0_0_16px_rgba(255,45,120,0.4)]">Get Started</button>
+</div>
+</div>
+</nav>
+<main>
+<!-- Hero Section -->
+<section class="relative pt-20 pb-32 px-6 overflow-hidden">
+<div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+<div class="z-10">
+<div class="entrance-anim inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container border border-primary/30 text-primary mb-6 font-label text-sm" style="animation-delay: 0.1s;">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+                NEW: BURST MODE V2.0 IS LIVE
+            </div>
+<h1 class="entrance-anim font-headline text-6xl md:text-8xl font-extrabold tracking-tight mb-6 leading-none" style="animation-delay: 0.2s;">
+                🚀 <span class="text-primary neon-glow-text">Apex-Agent</span>
+</h1>
+<p class="entrance-anim font-display text-3xl md:text-4xl text-on-surface-variant mb-4 font-bold" style="animation-delay: 0.3s;">
+                移动端AI自动化终极平台
+            </p>
+<p class="entrance-anim text-lg text-on-surface-variant/80 max-w-xl mb-10 leading-relaxed" style="animation-delay: 0.4s;">
+                Next-gen automation featuring <span class="text-secondary">Burst Mode</span> for high-speed processing, <span class="text-tertiary">Multi-Agent</span> orchestration, <span class="text-secondary">Deep Memory</span> profiling, and full <span class="text-primary">Web Automation</span> control.
+            </p>
+<div class="entrance-anim flex flex-wrap gap-4" style="animation-delay: 0.5s;">
+<button class="btn-pulse btn-click-scale px-10 py-4 bg-primary text-on-primary font-headline font-bold rounded-xl shadow-[0_0_20px_rgba(255,45,120,0.5)] hover:scale-105 transition-all">立即下载</button>
+<button class="btn-click-scale px-10 py-4 bg-transparent border border-outline text-on-surface font-headline font-bold rounded-xl hover:bg-white/5 transition-all">查看文档</button>
+</div>
+</div>
+<div class="relative group entrance-anim" style="animation-delay: 0.4s;">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-3xl blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+<div class="relative liquid-glass rounded-3xl border border-white/10 p-4 aspect-[4/3] overflow-hidden group-hover:shadow-[0_0_30px_rgba(255,45,120,0.2)] transition-all duration-500" data-parallax-speed="0.02" id="hero-illustration">
+<img alt="Apex-Agent Dashboard" class="w-full h-full object-cover rounded-2xl opacity-80 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7pstSt0YkMtLg1MDTBcrREWYvSjn_Q9uRcEfHAi4EEu33nIXH8322q8-Hr3t7CHinG6ZRv-N9Sr5TAZypy6pbZodQaURbNVocvt9VoQKomftHMOCk7IJngiO74umLlns23JNpurp4GazrfGZUcy9sgHmlfGcccgqfYRYfVRMdgzX9DtwjHo_HQ5nB8qbTjQqkssLXbNBJY9DewwwHbj32xvlqJzex5bzUsbHUnCIwmXTxVAFyyrobUPUxEr-ML_9lWt4COgxLP2hm"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Tech Stack Scroller -->
+<section class="py-12 border-y border-outline-variant/30 bg-surface-container-low overflow-hidden">
+<div class="max-w-7xl mx-auto px-6 mb-8">
+<h2 class="font-label text-sm uppercase tracking-widest text-on-surface-variant">Core Engine Technologies</h2>
+</div>
+<div class="flex overflow-hidden group">
+<div class="flex gap-12 py-4 animate-marquee whitespace-nowrap min-w-full">
+<div class="flex items-center gap-3 liquid-glass px-8 py-4 rounded-full border border-white/5 shrink-0">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary scale-75">terminal</span>
+</div>
+<span class="font-label font-bold text-on-surface">Kotlin</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-8 py-4 rounded-full border border-white/5 shrink-0">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary scale-75">view_quilt</span>
+</div>
+<span class="font-label font-bold text-on-surface">Jetpack Compose</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-8 py-4 rounded-full border border-white/5 shrink-0">
+<div class="w-8 h-8 rounded-full bg-tertiary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary scale-75">memory</span>
+</div>
+<span class="font-label font-bold text-on-surface">MNN Engine</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-8 py-4 rounded-full border border-white/5 shrink-0">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary scale-75">psychology</span>
+</div>
+<span class="font-label font-bold text-on-surface">llama.cpp</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-8 py-4 rounded-full border border-white/5 shrink-0">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary scale-75">public</span>
+</div>
+<span class="font-label font-bold text-on-surface">Webkit Automation</span>
+</div>
+<!-- Duplicate for seamless scroll -->
+<div class="flex items-center gap-3 liquid-glass px-8 py-4 rounded-full border border-white/5 shrink-0">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary scale-75">terminal</span>
+</div>
+<span class="font-label font-bold text-on-surface">Kotlin</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-8 py-4 rounded-full border border-white/5 shrink-0">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary scale-75">view_quilt</span>
+</div>
+<span class="font-label font-bold text-on-surface">Jetpack Compose</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-8 py-4 rounded-full border border-white/5 shrink-0">
+<div class="w-8 h-8 rounded-full bg-tertiary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary scale-75">memory</span>
+</div>
+<span class="font-label font-bold text-on-surface">MNN Engine</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Grid -->
+<section class="py-32 px-6 max-w-7xl mx-auto">
+<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Card 1 -->
+<div class="glass-card-hover group relative liquid-glass p-8 rounded-[2rem] border border-white/10 transition-all duration-500 overflow-hidden">
+<div class="glass-card-glow"></div>
+<div class="relative z-10">
+<div class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-3xl" data-weight="fill">bolt</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4 text-on-surface">🔥 狂暴模式 (Burst Mode)</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                    Support for breakpoint resume and massive batch processing tasks. Maximize efficiency with zero downtime.
+                </p>
+<div class="h-24 rounded-xl overflow-hidden bg-surface-container-high border border-white/5">
+<img alt="Speed" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoSzcmaWl1klUzHri8wxQtxdfIDgKC9tbqxijEOXWCwLY9Jb5PtYk0crVPdC0I06FighA1obgF7AVnjxaEQra_WlsrdRT-y867oEfloHeSpLW1BDVN9S64mPOU1cGBiZzA4sLoIHBRsfJPzo25V0GbFBx7drrmnDRQJ3qdsvg3wDNS6jCoFfmAPt-B_Pz0JM9okbBCvR3T_UVnmczgSNND8eqoTwctgGleafOIrBhub_eFLxUHtvnLfC56Qd8XuyOlHK-AdmZ-HcYw"/>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card-hover group relative liquid-glass p-8 rounded-[2rem] border border-white/10 transition-all duration-500 overflow-hidden">
+<div class="glass-card-glow"></div>
+<div class="relative z-10">
+<div class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
+<span class="material-symbols-outlined text-3xl">smart_toy</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4 text-on-surface">🤖 多Agent协作</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                    Advanced task decomposition and parallel execution across multiple intelligent agents.
+                </p>
+<div class="h-24 rounded-xl overflow-hidden bg-surface-container-high border border-white/5">
+<img alt="Collaboration" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiuUaeEfieKIf3cfq3VhJ9b9N_DTS1vzRVVxTOERYfCZ1T8cgnKLbIRdx7lnHtUqFb1FWZ9uAbYiGx-LZ6Bx0bgiAHJzANBv1OmgcU8EWJVRhr9kQMwwUEd-0waX0Gu2yWEH0HUo3Zqb7xLOeICPTm_VkC54361vxmE4sUmdOjyo3Yf3jf5OgXAhXphKhrB8lN67wVbnBPDRag8D_MEvf7CUx_hUPtC8QdDzwRmIzv8qXLlHdcTp-NrBse5LyUXKKWS42P0-TXRyqI"/>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card-hover group relative liquid-glass p-8 rounded-[2rem] border border-white/10 transition-all duration-500 overflow-hidden">
+<div class="glass-card-glow"></div>
+<div class="relative z-10">
+<div class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-tertiary/10 text-tertiary">
+<span class="material-symbols-outlined text-3xl">psychology</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4 text-on-surface">🧠 深度记忆系统</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                    Integrated user profiling and persistent knowledge graph for personalized AI interactions.
+                </p>
+<div class="h-24 rounded-xl overflow-hidden bg-surface-container-high border border-white/5">
+<img alt="Memory" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHX3tkL2arIbFrCmoIxPQ8jJ-MugM5yiQXezQ8NEFeBOIp6mqNaP-veCUsauUzk-QIkuj-fB7TC8TY6PugRq2liCmTcLM-J5QohTT2m9c3k8TGZv5mPOE_V43EbmI9tilCLq-9bE2p1Xht_R6JF-FKu2LJ7JusC7MPVNrLFHoZjMBx0kI6bxlYVLDLHsSqIjim4QXk2w2udvIY73TSItmFH1bb0dc1Rmg2BxO974IJUKxWkmcGwjU2LYP4yOStSvNRugJd5Q1zpVKm"/>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="glass-card-hover group relative liquid-glass p-8 rounded-[2rem] border border-white/10 transition-all duration-500 overflow-hidden">
+<div class="glass-card-glow"></div>
+<div class="relative z-10">
+<div class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
+<span class="material-symbols-outlined text-3xl">language</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4 text-on-surface">🌐 网页自动化</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                    Native browser control and seamless data collection across the entire web ecosystem.
+                </p>
+<div class="h-24 rounded-xl overflow-hidden bg-surface-container-high border border-white/5">
+<img alt="Web" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQzuaug_yHv2I2cr2qS3e1fDEVs6llmIQZSOXt3Jbv49P5sbBXoH_UCc_LuVWgcCRyu4nXZIQAj0y0EN-UQ-PA9V2R_BS7Srswc-QbkZ4FAOx6T1y0sNYQpDTgTH9ABdDqurVCsc-ap8AX59G-hjaG6XzgdMcnAUUmFhF4c0XOnot_m3MpcGrPHOR3BEpirN2S_AIO_mv7lCnNRsXam46omsHCyGpnBi3CU-HZvfFiyXYA-90F-AQx_05M5WQRpeL7xyz_H9IvkOD9"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Call to Action -->
+<section class="py-24 px-6">
+<div class="max-w-4xl mx-auto liquid-glass border border-white/10 rounded-3xl p-12 text-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+<h2 class="font-headline text-4xl md:text-5xl font-extrabold mb-6">Ready to scale your <span class="text-secondary">AI Workflow</span>?</h2>
+<p class="text-on-surface-variant text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+            Join thousands of developers and enthusiasts building the future of mobile automation with Apex-Agent. Performance, security, and intelligence combined.
+        </p>
+<div class="flex justify-center gap-6">
+<button class="btn-click-scale bg-primary text-on-primary font-bold px-10 py-4 rounded-xl hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,45,120,0.3)]">Get Access Now</button>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-surface-container-lowest dark:bg-background w-full py-12 border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+<div class="flex flex-col gap-2">
+<span class="font-display font-bold text-primary text-xl">Apex-Agent</span>
+<p class="text-on-surface-variant font-body text-sm">© 2024 Apex-Agent AI. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body text-sm opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body text-sm opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body text-sm opacity-80 hover:opacity-100" href="#">Documentation</a>
+</div>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full liquid-glass flex items-center justify-center hover:text-primary transition-all btn-click-scale" href="#">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</a>
+<a class="w-10 h-10 rounded-full liquid-glass flex items-center justify-center hover:text-secondary transition-all btn-click-scale" href="#">
+<span class="material-symbols-outlined text-[20px]">code</span>
+</a>
+</div>
+</div>
+</footer>
+<script>
+    // 1. Parallax Effect
+    document.addEventListener('mousemove', (e) => {
+        const layers = document.querySelectorAll('[data-parallax-speed]');
+        const x = (window.innerWidth - e.pageX * 2) / 100;
+        const y = (window.innerHeight - e.pageY * 2) / 100;
+
+        layers.forEach(layer => {
+            const speed = parseFloat(layer.getAttribute('data-parallax-speed'));
+            layer.style.transform = `translate(${x * speed * 10}px, ${y * speed * 10}px)`;
+        });
+    });
+
+    // 2. Glass Card Mouse Tracking Glow
+    const cards = document.querySelectorAll('.glass-card-hover');
+    cards.forEach(card => {
+        const glow = card.querySelector('.glass-card-glow');
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            glow.style.left = `${x}px`;
+            glow.style.top = `${y}px`;
+        });
+    });
+
+    // 3. Theme Toggle Animation
+    const themeBtn = document.getElementById('theme-toggle');
+    themeBtn.addEventListener('click', () => {
+        themeBtn.classList.toggle('active');
+        document.documentElement.classList.toggle('dark');
+        const isDark = document.documentElement.classList.contains('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        themeBtn.textContent = isDark ? 'dark_mode' : 'light_mode';
+        
+        // Reset rotation after animation completes to allow subsequent clicks
+        setTimeout(() => {
+            themeBtn.classList.remove('active');
+        }, 500);
+    });
+
+    // Initial theme check
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        themeBtn.textContent = 'dark_mode';
+    } else {
+        document.documentElement.classList.remove('dark');
+        themeBtn.textContent = 'light_mode';
+    }
+</script>
+</body></html>
+
+<!-- Apex-Agent Landing Page - Liquid Glass Theme -->
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apex-Agent - 移动端AI自动化终极平台</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#ff2d78",
+                    "on-tertiary": "#1a1000",
+                    "tertiary-container": "#665200",
+                    "outline-variant": "#302840",
+                    "error-container": "#3d0f0f",
+                    "secondary-container": "#004d3d",
+                    "tertiary-fixed-dim": "#ffe04a",
+                    "on-primary": "#1a0010",
+                    "tertiary": "#ffe04a",
+                    "on-secondary-fixed-variant": "#004d4d",
+                    "surface-container-high": "#1e1e30",
+                    "secondary": "#00ffcc",
+                    "on-secondary-container": "#c0fff4",
+                    "on-primary-fixed-variant": "#8c0038",
+                    "on-tertiary-fixed": "#1a1000",
+                    "primary-container": "#b3004e",
+                    "secondary-fixed": "#c0fff4",
+                    "surface-container-highest": "#28283e",
+                    "secondary-fixed-dim": "#00e6b8",
+                    "surface-container": "#141422",
+                    "on-surface": "#e8e0f0",
+                    "on-error-container": "#ffa0a0",
+                    "on-error": "#1a0000",
+                    "on-background": "#e8e0f0",
+                    "surface-container-low": "#111118",
+                    "surface-variant": "#1e1e30",
+                    "on-secondary-fixed": "#001a1a",
+                    "background": "#0a0a12",
+                    "outline": "#5a5068",
+                    "surface-container-lowest": "#0a0a12",
+                    "on-surface-variant": "#a098b0",
+                    "inverse-primary": "#8c0038",
+                    "on-primary-container": "#ffe0ec",
+                    "surface-bright": "#1a1a2e",
+                    "surface-tint": "#ff2d78",
+                    "primary-fixed": "#ffe0ec",
+                    "inverse-surface": "#e8e0f0",
+                    "tertiary-fixed": "#fff0c0",
+                    "surface": "#0f0f1a",
+                    "error": "#ff4444",
+                    "surface-dim": "#0f0f1a",
+                    "on-tertiary-container": "#fff0c0",
+                    "inverse-on-surface": "#0a0a12",
+                    "on-primary-fixed": "#3d0020",
+                    "primary-fixed-dim": "#ff80aa",
+                    "on-tertiary-fixed-variant": "#665200",
+                    "on-secondary": "#001a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Sora"],
+                    "display": ["Sora"],
+                    "body": ["Inter"],
+                    "label": ["Space Grotesk"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neon-glow-text {
+            text-shadow: 0 0 8px currentColor;
+        }
+        .neon-border-glow {
+            box-shadow: inset 0 0 12px rgba(255, 45, 120, 0.1), 0 0 16px rgba(255, 45, 120, 0.05);
+        }
+        .liquid-glass {
+            background: rgba(30, 30, 48, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @keyframes flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animate-flow {
+            background-size: 200% 200%;
+            animation: flow 15s ease infinite;
+        }
+        .scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(255, 45, 120, 0.02) 50%);
+            background-size: 100% 4px;
+        }
+        .tech-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- Background Elements -->
+<div class="fixed inset-0 z-[-1] overflow-hidden">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+<div class="absolute inset-0 scanline pointer-events-none opacity-20"></div>
+</div>
+<!-- Header (Shared Component: TopNavBar) -->
+<nav class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md dark:bg-background/80 border-b border-white/10 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="text-2xl font-display font-black tracking-tighter text-primary dark:text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)]">Apex-Agent</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Tech Stack</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Burst Mode</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Pricing</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2" onclick="document.documentElement.classList.toggle('dark')">dark_mode</button>
+<button class="bg-primary hover:bg-primary-container text-on-primary px-6 py-2 rounded-full font-bold transition-all scale-95 active:scale-90 shadow-[0_0_16px_rgba(255,45,120,0.4)]">Get Started</button>
+</div>
+</div>
+</nav>
+<main>
+<!-- Hero Section -->
+<section class="relative pt-20 pb-32 px-6 overflow-hidden">
+<div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+<div class="z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container border border-primary/30 text-primary mb-6 font-label text-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+                        NEW: BURST MODE V2.0 IS LIVE
+                    </div>
+<h1 class="font-headline text-6xl md:text-8xl font-extrabold tracking-tight mb-6 leading-none">
+                        🚀 <span class="text-primary neon-glow-text">Apex-Agent</span>
+</h1>
+<p class="font-display text-3xl md:text-4xl text-on-surface-variant mb-4 font-bold">
+                        移动端AI自动化终极平台
+                    </p>
+<p class="text-lg text-on-surface-variant/80 max-w-xl mb-10 leading-relaxed">
+                        Next-gen automation featuring <span class="text-secondary">Burst Mode</span> for high-speed processing, <span class="text-tertiary">Multi-Agent</span> orchestration, <span class="text-secondary">Deep Memory</span> profiling, and full <span class="text-primary">Web Automation</span> control.
+                    </p>
+<div class="flex flex-wrap gap-4">
+<button class="px-8 py-4 bg-primary text-on-primary font-headline font-bold rounded-xl shadow-[0_0_20px_rgba(255,45,120,0.5)] hover:scale-105 active:scale-95 transition-all">立即下载</button>
+<button class="px-8 py-4 bg-transparent border border-outline text-on-surface font-headline font-bold rounded-xl hover:bg-white/5 transition-all">查看文档</button>
+</div>
+</div>
+<div class="relative group">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-3xl blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+<div class="relative liquid-glass rounded-3xl border border-white/10 p-4 aspect-[4/3] overflow-hidden group-hover:neon-border-glow transition-all duration-500">
+<img class="w-full h-full object-cover rounded-2xl opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A futuristic mobile application dashboard interface showing high-tech data visualizations in neon pink and cyan. The screen displays active AI agents, glowing neural network diagrams, and complex data streams. The background is a sleek, dark metallic surface with subtle liquid-like light reflections, creating an atmosphere of advanced, high-speed technology and sophisticated digital automation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7pstSt0YkMtLg1MDTBcrREWYvSjn_Q9uRcEfHAi4EEu33nIXH8322q8-Hr3t7CHinG6ZRv-N9Sr5TAZypy6pbZodQaURbNVocvt9VoQKomftHMOCk7IJngiO74umLlns23JNpurp4GazrfGZUcy9sgHmlfGcccgqfYRYfVRMdgzX9DtwjHo_HQ5nB8qbTjQqkssLXbNBJY9DewwwHbj32xvlqJzex5bzUsbHUnCIwmXTxVAFyyrobUPUxEr-ML_9lWt4COgxLP2hm"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Tech Stack Scroller -->
+<section class="py-12 border-y border-outline-variant/30 bg-surface-container-low overflow-hidden">
+<div class="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-end">
+<h2 class="font-label text-sm uppercase tracking-widest text-on-surface-variant">Core Engine Technologies</h2>
+</div>
+<div class="flex gap-12 animate-flow whitespace-nowrap overflow-x-auto tech-scroll px-6 py-4">
+<div class="flex items-center gap-3 liquid-glass px-6 py-3 rounded-full border border-white/5">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary scale-75">terminal</span>
+</div>
+<span class="font-label font-bold text-on-surface">Kotlin</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-6 py-3 rounded-full border border-white/5">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary scale-75">view_quilt</span>
+</div>
+<span class="font-label font-bold text-on-surface">Jetpack Compose</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-6 py-3 rounded-full border border-white/5">
+<div class="w-8 h-8 rounded-full bg-tertiary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary scale-75">memory</span>
+</div>
+<span class="font-label font-bold text-on-surface">MNN Engine</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-6 py-3 rounded-full border border-white/5">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary scale-75">psychology</span>
+</div>
+<span class="font-label font-bold text-on-surface">llama.cpp</span>
+</div>
+<div class="flex items-center gap-3 liquid-glass px-6 py-3 rounded-full border border-white/5">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary scale-75">public</span>
+</div>
+<span class="font-label font-bold text-on-surface">Webkit Automation</span>
+</div>
+<!-- Duplicate for seamless scroll effect -->
+<div class="flex items-center gap-3 liquid-glass px-6 py-3 rounded-full border border-white/5">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary scale-75">terminal</span>
+</div>
+<span class="font-label font-bold text-on-surface">Kotlin</span>
+</div>
+</div>
+</section>
+<!-- Features Grid -->
+<section class="py-32 px-6 max-w-7xl mx-auto">
+<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Card 1 -->
+<div class="group relative liquid-glass p-8 rounded-[2rem] border border-white/10 hover:border-primary/50 transition-all duration-500 overflow-hidden">
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+<div class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-3xl" data-weight="fill">bolt</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4 text-on-surface">🔥 狂暴模式 (Burst Mode)</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                        Support for breakpoint resume and massive batch processing tasks. Maximize efficiency with zero downtime.
+                    </p>
+<div class="h-24 rounded-xl overflow-hidden bg-surface-container-high border border-white/5">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" data-alt="A cinematic, high-speed visualization of data particles accelerating through a neon-lit futuristic tunnel. Vivid streaks of hot pink and electric blue light dominate the scene, creating an intense sense of velocity and power. The style is dark, atmospheric cyberpunk with soft chromatic aberration and a heavy emphasis on digital speed and processing energy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoSzcmaWl1klUzHri8wxQtxdfIDgKC9tbqxijEOXWCwLY9Jb5PtYk0crVPdC0I06FighA1obgF7AVnjxaEQra_WlsrdRT-y867oEfloHeSpLW1BDVN9S64mPOU1cGBiZzA4sLoIHBRsfJPzo25V0GbFBx7drrmnDRQJ3qdsvg3wDNS6jCoFfmAPt-B_Pz0JM9okbBCvR3T_UVnmczgSNND8eqoTwctgGleafOIrBhub_eFLxUHtvnLfC56Qd8XuyOlHK-AdmZ-HcYw"/>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative liquid-glass p-8 rounded-[2rem] border border-white/10 hover:border-secondary/50 transition-all duration-500 overflow-hidden">
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-secondary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+<div class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
+<span class="material-symbols-outlined text-3xl">smart_toy</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4 text-on-surface">🤖 多Agent协作</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                        Advanced task decomposition and parallel execution across multiple intelligent agents.
+                    </p>
+<div class="h-24 rounded-xl overflow-hidden bg-surface-container-high border border-white/5">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" data-alt="An abstract 3D visualization of multiple stylized robot heads connected by luminous cyan neural filaments in a dark, void-like space. The lighting is cold and precise, with brilliant cyan glows highlighting the connections between the digital entities. The composition is balanced and complex, representing collaborative intelligence and synchronized digital processing in a high-tech retro-futuristic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiuUaeEfieKIf3cfq3VhJ9b9N_DTS1vzRVVxTOERYfCZ1T8cgnKLbIRdx7lnHtUqFb1FWZ9uAbYiGx-LZ6Bx0bgiAHJzANBv1OmgcU8EWJVRhr9kQMwwUEd-0waX0Gu2yWEH0HUo3Zqb7xLOeICPTm_VkC54361vxmE4sUmdOjyo3Yf3jf5OgXAhXphKhrB8lN67wVbnBPDRag8D_MEvf7CUx_hUPtC8QdDzwRmIzv8qXLlHdcTp-NrBse5LyUXKKWS42P0-TXRyqI"/>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative liquid-glass p-8 rounded-[2rem] border border-white/10 hover:border-tertiary/50 transition-all duration-500 overflow-hidden">
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-tertiary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+<div class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-tertiary/10 text-tertiary">
+<span class="material-symbols-outlined text-3xl">psychology</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4 text-on-surface">🧠 深度记忆系统</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                        Integrated user profiling and persistent knowledge graph for personalized AI interactions.
+                    </p>
+<div class="h-24 rounded-xl overflow-hidden bg-surface-container-high border border-white/5">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" data-alt="A glowing, golden holographic human brain structure floating in a dark room filled with subtle digital scan-lines. The brain is made of complex, interconnected data nodes and luminous pathways in warm neon yellow. The aesthetic is sophisticated and intellectual, combining biological forms with technical digital elements, set against a deep near-black background with soft atmospheric glow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHX3tkL2arIbFrCmoIxPQ8jJ-MugM5yiQXezQ8NEFeBOIp6mqNaP-veCUsauUzk-QIkuj-fB7TC8TY6PugRq2liCmTcLM-J5QohTT2m9c3k8TGZv5mPOE_V43EbmI9tilCLq-9bE2p1Xht_R6JF-FKu2LJ7JusC7MPVNrLFHoZjMBx0kI6bxlYVLDLHsSqIjim4QXk2w2udvIY73TSItmFH1bb0dc1Rmg2BxO974IJUKxWkmcGwjU2LYP4yOStSvNRugJd5Q1zpVKm"/>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative liquid-glass p-8 rounded-[2rem] border border-white/10 hover:border-secondary/50 transition-all duration-500 overflow-hidden">
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-secondary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+<div class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
+<span class="material-symbols-outlined text-3xl">language</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4 text-on-surface">🌐 网页自动化</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                        Native browser control and seamless data collection across the entire web ecosystem.
+                    </p>
+<div class="h-24 rounded-xl overflow-hidden bg-surface-container-high border border-white/5">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" data-alt="A stylized digital representation of a global network mesh connecting diverse UI elements and data blocks floating in a cyan-tinted digital space. The lighting is immersive and high-tech, with sharp neon highlights on the edges of the floating components. The overall mood is expansive and connected, illustrating the vast capabilities of web-based automation within a dark, modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQzuaug_yHv2I2cr2qS3e1fDEVs6llmIQZSOXt3Jbv49P5sbBXoH_UCc_LuVWgcCRyu4nXZIQAj0y0EN-UQ-PA9V2R_BS7Srswc-QbkZ4FAOx6T1y0sNYQpDTgTH9ABdDqurVCsc-ap8AX59G-hjaG6XzgdMcnAUUmFhF4c0XOnot_m3MpcGrPHOR3BEpirN2S_AIO_mv7lCnNRsXam46omsHCyGpnBi3CU-HZvfFiyXYA-90F-AQx_05M5WQRpeL7xyz_H9IvkOD9"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Dynamic Interaction Section -->
+<section class="py-24 px-6">
+<div class="max-w-4xl mx-auto liquid-glass border border-white/10 rounded-3xl p-12 text-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+<h2 class="font-headline text-4xl md:text-5xl font-extrabold mb-6">Ready to scale your <span class="text-secondary">AI Workflow</span>?</h2>
+<p class="text-on-surface-variant text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+                    Join thousands of developers and enthusiasts building the future of mobile automation with Apex-Agent. Performance, security, and intelligence combined.
+                </p>
+<div class="flex justify-center gap-6">
+<button class="bg-primary text-on-primary font-bold px-10 py-4 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,45,120,0.3)]">Get Access Now</button>
+</div>
+<div class="mt-16 flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+<span class="font-label font-bold text-on-surface">TRUSTED BY TEAMS AT</span>
+<div class="flex gap-8 items-center">
+<div class="w-10 h-10 bg-white/20 rounded-full"></div>
+<div class="w-10 h-10 bg-white/20 rounded-full"></div>
+<div class="w-10 h-10 bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="bg-surface-container-lowest dark:bg-background w-full py-12 border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+<div class="flex flex-col gap-2">
+<span class="font-display font-bold text-primary text-xl">Apex-Agent</span>
+<p class="text-on-surface-variant font-body text-sm">© 2024 Apex-Agent AI. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body text-sm opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body text-sm opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body text-sm opacity-80 hover:opacity-100" href="#">Documentation</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body text-sm opacity-80 hover:opacity-100" href="#">Support</a>
+</div>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full liquid-glass flex items-center justify-center hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</a>
+<a class="w-10 h-10 rounded-full liquid-glass flex items-center justify-center hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">code</span>
+</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for tech stack horizontal scroll
+        const techScroll = document.querySelector('.tech-scroll');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        techScroll.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - techScroll.offsetLeft;
+            scrollLeft = techScroll.scrollLeft;
+        });
+        techScroll.addEventListener('mouseleave', () => {
+            isDown = false;
+        });
+        techScroll.addEventListener('mouseup', () => {
+            isDown = false;
+        });
+        techScroll.addEventListener('mousemove', (e) => {
+            if(!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - techScroll.offsetLeft;
+            const walk = (x - startX) * 2;
+            techScroll.scrollLeft = scrollLeft - walk;
+        });
+
+        // Theme switch logic handled in-line, but added reinforcement here
+        const checkTheme = () => {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        checkTheme();
+    </script>
+</body></html>

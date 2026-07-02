@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apex Agent</string>
+    <string name="app_description">智能AI助手 · 多Agent协作 · 爆发模式引擎</string>
+    
+    <!-- Network -->
+    <string name="not_connected">未连接</string>
+    <string name="mobile_data">移动数据</string>
+    <string name="ethernet">以太网</string>
+    <string name="other_network">其他网络</string>
+    <string name="wifi">WiFi</string>
+    
+    <!-- Common UI -->
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确认</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="edit">编辑</string>
+    <string name="close">关闭</string>
+    <string name="retry">重试</string>
+    <string name="loading">加载中…</string>
+    <string name="no_data">暂无数据</string>
+    <string name="search">搜索</string>
+    <string name="settings">设置</string>
+    
+    <!-- Permissions -->
+    <string name="permission_camera">相机</string>
+    <string name="permission_storage">存储</string>
+    <string name="permission_location">位置</string>
+    <string name="permission_microphone">麦克风</string>
+    <string name="permission_notification">通知</string>
+    <string name="permission_denied">权限被拒绝: %s</string>
+    
+    <!-- Error messages -->
+    <string name="error_network">网络连接失败，请检查网络设置</string>
+    <string name="error_timeout">操作超时，请重试</string>
+    <string name="error_unknown">发生未知错误</string>
+    <string name="error_empty_result">未找到结果</string>
+    
+    <!-- Burst mode -->
+    <string name="burst_mode_title">爆发模式</string>
+    <string name="burst_mode_start">开始</string>
+    <string name="burst_mode_stop">停止</string>
+    <string name="burst_mode_pause">暂停</string>
+    <string name="burst_mode_resume">继续</string>
+    
+    <!-- Chat -->
+    <string name="chat_input_hint">输入消息…</string>
+    <string name="chat_send">发送</string>
+    <string name="chat_clear">清空对话</string>
+    
+    <!-- Action -->
+    <string name="action_retry">重试</string>
+    <string name="action_share">分享</string>
+    <string name="action_copy">复制</string>
+    <string name="action_paste">粘贴</string>
+    <string name="action_select_all">全选</string>
+    <string name="title_activity_crash_report">崩溃报告</string>
+</resources>

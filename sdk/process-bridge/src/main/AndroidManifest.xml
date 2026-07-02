@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- process-bridge SDK consumer manifest.
+     凡是依赖 :sdk:process-bridge 的 APK 都会自动合并本 manifest，
+     获得 ApexBridgeInitializer ContentProvider 的声明，
+     实现“零侵入”初始化（无需修改 Application 类）。
+
+     android:process 写死为 com.apex.agent.mainprocess，
+     这是套件主进程名，所有 APK 都应进入该进程以共享 JVM。 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <provider
+            android:name="com.apex.sdk.bridge.ApexBridgeInitializer"
+            android:authorities="${applicationId}.apex-bridge-init"
+            android:exported="false"
+            android:initOrder="100"
+            android:process="com.apex.agent.mainprocess" />
+    </application>
+
+</manifest>

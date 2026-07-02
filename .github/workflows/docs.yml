@@ -1,0 +1,77 @@
+name: Documentation Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build project
+        run: ./gradlew build -x test
+
+      - name: Generate API Docs
+        run: |
+          java -jar build/libs/burstmode.jar \
+            --tool api_doc_generate \
+            --params '{"path": "./src", "format": "openapi", "includeExamples": true}'
+
+      - name: Generate README
+        run: |
+          java -jar build/libs/burstmode.jar \
+            --tool readme_generate \
+            --params '{"path": ".", "badges": "auto", "includeTree": true}'
+
+      - name: Generate Changelog
+        run: |
+          java -jar build/libs/burstmode.jar \
+            --tool changelog_generate \
+            --params '{"fromTag": "v1.0", "toTag": "HEAD", "categorize": true, "statistics": true, "compareLink": true}'
+
+      - name: Generate Architecture Doc
+        run: |
+          java -jar build/libs/burstmode.jar \
+            --tool architecture_doc_generate \
+            --params '{"projectPath": "./src", "view": "overview", "format": "markdown", "includeDiagrams": true}'
+
+      - name: Generate Developer Guide
+        run: |
+          java -jar build/libs/burstmode.jar \
+            --tool developer_guide_generate \
+            --params '{"projectPath": ".", "techStack": "Kotlin,Java,Gradle", "workflow": "git-flow"}'
+
+      - name: Link Check
+        uses: lycheeverse/lychee-action@v1.8.0
+        with:
+          args: --verbose --no-progress './docs/**/*.md'
+        continue-on-error: true
+
+      - name: Deploy to Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          enable_jekyll: true
+
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()

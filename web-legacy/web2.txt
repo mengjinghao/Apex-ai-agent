@@ -1,0 +1,2198 @@
+<!-- Apex-Agent Landing - Liquid Glass (Light) -->
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apex-Agent | Ultimate Mobile AI Automation</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&amp;family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary-fixed": "#1a1000",
+                "surface-tint": "#ff2d78",
+                "on-secondary-fixed": "#001a1a",
+                "secondary": "#00ffcc",
+                "on-secondary": "#001a1a",
+                "on-surface-variant": "#a098b0",
+                "on-secondary-fixed-variant": "#004d4d",
+                "on-primary-container": "#ffe0ec",
+                "on-primary-fixed": "#3d0020",
+                "tertiary-fixed-dim": "#ffe04a",
+                "inverse-primary": "#8c0038",
+                "primary": "#ff2d78",
+                "secondary-fixed-dim": "#00e6b8",
+                "primary-container": "#b3004e",
+                "error": "#ff4444",
+                "tertiary": "#ffe04a",
+                "on-primary-fixed-variant": "#8c0038",
+                "on-tertiary-container": "#fff0c0",
+                "error-container": "#3d0f0f",
+                "outline-variant": "#302840",
+                "on-background": "#e8e0f0",
+                "outline": "#5a5068",
+                "tertiary-container": "#665200",
+                "on-tertiary-fixed-variant": "#665200",
+                "on-error-container": "#ffa0a0",
+                "surface-container-lowest": "#0a0a12",
+                "surface-container-highest": "#28283e",
+                "surface-container-low": "#111118",
+                "primary-fixed-dim": "#ff80aa",
+                "on-tertiary": "#1a1000",
+                "on-secondary-container": "#c0fff4",
+                "surface-bright": "#1a1a2e",
+                "surface-container": "#141422",
+                "on-primary": "#1a0010",
+                "primary-fixed": "#ffe0ec",
+                "on-error": "#1a0000",
+                "surface-container-high": "#1e1e30",
+                "secondary-fixed": "#c0fff4",
+                "on-surface": "#e8e0f0",
+                "surface": "#0f0f1a",
+                "surface-variant": "#1e1e30",
+                "secondary-container": "#004d3d",
+                "tertiary-fixed": "#fff0c0",
+                "surface-dim": "#0f0f1a",
+                "inverse-surface": "#e8e0f0",
+                "inverse-on-surface": "#0a0a12",
+                "background": "#0a0a12"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "fontFamily": {
+                "headline": ["Sora"],
+                "display": ["Sora"],
+                "body": ["Inter"],
+                "label": ["Space Grotesk"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .neon-glow { text-shadow: 0 0 8px currentColor; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .liquid-orb {
+            filter: blur(80px);
+            position: absolute;
+            z-index: -1;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: move 20s infinite alternate;
+        }
+        @keyframes move {
+            from { transform: translate(-10%, -10%); }
+            to { transform: translate(10%, 10%); }
+        }
+        .marquee {
+            display: flex;
+            overflow: hidden;
+            user-select: none;
+            gap: 4rem;
+        }
+        .marquee-content {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-around;
+            min-width: 100%;
+            gap: 4rem;
+            animation: scroll 30s linear infinite;
+        }
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+        .scan-line {
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 204, 0.02) 50%);
+            background-size: 100% 4px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-white overflow-x-hidden">
+<!-- Background Orbs -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+<div class="liquid-orb bg-primary w-[500px] h-[500px] -top-48 -left-48"></div>
+<div class="liquid-orb bg-secondary w-[400px] h-[400px] top-1/2 -right-24" style="animation-delay: -5s;"></div>
+<div class="liquid-orb bg-tertiary w-[300px] h-[300px] bottom-0 left-1/4" style="animation-delay: -10s;"></div>
+</div>
+<!-- Navigation -->
+<nav class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="text-2xl font-display font-black tracking-tighter text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)]">Apex-Agent</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label text-primary font-bold border-b-2 border-primary pb-1" href="#">Features</a>
+<a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Tech Stack</a>
+<a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Burst Mode</a>
+<a class="font-label text-on-surface-variant hover:text-secondary transition-colors duration-300" href="#">Pricing</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-all">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<button class="px-5 py-2 rounded-full bg-primary text-on-primary font-bold scale-95 active:scale-90 transition-transform shadow-[0_0_16px_rgba(255,45,120,0.4)] hover:shadow-[0_0_24px_rgba(255,45,120,0.6)]">
+                    Get Started
+                </button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative pt-20 pb-32 px-6 overflow-hidden">
+<div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+<div class="z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label text-xs font-bold tracking-widest uppercase mb-6 animate-pulse">
+<span class="material-symbols-outlined text-sm">bolt</span> Burst Mode Active
+                </div>
+<h1 class="font-headline text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+                    🚀 Apex-Agent: <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary neon-glow">Ultimate AI Automation</span>
+</h1>
+<p class="text-lg text-on-surface-variant max-w-xl mb-10 leading-relaxed">
+                    Unleash the power of high-performance mobile agents. Apex-Agent combines local LLMs with web-intelligence to automate your digital workflow on the go.
+                </p>
+<div class="flex flex-wrap gap-4">
+<button class="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold flex items-center gap-2 overflow-hidden transition-all hover:scale-105 active:scale-95">
+<span>Download Now</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">download</span>
+<div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<button class="px-8 py-4 rounded-xl border border-outline text-on-surface font-bold hover:bg-white/5 transition-all">
+                        View Docs
+                    </button>
+</div>
+</div>
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary via-secondary to-tertiary rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+<div class="relative glass-card rounded-[2rem] p-4 aspect-square md:aspect-video flex items-center justify-center overflow-hidden">
+<img alt="Apex-Agent Interface" class="w-full h-full object-cover rounded-xl shadow-2xl" data-alt="A futuristic smartphone interface floating in a dark digital void, displaying complex node-based AI neural networks and radiant neon UI elements in pink and cyan. The scene is filled with subtle glowing particles and volumetric light rays, creating a sense of depth and high-end technological sophistication. The overall aesthetic is clean, cinematic, and evokes a premium mobile automation experience." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDx-v5L1xPHv8ekg9VwHc5wAbSv7OAzzXHWCnSJOaVKii-9xfh1O32A37gm2U7BJPthHVjcTa8bXNsHMHAxX1wClqXCgD9q1HkMxQwjTvqwiFeYt_v9CgC_U42qK8BIS-xt0mGkrx2G8rAhO5cmTpk9uY7mrjmE1fmE0kKH-I1RLeC93msj291bHYmV-P4O7a_wCDLhNNbwz0i_jNbEi26BvROx9KcYUIVzTJSH3TIm_xnm-okDYg0agVkzdCq92_WBgrnvAqsNM7C"/>
+<div class="absolute bottom-8 left-8 p-4 glass-card rounded-xl border-l-4 border-secondary max-w-xs">
+<p class="font-label text-secondary text-sm font-bold mb-1">LATENCY 12ms</p>
+<p class="text-xs text-on-surface-variant">Real-time local execution via MNN-TNN cross-platform acceleration.</p>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Tech Stack Marquee -->
+<section class="py-12 bg-surface-container-low/50 border-y border-outline-variant/30">
+<div class="marquee">
+<div class="marquee-content">
+<div class="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">developer_mode</span>
+<span class="font-headline font-bold text-xl tracking-tight">KOTLIN</span>
+</div>
+<div class="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">layers</span>
+<span class="font-headline font-bold text-xl tracking-tight">JETPACK COMPOSE</span>
+</div>
+<div class="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">memory</span>
+<span class="font-headline font-bold text-xl tracking-tight">LLAMA.CPP</span>
+</div>
+<div class="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-headline font-bold text-xl tracking-tight">MNN ENGINE</span>
+</div>
+<div class="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">language</span>
+<span class="font-headline font-bold text-xl tracking-tight">WEB AUTOMATION</span>
+</div>
+<!-- Duplicate for loop -->
+<div class="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">developer_mode</span>
+<span class="font-headline font-bold text-xl tracking-tight">KOTLIN</span>
+</div>
+<div class="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">layers</span>
+<span class="font-headline font-bold text-xl tracking-tight">JETPACK COMPOSE</span>
+</div>
+<div class="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">memory</span>
+<span class="font-headline font-bold text-xl tracking-tight">LLAMA.CPP</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Core Pillars: Bento Grid -->
+<section class="py-32 px-6 max-w-7xl mx-auto">
+<div class="text-center mb-20">
+<h2 class="font-headline text-4xl md:text-5xl font-bold mb-4">Engineered for Performance</h2>
+<p class="text-on-surface-variant max-w-2xl mx-auto">The next generation of autonomous mobile agents, built on the liquid-glass architecture for speed and clarity.</p>
+</div>
+<div class="grid md:grid-cols-4 gap-6">
+<!-- Pillar 1 -->
+<div class="md:col-span-2 group relative p-8 glass-card rounded-[2rem] overflow-hidden hover:border-primary/50 transition-all duration-500">
+<div class="absolute top-0 right-0 p-8 text-primary opacity-10 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-9xl">bolt</span>
+</div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-4">Burst Mode</h3>
+<p class="text-on-surface-variant leading-relaxed">Turbocharge your agent tasks. Burst Mode optimizes CPU scheduling to complete heavy automation tasks up to 4x faster without draining battery life.</p>
+</div>
+</div>
+<!-- Pillar 2 -->
+<div class="group p-8 glass-card rounded-[2rem] hover:border-secondary/50 transition-all duration-500">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-6">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4">Multi-Agent</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">Coordinate multiple specialized agents to handle complex cross-app workflows seamlessly.</p>
+</div>
+<!-- Pillar 3 -->
+<div class="group p-8 glass-card rounded-[2rem] hover:border-tertiary/50 transition-all duration-500">
+<div class="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary mb-6">
+<span class="material-symbols-outlined">database</span>
+</div>
+<h3 class="font-headline text-xl font-bold mb-4">Deep Memory</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">Long-term context retention using localized vector databases for personalized task execution.</p>
+</div>
+<!-- Pillar 4 -->
+<div class="md:col-span-2 group p-8 glass-card rounded-[2rem] relative overflow-hidden hover:border-secondary/50 transition-all duration-500">
+<div class="grid md:grid-cols-2 gap-8 items-center">
+<div>
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-6">
+<span class="material-symbols-outlined">public</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-4">Web Automation</h3>
+<p class="text-on-surface-variant leading-relaxed">Direct interaction with any web application using headless browsing and visual recognition logic.</p>
+</div>
+<div class="hidden md:block">
+<img alt="Web Dashboard" class="rounded-xl border border-white/10" data-alt="A clean data visualization dashboard showing real-time web traffic and automation success rates. The UI features soft glows, cyan line graphs, and glassmorphic panels against a deep indigo and black background. The design is crisp, professional, and suggests high-speed data processing and intelligent monitoring." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvrDozRX6Q50yqInSCSjTBTJmbv17btCECJkN1LqJjpMqDQf2dmVFjLYcPYkUeT_m3DiBQMqN8jQMMOKu44lChJrbkHyz188ikBUiuuTIQ6_jI6c0IFZkZXq4NV2yViT_Gl0xShLU7vfDUvamSRRZisyggMvmhckEauFFDscBkSArpfxNu2iHDcf3PgVJd5Wj5UL5LFdmrDFYF8aMhG-7TksDrdbEBOlGhwfd_uo9WSNl7uEZDoiLv2cdCLVFhWSUZHUKqbwPuuBqp"/>
+</div>
+</div>
+</div>
+<!-- Bottom Row Small Cards -->
+<div class="md:col-span-2 group p-8 glass-card rounded-[2rem] flex items-center justify-between hover:border-primary/50 transition-all duration-500">
+<div class="flex items-center gap-6">
+<div class="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-3xl">shield</span>
+</div>
+<div>
+<h3 class="font-headline text-xl font-bold">Privacy First</h3>
+<p class="text-on-surface-variant text-sm">On-device processing only. Your data never leaves.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-12 bg-surface-container-lowest border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+<div class="flex flex-col gap-2">
+<span class="font-display font-bold text-primary text-xl tracking-tight">Apex-Agent AI</span>
+<p class="font-body text-sm text-on-surface-variant">© 2024 Apex-Agent AI. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Support</a>
+</div>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">share</span>
+</a>
+<a class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">hub</span>
+</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions and subtle parallax
+        document.addEventListener('mousemove', (e) => {
+            const orbs = document.querySelectorAll('.liquid-orb');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            orbs.forEach((orb, index) => {
+                const speed = (index + 1) * 20;
+                orb.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+
+        // Sticky Nav highlight
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('py-2', 'shadow-xl');
+                nav.classList.remove('py-4');
+            } else {
+                nav.classList.add('py-4');
+                nav.classList.remove('py-2', 'shadow-xl');
+            }
+        });
+    </script>
+</body></html>
+
+<!-- Apex-Agent Landing - Neon Tokyo (Interactive) -->
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apex-Agent | Neon Tokyo</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --neon-pink: #ff2d78;
+            --neon-cyan: #00ffcc;
+            --neon-yellow: #ffe04a;
+        }
+        body {
+            background-color: #0a0a12;
+            overflow-x: hidden;
+        }
+        .pixel-grid {
+            background-image: 
+                linear-gradient(rgba(255, 45, 120, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 45, 120, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: grid-scroll 20s linear infinite;
+        }
+        @keyframes grid-scroll {
+            from { background-position: 0 0; }
+            to { background-position: 0 40px; }
+        }
+        .scanlines {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+        .neon-glow-pink {
+            text-shadow: 0 0 8px var(--neon-pink);
+        }
+        .neon-glow-cyan {
+            text-shadow: 0 0 8px var(--neon-cyan);
+        }
+        .neon-border-pink {
+            border: 1px solid rgba(255, 45, 120, 0.5);
+            box-shadow: inset 0 0 12px rgba(255, 45, 120, 0.1), 0 0 12px rgba(255, 45, 120, 0.1);
+            transition: all 0.3s ease;
+        }
+        .neon-border-pink:hover {
+            box-shadow: inset 0 0 20px rgba(255, 45, 120, 0.3), 0 0 20px rgba(255, 45, 120, 0.4);
+            border-color: var(--neon-pink);
+        }
+        .neon-border-cyan {
+            border: 1px solid rgba(0, 255, 204, 0.5);
+            box-shadow: inset 0 0 12px rgba(0, 255, 204, 0.1), 0 0 12px rgba(0, 255, 204, 0.1);
+            transition: all 0.3s ease;
+        }
+        .neon-border-cyan:hover {
+            box-shadow: inset 0 0 20px rgba(0, 255, 204, 0.3), 0 0 20px rgba(0, 255, 204, 0.4);
+            border-color: var(--neon-cyan);
+        }
+        .digital-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+        .terminal-cursor::after {
+            content: '_';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        /* Animations */
+        @keyframes glitch {
+            0% { transform: translate(0); text-shadow: -2px 0 var(--neon-cyan), 2px 0 var(--neon-pink); }
+            2% { transform: translate(-2px, 2px); }
+            4% { transform: translate(-2px, -2px); }
+            6% { transform: translate(2px, 2px); }
+            8% { transform: translate(2px, -2px); }
+            10% { transform: translate(0); text-shadow: none; }
+            100% { transform: translate(0); }
+        }
+        .glitch-effect {
+            animation: glitch 3s infinite;
+        }
+        
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
+        }
+        .neon-flicker {
+            animation: flicker 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+        .scanner-bar {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            box-shadow: 0 0 8px var(--neon-cyan);
+            opacity: 0.3;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+        .scanner-bar-pink {
+            background: linear-gradient(90deg, transparent, var(--neon-pink), transparent);
+            box-shadow: 0 0 8px var(--neon-pink);
+            animation: scan 5s linear infinite;
+        }
+
+        @keyframes power-on {
+            0% { opacity: 0; filter: brightness(3); }
+            10% { opacity: 0.5; filter: brightness(1); }
+            15% { opacity: 0.2; }
+            20% { opacity: 1; filter: brightness(1.5); }
+            30% { filter: brightness(1); }
+        }
+        .power-on-flicker {
+            animation: power-on 0.6s ease-out;
+        }
+
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes reverse-spin {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 12s linear infinite;
+        }
+        .animate-reverse-spin {
+            animation: reverse-spin 8s linear infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .pixel-grid, .glitch-effect, .neon-flicker, .scanner-bar, .scanner-bar-pink, .power-on-flicker, .animate-spin-slow, .animate-reverse-spin, .terminal-cursor::after {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#00ffcc",
+                        "error": "#ff4444",
+                        "surface-container-low": "#111118",
+                        "on-primary": "#1a0010",
+                        "error-container": "#3d0f0f",
+                        "tertiary": "#ffe04a",
+                        "surface-container-high": "#1e1e30",
+                        "surface-container-highest": "#28283e",
+                        "secondary-fixed-dim": "#00e6b8",
+                        "on-secondary-container": "#c0fff4",
+                        "surface-bright": "#1a1a2e",
+                        "primary-container": "#b3004e",
+                        "primary": "#ff2d78",
+                        "on-background": "#e8e0f0",
+                        "on-secondary-fixed": "#001a1a",
+                        "inverse-primary": "#8c0038",
+                        "tertiary-container": "#665200",
+                        "on-surface": "#e8e0f0",
+                        "tertiary-fixed-dim": "#ffe04a",
+                        "secondary-container": "#004d3d",
+                        "primary-fixed-dim": "#ff80aa",
+                        "background": "#0a0a12",
+                        "outline": "#5a5068",
+                        "on-tertiary": "#1a1000",
+                        "surface-variant": "#1e1e30",
+                        "outline-variant": "#302840",
+                        "inverse-on-surface": "#0a0a12",
+                        "on-primary-fixed-variant": "#8c0038",
+                        "surface-tint": "#ff2d78",
+                        "on-secondary": "#001a1a",
+                        "on-tertiary-fixed-variant": "#665200",
+                        "on-tertiary-fixed": "#1a1000",
+                        "on-secondary-fixed-variant": "#004d4d",
+                        "primary-fixed": "#ffe0ec",
+                        "on-surface-variant": "#a098b0",
+                        "on-error-container": "#ffa0a0",
+                        "on-primary-container": "#ffe0ec",
+                        "surface-dim": "#0f0f1a",
+                        "surface-container": "#141422",
+                        "inverse-surface": "#e8e0f0",
+                        "secondary-fixed": "#c0fff4",
+                        "on-primary-fixed": "#3d0020",
+                        "on-tertiary-container": "#fff0c0",
+                        "tertiary-fixed": "#fff0c0",
+                        "surface-container-lowest": "#0a0a12",
+                        "on-error": "#1a0000",
+                        "surface": "#0f0f1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Sora"],
+                        "display": ["Sora"],
+                        "body": ["Inter"],
+                        "label": ["Space Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-body text-on-surface selection:bg-primary/30 power-on-flicker">
+<!-- TopNavBar -->
+<header class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md dark:bg-background/80 border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<nav class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="text-2xl font-display font-black tracking-tighter text-primary dark:text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)] glitch-effect">Apex-Agent</span>
+</div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Tech Stack</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Burst Mode</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Pricing</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all" onclick="document.body.classList.remove('power-on-flicker'); void document.body.offsetWidth; document.body.classList.add('power-on-flicker');">dark_mode</button>
+<button class="bg-primary/10 border border-primary text-primary px-5 py-2 font-label font-bold tracking-wider hover:bg-primary hover:text-on-primary transition-all scale-95 active:scale-90">
+                Get Started
+            </button>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative min-h-[921px] flex flex-col items-center justify-center overflow-hidden py-20">
+<div class="absolute inset-0 pixel-grid"></div>
+<canvas class="digital-rain" id="digitalRain"></canvas>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background"></div>
+<div class="relative z-10 text-center px-6 max-w-4xl">
+<div class="inline-block mb-4 px-3 py-1 bg-surface-container-high border border-outline-variant rounded-full">
+<span class="font-label text-xs tracking-widest text-secondary neon-glow-cyan uppercase">System Status: Optimal</span>
+</div>
+<h1 class="text-6xl md:text-8xl font-display font-extrabold tracking-tighter mb-6 neon-flicker">
+<span class="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">🚀 </span>
+<span class="text-primary neon-glow-pink">Apex-Agent</span>
+</h1>
+<p class="text-lg md:text-xl text-on-surface-variant font-body max-w-2xl mx-auto mb-10 leading-relaxed typing-effect" data-text="Deploy hyper-intelligent autonomous agents into the digital sprawl. High-performance neural architectures designed for the next evolution of tactical automation.">
+            Deploy hyper-intelligent autonomous agents into the digital sprawl. High-performance neural architectures designed for the next evolution of tactical automation.
+        </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+<button class="w-full sm:w-auto neon-border-pink bg-primary/5 text-primary px-10 py-4 font-label font-bold text-lg hover:bg-primary/20 hover:scale-105 transition-all duration-300">
+                INITIALIZE NODE
+            </button>
+<button class="w-full sm:w-auto border border-secondary/30 text-secondary px-10 py-4 font-label font-bold text-lg hover:bg-secondary/10 transition-all">
+                VIEW PROTOCOLS
+            </button>
+</div>
+<!-- Developer Shoutout -->
+<div class="mt-16 flex items-center justify-center gap-4">
+<div class="px-4 py-2 bg-black/40 border border-white/5 font-label text-[10px] tracking-[0.2em] uppercase text-on-surface-variant/60">
+<span class="text-secondary terminal-cursor">Developer: MJH</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="py-24 px-6 max-w-7xl mx-auto">
+<h2 class="text-4xl font-display font-bold text-white mb-16 flex items-center gap-4">
+<span class="h-[2px] w-12 bg-primary"></span>
+        CORE CAPABILITIES
+    </h2>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Large Feature -->
+<div class="md:col-span-8 group relative overflow-hidden bg-surface-container rounded-lg neon-border-cyan p-8 hover:bg-surface-container-high transition-all">
+<div class="scanner-bar"></div>
+<div class="scanlines absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity"></div>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-4xl text-secondary mb-6" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<h3 class="text-3xl font-display font-bold text-white mb-4">Burst Mode Processing</h3>
+<p class="text-on-surface-variant max-w-lg mb-8">Execute concurrent operations across distributed neural nodes with sub-millisecond latency. Designed for high-frequency tactical environments.</p>
+<div class="h-2 w-full bg-background rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4 shadow-[0_0_10px_#00ffcc]"></div>
+</div>
+<div class="flex justify-between mt-2 font-label text-[10px] text-secondary">
+<span>BANDWIDTH</span>
+<span>78% UTILIZED</span>
+</div>
+</div>
+<img class="absolute right-0 bottom-0 w-1/2 opacity-20 grayscale group-hover:grayscale-0 transition-all duration-700 pointer-events-none" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATv_aktbaR2gmZYzcdu80Eq8MdYhW7O_BC_Eg-0NzAaYfI87onFcDHWd5HSTtHWtADLJdmn2jojyrbgxeX9QW3oKVqgzyNgeXfvCS4mW9DR-2ZEioCIO7HfTBt_4_-t6wVaxVvjfNWMb592cZ6iWvGlnctIqAaXyOQOh8F94MaxwtjSaguwda0YeSLhR9SUMqwEVUHeVlQRLOQbYOfftGLZxxRiMbPlHHTmJ_a9wKHnBALBUup8axU8a0-9xW6bY5zC-aPrWJkUadt"/>
+</div>
+<!-- Small Feature -->
+<div class="md:col-span-4 group relative overflow-hidden bg-surface-container-low rounded-lg border border-outline-variant p-8 hover:border-primary/50 transition-all hover:bg-surface-container-high">
+<div class="scanner-bar scanner-bar-pink opacity-0 group-hover:opacity-30"></div>
+<div class="scanlines absolute inset-0 opacity-5"></div>
+<span class="material-symbols-outlined text-3xl text-primary mb-6">security</span>
+<h3 class="text-xl font-display font-bold text-white mb-2">Encrypted Core</h3>
+<p class="text-sm text-on-surface-variant">Quantum-resistant encryption layers ensuring your agent's logic remains proprietary and secure in hostile sectors.</p>
+</div>
+<!-- Another Feature -->
+<div class="md:col-span-4 group relative overflow-hidden bg-surface-container-low rounded-lg border border-outline-variant p-8 hover:border-secondary/50 transition-all hover:bg-surface-container-high">
+<div class="scanner-bar opacity-0 group-hover:opacity-30"></div>
+<span class="material-symbols-outlined text-3xl text-secondary mb-6">sync_desktop</span>
+<h3 class="text-xl font-display font-bold text-white mb-2">Visual Debugger</h3>
+<p class="text-sm text-on-surface-variant">Real-time telemetric visualization of your agent's decision tree and heuristic mapping.</p>
+</div>
+<!-- Wide Feature -->
+<div class="md:col-span-8 group relative overflow-hidden bg-surface-container rounded-lg neon-border-pink p-8 hover:bg-surface-container-high transition-all">
+<div class="scanner-bar scanner-bar-pink"></div>
+<div class="scanlines absolute inset-0 opacity-10"></div>
+<div class="flex flex-col md:flex-row gap-8 items-center">
+<div class="flex-1">
+<span class="material-symbols-outlined text-4xl text-primary mb-6" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<h3 class="text-2xl font-display font-bold text-white mb-4">Neural Command CLI</h3>
+<p class="text-on-surface-variant mb-6">Direct kernel access via a terminal-style interface for power users who demand total control over agent parameters.</p>
+<div class="bg-black/40 p-3 font-label text-xs text-primary-fixed-dim rounded min-h-[60px]">
+<span class="text-secondary">$</span> <span id="cli-typing"></span><br/>
+<span class="text-on-surface-variant" id="cli-response"></span>
+</div>
+</div>
+<div class="flex-shrink-0 w-full md:w-1/3 aspect-square bg-background rounded-lg border border-primary/20 flex items-center justify-center p-4">
+<div class="w-full h-full border-2 border-primary/10 rounded-full animate-spin-slow flex items-center justify-center">
+<div class="w-3/4 h-3/4 border-2 border-secondary/20 rounded-full animate-reverse-spin flex items-center justify-center">
+<div class="w-1/2 h-1/2 bg-primary/20 blur-xl rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Tech Stack -->
+<section class="py-24 bg-surface-container-lowest/50 relative">
+<div class="absolute inset-0 pixel-grid opacity-30"></div>
+<div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+<h2 class="text-3xl font-display font-bold text-white mb-16">INTEGRATED TECH STACK</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-cyan">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-secondary">memory</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-secondary uppercase transition-colors">Neural Core</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-pink">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary">hub</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-primary uppercase transition-colors">Distributed</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-cyan">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-secondary">database</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-secondary uppercase transition-colors">Vector DB</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-pink">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary">api</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-primary uppercase transition-colors">REST / GraphQL</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-cyan">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-secondary">lan</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-secondary uppercase transition-colors">WebSockets</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-pink">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary">shield_with_heart</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-primary uppercase transition-colors">Safe Eval</span>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-24 px-6 overflow-hidden">
+<div class="max-w-5xl mx-auto bg-primary/5 border border-primary/30 relative p-12 md:p-20 text-center neon-border-pink">
+<div class="scanner-bar scanner-bar-pink opacity-20"></div>
+<div class="scanlines absolute inset-0 opacity-10"></div>
+<h2 class="text-4xl md:text-6xl font-display font-extrabold text-white mb-8 neon-flicker neon-glow-pink">READY TO OVERRIDE?</h2>
+<p class="text-on-surface-variant text-lg max-w-2xl mx-auto mb-12">
+            Join the closed beta and be among the first to deploy Apex-Agents into the wild. Limited slots available for the current cycle.
+        </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+<div class="relative group">
+<div class="absolute -inset-1 bg-primary blur opacity-25 group-hover:opacity-50 transition"></div>
+<button class="relative bg-background border border-primary text-primary px-12 py-5 font-label font-bold text-xl tracking-tighter uppercase transition-all hover:neon-glow-pink">
+                    Request Access [BETA]
+                </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-surface-container-lowest dark:bg-background w-full py-12 border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-display font-bold text-primary neon-glow-pink">Apex-Agent AI</span>
+<p class="font-body text-sm text-on-surface-variant opacity-80 hover:opacity-100 transition-opacity">© 2024 Apex-Agent AI. All rights reserved.</p>
+</div>
+<div class="flex items-center gap-8">
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Support</a>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-all">public</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-all">rss_feed</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-all">code</span>
+</div>
+</div>
+</footer>
+<script>
+    // Digital Rain Effect
+    const canvas = document.getElementById('digitalRain');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&*";
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(1);
+
+    function draw() {
+        ctx.fillStyle = 'rgba(10, 10, 18, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#ff2d78';
+        ctx.font = fontSize + 'px Space Grotesk';
+
+        for (let i = 0; i < drops.length; i++) {
+            const text = chars.charAt(Math.floor(Math.random() * chars.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        }
+    }
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setInterval(draw, 50);
+    }
+
+    // Terminal Typing Effect for CLI
+    const cliTyping = document.getElementById('cli-typing');
+    const cliResponse = document.getElementById('cli-response');
+    const command = "apex-agent init --protocol alpha-9";
+    const responseText = "> Spawning node... OK";
+    let index = 0;
+
+    function typeCLI() {
+        if (index < command.length) {
+            cliTyping.textContent += command.charAt(index);
+            index++;
+            setTimeout(typeCLI, 100);
+        } else {
+            setTimeout(() => {
+                cliResponse.textContent = responseText;
+            }, 500);
+        }
+    }
+
+    // Secondary Text Terminal Effect
+    function typeEffect(element, text, speed = 30) {
+        element.textContent = '';
+        let i = 0;
+        const timer = setInterval(() => {
+            if (i < text.length) {
+                element.textContent += text.charAt(i);
+                i++;
+            } else {
+                clearInterval(timer);
+            }
+        }, speed);
+    }
+
+    // Initialize effects on load
+    window.addEventListener('load', () => {
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            typeCLI();
+            const heroPara = document.querySelector('.typing-effect');
+            typeEffect(heroPara, heroPara.getAttribute('data-text'));
+        }
+    });
+
+    // Hover tilt effect for cards
+    document.querySelectorAll('.group').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = (y - centerY) / 30;
+            const rotateY = (centerX - x) / 30;
+            
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+        });
+    });
+</script>
+</body></html>
+
+<!-- Apex-Agent Landing - Liquid Glass (Interactive) -->
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apex-Agent | 移动端AI自动化终极平台</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&amp;family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#00ffcc",
+                    "error": "#ff4444",
+                    "surface-container-low": "#111118",
+                    "on-primary": "#1a0010",
+                    "error-container": "#3d0f0f",
+                    "tertiary": "#ffe04a",
+                    "surface-container-high": "#1e1e30",
+                    "surface-container-highest": "#28283e",
+                    "secondary-fixed-dim": "#00e6b8",
+                    "on-secondary-container": "#c0fff4",
+                    "surface-bright": "#1a1a2e",
+                    "primary-container": "#b3004e",
+                    "primary": "#ff2d78",
+                    "on-background": "#e8e0f0",
+                    "on-secondary-fixed": "#001a1a",
+                    "inverse-primary": "#8c0038",
+                    "tertiary-container": "#665200",
+                    "on-surface": "#e8e0f0",
+                    "tertiary-fixed-dim": "#ffe04a",
+                    "secondary-container": "#004d3d",
+                    "primary-fixed-dim": "#ff80aa",
+                    "background": "#0a0a12",
+                    "outline": "#5a5068",
+                    "on-tertiary": "#1a1000",
+                    "surface-variant": "#1e1e30",
+                    "outline-variant": "#302840",
+                    "inverse-on-surface": "#0a0a12",
+                    "on-primary-fixed-variant": "#8c0038",
+                    "surface-tint": "#ff2d78",
+                    "on-secondary": "#001a1a",
+                    "on-tertiary-fixed-variant": "#665200",
+                    "on-tertiary-fixed": "#1a1000",
+                    "on-secondary-fixed-variant": "#004d4d",
+                    "primary-fixed": "#ffe0ec",
+                    "on-surface-variant": "#a098b0",
+                    "on-error-container": "#ffa0a0",
+                    "on-primary-container": "#ffe0ec",
+                    "surface-dim": "#0f0f1a",
+                    "surface-container": "#141422",
+                    "inverse-surface": "#e8e0f0",
+                    "secondary-fixed": "#c0fff4",
+                    "on-primary-fixed": "#3d0020",
+                    "on-tertiary-container": "#fff0c0",
+                    "tertiary-fixed": "#fff0c0",
+                    "surface-container-lowest": "#0a0a12",
+                    "on-error": "#1a0000",
+                    "surface": "#0f0f1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Sora"],
+                    "display": ["Sora"],
+                    "body": ["Inter"],
+                    "label": ["Space Grotesk"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #0a0a12;
+            color: #e8e0f0;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .neon-glow-primary {
+            text-shadow: 0 0 12px rgba(255, 45, 120, 0.6);
+        }
+
+        .neon-glow-secondary {
+            text-shadow: 0 0 12px rgba(0, 255, 204, 0.6);
+        }
+
+        .glass-card {
+            background: rgba(30, 30, 48, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 45, 120, 0.5);
+            box-shadow: 0 0 20px rgba(255, 45, 120, 0.15);
+            transform: translateY(-5px);
+        }
+
+        /* Mouse Shine Effect */
+        .glass-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.08), transparent 40%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .glass-card:hover::after {
+            opacity: 1;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255, 45, 120, 0.8)); }
+            50% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(255, 45, 120, 0.2)); }
+        }
+
+        .icon-pulse {
+            animation: icon-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes icon-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .marquee {
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-flex;
+            animation: marquee 40s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .liquid-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background: radial-gradient(circle at var(--bg-x, 50%) var(--bg-y, 50%), rgba(255, 45, 120, 0.12) 0%, transparent 50%),
+                        radial-gradient(circle at calc(100% - var(--bg-x, 50%)) calc(100% - var(--bg-y, 50%)), rgba(0, 255, 204, 0.08) 0%, transparent 40%);
+            transition: background 0.2s ease-out;
+        }
+
+        .grid-overlay {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Staggered Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: revealUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        @keyframes revealUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        /* Float Animation */
+        .float-animation {
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0) rotate(2deg); }
+            50% { transform: translateY(-20px) rotate(-1deg); }
+        }
+
+        /* Shimmer Effect */
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.2), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite linear;
+            background-clip: padding-box;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal, .float-animation, .marquee, .pulse-animation, .icon-pulse, .shimmer {
+                animation: none !important;
+                transform: none !important;
+                opacity: 1 !important;
+            }
+            .glass-card:hover {
+                transform: none !important;
+            }
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body">
+<!-- Dynamic Background -->
+<div class="liquid-bg" id="liquid-bg"></div>
+<div class="fixed inset-0 grid-overlay pointer-events-none z-0"></div>
+<!-- Top Navigation -->
+<header class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md dark:bg-background/80 border-b border-white/10 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-display font-black tracking-tighter text-primary dark:text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)]">
+            Apex-Agent
+        </div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Tech Stack</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Burst Mode</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Pricing</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-white/5" onclick="document.documentElement.classList.toggle('dark')">dark_mode</button>
+<button class="px-6 py-2 bg-primary text-on-primary font-bold rounded-full hover:shadow-[0_0_16px_rgba(255,45,120,0.5)] transition-all scale-95 active:scale-90">
+                Get Started
+            </button>
+</div>
+</div>
+</header>
+<main class="relative z-10">
+<!-- Hero Section -->
+<section class="relative min-h-[90vh] flex flex-col items-center justify-center pt-20 px-6 overflow-hidden">
+<div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+<div class="text-left space-y-8">
+<div class="reveal delay-1 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs font-label uppercase tracking-widest pulse-animation">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+                    New: Burst Mode V2.0
+                </div>
+<h1 class="reveal delay-2 text-6xl md:text-8xl font-headline font-bold leading-tight tracking-tighter neon-glow-primary">
+                    🚀 Apex-Agent
+                </h1>
+<p class="reveal delay-3 text-2xl md:text-3xl text-on-surface-variant font-display font-light max-w-xl">
+                    移动端AI自动化终极平台
+                </p>
+<div class="reveal delay-4 flex flex-wrap gap-4 pt-4">
+<button class="px-10 py-4 bg-primary text-on-primary font-bold rounded-xl text-lg hover:shadow-[0_0_24px_rgba(255,45,120,0.6)] transition-all transform hover:-translate-y-1">
+                        立即下载
+                    </button>
+<button class="px-10 py-4 border-2 border-outline-variant hover:border-secondary hover:text-secondary text-on-surface font-bold rounded-xl text-lg backdrop-blur-md transition-all">
+                        查看文档
+                    </button>
+</div>
+</div>
+<div class="relative flex justify-center items-center">
+<!-- Glassmorphic Mobile Mockup with Float -->
+<div class="float-animation relative w-[300px] h-[600px] rounded-[3rem] border-4 border-white/10 bg-black shadow-2xl overflow-hidden p-3 transition-all duration-700">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20"></div>
+<div class="h-full w-full rounded-[2.5rem] bg-gradient-to-br from-surface-container-high to-background overflow-hidden relative">
+<!-- In-phone UI -->
+<div class="p-6 space-y-4">
+<div class="flex justify-between items-center mb-6">
+<div class="w-8 h-8 rounded-full bg-primary/20"></div>
+<div class="w-24 h-4 bg-white/5 rounded-full"></div>
+</div>
+<div class="glass-card p-4 rounded-2xl border border-white/5 bg-white/5">
+<div class="h-2 w-20 bg-primary/40 rounded-full mb-3"></div>
+<div class="h-32 w-full bg-gradient-to-tr from-primary/10 to-secondary/10 rounded-xl"></div>
+</div>
+<div class="space-y-2">
+<div class="h-3 w-full bg-white/5 rounded-full"></div>
+<div class="h-3 w-3/4 bg-white/5 rounded-full"></div>
+</div>
+<div class="absolute bottom-6 left-6 right-6 h-12 glass-card flex items-center justify-around px-4 rounded-2xl">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_5px_#ff2d78]"></div>
+<div class="w-2 h-2 rounded-full bg-on-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-on-surface-variant"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute -z-10 -top-10 -right-10 w-48 h-48 bg-secondary/10 border border-secondary/20 backdrop-blur-xl rounded-3xl animate-bounce" style="animation-duration: 4s;"></div>
+<div class="absolute -z-10 -bottom-10 -left-10 w-32 h-32 bg-primary/10 border border-primary/20 backdrop-blur-xl rounded-full animate-pulse"></div>
+</div>
+</div>
+</section>
+<!-- Features Grid -->
+<section class="py-24 px-6 max-w-7xl mx-auto">
+<div class="text-center mb-16 space-y-4">
+<h2 class="text-4xl md:text-5xl font-headline font-bold text-on-surface">Powerful Intelligence</h2>
+<div class="h-1 w-24 bg-primary mx-auto rounded-full"></div>
+</div>
+<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Burst Mode Card -->
+<div class="glass-card p-8 rounded-3xl group">
+<div class="relative z-10">
+<div class="w-14 h-14 bg-primary/10 flex items-center justify-center rounded-2xl mb-6 icon-pulse">
+<span class="material-symbols-outlined text-primary text-3xl">bolt</span>
+</div>
+<h3 class="text-2xl font-headline font-bold mb-4">🔥 狂暴模式</h3>
+<p class="text-on-surface-variant leading-relaxed font-body">极致性能优化，通过底层引擎实现毫秒级自动化响应，应对任何高负载任务。</p>
+</div>
+</div>
+<!-- Multi-Agent Card -->
+<div class="glass-card p-8 rounded-3xl group">
+<div class="relative z-10">
+<div class="w-14 h-14 bg-secondary/10 flex items-center justify-center rounded-2xl mb-6 icon-pulse" style="animation-delay: 0.5s;">
+<span class="material-symbols-outlined text-secondary text-3xl">smart_toy</span>
+</div>
+<h3 class="text-2xl font-headline font-bold mb-4">🤖 多Agent协作</h3>
+<p class="text-on-surface-variant leading-relaxed font-body">多个独立智能体并行工作，自动处理跨APP复杂逻辑，提升效率至全新维度。</p>
+</div>
+</div>
+<!-- Deep Memory Card -->
+<div class="glass-card p-8 rounded-3xl group">
+<div class="relative z-10">
+<div class="w-14 h-14 bg-tertiary/10 flex items-center justify-center rounded-2xl mb-6 icon-pulse" style="animation-delay: 1s;">
+<span class="material-symbols-outlined text-tertiary text-3xl">psychology</span>
+</div>
+<h3 class="text-2xl font-headline font-bold mb-4">🧠 深度记忆系统</h3>
+<p class="text-on-surface-variant leading-relaxed font-body">自主学习用户习惯，建立长效记忆索引，为您提供个性化、场景化的自动建议。</p>
+</div>
+</div>
+<!-- Web Automation Card -->
+<div class="glass-card p-8 rounded-3xl group">
+<div class="relative z-10">
+<div class="w-14 h-14 bg-primary/10 flex items-center justify-center rounded-2xl mb-6 icon-pulse" style="animation-delay: 1.5s;">
+<span class="material-symbols-outlined text-primary text-3xl">language</span>
+</div>
+<h3 class="text-2xl font-headline font-bold mb-4">🌐 网页自动化</h3>
+<p class="text-on-surface-variant leading-relaxed font-body">无缝对接Web环境，打破APP壁垒，实现全场景、全链路的自动化流程闭环。</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Tech Stack Marquee -->
+<section class="py-20 overflow-hidden bg-surface-container-low/30 border-y border-white/5">
+<div class="max-w-7xl mx-auto px-6 mb-12">
+<h3 class="text-sm font-label uppercase tracking-[0.3em] text-on-surface-variant text-center">Core Engine Technologies</h3>
+</div>
+<div class="relative flex overflow-x-hidden">
+<div class="marquee flex items-center gap-24 py-4">
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-primary transition-all cursor-default">Kotlin</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-secondary transition-all cursor-default">Jetpack Compose</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-tertiary transition-all cursor-default">MNN</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-primary transition-all cursor-default">llama.cpp</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-secondary transition-all cursor-default">TensorFlow Lite</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-tertiary transition-all cursor-default">Rust Engine</span>
+<!-- Loop repeats -->
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-primary transition-all cursor-default">Kotlin</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-secondary transition-all cursor-default">Jetpack Compose</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-tertiary transition-all cursor-default">MNN</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-primary transition-all cursor-default">llama.cpp</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-secondary transition-all cursor-default">TensorFlow Lite</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-tertiary transition-all cursor-default">Rust Engine</span>
+</div>
+</div>
+</section>
+<!-- Product Preview Section -->
+<section class="py-24 px-6">
+<div class="max-w-7xl mx-auto">
+<div class="glass-card rounded-[4rem] p-12 overflow-hidden flex flex-col lg:flex-row items-center gap-16">
+<div class="flex-1 space-y-6">
+<h2 class="text-5xl font-headline font-bold text-on-surface">Built for Developers</h2>
+<p class="text-xl text-on-surface-variant leading-relaxed">
+                        Apex-Agent 不仅仅是一个工具，它是一个可扩展的平台。支持脚本编写、动态插件加载和深度系统级集成。
+                    </p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary icon-pulse">check_circle</span>
+<span class="text-lg">全自动化的脚本部署流程</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary icon-pulse">check_circle</span>
+<span class="text-lg">强大的多端调试接口</span>
+</li>
+</ul>
+</div>
+<div class="flex-1 w-full aspect-video rounded-3xl bg-surface-container-highest/50 border border-white/10 relative group">
+<img alt="Cyberpunk code interface" class="w-full h-full object-cover rounded-3xl opacity-60 mix-blend-screen group-hover:scale-105 transition-transform duration-1000" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3SatF3VxzTZ4i279MQiQoIms3OS9JK82kI5e6UVh-L5GEAOCSCRU_ImhjC2cZmCghD_EO51Apb2b7oNEZ7uWGD-w8TeNbmHrS_fQwf0eXDBfxjOKaLkQjfSXK-sp_3y77mX6nf9LwmqtFHzVLR9Q7QNK2SjM0fuou-X3CBXRrBqv_xr88S-BS2NX1VMBjHnJzqegXbTiAbg1EX3j9N6Z5pz2jwX3sRstNjBzXEYa_nW4woubGUTSlYTIMml5yYdw7UWIGJQ9QT63X"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 bg-surface-container-lowest dark:bg-background border-t border-outline-variant/30 relative z-10">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+<div class="space-y-2">
+<div class="font-display font-bold text-primary text-2xl">Apex-Agent</div>
+<p class="font-body text-sm text-on-surface-variant">© 2024 Apex-Agent AI. All rights reserved.</p>
+<div class="text-xs font-label text-on-surface-variant/40 mt-4 px-3 py-1 border border-white/5 inline-block rounded relative overflow-hidden group">
+<span class="relative z-10">Developed by <span class="text-secondary font-bold">MJH</span></span>
+<div class="shimmer absolute inset-0 opacity-40"></div>
+</div>
+</div>
+<nav class="flex gap-8">
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Support</a>
+</nav>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full border border-outline-variant/30 flex items-center justify-center opacity-80 hover:opacity-100 hover:border-primary transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-on-surface group-hover:scale-110 transition-transform">public</span>
+</div>
+<div class="w-10 h-10 rounded-full border border-outline-variant/30 flex items-center justify-center opacity-80 hover:opacity-100 hover:border-primary transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-on-surface group-hover:scale-110 transition-transform">terminal</span>
+</div>
+</div>
+</div>
+</footer>
+<!-- Interactivity Script -->
+<script>
+    // Liquid Background & Card Shine Tracking
+    document.addEventListener('mousemove', (e) => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        const x = e.clientX;
+        const y = e.clientY;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Background Liquid Effect
+        const bgX = (x / width) * 100;
+        const bgY = (y / height) * 100;
+        document.documentElement.style.setProperty('--bg-x', `${bgX}%`);
+        document.documentElement.style.setProperty('--bg-y', `${bgY}%`);
+
+        // Card Shine Effect
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const cardX = x - rect.left;
+            const cardY = y - rect.top;
+            
+            card.style.setProperty('--mouse-x', `${cardX}px`);
+            card.style.setProperty('--mouse-y', `${cardY}px`);
+
+            // Interactive radial highlight for old style (fallback/extra glow)
+            if (cardX > 0 && cardX < rect.width && cardY > 0 && cardY < rect.height) {
+                card.style.background = `radial-gradient(circle at ${cardX}px ${cardY}px, rgba(255, 45, 120, 0.1) 0%, rgba(30, 30, 48, 0.4) 60%)`;
+            } else {
+                card.style.background = 'rgba(30, 30, 48, 0.4)';
+            }
+        });
+    });
+
+    // Handle smooth transition on theme change
+    const themeBtn = document.querySelector('[onclick*="toggle(\'dark\')"]');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
+        });
+    }
+</script>
+</body></html>
+
+<!-- Apex-Agent Landing - Neon Tokyo Edition -->
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apex-Agent | Neon Tokyo</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --neon-pink: #ff2d78;
+            --neon-cyan: #00ffcc;
+            --neon-yellow: #ffe04a;
+        }
+        body {
+            background-color: #0a0a12;
+            overflow-x: hidden;
+        }
+        .pixel-grid {
+            background-image: 
+                linear-gradient(rgba(255, 45, 120, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 45, 120, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .scanlines {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+        .neon-glow-pink {
+            text-shadow: 0 0 8px var(--neon-pink);
+        }
+        .neon-glow-cyan {
+            text-shadow: 0 0 8px var(--neon-cyan);
+        }
+        .neon-border-pink {
+            border: 1px solid rgba(255, 45, 120, 0.5);
+            box-shadow: inset 0 0 12px rgba(255, 45, 120, 0.1), 0 0 12px rgba(255, 45, 120, 0.1);
+        }
+        .neon-border-cyan {
+            border: 1px solid rgba(0, 255, 204, 0.5);
+            box-shadow: inset 0 0 12px rgba(0, 255, 204, 0.1), 0 0 12px rgba(0, 255, 204, 0.1);
+        }
+        .digital-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+        .terminal-cursor::after {
+            content: '_';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .circuit-connector {
+            position: relative;
+        }
+        .circuit-connector::after {
+            content: '';
+            position: absolute;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 5px var(--neon-cyan);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#00ffcc",
+                        "error": "#ff4444",
+                        "surface-container-low": "#111118",
+                        "on-primary": "#1a0010",
+                        "error-container": "#3d0f0f",
+                        "tertiary": "#ffe04a",
+                        "surface-container-high": "#1e1e30",
+                        "surface-container-highest": "#28283e",
+                        "secondary-fixed-dim": "#00e6b8",
+                        "on-secondary-container": "#c0fff4",
+                        "surface-bright": "#1a1a2e",
+                        "primary-container": "#b3004e",
+                        "primary": "#ff2d78",
+                        "on-background": "#e8e0f0",
+                        "on-secondary-fixed": "#001a1a",
+                        "inverse-primary": "#8c0038",
+                        "tertiary-container": "#665200",
+                        "on-surface": "#e8e0f0",
+                        "tertiary-fixed-dim": "#ffe04a",
+                        "secondary-container": "#004d3d",
+                        "primary-fixed-dim": "#ff80aa",
+                        "background": "#0a0a12",
+                        "outline": "#5a5068",
+                        "on-tertiary": "#1a1000",
+                        "surface-variant": "#1e1e30",
+                        "outline-variant": "#302840",
+                        "inverse-on-surface": "#0a0a12",
+                        "on-primary-fixed-variant": "#8c0038",
+                        "surface-tint": "#ff2d78",
+                        "on-secondary": "#001a1a",
+                        "on-tertiary-fixed-variant": "#665200",
+                        "on-tertiary-fixed": "#1a1000",
+                        "on-secondary-fixed-variant": "#004d4d",
+                        "primary-fixed": "#ffe0ec",
+                        "on-surface-variant": "#a098b0",
+                        "on-error-container": "#ffa0a0",
+                        "on-primary-container": "#ffe0ec",
+                        "surface-dim": "#0f0f1a",
+                        "surface-container": "#141422",
+                        "inverse-surface": "#e8e0f0",
+                        "secondary-fixed": "#c0fff4",
+                        "on-primary-fixed": "#3d0020",
+                        "on-tertiary-container": "#fff0c0",
+                        "tertiary-fixed": "#fff0c0",
+                        "surface-container-lowest": "#0a0a12",
+                        "on-error": "#1a0000",
+                        "surface": "#0f0f1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Sora"],
+                        "display": ["Sora"],
+                        "body": ["Inter"],
+                        "label": ["Space Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-body text-on-surface selection:bg-primary/30">
+<!-- TopNavBar -->
+<header class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md dark:bg-background/80 border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<nav class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="text-2xl font-display font-black tracking-tighter text-primary dark:text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)]">Apex-Agent</span>
+</div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Tech Stack</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Burst Mode</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Pricing</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all">dark_mode</button>
+<button class="bg-primary/10 border border-primary text-primary px-5 py-2 font-label font-bold tracking-wider hover:bg-primary hover:text-on-primary transition-all scale-95 active:scale-90">
+                    Get Started
+                </button>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative min-h-[921px] flex flex-col items-center justify-center overflow-hidden py-20">
+<div class="absolute inset-0 pixel-grid"></div>
+<canvas class="digital-rain" id="digitalRain"></canvas>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background"></div>
+<div class="relative z-10 text-center px-6 max-w-4xl">
+<div class="inline-block mb-4 px-3 py-1 bg-surface-container-high border border-outline-variant rounded-full">
+<span class="font-label text-xs tracking-widest text-secondary neon-glow-cyan uppercase">System Status: Optimal</span>
+</div>
+<h1 class="text-6xl md:text-8xl font-display font-extrabold tracking-tighter mb-6">
+<span class="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">🚀 </span>
+<span class="text-primary neon-glow-pink">Apex-Agent</span>
+</h1>
+<p class="text-lg md:text-xl text-on-surface-variant font-body max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Deploy hyper-intelligent autonomous agents into the digital sprawl. High-performance neural architectures designed for the next evolution of tactical automation.
+                </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+<button class="w-full sm:w-auto neon-border-pink bg-primary/5 text-primary px-10 py-4 font-label font-bold text-lg hover:bg-primary/20 hover:scale-105 transition-all duration-300">
+                        INITIALIZE NODE
+                    </button>
+<button class="w-full sm:w-auto border border-secondary/30 text-secondary px-10 py-4 font-label font-bold text-lg hover:bg-secondary/10 transition-all">
+                        VIEW PROTOCOLS
+                    </button>
+</div>
+<!-- Developer Shoutout -->
+<div class="mt-16 flex items-center justify-center gap-4">
+<div class="px-4 py-2 bg-black/40 border border-white/5 font-label text-[10px] tracking-[0.2em] uppercase text-on-surface-variant/60">
+<span class="text-secondary terminal-cursor">Developer: MJH</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="py-24 px-6 max-w-7xl mx-auto">
+<h2 class="text-4xl font-display font-bold text-white mb-16 flex items-center gap-4">
+<span class="h-[2px] w-12 bg-primary"></span>
+                CORE CAPABILITIES
+            </h2>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Large Feature -->
+<div class="md:col-span-8 group relative overflow-hidden bg-surface-container rounded-lg neon-border-cyan p-8 hover:bg-surface-container-high transition-all">
+<div class="scanlines absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity"></div>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-4xl text-secondary mb-6" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<h3 class="text-3xl font-display font-bold text-white mb-4">Burst Mode Processing</h3>
+<p class="text-on-surface-variant max-w-lg mb-8">Execute concurrent operations across distributed neural nodes with sub-millisecond latency. Designed for high-frequency tactical environments.</p>
+<div class="h-2 w-full bg-background rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4 shadow-[0_0_10px_#00ffcc]"></div>
+</div>
+<div class="flex justify-between mt-2 font-label text-[10px] text-secondary">
+<span>BANDWIDTH</span>
+<span>78% UTILIZED</span>
+</div>
+</div>
+<img class="absolute right-0 bottom-0 w-1/2 opacity-20 grayscale group-hover:grayscale-0 transition-all duration-700 pointer-events-none" data-alt="A high-tech digital interface displaying complex data streams and neural network structures in a vibrant neon cyan and deep indigo color scheme. The composition is futuristic and abstract, featuring glowing fiber optic lines and holographic data nodes that evoke a sense of advanced cyberpunk computing. The mood is intense and technologically sophisticated." src="https://lh3.googleusercontent.com/aida-public/AB6AXuATv_aktbaR2gmZYzcdu80Eq8MdYhW7O_BC_Eg-0NzAaYfI87onFcDHWd5HSTtHWtADLJdmn2jojyrbgxeX9QW3oKVqgzyNgeXfvCS4mW9DR-2ZEioCIO7HfTBt_4_-t6wVaxVvjfNWMb592cZ6iWvGlnctIqAaXyOQOh8F94MaxwtjSaguwda0YeSLhR9SUMqwEVUHeVlQRLOQbYOfftGLZxxRiMbPlHHTmJ_a9wKHnBALBUup8axU8a0-9xW6bY5zC-aPrWJkUadt"/>
+</div>
+<!-- Small Feature -->
+<div class="md:col-span-4 group relative overflow-hidden bg-surface-container-low rounded-lg border border-outline-variant p-8 hover:border-primary/50 transition-all">
+<div class="scanlines absolute inset-0 opacity-5"></div>
+<span class="material-symbols-outlined text-3xl text-primary mb-6">security</span>
+<h3 class="text-xl font-display font-bold text-white mb-2">Encrypted Core</h3>
+<p class="text-sm text-on-surface-variant">Quantum-resistant encryption layers ensuring your agent's logic remains proprietary and secure in hostile sectors.</p>
+</div>
+<!-- Another Feature -->
+<div class="md:col-span-4 group relative overflow-hidden bg-surface-container-low rounded-lg border border-outline-variant p-8 hover:border-secondary/50 transition-all">
+<span class="material-symbols-outlined text-3xl text-secondary mb-6">sync_desktop</span>
+<h3 class="text-xl font-display font-bold text-white mb-2">Visual Debugger</h3>
+<p class="text-sm text-on-surface-variant">Real-time telemetric visualization of your agent's decision tree and heuristic mapping.</p>
+</div>
+<!-- Wide Feature -->
+<div class="md:col-span-8 group relative overflow-hidden bg-surface-container rounded-lg neon-border-pink p-8 hover:bg-surface-container-high transition-all">
+<div class="scanlines absolute inset-0 opacity-10"></div>
+<div class="flex flex-col md:flex-row gap-8 items-center">
+<div class="flex-1">
+<span class="material-symbols-outlined text-4xl text-primary mb-6" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<h3 class="text-2xl font-display font-bold text-white mb-4">Neural Command CLI</h3>
+<p class="text-on-surface-variant mb-6">Direct kernel access via a terminal-style interface for power users who demand total control over agent parameters.</p>
+<div class="bg-black/40 p-3 font-label text-xs text-primary-fixed-dim rounded">
+<span class="text-secondary">$</span> apex-agent init --protocol alpha-9<br/>
+<span class="text-on-surface-variant">&gt; Spawning node... OK</span>
+</div>
+</div>
+<div class="flex-shrink-0 w-full md:w-1/3 aspect-square bg-background rounded-lg border border-primary/20 flex items-center justify-center p-4">
+<div class="w-full h-full border-2 border-primary/10 rounded-full animate-spin-slow flex items-center justify-center">
+<div class="w-3/4 h-3/4 border-2 border-secondary/20 rounded-full animate-reverse-spin flex items-center justify-center">
+<div class="w-1/2 h-1/2 bg-primary/20 blur-xl rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Tech Stack -->
+<section class="py-24 bg-surface-container-lowest/50 relative">
+<div class="absolute inset-0 pixel-grid opacity-30"></div>
+<div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+<h2 class="text-3xl font-display font-bold text-white mb-16">INTEGRATED TECH STACK</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+<!-- Tech Item -->
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-cyan">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-secondary">memory</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-secondary uppercase transition-colors">Neural Core</span>
+<div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[1px] h-4 bg-secondary/30"></div>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-pink">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary">hub</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-primary uppercase transition-colors">Distributed</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-cyan">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-secondary">database</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-secondary uppercase transition-colors">Vector DB</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-pink">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary">api</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-primary uppercase transition-colors">REST / GraphQL</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-cyan">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-secondary">lan</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-secondary uppercase transition-colors">WebSockets</span>
+</div>
+<div class="relative group">
+<div class="w-20 h-20 mx-auto mb-4 bg-surface-container-high border border-outline-variant rotate-45 group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center group-hover:neon-border-pink">
+<div class="-rotate-45 group-hover:rotate-0 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary">shield_with_heart</span>
+</div>
+</div>
+<span class="font-label text-xs tracking-widest text-on-surface-variant group-hover:text-primary uppercase transition-colors">Safe Eval</span>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-24 px-6 overflow-hidden">
+<div class="max-w-5xl mx-auto bg-primary/5 border border-primary/30 relative p-12 md:p-20 text-center">
+<div class="scanlines absolute inset-0 opacity-10"></div>
+<h2 class="text-4xl md:text-6xl font-display font-extrabold text-white mb-8 neon-glow-pink">READY TO OVERRIDE?</h2>
+<p class="text-on-surface-variant text-lg max-w-2xl mx-auto mb-12">
+                    Join the closed beta and be among the first to deploy Apex-Agents into the wild. Limited slots available for the current cycle.
+                </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+<div class="relative group">
+<div class="absolute -inset-1 bg-primary blur opacity-25 group-hover:opacity-50 transition"></div>
+<button class="relative bg-background border border-primary text-primary px-12 py-5 font-label font-bold text-xl tracking-tighter uppercase transition-all">
+                            Request Access [BETA]
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-background w-full py-12 border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-display font-bold text-primary neon-glow-pink">Apex-Agent AI</span>
+<p class="font-body text-sm text-on-surface-variant opacity-80 hover:opacity-100 transition-opacity">© 2024 Apex-Agent AI. All rights reserved.</p>
+</div>
+<div class="flex items-center gap-8">
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Support</a>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-all">public</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-all">rss_feed</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-all">code</span>
+</div>
+</div>
+</footer>
+<script>
+        // Matrix-like Digital Rain Effect
+        const canvas = document.getElementById('digitalRain');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&*";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(10, 10, 18, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ff2d78';
+            ctx.font = fontSize + 'px Space Grotesk';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(draw, 50);
+
+        // Hover tilt effect for cards
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 20;
+                const rotateY = (centerX - x) / 20;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+            });
+        });
+    </script>
+<style>
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes reverse-spin {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 12s linear infinite;
+        }
+        .animate-reverse-spin {
+            animation: reverse-spin 8s linear infinite;
+        }
+    </style>
+</body></html>
+
+<!-- Apex-Agent Landing - Liquid Glass Edition -->
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apex-Agent | 移动端AI自动化终极平台</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&amp;family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#00ffcc",
+                    "error": "#ff4444",
+                    "surface-container-low": "#111118",
+                    "on-primary": "#1a0010",
+                    "error-container": "#3d0f0f",
+                    "tertiary": "#ffe04a",
+                    "surface-container-high": "#1e1e30",
+                    "surface-container-highest": "#28283e",
+                    "secondary-fixed-dim": "#00e6b8",
+                    "on-secondary-container": "#c0fff4",
+                    "surface-bright": "#1a1a2e",
+                    "primary-container": "#b3004e",
+                    "primary": "#ff2d78",
+                    "on-background": "#e8e0f0",
+                    "on-secondary-fixed": "#001a1a",
+                    "inverse-primary": "#8c0038",
+                    "tertiary-container": "#665200",
+                    "on-surface": "#e8e0f0",
+                    "tertiary-fixed-dim": "#ffe04a",
+                    "secondary-container": "#004d3d",
+                    "primary-fixed-dim": "#ff80aa",
+                    "background": "#0a0a12",
+                    "outline": "#5a5068",
+                    "on-tertiary": "#1a1000",
+                    "surface-variant": "#1e1e30",
+                    "outline-variant": "#302840",
+                    "inverse-on-surface": "#0a0a12",
+                    "on-primary-fixed-variant": "#8c0038",
+                    "surface-tint": "#ff2d78",
+                    "on-secondary": "#001a1a",
+                    "on-tertiary-fixed-variant": "#665200",
+                    "on-tertiary-fixed": "#1a1000",
+                    "on-secondary-fixed-variant": "#004d4d",
+                    "primary-fixed": "#ffe0ec",
+                    "on-surface-variant": "#a098b0",
+                    "on-error-container": "#ffa0a0",
+                    "on-primary-container": "#ffe0ec",
+                    "surface-dim": "#0f0f1a",
+                    "surface-container": "#141422",
+                    "inverse-surface": "#e8e0f0",
+                    "secondary-fixed": "#c0fff4",
+                    "on-primary-fixed": "#3d0020",
+                    "on-tertiary-container": "#fff0c0",
+                    "tertiary-fixed": "#fff0c0",
+                    "surface-container-lowest": "#0a0a12",
+                    "on-error": "#1a0000",
+                    "surface": "#0f0f1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Sora"],
+                    "display": ["Sora"],
+                    "body": ["Inter"],
+                    "label": ["Space Grotesk"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #0a0a12;
+            color: #e8e0f0;
+            overflow-x: hidden;
+        }
+
+        .neon-glow-primary {
+            text-shadow: 0 0 12px rgba(255, 45, 120, 0.6);
+        }
+
+        .neon-glow-secondary {
+            text-shadow: 0 0 12px rgba(0, 255, 204, 0.6);
+        }
+
+        .glass-card {
+            background: rgba(30, 30, 48, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 45, 120, 0.5);
+            box-shadow: 0 0 20px rgba(255, 45, 120, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255, 45, 120, 0.8)); }
+            50% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(255, 45, 120, 0.2)); }
+        }
+
+        .marquee {
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            animation: marquee 30s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .gradient-bg {
+            background: radial-gradient(circle at 50% 50%, rgba(255, 45, 120, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 10% 20%, rgba(0, 255, 204, 0.05) 0%, transparent 40%);
+        }
+
+        .grid-overlay {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body">
+<!-- Grid Overlay -->
+<div class="fixed inset-0 grid-overlay pointer-events-none z-0"></div>
+<div class="fixed inset-0 gradient-bg pointer-events-none z-0"></div>
+<!-- Top Navigation -->
+<header class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md dark:bg-background/80 border-b border-white/10 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-display font-black tracking-tighter text-primary dark:text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.6)]">
+                Apex-Agent
+            </div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Tech Stack</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Burst Mode</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-300 font-label" href="#">Pricing</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all">dark_mode</button>
+<button class="px-6 py-2 bg-primary text-on-primary font-bold rounded-full hover:shadow-[0_0_16px_rgba(255,45,120,0.5)] transition-all scale-95 active:scale-90">
+                    Get Started
+                </button>
+</div>
+</div>
+</header>
+<main class="relative z-10">
+<!-- Hero Section -->
+<section class="relative min-h-[921px] flex flex-col items-center justify-center pt-20 px-6 overflow-hidden">
+<div class="absolute -top-40 -left-40 w-96 h-96 bg-primary/20 blur-[120px] rounded-full"></div>
+<div class="absolute top-1/2 -right-40 w-80 h-80 bg-secondary/10 blur-[100px] rounded-full"></div>
+<div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+<div class="text-left space-y-8">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs font-label uppercase tracking-widest pulse-animation">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+                        New: Burst Mode V2.0
+                    </div>
+<h1 class="text-6xl md:text-8xl font-headline font-bold leading-tight tracking-tighter neon-glow-primary">
+                        🚀 Apex-Agent
+                    </h1>
+<p class="text-2xl md:text-3xl text-on-surface-variant font-display font-light max-w-xl">
+                        移动端AI自动化终极平台
+                    </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<button class="px-10 py-4 bg-primary text-on-primary font-bold rounded-xl text-lg hover:shadow-[0_0_24px_rgba(255,45,120,0.6)] transition-all transform hover:-translate-y-1">
+                            立即下载
+                        </button>
+<button class="px-10 py-4 border-2 border-outline-variant hover:border-secondary hover:text-secondary text-on-surface font-bold rounded-xl text-lg backdrop-blur-md transition-all">
+                            查看文档
+                        </button>
+</div>
+</div>
+<div class="relative flex justify-center items-center">
+<!-- Glassmorphic Mobile Mockup -->
+<div class="relative w-[300px] h-[600px] rounded-[3rem] border-4 border-white/10 bg-black shadow-2xl overflow-hidden p-3 transform rotate-2 hover:rotate-0 transition-transform duration-700">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20"></div>
+<div class="h-full w-full rounded-[2.5rem] bg-gradient-to-br from-surface-container-high to-background overflow-hidden relative">
+<!-- In-phone UI -->
+<div class="p-6 space-y-4">
+<div class="flex justify-between items-center mb-6">
+<div class="w-8 h-8 rounded-full bg-primary/20"></div>
+<div class="w-24 h-4 bg-white/5 rounded-full"></div>
+</div>
+<div class="glass-card p-4 rounded-2xl border border-white/5 bg-white/5">
+<div class="h-2 w-20 bg-primary/40 rounded-full mb-3"></div>
+<div class="h-32 w-full bg-gradient-to-tr from-primary/10 to-secondary/10 rounded-xl"></div>
+</div>
+<div class="space-y-2">
+<div class="h-3 w-full bg-white/5 rounded-full"></div>
+<div class="h-3 w-3/4 bg-white/5 rounded-full"></div>
+</div>
+<div class="absolute bottom-6 left-6 right-6 h-12 glass-card flex items-center justify-around px-4 rounded-2xl">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_5px_#ff2d78]"></div>
+<div class="w-2 h-2 rounded-full bg-on-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-on-surface-variant"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Decorative Floating Elements -->
+<div class="absolute -z-10 -top-10 -right-10 w-48 h-48 bg-secondary/10 border border-secondary/20 backdrop-blur-xl rounded-3xl animate-bounce" style="animation-duration: 4s;"></div>
+<div class="absolute -z-10 -bottom-10 -left-10 w-32 h-32 bg-primary/10 border border-primary/20 backdrop-blur-xl rounded-full animate-pulse"></div>
+</div>
+</div>
+</section>
+<!-- Features Grid -->
+<section class="py-24 px-6 max-w-7xl mx-auto">
+<div class="text-center mb-16 space-y-4">
+<h2 class="text-4xl md:text-5xl font-headline font-bold text-on-surface">Powerful Intelligence</h2>
+<div class="h-1 w-24 bg-primary mx-auto rounded-full"></div>
+</div>
+<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Burst Mode Card -->
+<div class="glass-card p-8 rounded-3xl group relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative z-10">
+<div class="w-14 h-14 bg-primary/10 flex items-center justify-center rounded-2xl mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">bolt</span>
+</div>
+<h3 class="text-2xl font-headline font-bold mb-4">🔥 狂暴模式</h3>
+<p class="text-on-surface-variant leading-relaxed font-body">极致性能优化，通过底层引擎实现毫秒级自动化响应，应对任何高负载任务。</p>
+</div>
+</div>
+<!-- Multi-Agent Card -->
+<div class="glass-card p-8 rounded-3xl group relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative z-10">
+<div class="w-14 h-14 bg-secondary/10 flex items-center justify-center rounded-2xl mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary text-3xl">smart_toy</span>
+</div>
+<h3 class="text-2xl font-headline font-bold mb-4">🤖 多Agent协作</h3>
+<p class="text-on-surface-variant leading-relaxed font-body">多个独立智能体并行工作，自动处理跨APP复杂逻辑，提升效率至全新维度。</p>
+</div>
+</div>
+<!-- Deep Memory Card -->
+<div class="glass-card p-8 rounded-3xl group relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-tertiary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative z-10">
+<div class="w-14 h-14 bg-tertiary/10 flex items-center justify-center rounded-2xl mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-tertiary text-3xl">psychology</span>
+</div>
+<h3 class="text-2xl font-headline font-bold mb-4">🧠 深度记忆系统</h3>
+<p class="text-on-surface-variant leading-relaxed font-body">自主学习用户习惯，建立长效记忆索引，为您提供个性化、场景化的自动建议。</p>
+</div>
+</div>
+<!-- Web Automation Card -->
+<div class="glass-card p-8 rounded-3xl group relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative z-10">
+<div class="w-14 h-14 bg-primary/10 flex items-center justify-center rounded-2xl mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">language</span>
+</div>
+<h3 class="text-2xl font-headline font-bold mb-4">🌐 网页自动化</h3>
+<p class="text-on-surface-variant leading-relaxed font-body">无缝对接Web环境，打破APP壁垒，实现全场景、全链路的自动化流程闭环。</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Tech Stack Marquee -->
+<section class="py-20 overflow-hidden bg-surface-container-low/30 border-y border-white/5">
+<div class="max-w-7xl mx-auto px-6 mb-12">
+<h3 class="text-sm font-label uppercase tracking-[0.3em] text-on-surface-variant text-center">Core Engine Technologies</h3>
+</div>
+<div class="relative flex overflow-x-hidden">
+<div class="marquee flex items-center gap-24 py-4">
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-primary transition-all cursor-default">Kotlin</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-secondary transition-all cursor-default">Jetpack Compose</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-tertiary transition-all cursor-default">MNN</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-primary transition-all cursor-default">llama.cpp</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-secondary transition-all cursor-default">TensorFlow Lite</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-tertiary transition-all cursor-default">Rust Engine</span>
+<!-- Repeat for seamless loop -->
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-primary transition-all cursor-default">Kotlin</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-secondary transition-all cursor-default">Jetpack Compose</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-tertiary transition-all cursor-default">MNN</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-primary transition-all cursor-default">llama.cpp</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-secondary transition-all cursor-default">TensorFlow Lite</span>
+<span class="text-4xl font-headline font-bold opacity-30 hover:opacity-100 hover:text-tertiary transition-all cursor-default">Rust Engine</span>
+</div>
+</div>
+</section>
+<!-- Product Preview Section -->
+<section class="py-24 px-6">
+<div class="max-w-7xl mx-auto">
+<div class="glass-card rounded-[4rem] p-12 overflow-hidden flex flex-col lg:flex-row items-center gap-16">
+<div class="flex-1 space-y-6">
+<h2 class="text-5xl font-headline font-bold text-on-surface">Built for Developers</h2>
+<p class="text-xl text-on-surface-variant leading-relaxed">
+                            Apex-Agent 不仅仅是一个工具，它是一个可扩展的平台。支持脚本编写、动态插件加载和深度系统级集成。
+                        </p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">check_circle</span>
+<span class="text-lg">全自动化的脚本部署流程</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">check_circle</span>
+<span class="text-lg">强大的多端调试接口</span>
+</li>
+</ul>
+</div>
+<div class="flex-1 w-full aspect-video rounded-3xl bg-surface-container-highest/50 border border-white/10 relative group">
+<img alt="Cyberpunk code interface" class="w-full h-full object-cover rounded-3xl opacity-60 mix-blend-screen group-hover:scale-105 transition-transform duration-1000" data-alt="A sophisticated cyberpunk code editor interface with glowing pink and cyan text syntax highlighting. The screen shows complex lines of code related to AI agents and neural networks, reflected on a dark, polished metallic surface in a futuristic server room. Cinematic lighting with deep shadows and vibrant neon neon flares." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3SatF3VxzTZ4i279MQiQoIms3OS9JK82kI5e6UVh-L5GEAOCSCRU_ImhjC2cZmCghD_EO51Apb2b7oNEZ7uWGD-w8TeNbmHrS_fQwf0eXDBfxjOKaLkQjfSXK-sp_3y77mX6nf9LwmqtFHzVLR9Q7QNK2SjM0fuou-X3CBXRrBqv_xr88S-BS2NX1VMBjHnJzqegXbTiAbg1EX3j9N6Z5pz2jwX3sRstNjBzXEYa_nW4woubGUTSlYTIMml5yYdw7UWIGJQ9QT63X"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 bg-surface-container-lowest dark:bg-background border-t border-outline-variant/30 relative z-10">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-6">
+<div class="space-y-2">
+<div class="font-display font-bold text-primary text-2xl">Apex-Agent</div>
+<p class="font-body text-sm text-on-surface-variant">© 2024 Apex-Agent AI. All rights reserved.</p>
+<div class="text-xs font-label text-on-surface-variant/40 mt-4 px-3 py-1 border border-white/5 inline-block rounded">
+                    Developed by <span class="text-secondary font-bold">MJH</span>
+</div>
+</div>
+<nav class="flex gap-8">
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Service</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-body text-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Support</a>
+</nav>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full border border-outline-variant/30 flex items-center justify-center opacity-80 hover:opacity-100 hover:border-primary transition-all cursor-pointer">
+<span class="material-symbols-outlined text-on-surface">public</span>
+</div>
+<div class="w-10 h-10 rounded-full border border-outline-variant/30 flex items-center justify-center opacity-80 hover:opacity-100 hover:border-primary transition-all cursor-pointer">
+<span class="material-symbols-outlined text-on-surface">terminal</span>
+</div>
+</div>
+</div>
+</footer>
+<!-- Interactive Atmosphere Effect -->
+<script>
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.glass-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x > 0 && x < rect.width && y > 0 && y < rect.height) {
+                    card.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 45, 120, 0.1) 0%, rgba(30, 30, 48, 0.4) 60%)`;
+                } else {
+                    card.style.background = 'rgba(30, 30, 48, 0.4)';
+                }
+            });
+        });
+    </script>
+</body></html>

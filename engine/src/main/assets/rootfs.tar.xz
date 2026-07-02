@@ -1,0 +1,7 @@
+# Ubuntu rootfs placeholder
+# Download Ubuntu 24.04 minimal rootfs and compress with xz
+# Place the rootfs.tar.xz file here
+# 
+# Recommended download sources:
+# - https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/
+# - Use ubuntu-base-24.04-base-arm64.tar.gz and compress with: xz -z rootfs.tar.xz

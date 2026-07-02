@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:sharedUserId="com.apex.agent.suite"
+    android:sharedUserMaxSdkVersion="28">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".RageApplication"
+        android:allowBackup="false"
+        android:label="@string/apk_label"
+        android:supportsRtl="true"
+        android:process="${apexMainProcess}"
+        android:theme="@style/Theme.ApexSuite"
+        tools:targetApi="34">
+        <service
+            android:name=".RageHostService"
+            android:exported="true"
+            android:process="${apexMainProcess}">
+            <intent-filter>
+                <action android:name="com.apex.sdk.bridge.BIND_RAGE" />
+            </intent-filter>
+        </service>
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:process="${apexMainProcess}"
+            android:theme="@style/Theme.ApexSuite">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
