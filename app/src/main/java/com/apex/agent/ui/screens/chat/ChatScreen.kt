@@ -37,7 +37,13 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(onMenuClick: () -> Unit = {}) {
+fun ChatScreen(
+    onMenuClick: () -> Unit = {},
+    onNewChat: () -> Unit = {},
+    sessionManager: ChatSessionManager? = null,
+    currentSessionId: String? = null,
+    onSessionUpdate: (String, String, Int) -> Unit = { _, _, _ -> }
+) {
     val context = LocalContext.current
     var inputText by remember { mutableStateOf("") }
     val messages = remember {
@@ -113,6 +119,8 @@ fun ChatScreen(onMenuClick: () -> Unit = {}) {
                         messages.add(ChatMessage(bubbles = listOf(Bubble.Text(inputText)), isUser = true))
                         val userMsg = inputText; inputText = ""
                         contextPercent = (contextPercent + userMsg.length / 50).coerceAtMost(100)
+                        // 更新会话
+                        currentSessionId?.let { sid -> onSessionUpdate(sid, userMsg, messages.size) }
                         scope.launch {
                             isStreaming = true
                             streamAgentResponse(messages, userMsg, selectedSkill, deepThinking, webSearch, selectedModel, listState) { cmd ->
@@ -121,6 +129,8 @@ fun ChatScreen(onMenuClick: () -> Unit = {}) {
                             }
                             isStreaming = false
                             contextPercent = (contextPercent + 15).coerceAtMost(100)
+                            // 回复后更新会话
+                            currentSessionId?.let { sid -> onSessionUpdate(sid, messages.lastOrNull()?.bubbles?.lastOrNull()?.let { it.toString().take(50) } ?: "回复", messages.size) }
                         }
                     }
                 },
