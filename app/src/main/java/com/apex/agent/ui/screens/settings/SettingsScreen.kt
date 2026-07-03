@@ -141,81 +141,6 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     }
 }
 
-/**
- * 模式切换界面 — 普通 / 狂暴 / 多 Agent。
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ModeSwitchScreen(modifier: Modifier = Modifier) {
-    var selectedMode by remember { mutableStateOf(AgentMode.NORMAL) }
-
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text("Agent 模式", style = MaterialTheme.typography.titleLarge) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            AgentMode.values().forEach { mode ->
-                AgentModeCard(
-                    mode = mode,
-                    selected = selectedMode == mode,
-                    onClick = { selectedMode = mode }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AgentModeCard(
-    mode: AgentMode,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
-            else MaterialTheme.colorScheme.surface
-        ),
-        border = if (selected) CardDefaults.outlinedCardBorder() else null
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(mode.icon, style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    mode.displayName,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    mode.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                    else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            RadioButton(selected = selected, onClick = onClick)
-        }
-    }
-}
-
 @Composable
 private fun SectionHeader(text: String) {
     Text(
@@ -255,10 +180,4 @@ private fun SettingsCard(
             trailing?.invoke()
         }
     }
-}
-
-enum class AgentMode(val displayName: String, val icon: String, val description: String) {
-    NORMAL("普通 Agent", "💬", "标准对话模式，适合日常任务"),
-    BURST("狂暴模式", "⚡", "31 个内置技能 + 多策略推理 + 并行执行"),
-    MULTI_AGENT("多 Agent 协作", "🏛️", "7 种协作模式 + 30 种角色模板 + 三省六部制")
 }

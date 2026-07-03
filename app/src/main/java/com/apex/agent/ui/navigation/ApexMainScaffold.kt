@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
 
 /**
- * 主界面脚手架 — Material You 3 NavigationBar（底部 5 Tab）。
+ * 主界面脚手架 — Material You 3 NavigationBar（底部 4 Tab）。
+ *
+ * Tab：Agent / 套件 / 诊断 / 设置
+ * 狂暴模式和多 Agent 协作在各自 APK 内使用。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,9 +38,6 @@ fun ApexMainScaffold() {
                 modifier = Modifier.padding(innerPadding)
             )
             ApexTab.SUITE -> com.apex.agent.ui.screens.suite.SuiteScreen(
-                modifier = Modifier.padding(innerPadding)
-            )
-            ApexTab.AGENTS -> com.apex.agent.ui.screens.settings.ModeSwitchScreen(
                 modifier = Modifier.padding(innerPadding)
             )
             ApexTab.DIAGNOSTICS -> com.apex.agent.ui.screens.diagnostics.DiagnosticsScreen(
