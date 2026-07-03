@@ -13,7 +13,6 @@ android {
 dependencies {
     api(project(":sdk:common-core"))
     api(project(":sdk:process-bridge"))
-    api(project(":domain"))
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)

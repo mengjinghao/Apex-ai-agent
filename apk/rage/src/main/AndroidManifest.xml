@@ -19,6 +19,7 @@
         tools:targetApi="34">
         <service
             android:name=".RageHostService"
+            android:permission="com.apex.sdk.bridge.permission.BIND"
             android:exported="true"
             android:process="${apexMainProcess}">
             <intent-filter>

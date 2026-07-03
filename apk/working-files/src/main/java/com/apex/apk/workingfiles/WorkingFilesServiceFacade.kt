@@ -14,9 +14,13 @@ import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
 import com.apex.sdk.common.BridgeResult
 import com.apex.sdk.common.bridgeRun
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import java.io.File
 
 /**
@@ -205,16 +209,49 @@ class WorkingFilesServiceFacade(private val context: Context) {
 
     /**
      * 订阅某文件夹的文件变更事件（通过 LocalSocket 推送）。
-     * 返回 streamChannel 名，调用方据此连接 LocalSocket。
+     *
+     * 实现机制：
+     *   1. 启动一个 [LocalStreamServer] 监听通道 `workingfiles.<folderId>`
+     *   2. 启动一个协程收集 [WorkingFilesWatcher.events] 的事件
+     *   3. 把每个 FileEvent 序列化为 JSON 后推送到 LocalStream
+     *
+     * 调用方通过 [com.apex.sdk.bridge.LocalStreamClient] 连接通道，实时收到变更。
+     *
+     * @return streamChannel 名（null 表示文件夹未绑定或监听失败）
      */
     fun subscribeChanges(folderId: String): String? {
         val watcher = manager.watcher(folderId) ?: return null
         val channelName = "workingfiles.$folderId"
 
-        // 把 watcher 的事件转发到 SuiteEventBus + LocalStream
-        // 真实实现：这里把 watcher.events 收集后通过 StreamChannelRegistry 推送
-        // 简化版：仅返回通道名，调用方需要通过 LocalStreamClient 连接
+        // 启动 LocalStream 服务端
+        com.apex.sdk.bridge.StreamChannelRegistry.open(channelName)
 
+        // 启动协程：watcher.events → LocalStream output
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        scope.launch {
+            watcher.events.collect { event ->
+                val json = serializeFileEvent(event)
+                _fileEvents.tryEmit(event)
+
+                // 通过 StreamChannelRegistry 推送到所有连接的客户端（同进程零延迟）
+                com.apex.sdk.bridge.StreamChannelRegistry.sendToChannel(
+                    channelName,
+                    json.toByteArray(Charsets.UTF_8)
+                )
+
+                // 同时发布到 SuiteEventBus，让跨进程的 APK 也能收到
+                com.apex.sdk.bridge.SuiteEventBus.publish(
+                    com.apex.sdk.bridge.SuiteEventTypes.WORKING_FOLDER_CHANGED,
+                    mapOf(
+                        "folderId" to folderId,
+                        "event" to event.javaClass.simpleName,
+                        "path" to event.path
+                    ),
+                    ApexSuite.ApkId.WORKING_FILES
+                )
+            }
+        }
+        ApexLog.i(ApexSuite.ApkId.WORKING_FILES, "[$TAG_SUB] subscribed changes: $folderId → $channelName")
         return channelName
     }
 
@@ -223,6 +260,138 @@ class WorkingFilesServiceFacade(private val context: Context) {
      */
     fun unsubscribeChanges(folderId: String) {
         com.apex.sdk.bridge.StreamChannelRegistry.close("workingfiles.$folderId")
+    }
+
+    /**
+     * 把 [FileEvent] 序列化为 JSON 字符串。
+     */
+    private fun serializeFileEvent(event: FileEvent): String {
+        val type = when (event) {
+            is FileEvent.Created -> "created"
+            is FileEvent.Modified -> "modified"
+            is FileEvent.Deleted -> "deleted"
+        }
+        return """{"type":"$type","path":"${event.path.replace("\\", "/").replace("\"", "\\\"")}","timestamp":${System.currentTimeMillis()}}"""
+    }
+
+    // ============================================================
+    // SAF（Storage Access Framework）支持
+    // ============================================================
+
+    /**
+     * 通过 SAF URI 绑定文件夹（Android 11+ 推荐方式）。
+     *
+     * @param folderId 业务 ID
+     * @param displayName 显示名
+     * @param uriString SAF URI 字符串（如 content://com.android.externalstorage.documents/...）
+     * @param mode 关联的 Agent 模式
+     */
+    suspend fun bindFolderByUri(
+        folderId: String,
+        displayName: String,
+        uriString: String,
+        mode: String = "ALL"
+    ): BridgeResult<Unit> = bridgeRun {
+        val agentMode = runCatching { AgentMode.valueOf(mode) }.getOrDefault(AgentMode.ALL)
+        val uri = Uri.parse(uriString)
+        val docFile = DocumentFile.fromTreeUri(context, uri)
+            ?: throw IllegalArgumentException("invalid SAF URI: $uriString")
+        if (!docFile.isDirectory) throw IllegalArgumentException("URI is not a directory: $uriString")
+
+        // 把 URI 转换为可访问的本地路径（缓存在应用私有目录的映射）
+        // 简化：直接以 URI 字符串作为 path 存储，后续操作通过 DocumentFile API
+        val folder = WorkingFolder(
+            id = folderId,
+            displayName = displayName,
+            path = uriString,  // SAF 模式下 path 是 URI 字符串
+            assignedAgentMode = agentMode
+        )
+        manager.bindFolder(folder)
+        ApexLog.i(ApexSuite.ApkId.WORKING_FILES, "[$TAG_SUB] SAF folder bound: $folderId → $uriString")
+
+        com.apex.sdk.bridge.SuiteEventBus.publish(
+            com.apex.sdk.bridge.SuiteEventTypes.WORKING_FOLDER_BOUND,
+            mapOf("folderId" to folderId, "path" to uriString, "mode" to mode, "source" to "saf"),
+            ApexSuite.ApkId.WORKING_FILES
+        )
+    }
+
+    /**
+     * 通过 SAF URI 列出文件。
+     */
+    suspend fun listFilesByUri(
+        folderId: String,
+        relativePath: String = ""
+    ): BridgeResult<List<FileEntry>> = bridgeRun {
+        val folder = manager.getFolder(folderId) ?: throw IllegalArgumentException("folder not found: $folderId")
+        if (!folder.path.startsWith("content://")) {
+            throw IllegalArgumentException("folder is not a SAF URI: ${folder.path}")
+        }
+        val uri = Uri.parse(folder.path)
+        var docFile = DocumentFile.fromTreeUri(context, uri)
+            ?: throw IllegalArgumentException("invalid URI")
+        // 进入子目录
+        if (relativePath.isNotBlank()) {
+            for (part in relativePath.split("/").filter { it.isNotBlank() }) {
+                docFile = docFile.findFile(part) ?: throw IllegalArgumentException("subdir not found: $part")
+            }
+        }
+        docFile.listFiles().map { f ->
+            FileEntry(
+                name = f.name ?: "",
+                path = f.uri.toString(),
+                relativePath = if (relativePath.isBlank()) (f.name ?: "") else "$relativePath/${f.name}",
+                isDirectory = f.isDirectory,
+                size = if (f.isFile) f.length() else 0L,
+                lastModified = f.lastModified()
+            )
+        }.sortedWith(compareBy({ !it.isDirectory }, { it.name }))
+    }
+
+    /**
+     * 通过 SAF URI 读取文件。
+     */
+    suspend fun readFileByUri(folderId: String, relativePath: String): BridgeResult<String> = bridgeRun {
+        val folder = manager.getFolder(folderId) ?: throw IllegalArgumentException("folder not found: $folderId")
+        val uri = Uri.parse(folder.path)
+        var docFile = DocumentFile.fromTreeUri(context, uri) ?: throw IllegalArgumentException("invalid URI")
+        for (part in relativePath.split("/").filter { it.isNotBlank() }) {
+            docFile = docFile.findFile(part) ?: throw IllegalArgumentException("file not found: $part")
+        }
+        if (!docFile.isFile) throw IllegalArgumentException("not a file: $relativePath")
+        context.contentResolver.openInputStream(docFile.uri)?.use { input ->
+            input.bufferedReader().readText()
+        } ?: throw IllegalStateException("failed to open input stream")
+    }
+
+    /**
+     * 通过 SAF URI 写入文件。
+     */
+    suspend fun writeFileByUri(
+        folderId: String,
+        relativePath: String,
+        content: String,
+        append: Boolean = false
+    ): BridgeResult<Boolean> = bridgeRun {
+        val folder = manager.getFolder(folderId) ?: throw IllegalArgumentException("folder not found: $folderId")
+        val uri = Uri.parse(folder.path)
+        var docFile = DocumentFile.fromTreeUri(context, uri) ?: throw IllegalArgumentException("invalid URI")
+        val parts = relativePath.split("/").filter { it.isNotBlank() }
+        // 进入或创建子目录
+        for (i in 0 until parts.size - 1) {
+            docFile = docFile.findFile(parts[i]) ?: docFile.createDirectory(parts[i])!!
+        }
+        val fileName = parts.last()
+        var targetFile = docFile.findFile(fileName)
+        if (targetFile == null) {
+            targetFile = docFile.createFile("application/octet-stream", fileName)
+                ?: throw IllegalStateException("failed to create file: $fileName")
+        }
+        context.contentResolver.openOutputStream(targetFile.uri, if (append) "wa" else "w")?.use { output ->
+            if (append) output.write(content.toByteArray())
+            else output.write(content.toByteArray())
+        } ?: throw IllegalStateException("failed to open output stream")
+        true
     }
 
     /**

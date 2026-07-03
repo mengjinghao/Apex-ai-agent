@@ -305,7 +305,7 @@ class EngineServiceFacade(private val context: Context) {
     fun isShizukuAvailable(): Boolean = shizukuManager.isAvailable()
 
     /** Shizuku 版本。 */
-    fun getShizukuVersion(): Int = shizukuManager.version
+    fun getShizukuVersion(): Int = shizukuManager.getVersion()
 
     /** Shizuku 权限是否已授予。 */
     fun isShizukuPermissionGranted(): Boolean = shizukuManager.isPermissionGranted()

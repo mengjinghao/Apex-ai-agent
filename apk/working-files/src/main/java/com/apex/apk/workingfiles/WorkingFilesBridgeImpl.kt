@@ -120,6 +120,37 @@ class WorkingFilesBridgeImpl(
                         facade.unsubscribeChanges(folderId)
                         buildJsonObject { put("success", true) }.toString()
                     }
+                    "workingfiles/bindFolderByUri" -> {
+                        val id = args["folderId"]?.jsonPrimitive?.content ?: ""
+                        val name = args["displayName"]?.jsonPrimitive?.content ?: ""
+                        val uri = args["uri"]?.jsonPrimitive?.content ?: ""
+                        val mode = args["mode"]?.jsonPrimitive?.content ?: "ALL"
+                        buildResult(facade.bindFolderByUri(id, name, uri, mode)) { JsonObject(emptyMap()) }
+                    }
+                    "workingfiles/listFilesByUri" -> {
+                        val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
+                        val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.listFilesByUri(folderId, relPath)) { list ->
+                            buildJsonObject {
+                                put("count", list.size)
+                                put("items", list.joinToString("\n") {
+                                    (if (it.isDirectory) "[DIR] " else "[FILE] ") + it.relativePath + " (${it.size}B)"
+                                })
+                            }
+                        }
+                    }
+                    "workingfiles/readFileByUri" -> {
+                        val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
+                        val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.readFileByUri(folderId, relPath)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/writeFileByUri" -> {
+                        val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
+                        val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
+                        val content = args["content"]?.jsonPrimitive?.content ?: ""
+                        val append = args["append"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false
+                        buildResult(facade.writeFileByUri(folderId, relPath, content, append)) { JsonPrimitive(it) }
+                    }
                     else -> errorResponse("unknown method: $method")
                 }
             }

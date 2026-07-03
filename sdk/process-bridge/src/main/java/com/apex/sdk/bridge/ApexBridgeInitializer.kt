@@ -60,9 +60,18 @@ class ApexBridgeInitializer : ContentProvider() {
         // 启动看门狗
         Watchdog.start()
 
-        // 绑定到主 APK 的 Bridge Registry
-        BridgeConnection.bindToRegistry(ctx) { connected ->
-            ApexLog.i(apkId, "[BridgeInitializer] bridge bound = $connected")
+        // 主 APK 自身：启动 BridgeRegistryService（其他 APK bindService 到此）
+        // 非 主 APK：bindService 到主 APK 的 Registry
+        if (apkId == ApexSuite.ApkId.MAIN) {
+            BridgeRegistryService.startInMainApp(ctx)
+            // 同时也 bindToRegistry（bind 到自己）
+            BridgeConnection.bindToRegistry(ctx) { connected ->
+                ApexLog.i(apkId, "[BridgeInitializer] self-bridge bound = $connected")
+            }
+        } else {
+            BridgeConnection.bindToRegistry(ctx) { connected ->
+                ApexLog.i(apkId, "[BridgeInitializer] bridge bound = $connected")
+            }
         }
 
         return true

@@ -90,7 +90,7 @@ class MarketServiceFacade(private val context: Context) {
     ): BridgeResult<List<MarketItemDto>> = bridgeRun {
         ensureInitialized()
         val cat = parseCategory(category)
-        val filter = MarketSearchFilter(query = query, limit = limit)
+        val filter = MarketSearchFilter(query = query, pageSize = limit)
         val result = when (cat) {
             IntegrationCategory.SKILLS -> center?.skillModule?.searchAcrossMarkets(filter)
             IntegrationCategory.MCP -> center?.mcpModule?.searchAcrossMarkets(filter)
@@ -226,7 +226,10 @@ class MarketServiceFacade(private val context: Context) {
             marketStats = overview.marketStats.mapKeys { it.key.name },
             totalMarkets = overview.marketStats.values.sum(),
             installedByCategory = overview.installedByCategory.mapKeys { it.key.name },
-            totalInstalled = overview.installedByCategory.values.sum()
+            totalInstalled = overview.installedCount,
+            updatableCount = overview.updatableCount,
+            enabledCount = overview.enabledCount,
+            disabledCount = overview.disabledCount
         )
     }
 
@@ -350,7 +353,10 @@ data class OverviewDto(
     val marketStats: Map<String, Int>,
     val totalMarkets: Int,
     val installedByCategory: Map<String, Int>,
-    val totalInstalled: Int
+    val totalInstalled: Int,
+    val updatableCount: Int,
+    val enabledCount: Int,
+    val disabledCount: Int
 )
 
 // 扩展函数：模型 → DTO

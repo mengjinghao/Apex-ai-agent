@@ -246,6 +246,25 @@ object StreamChannelRegistry {
         return server
     }
 
+    /**
+     * 向指定通道推送字节数据（如有客户端连接）。
+     * 返回是否成功入队（false 表示通道不存在或队列已满）。
+     */
+    fun sendToChannel(channelName: String, data: ByteArray): Boolean {
+        val server = servers[channelName] ?: return false
+        return try {
+            val result = server.output.trySend(data)
+            result.isSuccess
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    /**
+     * 检查某通道是否已开启。
+     */
+    fun isOpen(channelName: String): Boolean = servers.containsKey(channelName)
+
     fun close(channelName: String) {
         servers.remove(channelName)?.close()
     }

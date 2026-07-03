@@ -67,9 +67,12 @@ class RageServiceFacade(private val context: Context) {
     ): BridgeResult<Unit> = bridgeRun {
         if (_isInitialized.value) return@bridgeRun
 
+        // 从 Context 拿到 Application（BurstKernel.start 需要 Application）
+        val app = context.applicationContext as Application
+
         ApexLog.i(ApexSuite.ApkId.RAGE, "[$TAG_SUB] initializing BurstKernel...")
         BurstKernel.start(
-            app = context as Application,
+            app = app,
             llmConfig = llmConfig ?: defaultLlmConfig(),
             provider = LLMProvider.LOCAL_LLAMA,
             collaborationFramework = null

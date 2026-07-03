@@ -8,6 +8,12 @@
      这是套件主进程名，所有 APK 都应进入该进程以共享 JVM。 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 套件级签名权限 — 只有同签名的 APK 才能调用 BridgeRegistryService。
+         Android 12+ (API 31+) 强制要求 exported service 必须有 permission。 -->
+    <permission
+        android:name="com.apex.sdk.bridge.permission.BIND"
+        android:protectionLevel="signature" />
+
     <application>
         <provider
             android:name="com.apex.sdk.bridge.ApexBridgeInitializer"

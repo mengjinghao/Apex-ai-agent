@@ -100,6 +100,7 @@
         <service
             android:name="com.apex.sdk.bridge.BridgeRegistryService"
             android:exported="true"
+            android:permission="com.apex.sdk.bridge.permission.BIND"
             android:process="com.apex.agent.mainprocess">
             <intent-filter>
                 <action android:name="com.apex.sdk.bridge.BIND_REGISTRY" />

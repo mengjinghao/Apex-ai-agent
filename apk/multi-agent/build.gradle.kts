@@ -33,7 +33,6 @@ android {
 dependencies {
     implementation(project(":sdk:common-ui"))
     implementation(project(":lib:multi-agent"))
-    implementation(project(":domain"))
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)

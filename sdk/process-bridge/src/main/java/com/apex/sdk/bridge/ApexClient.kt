@@ -327,6 +327,30 @@ object ApexClient {
 
         suspend fun loadCodeFile(folderId: String, relativePath: String): BridgeResult<String> =
             invoke("workingfiles/loadCodeFile", mapOf("folderId" to folderId, "relativePath" to relativePath), "working-files")
+
+        suspend fun bindFolderByUri(folderId: String, displayName: String, uri: String, mode: String = "ALL"): BridgeResult<String> =
+            invoke("workingfiles/bindFolderByUri", mapOf(
+                "folderId" to folderId, "displayName" to displayName,
+                "uri" to uri, "mode" to mode
+            ), "working-files")
+
+        suspend fun listFilesByUri(folderId: String, relativePath: String = ""): BridgeResult<String> =
+            invoke("workingfiles/listFilesByUri", mapOf("folderId" to folderId, "relativePath" to relativePath), "working-files")
+
+        suspend fun readFileByUri(folderId: String, relativePath: String): BridgeResult<String> =
+            invoke("workingfiles/readFileByUri", mapOf("folderId" to folderId, "relativePath" to relativePath), "working-files")
+
+        suspend fun writeFileByUri(folderId: String, relativePath: String, content: String, append: Boolean = false): BridgeResult<String> =
+            invoke("workingfiles/writeFileByUri", mapOf(
+                "folderId" to folderId, "relativePath" to relativePath,
+                "content" to content, "append" to append.toString()
+            ), "working-files")
+
+        suspend fun subscribeChanges(folderId: String): BridgeResult<String> =
+            invoke("workingfiles/subscribeChanges", mapOf("folderId" to folderId), "working-files")
+
+        suspend fun unsubscribeChanges(folderId: String): BridgeResult<String> =
+            invoke("workingfiles/unsubscribeChanges", mapOf("folderId" to folderId), "working-files")
     }
 
     // ============================================================
@@ -355,6 +379,13 @@ object ApexClient {
         suspend fun initializeTts(language: String = "zh-CN"): BridgeResult<String> =
             invoke("voice/initializeTts", mapOf("language" to language), "voice")
 
+        suspend fun setTtsParams(speed: Float = 1.0f, pitch: Float = 1.0f, volume: Float = 1.0f): BridgeResult<String> =
+            invoke("voice/setTtsParams", mapOf(
+                "speed" to speed.toString(),
+                "pitch" to pitch.toString(),
+                "volume" to volume.toString()
+            ), "voice")
+
         suspend fun speak(text: String, language: String = "zh-CN"): BridgeResult<String> =
             invoke("voice/speak", mapOf("text" to text, "language" to language), "voice")
 
@@ -363,6 +394,12 @@ object ApexClient {
 
         suspend fun stopSpeaking(): BridgeResult<String> = invoke("voice/stopSpeaking", emptyMap(), "voice")
 
+        suspend fun isSpeaking(): BridgeResult<String> = invoke("voice/isSpeaking", emptyMap(), "voice")
+
+        suspend fun listTtsEngines(): BridgeResult<String> = invoke("voice/listTtsEngines", emptyMap(), "voice")
+
+        suspend fun listSupportedLanguages(): BridgeResult<String> = invoke("voice/listSupportedLanguages", emptyMap(), "voice")
+
         suspend fun startRecognition(language: String = "zh-CN"): BridgeResult<String> =
             invoke("voice/startRecognition", mapOf("language" to language), "voice")
 
@@ -370,6 +407,8 @@ object ApexClient {
             invoke("voice/recognizeOnce", mapOf("language" to language, "timeoutMs" to timeoutMs.toString()), "voice")
 
         suspend fun stopRecognition(): BridgeResult<String> = invoke("voice/stopRecognition", emptyMap(), "voice")
+
+        suspend fun cancelRecognition(): BridgeResult<String> = invoke("voice/cancelRecognition", emptyMap(), "voice")
     }
 
     // ============================================================

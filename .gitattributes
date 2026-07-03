@@ -1,0 +1,2 @@
+# Ignore file mode changes (caused by Python scripts running on different filesystems)
+* filemode=false

@@ -5,7 +5,6 @@ import com.ai.assistance.aiterminal.terminal.ui.AgentMode
 import com.ai.assistance.aiterminal.terminal.ui.ApexTerminal
 import com.ai.assistance.aiterminal.terminal.ui.TerminalSessionData
 import com.ai.assistance.aiterminal.terminal.multiagent.TerminalAgentRole
-import com.apex.sdk.bridge.LocalStreamClient
 import com.apex.sdk.bridge.LocalStreamServer
 import com.apex.sdk.bridge.StreamChannelRegistry
 import com.apex.sdk.bridge.TypedServiceRegistry
