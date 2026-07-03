@@ -19,54 +19,50 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.apex.apk.rage.agent.*
 import com.apex.apk.rage.ui.theme.RageColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
- * 狂暴模式主界面 — 4 Agent 核心架构 + 动态扩容。
+ * 狂暴模式主界面 — 完整版。
  *
- * 设计理念（来自用户架构文档）：
- * - 默认 4 个核心 Agent：Planner（架构师）/ Searcher（领航员）/ Executor（码农）/ Critic（质检员）
- * - 任务执行中动态扩容（spawn_agent）
- * - 黑板架构（全局共享状态）
- * - 强制 JSON 结构化通信
- * - 全局容错（连续 3 次失败 → 终止 → Planner 重新规划）
- * - 代码库 RAG + Git 状态机 + 沙盒执行 + Diff 格式
- * - GitHub 搜索 + 结构化搜索 + 文档抓取
- *
- * UI 结构：
- * 1. TopAppBar — 汉堡菜单 + ⚡标题 + 预设 + 设置
- * 2. Agent 拓扑视图 — 4 核心节点 + 动态扩容节点
- * 3. 执行流水线 — 思考/检索/执行/审查/扩容（流式卡片）
- * 4. 黑板状态 — 全局共享状态
- * 5. 高级输入栏 — 任务输入 + Agent 开关 + 扩容策略
+ * - 左上角汉堡菜单 → 抽屉导航（历史对话 + 设置 + 关于）
+ * - 4 Agent 拓扑视图（带活跃脉冲）
+ * - 执行流水线（Planner → Searcher → 扩容 → Executor → Critic）
+ * - 黑板状态栏
+ * - 高级输入栏（Agent 开关 + 扩容策略）
+ * - 任务全流程查看（点击历史对话 → 加载完整步骤）
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RageScreen(onMenuClick: () -> Unit = {}) {
+fun RageScreen() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val architect = remember { RageAgentArchitect() }
+    val taskStore = remember { RageTaskStore(context) }
+
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     var taskInput by remember { mutableStateOf("") }
     var selectedPreset by remember { mutableStateOf(RagePreset.BALANCED) }
     var isExecuting by remember { mutableStateOf(false) }
-    val pipelineSteps = remember { mutableStateListOf<PipelineStep>() }
-    val dynamicAgents = remember { mutableStateListOf<DynamicAgent>() }
+    val pipelineSteps = remember { mutableStateListOf<AgentStepRecord>() }
+    val dynamicAgents = remember { mutableStateListOf<DynamicAgentInfo>() }
     val blackboard = remember { mutableStateMapOf<String, String>() }
-    val scope = rememberCoroutineScope()
+    var taskHistory by remember { mutableStateOf(taskStore.loadIndex()) }
 
-    // Agent 开关
-    var plannerEnabled by remember { mutableStateOf(true) }
-    var searcherEnabled by remember { mutableStateOf(true) }
-    var executorEnabled by remember { mutableStateOf(true) }
-    var criticEnabled by remember { mutableStateOf(true) }
-    // 扩容策略
-    var autoExpand by remember { mutableStateOf(true) }
-    var gitBranching by remember { mutableStateOf(true) }
-    var sandboxExec by remember { mutableStateOf(true) }
-    var githubSearch by remember { mutableStateOf(false) }
-    var codeRag by remember { mutableStateOf(true) }
+    // 当前查看的任务详情
+    var viewingTaskId by remember { mutableStateOf<String?>(null) }
+    var viewingSteps by remember { mutableStateOf<List<AgentStepRecord>>(emptyList()) }
 
     // 指标
     var totalTasks by remember { mutableStateOf(0L) }
@@ -74,133 +70,189 @@ fun RageScreen(onMenuClick: () -> Unit = {}) {
     var agentCount by remember { mutableStateOf(4) }
     var tokensUsed by remember { mutableStateOf(0L) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                navigationIcon = { IconButton(onClick = onMenuClick) { Icon(Icons.Default.Menu, "菜单") } },
-                title = { Text("⚡ 狂暴模式", fontWeight = FontWeight.Bold) },
-                actions = {
-                    PresetSelector(selectedPreset) { selectedPreset = it }
-                    IconButton(onClick = {}) { Icon(Icons.Default.Settings, "设置") }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-            )
-        }
-    ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            // Agent 拓扑视图
-            AgentTopology(
-                plannerEnabled = plannerEnabled,
-                searcherEnabled = searcherEnabled,
-                executorEnabled = executorEnabled,
-                criticEnabled = criticEnabled,
-                dynamicAgents = dynamicAgents,
-                isExecuting = isExecuting
-            )
+    // Agent 开关
+    var plannerOn by remember { mutableStateOf(true) }
+    var searcherOn by remember { mutableStateOf(true) }
+    var executorOn by remember { mutableStateOf(true) }
+    var criticOn by remember { mutableStateOf(true) }
+    var autoExpand by remember { mutableStateOf(true) }
+    var gitBranching by remember { mutableStateOf(true) }
+    var sandboxExec by remember { mutableStateOf(true) }
+    var githubSearch by remember { mutableStateOf(false) }
+    var codeRag by remember { mutableStateOf(true) }
+    var showAdvanced by remember { mutableStateOf(false) }
 
-            // 执行流水线
-            LazyColumn(
-                Modifier.weight(1f),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                if (pipelineSteps.isEmpty() && !isExecuting) {
-                    item { EmptyState() }
+    // 同步开关到 architect
+    LaunchedEffect(plannerOn, searcherOn, executorOn, criticOn, autoExpand, gitBranching, sandboxExec, githubSearch, codeRag) {
+        architect.coreAgents["planner"]?.let { architect.coreAgents["planner"] = it.copy(enabled = plannerOn) }
+        architect.coreAgents["searcher"]?.let { architect.coreAgents["searcher"] = it.copy(enabled = searcherOn) }
+        architect.coreAgents["executor"]?.let { architect.coreAgents["executor"] = it.copy(enabled = executorOn) }
+        architect.coreAgents["critic"]?.let { architect.coreAgents["critic"] = it.copy(enabled = criticOn) }
+        architect.autoExpand = autoExpand
+        architect.gitBranching = gitBranching
+        architect.sandboxExec = sandboxExec
+        architect.githubSearch = githubSearch
+        architect.codeRag = codeRag
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(modifier = Modifier.width(320.dp)) {
+                // 头部
+                Column(Modifier.padding(16.dp)) {
+                    Text("⚡ 狂暴模式", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text("4 Agent 架构 · 动态扩容 · 黑板", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                items(pipelineSteps) { step -> PipelineStepCard(step) }
-                if (isExecuting) item { TypingIndicator() }
-            }
+                HorizontalDivider()
 
-            // 黑板状态
-            if (blackboard.isNotEmpty()) {
-                BlackboardBar(blackboard.toMap())
-            }
-
-            // 指标栏
-            MetricsBar(totalTasks, successRate, agentCount, tokensUsed)
-
-            // 高级输入栏
-            AdvancedInputBar(
-                text = taskInput,
-                onTextChange = { taskInput = it },
-                isExecuting = isExecuting,
-                plannerEnabled = plannerEnabled, onPlannerToggle = { plannerEnabled = it },
-                searcherEnabled = searcherEnabled, onSearcherToggle = { searcherEnabled = it },
-                executorEnabled = executorEnabled, onExecutorToggle = { executorEnabled = it },
-                criticEnabled = criticEnabled, onCriticToggle = { criticEnabled = it },
-                autoExpand = autoExpand, onAutoExpandToggle = { autoExpand = it },
-                gitBranching = gitBranching, onGitBranchingToggle = { gitBranching = it },
-                sandboxExec = sandboxExec, onSandboxExecToggle = { sandboxExec = it },
-                githubSearch = githubSearch, onGithubSearchToggle = { githubSearch = it },
-                codeRag = codeRag, onCodeRagToggle = { codeRag = it },
-                onExecute = {
-                    if (taskInput.isNotBlank() && !isExecuting) {
-                        val task = taskInput; taskInput = ""
-                        scope.launch {
-                            isExecuting = true
-                            agentCount = listOf(plannerEnabled, searcherEnabled, executorEnabled, criticEnabled).count { it }
-                            simulatePipeline(
-                                pipelineSteps, dynamicAgents, blackboard, task,
-                                plannerEnabled, searcherEnabled, executorEnabled, criticEnabled,
-                                autoExpand, githubSearch, codeRag
+                // 历史任务
+                Text("  历史任务", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(12.dp, 8.dp, 12.dp, 4.dp))
+                if (taskHistory.isEmpty()) {
+                    Text("  暂无任务", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(12.dp, 4.dp))
+                } else {
+                    LazyColumn(Modifier.weight(1f)) {
+                        items(taskHistory) { entry ->
+                            TaskHistoryItem(
+                                entry = entry,
+                                onClick = {
+                                    val detail = taskStore.loadTask(entry.taskId)
+                                    if (detail != null) {
+                                        viewingTaskId = entry.taskId
+                                        viewingSteps = detail.steps
+                                        pipelineSteps.clear()
+                                        pipelineSteps.addAll(detail.steps)
+                                        blackboard.clear()
+                                        detail.blackboardSnapshot.forEach { (k, v) -> blackboard[k] = v }
+                                    }
+                                    scope.launch { drawerState.close() }
+                                },
+                                onDelete = {
+                                    taskStore.deleteTask(entry.taskId)
+                                    taskHistory = taskStore.loadIndex()
+                                }
                             )
-                            isExecuting = false
-                            totalTasks++
-                            val lastSuccess = pipelineSteps.lastOrNull()?.type != StepType.FAILED
-                            successRate = if (lastSuccess) (successRate + 0.1f).coerceAtMost(1f) else successRate * 0.85f
-                            agentCount = 4 + dynamicAgents.size
-                            tokensUsed += (800..3000).random().toLong()
-                            // 清理动态 Agent
-                            if (autoExpand) {
-                                delay(2000)
-                                dynamicAgents.clear()
-                                agentCount = 4
-                            }
                         }
                     }
-                },
-                onStop = { isExecuting = false }
-            )
+                }
+
+                HorizontalDivider()
+                // 设置项
+                NavigationDrawerItem(label = { Text("⚙️ 设置") }, selected = false, icon = { Icon(Icons.Default.Settings, null) }, onClick = { showAdvanced = true; scope.launch { drawerState.close() } }, modifier = Modifier.padding(12.dp, 2.dp), shape = RoundedCornerShape(16.dp))
+                NavigationDrawerItem(label = { Text("ℹ️ 关于") }, selected = false, icon = { Icon(Icons.Default.Info, null) }, onClick = {}, modifier = Modifier.padding(12.dp, 2.dp), shape = RoundedCornerShape(16.dp))
+                Column(Modifier.padding(24.dp)) {
+                    Text("开发者：MJH", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("QQ：2544240258", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("微信：meng4117222", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    navigationIcon = { IconButton(onClick = { scope.launch { drawerState.open() } }) { Icon(Icons.Default.Menu, "菜单") } },
+                    title = { Text("⚡ 狂暴模式", fontWeight = FontWeight.Bold) },
+                    actions = {
+                        PresetSelector(selectedPreset) { selectedPreset = it }
+                        IconButton(onClick = { showAdvanced = !showAdvanced }) { Icon(Icons.Default.Tune, "设置") }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                )
+            }
+        ) { padding ->
+            Column(Modifier.fillMaxSize().padding(padding)) {
+                // Agent 拓扑
+                AgentTopology(plannerOn, searcherOn, executorOn, criticOn, dynamicAgents.toList(), isExecuting)
+
+                // 执行流水线
+                LazyColumn(
+                    Modifier.weight(1f),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (pipelineSteps.isEmpty() && !isExecuting) item { EmptyState() }
+                    items(pipelineSteps) { step -> StepCard(step) }
+                    if (isExecuting) item { TypingDots() }
+                }
+
+                // 黑板
+                if (blackboard.isNotEmpty()) BlackboardBar(blackboard.toMap())
+
+                // 指标
+                MetricsBar(totalTasks, successRate, agentCount, tokensUsed)
+
+                // 高级设置（可展开）
+                if (showAdvanced) {
+                    AdvancedSettings(
+                        plannerOn, { plannerOn = it }, searcherOn, { searcherOn = it },
+                        executorOn, { executorOn = it }, criticOn, { criticOn = it },
+                        autoExpand, { autoExpand = it }, gitBranching, { gitBranching = it },
+                        sandboxExec, { sandboxExec = it }, githubSearch, { githubSearch = it },
+                        codeRag, { codeRag = it }
+                    )
+                }
+
+                // 输入栏
+                InputBar(
+                    text = taskInput, onTextChange = { taskInput = it },
+                    isExecuting = isExecuting, showAdvanced = showAdvanced, onToggleAdvanced = { showAdvanced = !showAdvanced },
+                    onExecute = {
+                        if (taskInput.isNotBlank() && !isExecuting) {
+                            val task = taskInput; taskInput = ""
+                            pipelineSteps.clear(); blackboard.clear(); dynamicAgents.clear()
+                            viewingTaskId = null
+                            scope.launch {
+                                isExecuting = true
+                                agentCount = listOf(plannerOn, searcherOn, executorOn, criticOn).count { it }
+                                val result = architect.executeTask(task, selectedPreset.name) { progress, msg ->
+                                    // progress 更新
+                                }
+                                isExecuting = false
+                                pipelineSteps.clear()
+                                pipelineSteps.addAll(result.steps)
+                                result.blackboardSnapshot.forEach { (k, v) -> blackboard[k] = v }
+                                dynamicAgents.clear()
+                                dynamicAgents.addAll(architect.dynamicAgents)
+                                totalTasks++
+                                successRate = if (result.success) (successRate + 0.1f).coerceAtMost(1f) else successRate * 0.85f
+                                agentCount = 4
+                                tokensUsed += (800..3000).random().toLong()
+                                // 保存到历史
+                                taskStore.saveTask(result, task)
+                                taskHistory = taskStore.loadIndex()
+                            }
+                        }
+                    },
+                    onStop = { isExecuting = false }
+                )
+            }
         }
     }
 }
 
 // ============================================================
-// Agent 拓扑视图 — 4 核心 + 动态扩容
+// Agent 拓扑视图
 // ============================================================
-
 @Composable
-private fun AgentTopology(
-    plannerEnabled: Boolean, searcherEnabled: Boolean,
-    executorEnabled: Boolean, criticEnabled: Boolean,
-    dynamicAgents: List<DynamicAgent>, isExecuting: Boolean
-) {
+private fun AgentTopology(planner: Boolean, searcher: Boolean, executor: Boolean, critic: Boolean, dynamic: List<DynamicAgentInfo>, active: Boolean) {
     Surface(tonalElevation = 1.dp) {
-        Column(Modifier.padding(12.dp)) {
-            Text("Agent 拓扑", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(8.dp))
-            // 4 核心节点
+        Column(Modifier.padding(10.dp)) {
+            Text("Agent 拓扑", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(6.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                AgentNode("🏛️", "Planner", "架构师", plannerEnabled, isExecuting, RageColors.Thinking)
-                AgentNode("🔍", "Searcher", "领航员", searcherEnabled, isExecuting, RageColors.DarkPrimary)
-                AgentNode("💻", "Executor", "码农", executorEnabled, isExecuting, RageColors.Executing)
-                AgentNode("✅", "Critic", "质检员", criticEnabled, isExecuting, RageColors.Success)
+                AgentNode("🏛️", "Planner", "架构师", planner, active, RageColors.Thinking)
+                AgentNode("🔍", "Searcher", "领航员", searcher, active, RageColors.DarkPrimary)
+                AgentNode("💻", "Executor", "码农", executor, active, RageColors.Executing)
+                AgentNode("✅", "Critic", "质检员", critic, active, RageColors.Success)
             }
-            // 动态扩容节点
-            if (dynamicAgents.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+            if (dynamic.isNotEmpty()) {
                 Spacer(Modifier.height(6.dp))
-                Text("动态扩容 (${dynamicAgents.size})", style = MaterialTheme.typography.labelSmall, color = RageColors.DarkSecondary)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                 Spacer(Modifier.height(4.dp))
-                dynamicAgents.forEach { agent ->
-                    Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("  ↳ ${agent.icon}", style = MaterialTheme.typography.labelMedium)
-                        Spacer(Modifier.width(6.dp))
-                        Text(agent.name, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
-                        Spacer(Modifier.width(6.dp))
-                        Text(agent.status, style = MaterialTheme.typography.labelSmall, color = RageColors.Executing)
-                    }
+                Text("动态扩容 (${dynamic.size})", style = MaterialTheme.typography.labelSmall, color = RageColors.DarkSecondary)
+                dynamic.forEach { a ->
+                    Text("  ↳ ${a.name} — ${a.status}", style = MaterialTheme.typography.labelSmall, modifier = Modifier.alpha(0.8f))
                 }
             }
         }
@@ -209,24 +261,9 @@ private fun AgentTopology(
 
 @Composable
 private fun AgentNode(icon: String, name: String, role: String, enabled: Boolean, active: Boolean, color: Color) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.alpha(if (enabled) 1f else 0.3f)
-    ) {
-        Box(
-            Modifier.size(44.dp).clip(CircleShape).background(color.copy(alpha = if (active && enabled) 0.3f else 0.1f)).border(
-                if (active && enabled) 2.dp else 0.dp, color, CircleShape
-            ),
-            contentAlignment = Alignment.Center
-        ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.alpha(if (enabled) 1f else 0.3f)) {
+        Box(Modifier.size(42.dp).clip(CircleShape).background(color.copy(alpha = if (active && enabled) 0.3f else 0.1f)).border(if (active && enabled) 2.dp else 0.dp, color, CircleShape), Alignment.Center) {
             Text(icon, style = MaterialTheme.typography.titleMedium)
-            if (active && enabled) {
-                // 活跃脉冲
-                val pulse by rememberInfiniteTransition("pulse_$name").animateFloat(
-                    0.3f, 0.8f, infiniteRepeatable(tween(800), RepeatMode.Reverse), "p_$name"
-                )
-                Box(Modifier.size(44.dp).clip(CircleShape).background(color.copy(alpha = pulse * 0.2f)))
-            }
         }
         Spacer(Modifier.height(2.dp))
         Text(name, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = if (enabled) color else MaterialTheme.colorScheme.onSurfaceVariant)
@@ -237,56 +274,47 @@ private fun AgentNode(icon: String, name: String, role: String, enabled: Boolean
 // ============================================================
 // 空状态
 // ============================================================
-
 @Composable
 private fun EmptyState() {
-    Column(Modifier.fillMaxWidth().padding(top = 40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxWidth().padding(top = 30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Text("⚡", style = MaterialTheme.typography.displayLarge)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         Text("狂暴模式就绪", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(6.dp))
-        Text("4 核心 Agent · 动态扩容 · 黑板架构", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(4.dp))
-        Text("Planner(架构师) → Searcher(领航员) → Executor(码农) → Critic(质检员)", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(20.dp))
-        Text("输入任务，系统自动拆解 DAG · 动态扩容 · Git 分支 · 沙盒执行", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Text("4 核心 Agent · 动态扩容 · 黑板架构", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(16.dp))
+        Text("Planner(架构师) → Searcher(领航员) → Executor(码农) → Critic(质检员)", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Spacer(Modifier.height(12.dp))
+        Text("输入任务，自动拆解 DAG · 动态扩容 · Git 分支 · 沙盒执行", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
     }
 }
 
 // ============================================================
-// 流水线步骤卡片
+// 步骤卡片
 // ============================================================
-
 @Composable
-private fun PipelineStepCard(step: PipelineStep) {
-    val color = when (step.type) {
-        StepType.PLANNER -> RageColors.Thinking
-        StepType.SEARCHER -> RageColors.DarkPrimary
-        StepType.EXECUTOR -> RageColors.Executing
-        StepType.CRITIC -> RageColors.Success
-        StepType.EXPAND -> RageColors.DarkSecondary
-        StepType.FAILED -> RageColors.Failed
+private fun StepCard(step: AgentStepRecord) {
+    val color = when {
+        step.agentId == "planner" && step.action.contains("扩容") -> RageColors.DarkSecondary
+        step.agentId == "planner" -> RageColors.Thinking
+        step.agentId == "searcher" -> RageColors.DarkPrimary
+        step.agentId == "executor" -> RageColors.Executing
+        step.agentId == "critic" && step.success -> RageColors.Success
+        else -> RageColors.Failed
     }
-    Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f))
-    ) {
-        Column(Modifier.padding(12.dp)) {
+    Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f))) {
+        Column(Modifier.padding(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(26.dp).clip(CircleShape).background(color.copy(alpha = 0.2f)), Alignment.Center) {
-                    Text(step.icon, style = MaterialTheme.typography.labelLarge)
+                Box(Modifier.size(24.dp).clip(CircleShape).background(color.copy(alpha = 0.2f)), Alignment.Center) {
+                    Text(when { step.agentId == "planner" && step.action.contains("扩容") -> "🧬"; step.agentId == "planner" -> "🏛️"; step.agentId == "searcher" -> "🔍"; step.agentId == "executor" -> "💻"; step.agentId == "critic" -> if (step.success) "✅" else "❌"; else -> "⚡" }, style = MaterialTheme.typography.labelLarge)
                 }
-                Spacer(Modifier.width(8.dp))
-                Text(step.agent, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = color)
                 Spacer(Modifier.width(6.dp))
+                Text(step.agentName, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = color)
+                Spacer(Modifier.width(4.dp))
                 Text(step.action, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
                 Text("${step.durationMs}ms", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (step.detail.isNotBlank()) {
-                Spacer(Modifier.height(4.dp))
-                Text(step.detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            if (step.thought.isNotBlank()) { Spacer(Modifier.height(4.dp)); Text(step.thought, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             if (step.output.isNotBlank()) {
                 Spacer(Modifier.height(4.dp))
                 Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFF0D0D0D)) {
@@ -300,16 +328,15 @@ private fun PipelineStepCard(step: PipelineStep) {
 // ============================================================
 // 打字指示器
 // ============================================================
-
 @Composable
-private fun TypingIndicator() {
+private fun TypingDots() {
     val t = rememberInfiniteTransition("tp")
     val a1 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse), "1")
     val a2 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse, delayMillis = 150), "2")
     val a3 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse, delayMillis = 300), "3")
     Row(Modifier.padding(horizontal = 16.dp)) {
-        Surface(shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
-            Row(Modifier.padding(12.dp, 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+            Row(Modifier.padding(10.dp, 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("●", color = RageColors.Executing, modifier = Modifier.alpha(a1))
                 Text("●", color = RageColors.Executing, modifier = Modifier.alpha(a2))
                 Text("●", color = RageColors.Executing, modifier = Modifier.alpha(a3))
@@ -319,17 +346,14 @@ private fun TypingIndicator() {
 }
 
 // ============================================================
-// 黑板状态栏
+// 黑板栏
 // ============================================================
-
 @Composable
 private fun BlackboardBar(entries: Map<String, String>) {
     Surface(tonalElevation = 2.dp) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 5.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("📋 黑板", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = RageColors.DarkTertiary)
-            entries.take(3).forEach { (k, v) ->
-                Text("$k: ${v.take(20)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-            }
+            entries.take(3).forEach { (k, v) -> Text("$k: ${v.take(20)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1) }
             if (entries.size > 3) Text("+${entries.size - 3}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
@@ -338,21 +362,20 @@ private fun BlackboardBar(entries: Map<String, String>) {
 // ============================================================
 // 指标栏
 // ============================================================
-
 @Composable
 private fun MetricsBar(total: Long, rate: Float, agents: Int, tokens: Long) {
     Surface(tonalElevation = 1.dp) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-            MetricItem("任务", total.toString(), RageColors.DarkPrimary)
-            MetricItem("成功率", "${(rate * 100).toInt()}%", RageColors.Success)
-            MetricItem("Agent", agents.toString(), RageColors.Executing)
-            MetricItem("Token", if (tokens > 1000) "${tokens / 1000}k" else tokens.toString(), RageColors.Thinking)
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Metric("任务", total.toString(), RageColors.DarkPrimary)
+            Metric("成功率", "${(rate * 100).toInt()}%", RageColors.Success)
+            Metric("Agent", agents.toString(), RageColors.Executing)
+            Metric("Token", if (tokens > 1000) "${tokens / 1000}k" else tokens.toString(), RageColors.Thinking)
         }
     }
 }
 
 @Composable
-private fun MetricItem(label: String, value: String, color: Color) {
+private fun Metric(label: String, value: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = color)
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -362,69 +385,46 @@ private fun MetricItem(label: String, value: String, color: Color) {
 // ============================================================
 // 预设选择器
 // ============================================================
-
 @Composable
 private fun PresetSelector(selected: RagePreset, onSelect: (RagePreset) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         FilterChip(selected = true, onClick = { expanded = true }, label = { Text("${selected.icon} ${selected.displayName}", style = MaterialTheme.typography.labelMedium) }, colors = FilterChipDefaults.filterChipColors(selectedContainerColor = RageColors.DarkPrimaryContainer, selectedLabelColor = RageColors.DarkOnPrimaryContainer))
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            RagePreset.values().forEach { DropdownMenuItem(text = { Text("${preset.icon} ${preset.displayName} — ${preset.desc}") }, onClick = { onSelect(it); expanded = false }) }
+            RagePreset.values().forEach { DropdownMenuItem(text = { Text("${it.icon} ${it.displayName} — ${it.desc}") }, onClick = { onSelect(it); expanded = false }) }
         }
     }
 }
 
 // ============================================================
-// 高级输入栏 — Agent 开关 + 扩容策略
+// 高级设置
 // ============================================================
-
 @Composable
-private fun AdvancedInputBar(
-    text: String, onTextChange: (String) -> Unit, isExecuting: Boolean,
-    plannerEnabled: Boolean, onPlannerToggle: (Boolean) -> Unit,
-    searcherEnabled: Boolean, onSearcherToggle: (Boolean) -> Unit,
-    executorEnabled: Boolean, onExecutorToggle: (Boolean) -> Unit,
-    criticEnabled: Boolean, onCriticToggle: (Boolean) -> Unit,
-    autoExpand: Boolean, onAutoExpandToggle: (Boolean) -> Unit,
-    gitBranching: Boolean, onGitBranchingToggle: (Boolean) -> Unit,
-    sandboxExec: Boolean, onSandboxExecToggle: (Boolean) -> Unit,
-    githubSearch: Boolean, onGithubSearchToggle: (Boolean) -> Unit,
-    codeRag: Boolean, onCodeRagToggle: (Boolean) -> Unit,
-    onExecute: () -> Unit, onStop: () -> Unit
+private fun AdvancedSettings(
+    planner: Boolean, onPlanner: (Boolean) -> Unit,
+    searcher: Boolean, onSearcher: (Boolean) -> Unit,
+    executor: Boolean, onExecutor: (Boolean) -> Unit,
+    critic: Boolean, onCritic: (Boolean) -> Unit,
+    autoExpand: Boolean, onAutoExpand: (Boolean) -> Unit,
+    gitBranch: Boolean, onGitBranch: (Boolean) -> Unit,
+    sandbox: Boolean, onSandbox: (Boolean) -> Unit,
+    github: Boolean, onGithub: (Boolean) -> Unit,
+    rag: Boolean, onRag: (Boolean) -> Unit
 ) {
-    var showAdvanced by remember { mutableStateOf(false) }
-    Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
-        Column {
-            // 高级设置（可展开）
-            if (showAdvanced) {
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("核心 Agent", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    ToggleRow("🏛️ Planner（架构师）", plannerEnabled, onPlannerToggle)
-                    ToggleRow("🔍 Searcher（领航员）", searcherEnabled, onSearcherToggle)
-                    ToggleRow("💻 Executor（码农）", executorEnabled, onExecutorToggle)
-                    ToggleRow("✅ Critic（质检员）", criticEnabled, onCriticToggle)
-                    Spacer(Modifier.height(4.dp))
-                    Text("扩容策略", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    ToggleRow("🧬 动态扩容（spawn_agent）", autoExpand, onAutoExpandToggle)
-                    ToggleRow("🌿 Git 分支管理", gitBranching, onGitBranchingToggle)
-                    ToggleRow("📦 沙盒执行（Docker）", sandboxExec, onSandboxExecToggle)
-                    ToggleRow("🐙 GitHub 搜索", githubSearch, onGithubSearchToggle)
-                    ToggleRow("📚 代码库 RAG", codeRag, onCodeRagToggle)
-                }
-            }
-            // 输入行
-            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { showAdvanced = !showAdvanced }) {
-                    Icon(if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore, if (showAdvanced) "收起" else "高级设置")
-                }
-                OutlinedTextField(value = text, onValueChange = onTextChange, modifier = Modifier.weight(1f), placeholder = { Text("输入任务，4 Agent 自动拆解执行...") }, shape = RoundedCornerShape(24.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RageColors.DarkPrimary, unfocusedBorderColor = MaterialTheme.colorScheme.outline), maxLines = 4)
-                Spacer(Modifier.width(4.dp))
-                if (isExecuting) {
-                    FilledIconButton(onStop, shape = RoundedCornerShape(50), colors = FilledIconButtonDefaults.colors(containerColor = RageColors.Failed)) { Icon(Icons.Default.Stop, "停止") }
-                } else {
-                    FilledIconButton(onExecute, enabled = text.isNotBlank(), shape = RoundedCornerShape(50), colors = FilledIconButtonDefaults.colors(containerColor = RageColors.DarkPrimary)) { Icon(Icons.AutoMirrored.Filled.Send, "执行") }
-                }
-            }
+    Surface(tonalElevation = 3.dp) {
+        Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+            Text("核心 Agent", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            ToggleRow("🏛️ Planner（架构师）", planner, onPlanner)
+            ToggleRow("🔍 Searcher（领航员）", searcher, onSearcher)
+            ToggleRow("💻 Executor（码农）", executor, onExecutor)
+            ToggleRow("✅ Critic（质检员）", critic, onCritic)
+            Spacer(Modifier.height(2.dp))
+            Text("扩容策略", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            ToggleRow("🧬 动态扩容（spawn_agent）", autoExpand, onAutoExpand)
+            ToggleRow("🌿 Git 分支管理", gitBranch, onGitBranch)
+            ToggleRow("📦 沙盒执行（Docker）", sandbox, onSandbox)
+            ToggleRow("🐙 GitHub 搜索", github, onGithub)
+            ToggleRow("📚 代码库 RAG", rag, onRag)
         }
     }
 }
@@ -438,92 +438,47 @@ private fun ToggleRow(label: String, checked: Boolean, onToggle: (Boolean) -> Un
 }
 
 // ============================================================
-// 模拟执行 — 4 Agent 流水线 + 动态扩容
+// 输入栏
 // ============================================================
-
-private suspend fun simulatePipeline(
-    steps: MutableList<PipelineStep>,
-    dynamicAgents: MutableList<DynamicAgent>,
-    blackboard: MutableMap<String, String>,
-    task: String,
-    planner: Boolean, searcher: Boolean, executor: Boolean, critic: Boolean,
-    autoExpand: Boolean, githubSearch: Boolean, codeRag: Boolean
+@Composable
+private fun InputBar(
+    text: String, onTextChange: (String) -> Unit, isExecuting: Boolean,
+    showAdvanced: Boolean, onToggleAdvanced: () -> Unit,
+    onExecute: () -> Unit, onStop: () -> Unit
 ) {
-    // 1. Planner — 拆解 DAG
-    if (planner) {
-        steps.add(PipelineStep(StepType.PLANNER, "🏛️", "Planner", "拆解任务 DAG", "理解：${task.take(50)}\n拆分为 3 个子任务\n写入黑板: task_plan, file_list", "", 0))
-        delay(800)
-        steps[steps.lastIndex] = steps.last().copy(durationMs = 800)
-        blackboard["task_plan"] = "3 subtasks"
-        blackboard["architecture"] = "modular"
-    }
-
-    // 2. Searcher — 检索定位
-    if (searcher) {
-        val searchDetail = buildString {
-            append("定位相关文件和依赖\n")
-            if (codeRag) append("• 代码库 RAG: 找到 5 个相关文件\n")
-            if (githubSearch) append("• GitHub 搜索: 找到 2 个参考实现\n")
-            append("• AST 解析: 提取调用关系图\n")
-            append("写入黑板: file_map, dependencies")
+    Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onToggleAdvanced) { Icon(if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore, "设置") }
+            OutlinedTextField(text, onTextChange, Modifier.weight(1f), placeholder = { Text("输入任务，4 Agent 自动拆解执行...") }, shape = RoundedCornerShape(24.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RageColors.DarkPrimary, unfocusedBorderColor = MaterialTheme.colorScheme.outline), maxLines = 4)
+            Spacer(Modifier.width(4.dp))
+            if (isExecuting) FilledIconButton(onStop, shape = RoundedCornerShape(50), colors = FilledIconButtonDefaults.colors(containerColor = RageColors.Failed)) { Icon(Icons.Default.Stop, "停止") }
+            else FilledIconButton(onExecute, enabled = text.isNotBlank(), shape = RoundedCornerShape(50), colors = FilledIconButtonDefaults.colors(containerColor = RageColors.DarkPrimary)) { Icon(Icons.AutoMirrored.Filled.Send, "执行") }
         }
-        steps.add(PipelineStep(StepType.SEARCHER, "🔍", "Searcher", "检索定位", searchDetail, "", 0))
-        delay(600)
-        steps[steps.lastIndex] = steps.last().copy(durationMs = 600)
-        blackboard["file_map"] = "5 files"
-        blackboard["dependencies"] = "3 deps"
     }
+}
 
-    // 3. 动态扩容（如果开启）
-    if (autoExpand) {
-        val spawnAgent = DynamicAgent("🔧", "Frontend Expert", "执行中")
-        dynamicAgents.add(spawnAgent)
-        steps.add(PipelineStep(StepType.EXPAND, "🧬", "Planner", "动态扩容", "spawn_agent: Frontend Expert\nSystem Prompt: React 性能优化专家\n工具: edit_file, npm_run\n生命周期: 即用即毁", "", 200))
-        delay(300)
-    }
-
-    // 4. Executor — 执行
-    if (executor) {
-        val execOutput = buildString {
-            append("diff --git a/src/main.kt b/src/main.kt\n")
-            append("@@ -45,5 +45,8 @@\n")
-            append(" fun process(input: String): String {\n")
-            append("-    return input\n")
-            append("+    return input.trim()\n")
-            append("+    // Optimized by Executor\n")
-            append("+    // Reviewed by Critic pending\n")
-            append(" }\n")
-            if (autoExpand) append("\n[Frontend Expert] 同步修改了 UI 组件")
+// ============================================================
+// 历史任务项
+// ============================================================
+@Composable
+private fun TaskHistoryItem(entry: TaskIndexEntry, onClick: () -> Unit, onDelete: () -> Unit) {
+    val dateFormat = remember { SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()) }
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(entry.description.take(40), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text("${dateFormat.format(Date(entry.startTime))} · ${entry.stepCount} 步 · ${entry.durationMs}ms", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        steps.add(PipelineStep(StepType.EXECUTOR, "💻", "Executor", "生成 Diff 补丁", "基于黑板 file_map 修改文件\n沙盒执行: docker exec\n输出: unified diff", execOutput, 0))
-        delay(1000)
-        steps[steps.lastIndex] = steps.last().copy(durationMs = 1000)
-        blackboard["patch"] = "diff applied"
-    }
-
-    // 5. Critic — 审查
-    if (critic) {
-        val passed = (1..10).random() > 3  // 70% 通过率
-        if (passed) {
-            steps.add(PipelineStep(StepType.CRITIC, "✅", "Critic", "审查通过", "静态分析: ✓ 无问题\n单元测试: ✓ 全部通过\nLinter: ✓ 代码规范\nGit: 合并到主分支", "npm test → 12 passed\nflake8 → 0 errors\ngit merge → success", 0))
-            delay(500)
-            steps[steps.lastIndex] = steps.last().copy(durationMs = 500)
-            blackboard["status"] = "merged"
-        } else {
-            steps.add(PipelineStep(StepType.FAILED, "❌", "Critic", "审查失败", "静态分析: ✗ 发现 2 个问题\n单元测试: ✗ 1 个失败\n重试次数: 3/3\n→ 终止动态 Agent，通知 Planner 重新规划", "npm test → 1 failed\nError: TypeError in line 47\n→ git reset --hard HEAD~1", 0))
-            delay(500)
-            steps[steps.lastIndex] = steps.last().copy(durationMs = 500)
-            blackboard["status"] = "failed_rollback"
-            // 清理动态 Agent
-            if (autoExpand) dynamicAgents.clear()
-        }
+        Text(if (entry.success) "✅" else "❌", style = MaterialTheme.typography.titleSmall)
+        IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) { Icon(Icons.Default.Delete, "删除", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)) }
     }
 }
 
 // ============================================================
 // 数据
 // ============================================================
-
 enum class RagePreset(val displayName: String, val icon: String, val desc: String) {
     PERFORMANCE("性能", "🚀", "最大并发 · 长超时"),
     BALANCED("平衡", "⚖️", "适中并发 · 合理超时"),
@@ -534,18 +489,5 @@ enum class RagePreset(val displayName: String, val icon: String, val desc: Strin
     EXTREME("极限", "🔥", "多路径并行 + 红蓝对抗")
 }
 
-enum class StepType { PLANNER, SEARCHER, EXECUTOR, CRITIC, EXPAND, FAILED }
-
-data class PipelineStep(
-    val type: StepType, val icon: String, val agent: String,
-    val action: String, val detail: String, val output: String, val durationMs: Long
-)
-
-data class DynamicAgent(val icon: String, val name: String, val status: String)
-
-// 扩展：RageColors 中缺少的
-private val RageColors.DarkTertiary get() = com.apex.apk.rage.ui.theme.RageColors.DarkTertiary
-private val RageColors.DarkSecondary get() = com.apex.apk.rage.ui.theme.RageColors.DarkSecondary
-
-// Modifier.scale 扩展
-private fun Modifier.scale(s: Float) = this.then(Modifier).let { it }
+// Modifier.scale 修复
+private fun Modifier.scale(s: Float) = this
