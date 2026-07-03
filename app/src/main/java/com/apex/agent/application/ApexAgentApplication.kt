@@ -155,6 +155,29 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         AppState.initialize(this)
         GlobalLifecycleManager.register(this)
 
+        // ============================================================
+        // 诊断服务 — 已合并到主 APK（原 :apk:diagnostics 独立模块）
+        // 注册到 TypedServiceRegistry 让其他 APK 跨进程调用
+        // ============================================================
+        val diagnosticsFacade = com.apex.agent.diagnostics.DiagnosticsServiceFacade(this)
+        com.apex.sdk.bridge.TypedServiceRegistry.register<com.apex.agent.diagnostics.DiagnosticsServiceFacade>(diagnosticsFacade)
+        // 接管全局未捕获异常 → 写入崩溃报告
+        val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            try {
+                diagnosticsFacade.reportCrash(thread, throwable)
+            } catch (_: Throwable) {}
+            previousHandler?.uncaughtException(thread, throwable)
+        }
+        // 启动日志采集
+        try { diagnosticsFacade.startLogCapture() } catch (_: Throwable) {}
+
+        // 注册主 APK 的 BridgeImpl（让其他 APK 可通过 Bridge 调用 diagnostics/* 等方法）
+        com.apex.sdk.bridge.BridgeConnection.registerService(
+            "main",
+            com.apex.sdk.bridge.ApkBridgeStubAdapter(MainApkBridgeImpl())
+        )
+
         // [优化1] 健康检查：启动关键路径测量
         val health = ArchitectureHealthCheck.getInstance(this)
         health.beginColdStart()

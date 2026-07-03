@@ -1,10 +1,9 @@
-package com.apex.apk.diagnostics
+package com.apex.agent.diagnostics
 
 import android.content.Context
 import android.os.Build
 import android.os.Debug
 import android.os.Process
-import com.apex.sdk.bridge.TypedServiceRegistry
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
 import com.apex.sdk.common.BridgeResult
@@ -19,15 +18,24 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Diagnostics APK 的核心服务实现。
+ * 诊断服务门面 — 已合并到主 APK。
+ *
+ * **原本是独立 APK（:apk:diagnostics），现合并到主 APK 的 `com.apex.agent.diagnostics` 包**。
+ * 原因：诊断功能（日志/性能/崩溃/系统信息）属于"主 APK 内置能力"，无需独立安装。
+ * 主 APK 通过 [TypedServiceRegistry] 直接拿到本实例，零延迟调用。
  *
  * **能力清单**：
  *   1. 套件级日志收集（所有 APK 通过 SuiteEventBus / ApexLog 输出）
- *   2. 性能监控（CPU / 内存 / FPS / 启动时间）
+ *   2. 性能监控（JVM 内存 / Native 内存 / Watchdog 心跳）
  *   3. APK 健康检查（基于 Watchdog）
  *   4. 日志文件持久化（按日轮转）
- *   5. 崩溃堆栈收集
+ *   5. 崩溃堆栈收集（自动接管 UncaughtExceptionHandler）
  *   6. 系统信息（设备 / Android 版本 / 进程信息）
+ *   7. heap dump（内存泄漏分析）
+ *
+ * **使用方式**：
+ *   - 主 APK 内部：`TypedServiceRegistry.get<DiagnosticsServiceFacade>()`
+ *   - 跨 APK 调用：`ApexClient.diagnostics.*`（通过主 APK 的 Bridge 路由）
  */
 class DiagnosticsServiceFacade(private val context: Context) {
 
@@ -39,22 +47,21 @@ class DiagnosticsServiceFacade(private val context: Context) {
     private val _memoryStats = MutableStateFlow(MemoryStats(0, 0, 0))
     val memoryStats: StateFlow<MemoryStats> = _memoryStats.asStateFlow()
 
-    /** 当前 logcat 输出文件。 */
+    /** 当前 logcat 输出文件（按日轮转）。修复了原版的 getter 缺 return BUG。 */
     private val currentLogFile: File
         get() {
             val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-            File(logDir, "apex-$dateStr.log")
+            return File(logDir, "apex-$dateStr.log")
         }
 
     /**
      * 启动日志采集（logcat 输出到文件）。
+     * 真实实现需要 logcat 权限或 root；当前仅创建文件占位。
      */
     fun startLogCapture(): BridgeResult<Unit> = bridgeRun {
         val logFile = currentLogFile
-        // 异步采集 logcat（真实实现需要 logcat 权限或 root）
-        // 简化版：仅创建文件
         if (!logFile.exists()) logFile.createNewFile()
-        ApexLog.i(ApexSuite.ApkId.DIAGNOSTICS, "[$TAG_SUB] log capture started → ${logFile.absolutePath}")
+        ApexLog.i(ApexSuite.ApkId.MAIN, "[$TAG_SUB] log capture started → ${logFile.absolutePath}")
     }
 
     /**
@@ -65,9 +72,7 @@ class DiagnosticsServiceFacade(private val context: Context) {
         val file = currentLogFile
         if (!file.exists()) return@bridgeRun emptyList<LogEntry>()
         val lines = file.readLines().takeLast(maxLines)
-        lines.map { line ->
-            parseLogLine(line)
-        }
+        lines.map { line -> parseLogLine(line) }
     }
 
     /**
@@ -144,7 +149,7 @@ class DiagnosticsServiceFacade(private val context: Context) {
                 "message" to (throwable.message ?: ""),
                 "crashFile" to crashFile.absolutePath
             ),
-            ApexSuite.ApkId.DIAGNOSTICS
+            ApexSuite.ApkId.MAIN
         )
 
         crashFile.absolutePath
@@ -259,7 +264,6 @@ class DiagnosticsServiceFacade(private val context: Context) {
     }
 
     private fun parseLogLine(line: String): LogEntry {
-        // 简单解析：假设格式为 "yyyy-MM-dd HH:mm:ss.SSS [Apex/xxx] message"
         val parts = line.split(" ", limit = 4)
         if (parts.size >= 4) {
             val time = "${parts[0]} ${parts[1]}"
@@ -277,24 +281,28 @@ class DiagnosticsServiceFacade(private val context: Context) {
     }
 }
 
+/** JVM 内存统计。 */
 data class MemoryStats(
     val usedMb: Long,
     val totalMb: Long,
     val maxMb: Long
 )
 
+/** Native 内存统计。 */
 data class NativeMemoryStats(
     val totalMb: Long,
     val freeMb: Long,
     val allocatedMb: Long
 )
 
+/** APK 健康状态。 */
 data class ApkHealthDto(
     val apkId: String,
     val lastHeartbeatAgoMs: Long,
     val healthy: Boolean
 )
 
+/** 系统信息。 */
 data class SystemInfo(
     val brand: String,
     val model: String,
@@ -310,6 +318,7 @@ data class SystemInfo(
     val processName: String
 )
 
+/** 日志条目。 */
 data class LogEntry(
     val timestamp: String,
     val tag: String,
@@ -317,6 +326,7 @@ data class LogEntry(
     val raw: String
 )
 
+/** 日志文件信息。 */
 data class LogFileDto(
     val name: String,
     val path: String,

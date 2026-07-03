@@ -34,11 +34,11 @@
 | **Workflow** | `com.apex.apk.workflow` | 工作流 DAG + 8 种节点 | 用户创建工作流时 |
 | **Voice** | `com.apex.apk.voice` | TTS + ASR 语音 | 用户启用语音时 |
 
-### 调试 APK（1 个，开发者使用）
+### 内置功能（非独立 APK）
 
-| APK | 包名 | 承载功能 |
-|-----|------|----------|
-| **Diagnostics** | `com.apex.apk.diagnostics` | 日志收集 + 性能监控 + 崩溃堆栈 |
+| 功能 | 位置 | 说明 |
+|------|------|------|
+| **Diagnostics** | 主 APK 内置（`com.apex.agent.diagnostics`） | 日志收集 + 性能监控 + 崩溃堆栈 + heap dump，已合并到主 APK |
 
 📖 **完整文档**：
 - [APK 依赖与安装指南](docs/architecture/APK_DEPENDENCIES.md) — **必读**

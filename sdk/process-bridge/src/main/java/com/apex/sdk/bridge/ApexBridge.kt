@@ -308,6 +308,7 @@ class ApkBridgeStubAdapter(private val internal: IApkBridgeInternal) : IApkBridg
  */
 private fun mapServiceToApkId(serviceName: String): String? {
     return when (serviceName) {
+        "main" -> com.apex.sdk.common.ApexSuite.ApkId.MAIN  // 诊断等服务由主 APK 提供
         "engine" -> com.apex.sdk.common.ApexSuite.ApkId.ENGINE
         "rage" -> com.apex.sdk.common.ApexSuite.ApkId.RAGE
         "multiagent", "multi-agent" -> com.apex.sdk.common.ApexSuite.ApkId.MULTI_AGENT

@@ -826,17 +826,17 @@ object ApexClient {
         fun isAvailable(context: Context): Boolean =
             ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.DIAGNOSTICS)
 
-        suspend fun startLogCapture(): BridgeResult<String> = invoke("diagnostics/startLogCapture", emptyMap(), "diagnostics")
+        suspend fun startLogCapture(): BridgeResult<String> = invoke("diagnostics/startLogCapture", emptyMap(), "main")
         suspend fun getRecentLogs(maxLines: Int = 500): BridgeResult<String> =
-            invoke("diagnostics/getRecentLogs", mapOf("maxLines" to maxLines.toString()), "diagnostics")
-        suspend fun listLogFiles(): BridgeResult<String> = invoke("diagnostics/listLogFiles", emptyMap(), "diagnostics")
-        suspend fun listCrashReports(): BridgeResult<String> = invoke("diagnostics/listCrashReports", emptyMap(), "diagnostics")
-        suspend fun getMemoryStats(): BridgeResult<String> = invoke("diagnostics/getMemoryStats", emptyMap(), "diagnostics")
-        suspend fun getApkHealthList(): BridgeResult<String> = invoke("diagnostics/getApkHealthList", emptyMap(), "diagnostics")
-        suspend fun getSystemInfo(): BridgeResult<String> = invoke("diagnostics/getSystemInfo", emptyMap(), "diagnostics")
-        suspend fun forceGc(): BridgeResult<String> = invoke("diagnostics/forceGc", emptyMap(), "diagnostics")
+            invoke("diagnostics/getRecentLogs", mapOf("maxLines" to maxLines.toString()), "main")
+        suspend fun listLogFiles(): BridgeResult<String> = invoke("diagnostics/listLogFiles", emptyMap(), "main")
+        suspend fun listCrashReports(): BridgeResult<String> = invoke("diagnostics/listCrashReports", emptyMap(), "main")
+        suspend fun getMemoryStats(): BridgeResult<String> = invoke("diagnostics/getMemoryStats", emptyMap(), "main")
+        suspend fun getApkHealthList(): BridgeResult<String> = invoke("diagnostics/getApkHealthList", emptyMap(), "main")
+        suspend fun getSystemInfo(): BridgeResult<String> = invoke("diagnostics/getSystemInfo", emptyMap(), "main")
+        suspend fun forceGc(): BridgeResult<String> = invoke("diagnostics/forceGc", emptyMap(), "main")
         suspend fun dumpHeap(fileName: String = "apex-heap.hprof"): BridgeResult<String> =
-            invoke("diagnostics/dumpHeap", mapOf("fileName" to fileName), "diagnostics")
+            invoke("diagnostics/dumpHeap", mapOf("fileName" to fileName), "main")
     }
 
     // ============================================================

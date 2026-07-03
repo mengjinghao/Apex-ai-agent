@@ -217,28 +217,13 @@ object ApkDescriptors {
         downloadUrl = "https://github.com/mengjinghao/Apex-ai-agent/releases/latest"
     )
 
-    /**
-     * Diagnostics APK — 日志收集 + 性能监控 + 崩溃堆栈。
-     *
-     * **调试**。普通用户可不装；开发和高级用户用于诊断问题。
-     */
-    val DIAGNOSTICS = ApkDescriptor(
-        apkId = ApexSuite.ApkId.DIAGNOSTICS,
-        packageName = "com.apex.apk.diagnostics",
-        displayName = "Apex 诊断",
-        description = "日志收集 + 性能监控 + 崩溃堆栈 + heap dump",
-        necessity = ApkNecessity.DEBUG,
-        capabilities = listOf("diagnostics", "logs", "profiling", "crash.report"),
-        dependsOn = listOf(ApexSuite.ApkId.MAIN),
-        approxSizeMb = 3,
-        downloadUrl = "https://github.com/mengjinghao/Apex-ai-agent/releases/latest"
-    )
+    // 注：DIAGNOSTICS 已合并到主 APK（com.apex.agent.diagnostics 包），不再独立 APK
+    // 诊断能力（日志/性能/崩溃/系统信息）作为主 APK 内置功能
 
     /** 所有 APK 描述符。 */
     val ALL: List<ApkDescriptor> = listOf(
         MAIN, ENGINE, TERMINAL, MARKET, WORKING_FILES,  // 必须
-        RAGE, MULTI_AGENT, WORKFLOW, VOICE,             // 可选
-        DIAGNOSTICS                                      // 调试
+        RAGE, MULTI_AGENT, WORKFLOW, VOICE              // 可选
     )
 
     /** 按 apkId 查找。 */
@@ -256,7 +241,7 @@ object ApkDescriptors {
     /** 所有可选 APK。 */
     val OPTIONAL: List<ApkDescriptor> get() = byNecessity(ApkNecessity.OPTIONAL)
 
-    /** 所有调试 APK。 */
+    /** 所有调试 APK（已合并到主 APK，此处为空）。 */
     val DEBUG: List<ApkDescriptor> get() = byNecessity(ApkNecessity.DEBUG)
 
     /**

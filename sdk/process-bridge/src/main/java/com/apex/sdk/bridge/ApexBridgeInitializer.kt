@@ -110,7 +110,7 @@ class ApexBridgeInitializer : ContentProvider() {
             "com.apex.apk.market" -> ApexSuite.ApkId.MARKET
             "com.apex.apk.terminal" -> ApexSuite.ApkId.TERMINAL
             "com.apex.apk.workingfiles" -> ApexSuite.ApkId.WORKING_FILES
-            "com.apex.apk.diagnostics" -> ApexSuite.ApkId.DIAGNOSTICS
+            // 注：diagnostics 已合并到主 APK，不再有独立包名
             "com.apex.apk.voice" -> ApexSuite.ApkId.VOICE
             else -> "unknown:${ctx.packageName}"
         }

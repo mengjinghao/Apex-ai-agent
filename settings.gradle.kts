@@ -108,5 +108,5 @@ include(":apk:workflow")         // 工作流 APK
 include(":apk:market")           // 市场 APK（技能 / 插件 / MCP / 模型 / Agent 角色）
 include(":apk:terminal")         // 终端 APK（三块：普通 / 多 Agent / 狂暴）
 include(":apk:working-files")    // 工作文件区 APK
-include(":apk:diagnostics")      // 诊断 APK（日志 / 性能 / 调试，补充）
+// 注：诊断功能已合并到主 APK（com.apex.agent.diagnostics 包），不再独立 APK
 include(":apk:voice")            // 语音 APK（语音输入 + TTS + ASR，补充）
