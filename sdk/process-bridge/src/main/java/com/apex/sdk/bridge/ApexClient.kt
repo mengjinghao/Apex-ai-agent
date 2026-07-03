@@ -311,14 +311,52 @@ object ApexClient {
 
         suspend fun runCollaboration(
             mode: String, agentIds: List<String>, initialPrompt: String,
-            maxRounds: Int = 10, timeoutMs: Long = 60_000L
-        ): BridgeResult<String> = invoke("multiagent/runCollaboration", mapOf(
-            "mode" to mode,
-            "agentIds" to agentIds.joinToString(","),
-            "initialPrompt" to initialPrompt,
-            "maxRounds" to maxRounds.toString(),
-            "timeoutMs" to timeoutMs.toString()
-        ), "multi-agent")
+            maxRounds: Int = 10, timeoutMs: Long = 60_000L,
+            moderatorId: String? = null,
+            consensusThreshold: Float = 1.0f,
+            votingThreshold: Float = 0.5f,
+            continueOnFailure: Boolean = false
+        ): BridgeResult<String> {
+            val args = mutableMapOf(
+                "mode" to mode,
+                "agentIds" to agentIds.joinToString(","),
+                "initialPrompt" to initialPrompt,
+                "maxRounds" to maxRounds.toString(),
+                "timeoutMs" to timeoutMs.toString(),
+                "consensusThreshold" to consensusThreshold.toString(),
+                "votingThreshold" to votingThreshold.toString(),
+                "continueOnFailure" to continueOnFailure.toString()
+            )
+            if (moderatorId != null) args["moderatorId"] = moderatorId
+            return invoke("multiagent/runCollaboration", args, "multi-agent")
+        }
+
+        // ===== 增强：协作推荐 + 模板 =====
+        suspend fun recommendCollaboration(taskDescription: String): BridgeResult<String> =
+            invoke("multiagent/recommendCollaboration", mapOf("taskDescription" to taskDescription), "multi-agent")
+        suspend fun listTemplates(): BridgeResult<String> =
+            invoke("multiagent/listTemplates", emptyMap(), "multi-agent")
+
+        // ===== 增强：Agent 查询 =====
+        suspend fun findAgentsByCapability(capability: String): BridgeResult<String> =
+            invoke("multiagent/findAgentsByCapability", mapOf("capability" to capability), "multi-agent")
+        suspend fun findAgentsByRole(role: String): BridgeResult<String> =
+            invoke("multiagent/findAgentsByRole", mapOf("role" to role), "multi-agent")
+
+        // ===== 增强：消息传递 =====
+        suspend fun sendMessage(sessionId: String, fromAgentId: String, toAgentId: String, content: String, type: String = "DIRECT"): BridgeResult<String> =
+            invoke("multiagent/sendMessage", mapOf(
+                "sessionId" to sessionId, "fromAgentId" to fromAgentId,
+                "toAgentId" to toAgentId, "content" to content, "type" to type
+            ), "multi-agent")
+        suspend fun getSessionMessages(sessionId: String): BridgeResult<String> =
+            invoke("multiagent/getSessionMessages", mapOf("sessionId" to sessionId), "multi-agent")
+
+        // ===== 增强：Blackboard =====
+        suspend fun blackboardKeys(): BridgeResult<String> =
+            invoke("multiagent/blackboardKeys", emptyMap(), "multi-agent")
+        suspend fun clearBlackboard(): BridgeResult<String> =
+            invoke("multiagent/clearBlackboard", emptyMap(), "multi-agent")
 
         suspend fun listAgents(): BridgeResult<String> = invoke("multiagent/listAgents", emptyMap(), "multi-agent")
         suspend fun unregisterAgent(agentId: String): BridgeResult<String> =

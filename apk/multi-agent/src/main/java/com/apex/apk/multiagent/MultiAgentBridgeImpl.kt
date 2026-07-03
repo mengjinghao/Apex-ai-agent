@@ -45,12 +45,22 @@ class MultiAgentBridgeImpl(
                         val prompt = args["initialPrompt"]?.jsonPrimitive?.content ?: ""
                         val maxRounds = args["maxRounds"]?.jsonPrimitive?.content?.toIntOrNull() ?: 10
                         val timeoutMs = args["timeoutMs"]?.jsonPrimitive?.content?.toLongOrNull() ?: 60_000L
-                        buildResult(facade.runCollaboration(mode, agentIds, prompt, maxRounds, timeoutMs)) { r ->
+                        val moderatorId = args["moderatorId"]?.jsonPrimitive?.content
+                        val consensusThreshold = args["consensusThreshold"]?.jsonPrimitive?.content?.toFloatOrNull() ?: 1.0f
+                        val votingThreshold = args["votingThreshold"]?.jsonPrimitive?.content?.toFloatOrNull() ?: 0.5f
+                        val continueOnFailure = args["continueOnFailure"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false
+                        buildResult(facade.runCollaboration(
+                            mode.name, agentIds, prompt, maxRounds, timeoutMs,
+                            moderatorId, consensusThreshold, votingThreshold, continueOnFailure
+                        )) { r ->
                             buildJsonObject {
                                 put("sessionId", r.sessionId)
                                 put("finalOutput", r.finalOutput)
                                 put("agentInvocations", r.agentInvocations)
                                 put("durationMs", r.durationMs)
+                                put("rounds", r.rounds)
+                                put("successRate", r.successRate)
+                                put("agentResults", r.agentResults.entries.joinToString("; ") { "${it.key}=${it.value}" })
                             }
                         }
                     }
@@ -102,6 +112,75 @@ class MultiAgentBridgeImpl(
                         val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
                         val ok = facade.cancelSession(sessionId)
                         buildJsonObject { put("success", ok) }.toString()
+                    }
+
+                    // ===== 增强：协作推荐 + 模板 =====
+                    "multiagent/recommendCollaboration" -> {
+                        val task = args["taskDescription"]?.jsonPrimitive?.content ?: ""
+                        val rec = facade.recommendCollaboration(task)
+                        buildJsonObject {
+                            put("success", true)
+                            put("mode", rec.mode.name)
+                            put("reason", rec.reason)
+                            put("templateIds", rec.templateIds.joinToString(","))
+                        }.toString()
+                    }
+                    "multiagent/listTemplates" -> {
+                        val list = facade.listTemplates()
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", list.size)
+                            put("templates", list.joinToString("\n") {
+                                "${it.id}|${it.displayName}|${it.role.name}|${it.capabilities.joinToString("/")}"
+                            })
+                        }.toString()
+                    }
+
+                    // ===== 增强：Agent 查询 =====
+                    "multiagent/findAgentsByCapability" -> {
+                        val cap = args["capability"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.findAgentsByCapability(cap)) { list ->
+                            buildJsonObject { put("count", list.size); put("agents", list.joinToString(",") { it.id }) }
+                        }
+                    }
+                    "multiagent/findAgentsByRole" -> {
+                        val role = args["role"]?.jsonPrimitive?.content ?: "WORKER"
+                        buildResult(facade.findAgentsByRole(role)) { list ->
+                            buildJsonObject { put("count", list.size); put("agents", list.joinToString(",") { it.id }) }
+                        }
+                    }
+
+                    // ===== 增强：消息传递 =====
+                    "multiagent/sendMessage" -> {
+                        val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
+                        val from = args["fromAgentId"]?.jsonPrimitive?.content ?: ""
+                        val to = args["toAgentId"]?.jsonPrimitive?.content ?: ""
+                        val content = args["content"]?.jsonPrimitive?.content ?: ""
+                        val type = args["type"]?.jsonPrimitive?.content ?: "DIRECT"
+                        val ok = facade.sendMessage(sessionId, from, to, content, type)
+                        buildJsonObject { put("success", ok) }.toString()
+                    }
+                    "multiagent/getSessionMessages" -> {
+                        val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
+                        val list = facade.getSessionMessages(sessionId)
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", list.size)
+                            put("messages", list.joinToString("\n") { "${it.fromAgentId}→${it.toAgentId}: ${it.content.take(60)}" })
+                        }.toString()
+                    }
+
+                    // ===== 增强：Blackboard =====
+                    "multiagent/blackboardKeys" -> {
+                        buildJsonObject {
+                            put("success", true)
+                            put("keys", facade.blackboardKeys().joinToString(","))
+                            put("size", facade.blackboardKeys().size)
+                        }.toString()
+                    }
+                    "multiagent/clearBlackboard" -> {
+                        facade.clearBlackboard()
+                        buildJsonObject { put("success", true) }.toString()
                     }
                     else -> errorResponse("unknown method: $method")
                 }
