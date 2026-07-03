@@ -396,6 +396,110 @@ object ApexClient {
 
         suspend fun unsubscribeChanges(folderId: String): BridgeResult<String> =
             invoke("workingfiles/unsubscribeChanges", mapOf("folderId" to folderId), "working-files")
+
+        // ===== VSCode 式代码查看 + Agent 执行流程 + 回退 =====
+
+        suspend fun getFileTree(rootPath: String, maxDepth: Int = 10): BridgeResult<String> =
+            invoke("workingfiles/getFileTree", mapOf("rootPath" to rootPath, "maxDepth" to maxDepth.toString()), "working-files")
+
+        suspend fun loadCodeFileWithTokens(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/loadCodeFileWithTokens", mapOf("filePath" to filePath), "working-files")
+
+        suspend fun takeSnapshot(filePath: String, rootPath: String, description: String = "", source: String = "MANUAL"): BridgeResult<String> =
+            invoke("workingfiles/takeSnapshot", mapOf(
+                "filePath" to filePath, "rootPath" to rootPath,
+                "description" to description, "source" to source
+            ), "working-files")
+
+        suspend fun writeWithSnapshot(
+            filePath: String, rootPath: String, content: String,
+            agentId: String, agentName: String, sessionId: String,
+            description: String
+        ): BridgeResult<String> = invoke("workingfiles/writeWithSnapshot", mapOf(
+            "filePath" to filePath, "rootPath" to rootPath, "content" to content,
+            "agentId" to agentId, "agentName" to agentName, "sessionId" to sessionId,
+            "description" to description
+        ), "working-files")
+
+        suspend fun listSnapshots(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/listSnapshots", mapOf("filePath" to filePath), "working-files")
+
+        suspend fun getSnapshot(snapshotId: String): BridgeResult<String> =
+            invoke("workingfiles/getSnapshot", mapOf("snapshotId" to snapshotId), "working-files")
+
+        suspend fun getLatestSnapshot(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/getLatestSnapshot", mapOf("filePath" to filePath), "working-files")
+
+        /** 回退文件到指定快照。 */
+        suspend fun restoreSnapshot(snapshotId: String, operator: String = "user"): BridgeResult<String> =
+            invoke("workingfiles/restoreSnapshot", mapOf("snapshotId" to snapshotId, "operator" to operator), "working-files")
+
+        suspend fun deleteAllSnapshots(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/deleteAllSnapshots", mapOf("filePath" to filePath), "working-files")
+
+        suspend fun computeDiff(oldContent: String, newContent: String): BridgeResult<String> =
+            invoke("workingfiles/computeDiff", mapOf("oldContent" to oldContent, "newContent" to newContent), "working-files")
+
+        suspend fun diffSnapshots(beforeId: String, afterId: String): BridgeResult<String> =
+            invoke("workingfiles/diffSnapshots", mapOf("beforeId" to beforeId, "afterId" to afterId), "working-files")
+
+        suspend fun diffWithCurrent(snapshotId: String): BridgeResult<String> =
+            invoke("workingfiles/diffWithCurrent", mapOf("snapshotId" to snapshotId), "working-files")
+
+        suspend fun diffForStep(stepId: String): BridgeResult<String> =
+            invoke("workingfiles/diffForStep", mapOf("stepId" to stepId), "working-files")
+
+        // Agent 执行流程
+        suspend fun startAgentSession(agentId: String, agentName: String, taskDescription: String, mode: String = "NORMAL"): BridgeResult<String> =
+            invoke("workingfiles/startAgentSession", mapOf(
+                "agentId" to agentId, "agentName" to agentName,
+                "taskDescription" to taskDescription, "mode" to mode
+            ), "working-files")
+
+        suspend fun recordAgentStep(
+            sessionId: String, agentId: String, agentName: String,
+            type: String, title: String, description: String = "",
+            affectedFiles: List<String> = emptyList(), snapshotIds: List<String> = emptyList(),
+            isSuccess: Boolean = true, errorMessage: String? = null,
+            durationMs: Long = 0
+        ): BridgeResult<String> {
+            val args = mutableMapOf(
+                "sessionId" to sessionId, "agentId" to agentId, "agentName" to agentName,
+                "type" to type, "title" to title, "description" to description,
+                "isSuccess" to isSuccess.toString(), "durationMs" to durationMs.toString(),
+                "affectedFiles" to affectedFiles.joinToString(","),
+                "snapshotIds" to snapshotIds.joinToString(",")
+            )
+            if (errorMessage != null) args["errorMessage"] = errorMessage
+            return invoke("workingfiles/recordAgentStep", args, "working-files")
+        }
+
+        suspend fun finishAgentSession(sessionId: String, finalResult: String? = null, status: String = "COMPLETED"): BridgeResult<String> {
+            val args = mutableMapOf("sessionId" to sessionId, "status" to status)
+            if (finalResult != null) args["finalResult"] = finalResult
+            return invoke("workingfiles/finishAgentSession", args, "working-files")
+        }
+
+        suspend fun getAgentFlow(sessionId: String): BridgeResult<String> =
+            invoke("workingfiles/getAgentFlow", mapOf("sessionId" to sessionId), "working-files")
+
+        suspend fun listAgentSessions(): BridgeResult<String> =
+            invoke("workingfiles/listAgentSessions", emptyMap(), "working-files")
+
+        suspend fun listActiveAgentSessions(): BridgeResult<String> =
+            invoke("workingfiles/listActiveAgentSessions", emptyMap(), "working-files")
+
+        suspend fun listAgentSteps(sessionId: String): BridgeResult<String> =
+            invoke("workingfiles/listAgentSteps", mapOf("sessionId" to sessionId), "working-files")
+
+        suspend fun listAgentStepsForFile(sessionId: String, filePath: String): BridgeResult<String> =
+            invoke("workingfiles/listAgentStepsForFile", mapOf("sessionId" to sessionId, "filePath" to filePath), "working-files")
+
+        suspend fun deleteAgentSession(sessionId: String): BridgeResult<String> =
+            invoke("workingfiles/deleteAgentSession", mapOf("sessionId" to sessionId), "working-files")
+
+        suspend fun getSnapshotStats(): BridgeResult<String> =
+            invoke("workingfiles/getSnapshotStats", emptyMap(), "working-files")
     }
 
     // ============================================================

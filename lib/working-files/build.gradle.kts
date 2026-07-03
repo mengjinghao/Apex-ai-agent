@@ -14,4 +14,6 @@ dependencies {
     api(project(":file"))
 
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.java.diff.utils)
 }

@@ -4,11 +4,21 @@ import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.apex.lib.workingfiles.AgentMode
+import com.apex.lib.workingfiles.CodeEditorFacade
 import com.apex.lib.workingfiles.CodePreview
 import com.apex.lib.workingfiles.FileEvent
 import com.apex.lib.workingfiles.WorkingFolder
 import com.apex.lib.workingfiles.WorkingFolderManager
 import com.apex.lib.workingfiles.WorkingFilesWatcher
+import com.apex.lib.workingfiles.agent.AgentMode as FlowAgentMode
+import com.apex.lib.workingfiles.agent.AgentSession
+import com.apex.lib.workingfiles.agent.AgentSessionStatus
+import com.apex.lib.workingfiles.agent.AgentStep
+import com.apex.lib.workingfiles.agent.AgentStepType
+import com.apex.lib.workingfiles.diff.FileDiff
+import com.apex.lib.workingfiles.snapshot.ChangeSource
+import com.apex.lib.workingfiles.snapshot.FileSnapshot
+import com.apex.lib.workingfiles.snapshot.SnapshotSummary
 import com.apex.sdk.bridge.TypedServiceRegistry
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
@@ -50,6 +60,8 @@ class WorkingFilesServiceFacade(private val context: Context) {
     private const val TAG_SUB = "WorkingFilesFacade"
 
     private val manager = WorkingFolderManager()
+    /** 代码编辑器门面 — 文件快照 / diff / Agent 流程 / 回退 */
+    val codeEditor: CodeEditorFacade = CodeEditorFacade(context)
 
     private val _fileEvents = MutableSharedFlow<FileEvent>(extraBufferCapacity = 256)
     val fileEvents: SharedFlow<FileEvent> = _fileEvents.asSharedFlow()
@@ -400,6 +412,176 @@ class WorkingFilesServiceFacade(private val context: Context) {
     fun shutdown() {
         manager.listFolders().forEach { manager.unbindFolder(it.id) }
     }
+
+    // ============================================================
+    // VSCode 式代码查看 + Agent 执行流程 + 文件变更回退
+    // （委派给 CodeEditorFacade）
+    // ============================================================
+
+    /** 获取文件树。 */
+    suspend fun getFileTree(rootPath: String, maxDepth: Int = 10, includeHidden: Boolean = false): BridgeResult<com.apex.lib.workingfiles.FileTreeNode> =
+        bridgeRun { codeEditor.getFileTree(rootPath, maxDepth, includeHidden) }
+
+    /** 加载代码文件（含语法 token 化）。 */
+    suspend fun loadCodeFileWithTokens(filePath: String): BridgeResult<com.apex.lib.workingfiles.CodeFileContent?> = bridgeRun {
+        codeEditor.loadCodeFile(filePath)
+    }
+
+    /** 创建文件快照。 */
+    suspend fun takeSnapshot(
+        filePath: String,
+        rootPath: String,
+        source: String = "MANUAL",
+        agentId: String? = null,
+        sessionId: String? = null,
+        stepId: String? = null,
+        description: String = ""
+    ): BridgeResult<FileSnapshot?> = bridgeRun {
+        val src = runCatching { ChangeSource.valueOf(source) }.getOrDefault(ChangeSource.MANUAL)
+        codeEditor.takeSnapshot(filePath, rootPath, src, agentId, sessionId, stepId, description)
+    }
+
+    /** 写入文件 + 自动快照（Agent 写入时的标准入口）。 */
+    suspend fun writeWithSnapshot(
+        filePath: String,
+        rootPath: String,
+        content: String,
+        agentId: String,
+        agentName: String,
+        sessionId: String,
+        description: String,
+        stepTitle: String = description
+    ): BridgeResult<com.apex.lib.workingfiles.WriteResult> = bridgeRun {
+        codeEditor.writeWithSnapshot(filePath, rootPath, content, agentId, agentName, sessionId, description, stepTitle)
+    }
+
+    /** 列出文件的所有快照（摘要）。 */
+    suspend fun listSnapshots(filePath: String): BridgeResult<List<SnapshotSummary>> = bridgeRun {
+        codeEditor.listSnapshots(filePath)
+    }
+
+    /** 加载完整快照。 */
+    suspend fun getSnapshot(snapshotId: String): BridgeResult<FileSnapshot?> = bridgeRun {
+        codeEditor.getSnapshot(snapshotId)
+    }
+
+    /** 获取文件最新快照。 */
+    suspend fun getLatestSnapshot(filePath: String): BridgeResult<FileSnapshot?> = bridgeRun {
+        codeEditor.getLatestSnapshot(filePath)
+    }
+
+    /** 回退文件到指定快照。 */
+    suspend fun restoreSnapshot(snapshotId: String, operator: String = "user"): BridgeResult<Boolean> = bridgeRun {
+        codeEditor.restoreSnapshot(snapshotId, operator)
+    }
+
+    /** 删除某文件的所有快照。 */
+    suspend fun deleteAllSnapshots(filePath: String): BridgeResult<Int> = bridgeRun {
+        codeEditor.deleteAllSnapshots(filePath)
+    }
+
+    /** 计算两段文本的 diff。 */
+    suspend fun computeDiff(oldContent: String, newContent: String): BridgeResult<FileDiff> = bridgeRun {
+        codeEditor.computeDiff(oldContent, newContent)
+    }
+
+    /** 计算两个快照的 diff。 */
+    suspend fun diffSnapshots(beforeId: String, afterId: String): BridgeResult<FileDiff?> = bridgeRun {
+        codeEditor.diffSnapshots(beforeId, afterId)
+    }
+
+    /** 计算快照与当前文件内容的 diff。 */
+    suspend fun diffWithCurrent(snapshotId: String): BridgeResult<FileDiff?> = bridgeRun {
+        codeEditor.diffWithCurrent(snapshotId)
+    }
+
+    /** 计算 Agent 步骤的 diff。 */
+    suspend fun diffForStep(stepId: String): BridgeResult<FileDiff?> = bridgeRun {
+        codeEditor.diffForStep(stepId)
+    }
+
+    // ============================================================
+    // Agent 执行流程
+    // ============================================================
+
+    /** 启动 Agent 会话。 */
+    suspend fun startAgentSession(
+        agentId: String,
+        agentName: String,
+        taskDescription: String,
+        mode: String = "NORMAL"
+    ): BridgeResult<AgentSession> = bridgeRun {
+        val m = runCatching { FlowAgentMode.valueOf(mode) }.getOrDefault(FlowAgentMode.NORMAL)
+        codeEditor.startAgentSession(agentId, agentName, taskDescription, m)
+    }
+
+    /** 记录 Agent 步骤。 */
+    suspend fun recordAgentStep(
+        sessionId: String,
+        agentId: String,
+        agentName: String,
+        type: String,
+        title: String,
+        description: String = "",
+        thought: String? = null,
+        action: String? = null,
+        result: String? = null,
+        isSuccess: Boolean = true,
+        errorMessage: String? = null,
+        affectedFiles: List<String> = emptyList(),
+        snapshotIds: List<String> = emptyList(),
+        durationMs: Long = 0,
+        metadata: Map<String, String> = emptyMap()
+    ): BridgeResult<AgentStep?> = bridgeRun {
+        val t = runCatching { AgentStepType.valueOf(type) }.getOrDefault(AgentStepType.CUSTOM)
+        codeEditor.recordAgentStep(
+            sessionId, agentId, agentName, t, title, description, thought, action, result,
+            isSuccess, errorMessage, affectedFiles, snapshotIds, durationMs, metadata
+        )
+    }
+
+    /** 结束 Agent 会话。 */
+    suspend fun finishAgentSession(
+        sessionId: String,
+        finalResult: String? = null,
+        status: String = "COMPLETED"
+    ): BridgeResult<Boolean> = bridgeRun {
+        val s = runCatching { AgentSessionStatus.valueOf(status) }.getOrDefault(AgentSessionStatus.COMPLETED)
+        codeEditor.finishAgentSession(sessionId, finalResult, s)
+    }
+
+    /** 获取 Agent 执行流程。 */
+    suspend fun getAgentFlow(sessionId: String): BridgeResult<com.apex.lib.workingfiles.agent.AgentFlow?> = bridgeRun {
+        codeEditor.getAgentFlow(sessionId)
+    }
+
+    /** 列出所有 Agent 会话。 */
+    suspend fun listAgentSessions(): BridgeResult<List<AgentSession>> = bridgeRun {
+        codeEditor.listAgentSessions()
+    }
+
+    /** 列出活跃会话。 */
+    suspend fun listActiveAgentSessions(): BridgeResult<List<AgentSession>> = bridgeRun {
+        codeEditor.listActiveAgentSessions()
+    }
+
+    /** 获取会话所有步骤。 */
+    suspend fun listAgentSteps(sessionId: String): BridgeResult<List<AgentStep>> = bridgeRun {
+        codeEditor.listAgentSteps(sessionId)
+    }
+
+    /** 获取会话中影响指定文件的步骤。 */
+    suspend fun listAgentStepsForFile(sessionId: String, filePath: String): BridgeResult<List<AgentStep>> = bridgeRun {
+        codeEditor.listAgentStepsForFile(sessionId, filePath)
+    }
+
+    /** 删除会话。 */
+    suspend fun deleteAgentSession(sessionId: String): BridgeResult<Boolean> = bridgeRun {
+        codeEditor.deleteAgentSession(sessionId)
+    }
+
+    /** 获取快照存储统计。 */
+    fun getSnapshotStats() = codeEditor.getSnapshotStats()
 }
 
 // DTO 定义

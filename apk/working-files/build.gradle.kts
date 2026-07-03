@@ -37,4 +37,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
     implementation("androidx.documentfile:documentfile:1.0.1")
+    implementation(libs.androidx.compose.material.icons.extended)
 }
