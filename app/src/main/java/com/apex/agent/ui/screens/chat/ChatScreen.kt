@@ -88,12 +88,30 @@ fun ChatScreen(
 
     LaunchedEffect(contextPercent) { if (autoCompress && contextPercent >= 85 && !showCompressDialog) showCompressDialog = true }
 
+    // 切换会话时加载历史消息
+    LaunchedEffect(currentSessionId) {
+        if (currentSessionId != null && sessionManager != null) {
+            val stored = sessionManager.loadMessages(currentSessionId!!)
+            if (stored.isNotEmpty()) {
+                messages.clear()
+                messages.addAll(stored.map { it.toChatMessage() })
+                contextPercent = (stored.size * 5).coerceAtMost(100)
+            } else {
+                messages.clear()
+                messages.add(ChatMessage(bubbles = listOf(Bubble.Text("你好，我是 Apex AI 助手。\n\n有什么可以帮你的？")), isUser = false))
+                contextPercent = 5
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 navigationIcon = { IconButton(onClick = onMenuClick) { Icon(Icons.Default.Menu, "菜单") } },
                 title = { Text("Apex Agent") },
                 actions = {
+                    // 新建对话按钮
+                    IconButton(onClick = onNewChat) { Icon(Icons.Default.Add, "新建对话") }
                     ContextPercentIndicator(contextPercent) { showCompressDialog = true }
                     Spacer(Modifier.width(4.dp))
                     IconButton(onClick = { showCompressDialog = true }) { Icon(Icons.Default.Compress, "压缩") }
@@ -129,8 +147,11 @@ fun ChatScreen(
                             }
                             isStreaming = false
                             contextPercent = (contextPercent + 15).coerceAtMost(100)
-                            // 回复后更新会话
-                            currentSessionId?.let { sid -> onSessionUpdate(sid, messages.lastOrNull()?.bubbles?.lastOrNull()?.let { it.toString().take(50) } ?: "回复", messages.size) }
+                            // 回复后更新会话 + 保存消息
+                            currentSessionId?.let { sid ->
+                                onSessionUpdate(sid, messages.lastOrNull()?.bubbles?.lastOrNull()?.let { it.toString().take(50) } ?: "回复", messages.size)
+                                sessionManager?.saveMessages(sid, messages.toList())
+                            }
                         }
                     }
                 },
@@ -536,3 +557,16 @@ data class ModelItem(val provider: String, val providerName: String, val modelNa
 
 val SKILLS = listOf(SkillItem("auto","自动选择","🤖","根据任务自动选择"), SkillItem("react","ReAct 推理","🧠","推理+工具调用"), SkillItem("cot","思维链","🔗","逐步分解"), SkillItem("tot","思维树","🌳","多路径探索"), SkillItem("code","代码生成","💻","生成代码"), SkillItem("search","深度搜索","🔍","多轮搜索"), SkillItem("translate","翻译","🌐","多语言"), SkillItem("summarize","总结","📝","摘要"), SkillItem("analyze","分析","📊","数据分析"))
 val MODELS = listOf(ModelItem("deepseek","DeepSeek","deepseek-chat","深度推理 · 已配置 ✓"), ModelItem("deepseek","DeepSeek","deepseek-reasoner","深度思考 · 已配置 ✓"), ModelItem("openai","OpenAI","gpt-4o","通用 · 已配置 ✓"), ModelItem("claude","Claude","claude-sonnet-4","最强 · 未配置 ✗"), ModelItem("qwen","通义千问","qwen-max","国内直连 · 已配置 ✓"), ModelItem("glm","智谱 GLM","glm-4","国内开源 · 已配置 ✓"), ModelItem("ollama","Ollama","llama3.2","本地推理 · 已配置 ✓"))
+
+/** PersistedMessage → ChatMessage 转换。 */
+fun PersistedMessage.toChatMessage(): ChatMessage {
+    val bubbles = this.bubbles.map { pb ->
+        when (pb) {
+            is PersistedBubble.Thinking -> Bubble.Thinking(pb.text)
+            is PersistedBubble.Text -> Bubble.Text(pb.text)
+            is PersistedBubble.Command -> Bubble.Command(pb.command, runCatching { CommandStatus.valueOf(pb.status) }.getOrDefault(CommandStatus.SUCCESS), pb.output)
+            is PersistedBubble.Search -> Bubble.Search(pb.query, pb.results, pb.status)
+        }
+    }
+    return ChatMessage(bubbles = bubbles, isUser = isUser, timestamp = timestamp)
+}

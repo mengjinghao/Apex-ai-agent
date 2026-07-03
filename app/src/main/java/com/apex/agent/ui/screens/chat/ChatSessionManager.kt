@@ -41,6 +41,7 @@ class ChatSessionManager(context: Context) {
 
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val file = File(context.filesDir, "apex-chat-sessions.json")
+    private val messageStore = ChatMessageStore(context)
     private val sessions = ConcurrentHashMap<String, ChatSession>()
 
     init { load() }
@@ -108,23 +109,54 @@ class ChatSessionManager(context: Context) {
         return s.pinned
     }
 
-    /** 删除会话。 */
+    /** 删除会话（同步删除消息）。 */
     fun delete(sessionId: String): Boolean {
         val removed = sessions.remove(sessionId) != null
-        if (removed) persist()
+        if (removed) {
+            messageStore.delete(sessionId)
+            persist()
+        }
         return removed
     }
 
-    /** 清空所有会话。 */
+    /** 清空所有会话（同步删除所有消息）。 */
     fun clearAll(): Int {
         val count = sessions.size
         sessions.clear()
+        messageStore.clearAll()
         persist()
         return count
     }
 
     /** 会话总数。 */
     fun count(): Int = sessions.size
+
+    // ===== 消息持久化 =====
+
+    /** 保存会话消息。 */
+    fun saveMessages(sessionId: String, messages: List<ChatMessage>) {
+        val persisted = messages.map { msg ->
+            PersistedMessage(
+                isUser = msg.isUser,
+                timestamp = msg.timestamp,
+                bubbles = msg.bubbles.map { it.toPersisted() }
+            )
+        }
+        messageStore.save(sessionId, persisted)
+    }
+
+    /** 加载会话消息。 */
+    fun loadMessages(sessionId: String): List<PersistedMessage> {
+        return messageStore.load(sessionId)
+    }
+
+    /** 持久化 Bubble 转换。 */
+    private fun Bubble.toPersisted(): PersistedBubble = when (this) {
+        is Bubble.Thinking -> PersistedBubble.Thinking(text)
+        is Bubble.Text -> PersistedBubble.Text(text)
+        is Bubble.Command -> PersistedBubble.Command(command, status.name, output)
+        is Bubble.Search -> PersistedBubble.Search(query, results, status)
+    }
 
     private fun persist() {
         try {
