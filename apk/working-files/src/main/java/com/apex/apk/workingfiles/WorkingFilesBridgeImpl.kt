@@ -394,6 +394,280 @@ class WorkingFilesBridgeImpl(
                             put("totalSizeMb", stats.totalSizeMb)
                         }.toString()
                     }
+
+                    // ===== Apex 独有增强：虚拟分支 =====
+                    "workingfiles/createBranch" -> {
+                        val name = args["name"]?.jsonPrimitive?.content ?: ""
+                        val filePath = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        val baseId = args["baseSnapshotId"]?.jsonPrimitive?.content
+                        val desc = args["description"]?.jsonPrimitive?.content ?: ""
+                        val agentId = args["agentId"]?.jsonPrimitive?.content
+                        buildResult(facade.createBranch(name, filePath, baseId, desc, agentId)) { b ->
+                            buildJsonObject {
+                                put("branchId", b.id)
+                                put("name", b.name)
+                                put("status", b.status.name)
+                                put("color", b.color)
+                            }
+                        }
+                    }
+                    "workingfiles/switchToBranch" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.switchToBranch(fp, bid)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/switchToMain" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.switchToMain(fp)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/mergeBranch" -> {
+                        val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
+                        val strategy = args["strategy"]?.jsonPrimitive?.content ?: "MERGE_MANUAL"
+                        buildResult(facade.mergeBranch(bid, strategy)) { r ->
+                            buildJsonObject {
+                                put("success", r.success)
+                                put("message", r.message)
+                                put("newSnapshotId", r.newSnapshotId ?: "")
+                                if (r.conflict != null) {
+                                    put("hasConflict", true)
+                                    put("conflictLines", r.conflict.conflictLines)
+                                }
+                            }
+                        }
+                    }
+                    "workingfiles/discardBranch" -> {
+                        val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.discardBranch(bid)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/listBranches" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.listBranches(fp)) { list ->
+                            buildJsonObject {
+                                put("count", list.size)
+                                put("branches", list.joinToString("\n") {
+                                    "${it.id}|${it.name}|${it.status.name}|${it.color}|${it.description.take(40)}"
+                                })
+                            }
+                        }
+                    }
+                    "workingfiles/listActiveBranches" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.listActiveBranches(fp)) { list ->
+                            buildJsonObject { put("count", list.size) }
+                        }
+                    }
+                    "workingfiles/getActiveBranch" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.getActiveBranch(fp)) { b ->
+                            if (b == null) buildJsonObject { put("found", false) }
+                            else buildJsonObject {
+                                put("found", true)
+                                put("branchId", b.id)
+                                put("name", b.name)
+                            }
+                        }
+                    }
+                    "workingfiles/getBranchDiff" -> {
+                        val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.getBranchDiff(bid)) { diff ->
+                            if (diff == null) buildJsonObject { put("found", false) }
+                            else serializeDiff(diff)
+                        }
+                    }
+                    "workingfiles/deleteBranch" -> {
+                        val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.deleteBranch(bid)) { JsonPrimitive(it) }
+                    }
+
+                    // ===== Apex 独有增强：智能回退 =====
+                    "workingfiles/analyzeRevert" -> {
+                        val sid = args["sessionId"]?.jsonPrimitive?.content ?: ""
+                        val stepId = args["stepId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.analyzeRevert(sid, stepId)) { a ->
+                            if (a == null) buildJsonObject { put("found", false) }
+                            else buildJsonObject {
+                                put("found", true)
+                                put("summary", a.summary)
+                                put("hasRisk", a.hasRisk)
+                                put("filesToRevert", a.filesToRevert.size)
+                                put("filesToKeep", a.filesToKeep.size)
+                                put("impactedSteps", a.impactedLaterSteps.size)
+                                put("warnings", a.warnings.joinToString("; "))
+                            }
+                        }
+                    }
+                    "workingfiles/executeSmartRevert" -> {
+                        val sid = args["sessionId"]?.jsonPrimitive?.content ?: ""
+                        val stepId = args["stepId"]?.jsonPrimitive?.content ?: ""
+                        val operator = args["operator"]?.jsonPrimitive?.content ?: "user"
+                        buildResult(facade.executeSmartRevert(sid, stepId, operator)) { r ->
+                            buildJsonObject {
+                                put("success", r.success)
+                                put("revertedFiles", r.revertedFiles.size)
+                                put("keptFiles", r.keptFiles.size)
+                                put("warnings", r.warnings.joinToString("; "))
+                            }
+                        }
+                    }
+
+                    // ===== Apex 独有增强：语义 Diff =====
+                    "workingfiles/analyzeSemanticDiff" -> {
+                        val old = args["oldContent"]?.jsonPrimitive?.content ?: ""
+                        val new = args["newContent"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.analyzeSemanticDiff(old, new)) { s ->
+                            buildJsonObject {
+                                put("summary", s.summary)
+                                put("changeType", s.changeType.name)
+                                put("changeTypeDisplay", s.changeType.displayName)
+                                put("changeTypeIcon", s.changeType.icon)
+                                put("riskLevel", s.riskLevel.name)
+                                put("riskDisplay", s.riskLevel.displayName)
+                                put("shortDescription", s.shortDescription)
+                                put("affectedSymbols", s.affectedSymbols.joinToString(","))
+                                put("breakingChanges", s.breakingChanges.joinToString("; "))
+                                put("suggestions", s.suggestions.joinToString("; "))
+                            }
+                        }
+                    }
+                    "workingfiles/semanticDiffSnapshots" -> {
+                        val beforeId = args["beforeId"]?.jsonPrimitive?.content ?: ""
+                        val afterId = args["afterId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.semanticDiffSnapshots(beforeId, afterId)) { s ->
+                            if (s == null) buildJsonObject { put("found", false) }
+                            else buildJsonObject {
+                                put("found", true)
+                                put("summary", s.summary)
+                                put("changeType", s.changeType.name)
+                                put("riskLevel", s.riskLevel.name)
+                            }
+                        }
+                    }
+
+                    // ===== Apex 独有增强：时间机器 =====
+                    "workingfiles/loadTimeMachine" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.loadTimeMachine(fp)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/timeMachineJumpTo" -> {
+                        val idx = args["index"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        buildResult(facade.timeMachineJumpTo(idx)) { s ->
+                            if (s == null) buildJsonObject { put("found", false) }
+                            else buildJsonObject {
+                                put("found", true)
+                                put("snapshotId", s.id)
+                                put("timestamp", s.timestamp)
+                            }
+                        }
+                    }
+                    "workingfiles/timeMachineJumpToTimestamp" -> {
+                        val ts = args["timestamp"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
+                        buildResult(facade.timeMachineJumpToTimestamp(ts)) { s ->
+                            if (s == null) buildJsonObject { put("found", false) }
+                            else buildJsonObject { put("found", true); put("snapshotId", s.id) }
+                        }
+                    }
+                    "workingfiles/timeMachineNext" -> {
+                        buildResult(facade.timeMachineNext()) { s ->
+                            if (s == null) buildJsonObject { put("found", false) }
+                            else buildJsonObject { put("found", true); put("snapshotId", s.id) }
+                        }
+                    }
+                    "workingfiles/timeMachinePrevious" -> {
+                        buildResult(facade.timeMachinePrevious()) { s ->
+                            if (s == null) buildJsonObject { put("found", false) }
+                            else buildJsonObject { put("found", true); put("snapshotId", s.id) }
+                        }
+                    }
+
+                    // ===== Apex 独有增强：冲突检测 =====
+                    "workingfiles/acquireFileLock" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        val aid = args["agentId"]?.jsonPrimitive?.content ?: ""
+                        val type = args["type"]?.jsonPrimitive?.content ?: "WRITE_LOCK"
+                        val ttl = args["ttlMs"]?.jsonPrimitive?.content?.toLongOrNull() ?: 30_000L
+                        buildResult(facade.acquireFileLock(fp, aid, type, ttl)) { token ->
+                            buildJsonObject {
+                                put("success", token != null)
+                                put("token", token ?: "")
+                            }
+                        }
+                    }
+                    "workingfiles/releaseFileLock" -> {
+                        val token = args["token"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.releaseFileLock(token)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/releaseAllLocksForAgent" -> {
+                        val aid = args["agentId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.releaseAllLocksForAgent(aid)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/isFileLocked" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.isFileLocked(fp)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/getFileLockStatus" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.getFileLockStatus(fp)) { s ->
+                            buildJsonObject {
+                                put("isLocked", s.isLocked)
+                                put("lockHolders", s.lockHolders.joinToString(","))
+                                put("waiterCount", s.waiterCount)
+                            }
+                        }
+                    }
+                    "workingfiles/detectConflict" -> {
+                        val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
+                        val aid = args["agentId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.detectConflict(fp, aid)) { c ->
+                            if (c == null) buildJsonObject { put("hasConflict", false) }
+                            else buildJsonObject {
+                                put("hasConflict", true)
+                                put("conflictType", c.conflictType.name)
+                                put("conflictingAgents", c.conflictingAgents.joinToString(","))
+                                put("message", c.message)
+                            }
+                        }
+                    }
+                    "workingfiles/listLockedFiles" -> {
+                        buildResult(facade.listLockedFiles()) { list ->
+                            buildJsonObject {
+                                put("count", list.size)
+                                put("files", list.joinToString(","))
+                            }
+                        }
+                    }
+
+                    // ===== Apex 独有增强：变更回放 =====
+                    "workingfiles/loadReplayer" -> {
+                        val sid = args["sessionId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.loadReplayer(sid)) { JsonPrimitive(it) }
+                    }
+                    "workingfiles/playReplay" -> {
+                        val speed = args["speed"]?.jsonPrimitive?.content?.toFloatOrNull() ?: 1.0f
+                        buildResult(facade.playReplay(speed)) { JsonObject(emptyMap()) }
+                    }
+                    "workingfiles/pauseReplay" -> {
+                        buildResult(facade.pauseReplay()) { JsonObject(emptyMap()) }
+                    }
+                    "workingfiles/resetReplay" -> {
+                        buildResult(facade.resetReplay()) { JsonObject(emptyMap()) }
+                    }
+                    "workingfiles/jumpReplayTo" -> {
+                        val idx = args["stepIndex"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                        buildResult(facade.jumpReplayTo(idx)) { JsonObject(emptyMap()) }
+                    }
+                    "workingfiles/replayNextStep" -> {
+                        buildResult(facade.replayNextStep()) { JsonObject(emptyMap()) }
+                    }
+                    "workingfiles/replayPreviousStep" -> {
+                        buildResult(facade.replayPreviousStep()) { JsonObject(emptyMap()) }
+                    }
+                    "workingfiles/setReplaySpeed" -> {
+                        val speed = args["speed"]?.jsonPrimitive?.content?.toFloatOrNull() ?: 1.0f
+                        buildResult(facade.setReplaySpeed(speed)) { JsonObject(emptyMap()) }
+                    }
+                    "workingfiles/replayProgress" -> {
+                        buildResult(facade.replayProgress()) { JsonPrimitive(it) }
+                    }
                     "workingfiles/bindFolderByUri" -> {
                         val id = args["folderId"]?.jsonPrimitive?.content ?: ""
                         val name = args["displayName"]?.jsonPrimitive?.content ?: ""

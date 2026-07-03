@@ -7,13 +7,31 @@ import com.apex.lib.workingfiles.agent.AgentSession
 import com.apex.lib.workingfiles.agent.AgentSessionStatus
 import com.apex.lib.workingfiles.agent.AgentStep
 import com.apex.lib.workingfiles.agent.AgentStepType
+import com.apex.lib.workingfiles.agent.RevertAnalysis
+import com.apex.lib.workingfiles.agent.RevertResult
+import com.apex.lib.workingfiles.agent.SmartReverter
+import com.apex.lib.workingfiles.branch.BranchManager
+import com.apex.lib.workingfiles.branch.BranchMergeResult
+import com.apex.lib.workingfiles.branch.BranchStatus
+import com.apex.lib.workingfiles.branch.MergeStrategy
+import com.apex.lib.workingfiles.branch.VirtualBranch
+import com.apex.lib.workingfiles.conflict.ConflictDetector
+import com.apex.lib.workingfiles.conflict.ConflictWarning
+import com.apex.lib.workingfiles.conflict.LockStatus
+import com.apex.lib.workingfiles.conflict.LockType
 import com.apex.lib.workingfiles.diff.DiffComputer
 import com.apex.lib.workingfiles.diff.FileDiff
+import com.apex.lib.workingfiles.replay.ChangeReplayer
+import com.apex.lib.workingfiles.replay.ReplayEvent
+import com.apex.lib.workingfiles.semantic.SemanticDiff
+import com.apex.lib.workingfiles.semantic.SemanticDiffAnalyzer
 import com.apex.lib.workingfiles.snapshot.ChangeSource
 import com.apex.lib.workingfiles.snapshot.ChangeType
 import com.apex.lib.workingfiles.snapshot.FileSnapshot
 import com.apex.lib.workingfiles.snapshot.SnapshotStorage
 import com.apex.lib.workingfiles.snapshot.SnapshotSummary
+import com.apex.lib.workingfiles.timemachine.TimeMachine
+import com.apex.lib.workingfiles.timemachine.TimeMachinePlayer
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
 import java.io.File
@@ -71,6 +89,18 @@ class CodeEditorFacade(
     private val baseDir = File(context.filesDir, "apex-code-editor").apply { mkdirs() }
     private val snapshotStorage = SnapshotStorage(File(baseDir, "snapshots"))
     private val flowStorage = AgentFlowStorage(File(baseDir, "flows"))
+
+    // ===== Apex 独有增强模块 =====
+    /** 虚拟分支管理器 */
+    val branchManager: BranchManager = BranchManager(File(baseDir, "branches"), snapshotStorage)
+    /** 智能回退器（按 Agent 步骤回退） */
+    val smartReverter: SmartReverter = SmartReverter(snapshotStorage, flowStorage)
+    /** 时间机器（连续滑动预览） */
+    val timeMachine: TimeMachine = TimeMachine(snapshotStorage)
+    /** 多 Agent 冲突检测器 */
+    val conflictDetector: ConflictDetector = ConflictDetector()
+    /** 变更回放器（按速度回放 Agent 变更） */
+    val changeReplayer: ChangeReplayer = ChangeReplayer(snapshotStorage, flowStorage)
 
     // ============================================================
     // 文件浏览
@@ -578,6 +608,152 @@ class CodeEditorFacade(
     // ============================================================
 
     fun getSnapshotStats() = snapshotStorage.getStats()
+
+    // ============================================================
+    // 增强 1：虚拟分支系统（Apex 独有 — 移动端友好的"假设性"分支）
+    // ============================================================
+
+    /** 创建虚拟分支。 */
+    fun createBranch(
+        name: String, filePath: String, baseSnapshotId: String? = null,
+        description: String = "", agentId: String? = null
+    ): VirtualBranch = branchManager.createBranch(name, filePath, baseSnapshotId, description, agentId)
+
+    /** 切换到分支。 */
+    fun switchToBranch(filePath: String, branchId: String): Boolean = branchManager.switchToBranch(filePath, branchId)
+
+    /** 切换回 main。 */
+    fun switchToMain(filePath: String): Boolean = branchManager.switchToMain(filePath)
+
+    /** 合并分支。 */
+    fun mergeBranch(branchId: String, strategy: MergeStrategy = MergeStrategy.MERGE_MANUAL): BranchMergeResult =
+        branchManager.mergeBranch(branchId, strategy)
+
+    /** 丢弃分支。 */
+    fun discardBranch(branchId: String): Boolean = branchManager.discardBranch(branchId)
+
+    /** 列出文件的所有分支。 */
+    fun listBranches(filePath: String): List<VirtualBranch> = branchManager.listBranches(filePath)
+
+    /** 列出活跃分支。 */
+    fun listActiveBranches(filePath: String): List<VirtualBranch> = branchManager.listActiveBranches(filePath)
+
+    /** 获取当前活跃分支。 */
+    fun getActiveBranch(filePath: String): VirtualBranch? = branchManager.getActiveBranch(filePath)
+
+    /** 获取分支 diff。 */
+    fun getBranchDiff(branchId: String): FileDiff? = branchManager.getBranchDiff(branchId)
+
+    /** 锁定/解锁分支。 */
+    fun lockBranch(branchId: String) = branchManager.lockBranch(branchId)
+    fun unlockBranch(branchId: String) = branchManager.unlockBranch(branchId)
+
+    /** 删除分支。 */
+    fun deleteBranch(branchId: String): Boolean = branchManager.deleteBranch(branchId)
+
+    // ============================================================
+    // 增强 2：智能回退（Apex 独有 — 按 Agent 步骤回退，保留无关成果）
+    // ============================================================
+
+    /** 分析回退某步骤的影响范围。 */
+    fun analyzeRevert(sessionId: String, stepId: String): RevertAnalysis? =
+        smartReverter.analyzeRevert(sessionId, stepId)
+
+    /** 执行智能回退。 */
+    fun executeSmartRevert(analysis: RevertAnalysis, operator: String = "user"): RevertResult =
+        smartReverter.executeRevert(analysis, operator)
+
+    // ============================================================
+    // 增强 3：语义 Diff（Apex 独有 — AI 增强差异分析）
+    // ============================================================
+
+    /** 分析 diff 的语义（变更类型/风险/影响符号/破坏性变更）。 */
+    fun analyzeSemanticDiff(diff: FileDiff): SemanticDiff = SemanticDiffAnalyzer.analyze(diff)
+
+    /** 直接分析两个快照的语义 diff。 */
+    fun semanticDiffSnapshots(beforeId: String, afterId: String): SemanticDiff? {
+        val diff = diffSnapshots(beforeId, afterId) ?: return null
+        return SemanticDiffAnalyzer.analyze(diff)
+    }
+
+    // ============================================================
+    // 增强 4：时间机器（Apex 独有 — 连续滑动预览）
+    // ============================================================
+
+    /** 加载文件到时间机器。 */
+    fun loadTimeMachine(filePath: String): Boolean = timeMachine.load(filePath)
+
+    /** 时间机器跳到指定索引。 */
+    fun timeMachineJumpTo(index: Int) = timeMachine.jumpTo(index)
+
+    /** 时间机器跳到指定时间戳。 */
+    fun timeMachineJumpToTimestamp(timestamp: Long) = timeMachine.jumpToTimestamp(timestamp)
+
+    /** 时间机器前进/后退。 */
+    fun timeMachineNext() = timeMachine.next()
+    fun timeMachinePrevious() = timeMachine.previous()
+    fun timeMachineJumpToStart() = timeMachine.jumpToStart()
+    fun timeMachineJumpToEnd() = timeMachine.jumpToEnd()
+
+    /** 创建时间机器播放器。 */
+    fun createTimeMachinePlayer(onUpdate: (SnapshotSummary?) -> Unit): TimeMachinePlayer =
+        TimeMachinePlayer(timeMachine, onUpdate)
+
+    // ============================================================
+    // 增强 5：多 Agent 冲突检测（Apex 独有）
+    // ============================================================
+
+    /** 获取文件锁。 */
+    fun acquireFileLock(filePath: String, agentId: String, type: LockType, ttlMs: Long = 30_000L): String? =
+        conflictDetector.acquireLock(filePath, agentId, type, ttlMs)
+
+    /** 释放文件锁。 */
+    fun releaseFileLock(token: String): Boolean = conflictDetector.releaseLock(token)
+
+    /** 释放某 Agent 的所有锁。 */
+    fun releaseAllLocksForAgent(agentId: String): Int = conflictDetector.releaseAllForAgent(agentId)
+
+    /** 文件是否被锁定。 */
+    fun isFileLocked(filePath: String): Boolean = conflictDetector.isLocked(filePath)
+
+    /** 获取文件锁状态。 */
+    fun getFileLockStatus(filePath: String): LockStatus = conflictDetector.getLockStatus(filePath)
+
+    /** 检测潜在冲突。 */
+    fun detectConflict(filePath: String, agentId: String): ConflictWarning? =
+        conflictDetector.detectPotentialConflict(filePath, agentId)
+
+    /** 列出所有被锁定的文件。 */
+    fun listLockedFiles(): List<String> = conflictDetector.listLockedFiles()
+
+    // ============================================================
+    // 增强 6：变更回放（Apex 独有 — 按速度回放 Agent 变更）
+    // ============================================================
+
+    /** 加载会话到回放器。 */
+    fun loadReplayer(sessionId: String): Boolean = changeReplayer.load(sessionId)
+
+    /** 开始回放。 */
+    fun playReplay(speed: Float = 1.0f) = changeReplayer.play(speed)
+
+    /** 暂停回放。 */
+    fun pauseReplay() = changeReplayer.pause()
+
+    /** 重置回放。 */
+    fun resetReplay() = changeReplayer.reset()
+
+    /** 跳到指定步骤。 */
+    fun jumpReplayTo(stepIndex: Int) = changeReplayer.jumpTo(stepIndex)
+
+    /** 下一步/上一步。 */
+    fun replayNextStep() = changeReplayer.nextStep()
+    fun replayPreviousStep() = changeReplayer.previousStep()
+
+    /** 设置回放速度。 */
+    fun setReplaySpeed(speed: Float) = changeReplayer.setSpeed(speed)
+
+    /** 回放进度。 */
+    fun replayProgress(): Float = changeReplayer.getProgress()
 }
 
 // ============================================================

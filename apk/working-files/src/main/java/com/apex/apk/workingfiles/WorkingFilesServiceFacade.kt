@@ -582,6 +582,79 @@ class WorkingFilesServiceFacade(private val context: Context) {
 
     /** 获取快照存储统计。 */
     fun getSnapshotStats() = codeEditor.getSnapshotStats()
+
+    // ============================================================
+    // Apex 独有增强（委派给 CodeEditorFacade）
+    // ============================================================
+
+    // ===== 虚拟分支 =====
+    suspend fun createBranch(name: String, filePath: String, baseSnapshotId: String? = null, description: String = "", agentId: String? = null): BridgeResult<com.apex.lib.workingfiles.branch.VirtualBranch> = bridgeRun {
+        codeEditor.createBranch(name, filePath, baseSnapshotId, description, agentId)
+    }
+    suspend fun switchToBranch(filePath: String, branchId: String): BridgeResult<Boolean> = bridgeRun { codeEditor.switchToBranch(filePath, branchId) }
+    suspend fun switchToMain(filePath: String): BridgeResult<Boolean> = bridgeRun { codeEditor.switchToMain(filePath) }
+    suspend fun mergeBranch(branchId: String, strategy: String = "MERGE_MANUAL"): BridgeResult<com.apex.lib.workingfiles.branch.BranchMergeResult> = bridgeRun {
+        val s = runCatching { com.apex.lib.workingfiles.branch.MergeStrategy.valueOf(strategy) }.getOrDefault(com.apex.lib.workingfiles.branch.MergeStrategy.MERGE_MANUAL)
+        codeEditor.mergeBranch(branchId, s)
+    }
+    suspend fun discardBranch(branchId: String): BridgeResult<Boolean> = bridgeRun { codeEditor.discardBranch(branchId) }
+    suspend fun listBranches(filePath: String): BridgeResult<List<com.apex.lib.workingfiles.branch.VirtualBranch>> = bridgeRun { codeEditor.listBranches(filePath) }
+    suspend fun listActiveBranches(filePath: String): BridgeResult<List<com.apex.lib.workingfiles.branch.VirtualBranch>> = bridgeRun { codeEditor.listActiveBranches(filePath) }
+    suspend fun getActiveBranch(filePath: String): BridgeResult<com.apex.lib.workingfiles.branch.VirtualBranch?> = bridgeRun { codeEditor.getActiveBranch(filePath) }
+    suspend fun getBranchDiff(branchId: String): BridgeResult<com.apex.lib.workingfiles.diff.FileDiff?> = bridgeRun { codeEditor.getBranchDiff(branchId) }
+    suspend fun deleteBranch(branchId: String): BridgeResult<Boolean> = bridgeRun { codeEditor.deleteBranch(branchId) }
+
+    // ===== 智能回退 =====
+    suspend fun analyzeRevert(sessionId: String, stepId: String): BridgeResult<com.apex.lib.workingfiles.agent.RevertAnalysis?> = bridgeRun {
+        codeEditor.analyzeRevert(sessionId, stepId)
+    }
+    suspend fun executeSmartRevert(sessionId: String, stepId: String, operator: String = "user"): BridgeResult<com.apex.lib.workingfiles.agent.RevertResult> = bridgeRun {
+        val analysis = codeEditor.analyzeRevert(sessionId, stepId) ?: throw IllegalStateException("step not found")
+        codeEditor.executeSmartRevert(analysis, operator)
+    }
+
+    // ===== 语义 Diff =====
+    suspend fun analyzeSemanticDiff(oldContent: String, newContent: String): BridgeResult<com.apex.lib.workingfiles.semantic.SemanticDiff> = bridgeRun {
+        val diff = codeEditor.computeDiff(oldContent, newContent)
+        codeEditor.analyzeSemanticDiff(diff)
+    }
+    suspend fun semanticDiffSnapshots(beforeId: String, afterId: String): BridgeResult<com.apex.lib.workingfiles.semantic.SemanticDiff?> = bridgeRun {
+        codeEditor.semanticDiffSnapshots(beforeId, afterId)
+    }
+
+    // ===== 时间机器 =====
+    suspend fun loadTimeMachine(filePath: String): BridgeResult<Boolean> = bridgeRun { codeEditor.loadTimeMachine(filePath) }
+    suspend fun timeMachineJumpTo(index: Int): BridgeResult<com.apex.lib.workingfiles.snapshot.SnapshotSummary?> = bridgeRun { codeEditor.timeMachineJumpTo(index) }
+    suspend fun timeMachineJumpToTimestamp(timestamp: Long): BridgeResult<com.apex.lib.workingfiles.snapshot.SnapshotSummary?> = bridgeRun { codeEditor.timeMachineJumpToTimestamp(timestamp) }
+    suspend fun timeMachineNext(): BridgeResult<com.apex.lib.workingfiles.snapshot.SnapshotSummary?> = bridgeRun { codeEditor.timeMachineNext() }
+    suspend fun timeMachinePrevious(): BridgeResult<com.apex.lib.workingfiles.snapshot.SnapshotSummary?> = bridgeRun { codeEditor.timeMachinePrevious() }
+    suspend fun timeMachineTimeline(filePath: String): BridgeResult<List<com.apex.lib.workingfiles.snapshot.SnapshotSummary>> = bridgeRun {
+        codeEditor.loadTimeMachine(filePath)
+        codeEditor.timeMachine.getTimeline()
+    }
+
+    // ===== 冲突检测 =====
+    suspend fun acquireFileLock(filePath: String, agentId: String, type: String = "WRITE_LOCK", ttlMs: Long = 30_000L): BridgeResult<String?> = bridgeRun {
+        val t = runCatching { com.apex.lib.workingfiles.conflict.LockType.valueOf(type) }.getOrDefault(com.apex.lib.workingfiles.conflict.LockType.WRITE_LOCK)
+        codeEditor.acquireFileLock(filePath, agentId, t, ttlMs)
+    }
+    suspend fun releaseFileLock(token: String): BridgeResult<Boolean> = bridgeRun { codeEditor.releaseFileLock(token) }
+    suspend fun releaseAllLocksForAgent(agentId: String): BridgeResult<Int> = bridgeRun { codeEditor.releaseAllLocksForAgent(agentId) }
+    suspend fun isFileLocked(filePath: String): BridgeResult<Boolean> = bridgeRun { codeEditor.isFileLocked(filePath) }
+    suspend fun getFileLockStatus(filePath: String): BridgeResult<com.apex.lib.workingfiles.conflict.LockStatus> = bridgeRun { codeEditor.getFileLockStatus(filePath) }
+    suspend fun detectConflict(filePath: String, agentId: String): BridgeResult<com.apex.lib.workingfiles.conflict.ConflictWarning?> = bridgeRun { codeEditor.detectConflict(filePath, agentId) }
+    suspend fun listLockedFiles(): BridgeResult<List<String>> = bridgeRun { codeEditor.listLockedFiles() }
+
+    // ===== 变更回放 =====
+    suspend fun loadReplayer(sessionId: String): BridgeResult<Boolean> = bridgeRun { codeEditor.loadReplayer(sessionId) }
+    suspend fun playReplay(speed: Float = 1.0f): BridgeResult<Unit> = bridgeRun { codeEditor.playReplay(speed) }
+    suspend fun pauseReplay(): BridgeResult<Unit> = bridgeRun { codeEditor.pauseReplay() }
+    suspend fun resetReplay(): BridgeResult<Unit> = bridgeRun { codeEditor.resetReplay() }
+    suspend fun jumpReplayTo(stepIndex: Int): BridgeResult<Unit> = bridgeRun { codeEditor.jumpReplayTo(stepIndex) }
+    suspend fun replayNextStep(): BridgeResult<Unit> = bridgeRun { codeEditor.replayNextStep() }
+    suspend fun replayPreviousStep(): BridgeResult<Unit> = bridgeRun { codeEditor.replayPreviousStep() }
+    suspend fun setReplaySpeed(speed: Float): BridgeResult<Unit> = bridgeRun { codeEditor.setReplaySpeed(speed) }
+    suspend fun replayProgress(): BridgeResult<Float> = bridgeRun { codeEditor.replayProgress() }
 }
 
 // DTO 定义

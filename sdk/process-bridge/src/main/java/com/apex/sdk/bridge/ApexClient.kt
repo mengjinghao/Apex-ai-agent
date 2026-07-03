@@ -500,6 +500,92 @@ object ApexClient {
 
         suspend fun getSnapshotStats(): BridgeResult<String> =
             invoke("workingfiles/getSnapshotStats", emptyMap(), "working-files")
+
+        // ===== Apex 独有增强：虚拟分支 =====
+        suspend fun createBranch(name: String, filePath: String, baseSnapshotId: String? = null, description: String = "", agentId: String? = null): BridgeResult<String> {
+            val args = mutableMapOf("name" to name, "filePath" to filePath, "description" to description)
+            if (baseSnapshotId != null) args["baseSnapshotId"] = baseSnapshotId
+            if (agentId != null) args["agentId"] = agentId
+            return invoke("workingfiles/createBranch", args, "working-files")
+        }
+        suspend fun switchToBranch(filePath: String, branchId: String): BridgeResult<String> =
+            invoke("workingfiles/switchToBranch", mapOf("filePath" to filePath, "branchId" to branchId), "working-files")
+        suspend fun switchToMain(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/switchToMain", mapOf("filePath" to filePath), "working-files")
+        suspend fun mergeBranch(branchId: String, strategy: String = "MERGE_MANUAL"): BridgeResult<String> =
+            invoke("workingfiles/mergeBranch", mapOf("branchId" to branchId, "strategy" to strategy), "working-files")
+        suspend fun discardBranch(branchId: String): BridgeResult<String> =
+            invoke("workingfiles/discardBranch", mapOf("branchId" to branchId), "working-files")
+        suspend fun listBranches(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/listBranches", mapOf("filePath" to filePath), "working-files")
+        suspend fun listActiveBranches(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/listActiveBranches", mapOf("filePath" to filePath), "working-files")
+        suspend fun getActiveBranch(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/getActiveBranch", mapOf("filePath" to filePath), "working-files")
+        suspend fun getBranchDiff(branchId: String): BridgeResult<String> =
+            invoke("workingfiles/getBranchDiff", mapOf("branchId" to branchId), "working-files")
+        suspend fun deleteBranch(branchId: String): BridgeResult<String> =
+            invoke("workingfiles/deleteBranch", mapOf("branchId" to branchId), "working-files")
+
+        // ===== Apex 独有增强：智能回退 =====
+        suspend fun analyzeRevert(sessionId: String, stepId: String): BridgeResult<String> =
+            invoke("workingfiles/analyzeRevert", mapOf("sessionId" to sessionId, "stepId" to stepId), "working-files")
+        suspend fun executeSmartRevert(sessionId: String, stepId: String, operator: String = "user"): BridgeResult<String> =
+            invoke("workingfiles/executeSmartRevert", mapOf("sessionId" to sessionId, "stepId" to stepId, "operator" to operator), "working-files")
+
+        // ===== Apex 独有增强：语义 Diff =====
+        suspend fun analyzeSemanticDiff(diffJson: String): BridgeResult<String> =
+            invoke("workingfiles/analyzeSemanticDiff", mapOf("diffJson" to diffJson), "working-files")
+        suspend fun semanticDiffSnapshots(beforeId: String, afterId: String): BridgeResult<String> =
+            invoke("workingfiles/semanticDiffSnapshots", mapOf("beforeId" to beforeId, "afterId" to afterId), "working-files")
+
+        // ===== Apex 独有增强：时间机器 =====
+        suspend fun loadTimeMachine(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/loadTimeMachine", mapOf("filePath" to filePath), "working-files")
+        suspend fun timeMachineJumpTo(index: Int): BridgeResult<String> =
+            invoke("workingfiles/timeMachineJumpTo", mapOf("index" to index.toString()), "working-files")
+        suspend fun timeMachineJumpToTimestamp(timestamp: Long): BridgeResult<String> =
+            invoke("workingfiles/timeMachineJumpToTimestamp", mapOf("timestamp" to timestamp.toString()), "working-files")
+        suspend fun timeMachineNext(): BridgeResult<String> =
+            invoke("workingfiles/timeMachineNext", emptyMap(), "working-files")
+        suspend fun timeMachinePrevious(): BridgeResult<String> =
+            invoke("workingfiles/timeMachinePrevious", emptyMap(), "working-files")
+
+        // ===== Apex 独有增强：多 Agent 冲突检测 =====
+        suspend fun acquireFileLock(filePath: String, agentId: String, type: String = "WRITE_LOCK", ttlMs: Long = 30000L): BridgeResult<String> =
+            invoke("workingfiles/acquireFileLock", mapOf("filePath" to filePath, "agentId" to agentId, "type" to type, "ttlMs" to ttlMs.toString()), "working-files")
+        suspend fun releaseFileLock(token: String): BridgeResult<String> =
+            invoke("workingfiles/releaseFileLock", mapOf("token" to token), "working-files")
+        suspend fun releaseAllLocksForAgent(agentId: String): BridgeResult<String> =
+            invoke("workingfiles/releaseAllLocksForAgent", mapOf("agentId" to agentId), "working-files")
+        suspend fun isFileLocked(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/isFileLocked", mapOf("filePath" to filePath), "working-files")
+        suspend fun getFileLockStatus(filePath: String): BridgeResult<String> =
+            invoke("workingfiles/getFileLockStatus", mapOf("filePath" to filePath), "working-files")
+        suspend fun detectConflict(filePath: String, agentId: String): BridgeResult<String> =
+            invoke("workingfiles/detectConflict", mapOf("filePath" to filePath, "agentId" to agentId), "working-files")
+        suspend fun listLockedFiles(): BridgeResult<String> =
+            invoke("workingfiles/listLockedFiles", emptyMap(), "working-files")
+
+        // ===== Apex 独有增强：变更回放 =====
+        suspend fun loadReplayer(sessionId: String): BridgeResult<String> =
+            invoke("workingfiles/loadReplayer", mapOf("sessionId" to sessionId), "working-files")
+        suspend fun playReplay(speed: Float = 1.0f): BridgeResult<String> =
+            invoke("workingfiles/playReplay", mapOf("speed" to speed.toString()), "working-files")
+        suspend fun pauseReplay(): BridgeResult<String> =
+            invoke("workingfiles/pauseReplay", emptyMap(), "working-files")
+        suspend fun resetReplay(): BridgeResult<String> =
+            invoke("workingfiles/resetReplay", emptyMap(), "working-files")
+        suspend fun jumpReplayTo(stepIndex: Int): BridgeResult<String> =
+            invoke("workingfiles/jumpReplayTo", mapOf("stepIndex" to stepIndex.toString()), "working-files")
+        suspend fun replayNextStep(): BridgeResult<String> =
+            invoke("workingfiles/replayNextStep", emptyMap(), "working-files")
+        suspend fun replayPreviousStep(): BridgeResult<String> =
+            invoke("workingfiles/replayPreviousStep", emptyMap(), "working-files")
+        suspend fun setReplaySpeed(speed: Float): BridgeResult<String> =
+            invoke("workingfiles/setReplaySpeed", mapOf("speed" to speed.toString()), "working-files")
+        suspend fun replayProgress(): BridgeResult<String> =
+            invoke("workingfiles/replayProgress", emptyMap(), "working-files")
     }
 
     // ============================================================
