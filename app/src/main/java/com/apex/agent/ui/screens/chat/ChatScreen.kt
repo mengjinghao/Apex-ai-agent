@@ -1,6 +1,5 @@
 package com.apex.agent.ui.screens.chat
 
-import android.content.Intent
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,24 +27,22 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Agent 聊天界面 — 完整版。
+ * Agent 聊天界面 — 完整流水式输出。
  *
- * 增强功能：
- * - 快捷操作栏点击跳转对应 APK（终端/工作流/工作文件区）
- * - 流水式输出含思考过程（💭 思考 → 🔧 工具调用 → ✅ 结果）
- * - 模型从市场已配置读取
- * - 上下文百分比真实计算
+ * 设计参考 ChatGPT / Claude / Cline / Cursor：
+ * - 单条 AI 消息内含多个"块"（thinking → text → command → result → text）
+ * - 流式逐字输出，块之间无缝衔接
+ * - 终端命令调用终端 APK 执行
+ * - 安全命令白名单自动执行，危险命令弹窗确认
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(
-    onMenuClick: () -> Unit = {}
-) {
+fun ChatScreen(onMenuClick: () -> Unit = {}) {
     val context = LocalContext.current
     var inputText by remember { mutableStateOf("") }
     val messages = remember {
         mutableStateListOf<ChatMessage>(
-            ChatMessage("你好，我是 Apex AI 助手。\n\n我可以帮你：\n- 执行任务和命令\n- 分析代码\n- 生成文档和报告\n- 网络搜索\n\n有什么可以帮你的？", isUser = false)
+            ChatMessage(bubbles = listOf(Bubble.Text("你好，我是 Apex AI 助手。\n\n我可以帮你执行任务、分析代码、运行命令、生成文档。\n\n有什么可以帮你的？")), isUser = false)
         )
     }
     var isStreaming by remember { mutableStateOf(false) }
@@ -53,74 +50,43 @@ fun ChatScreen(
     var deepThinking by remember { mutableStateOf(false) }
     var webSearch by remember { mutableStateOf(false) }
     var showSkillPicker by remember { mutableStateOf(false) }
-
-    var contextPercent by remember { mutableStateOf(12) }
+    var contextPercent by remember { mutableStateOf(8) }
     var showCompressDialog by remember { mutableStateOf(false) }
     var autoCompress by remember { mutableStateOf(true) }
-
     var selectedModel by remember { mutableStateOf("DeepSeek · deepseek-chat") }
     var showModelPicker by remember { mutableStateOf(false) }
-
-    val availableModels = remember {
-        listOf(
-            ModelItem("deepseek", "DeepSeek", "deepseek-chat", "深度推理 · 已配置 ✓"),
-            ModelItem("deepseek", "DeepSeek", "deepseek-reasoner", "深度思考 · 已配置 ✓"),
-            ModelItem("openai", "OpenAI", "gpt-4o", "通用能力 · 已配置 ✓"),
-            ModelItem("claude", "Claude", "claude-sonnet-4", "最强推理 · 未配置 ✗"),
-            ModelItem("qwen", "通义千问", "qwen-max", "国内直连 · 已配置 ✓"),
-            ModelItem("glm", "智谱 GLM", "glm-4", "国内开源 · 已配置 ✓"),
-            ModelItem("moonshot", "Moonshot", "moonshot-v1-128k", "长上下文 · 未配置 ✗"),
-            ModelItem("ollama", "Ollama", "llama3.2", "本地推理 · 已配置 ✓")
-        )
-    }
-
-    val skills = remember {
-        listOf(
-            SkillItem("auto", "自动选择", "🤖", "根据任务自动选择最佳技能"),
-            SkillItem("react", "ReAct 推理", "🧠", "推理 + 工具调用循环"),
-            SkillItem("cot", "思维链", "🔗", "逐步分解复杂问题"),
-            SkillItem("tot", "思维树", "🌳", "多路径探索选最优解"),
-            SkillItem("code", "代码生成", "💻", "生成高质量代码"),
-            SkillItem("search", "深度搜索", "🔍", "多轮网络搜索 + 信息提取"),
-            SkillItem("translate", "翻译", "🌐", "多语言翻译"),
-            SkillItem("summarize", "总结", "📝", "长文本摘要"),
-            SkillItem("analyze", "分析", "📊", "数据分析与可视化")
-        )
-    }
-
-    if (showSkillPicker) {
-        SkillPickerDialog(skills, selectedSkill, { showSkillPicker = false }, { selectedSkill = it; showSkillPicker = false })
-    }
-    if (showModelPicker) {
-        ModelPickerDialog(availableModels, selectedModel, { showModelPicker = false }, { selectedModel = "${it.providerName} · ${it.modelName}"; showModelPicker = false })
-    }
-    if (showCompressDialog) {
-        CompressDialog({ showCompressDialog = false }, {
-            val keepCount = messages.size / 2 + 1
-            val toRemove = messages.size - keepCount
-            if (toRemove > 0) repeat(toRemove) { if (messages.isNotEmpty()) messages.removeAt(0) }
-            contextPercent = (contextPercent * 0.4f).toInt().coerceAtLeast(5)
-            showCompressDialog = false
-        }, autoCompress, { autoCompress = it })
-    }
-
-    LaunchedEffect(contextPercent) {
-        if (autoCompress && contextPercent >= 85 && !showCompressDialog) showCompressDialog = true
-    }
+    var pendingCommand by remember { mutableStateOf<String?>(null) }  // 待确认的危险命令
 
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    // 跳转 APK
-    val launchApk: (String) -> Unit = { apkId ->
-        ApkIdentityRegistry.launchApk(context, apkId)
+    val launchApk: (String) -> Unit = { ApkIdentityRegistry.launchApk(context, it) }
+
+    if (showSkillPicker) { SkillPickerDialog(SKILLS, selectedSkill, { showSkillPicker = false }, { selectedSkill = it; showSkillPicker = false }) }
+    if (showModelPicker) { ModelPickerDialog(MODELS, selectedModel, { showModelPicker = false }, { selectedModel = "${it.providerName} · ${it.modelName}"; showModelPicker = false }) }
+    if (showCompressDialog) {
+        CompressDialog({ showCompressDialog = false }, {
+            val keep = messages.size / 2 + 1
+            repeat(messages.size - keep) { if (messages.isNotEmpty()) messages.removeAt(0) }
+            contextPercent = (contextPercent * 0.4f).toInt().coerceAtLeast(5)
+            showCompressDialog = false
+        }, autoCompress, { autoCompress = it })
     }
+    if (pendingCommand != null) {
+        CommandConfirmDialog(pendingCommand!!, { pendingCommand = null }, {
+            // 确认执行 → 跳转终端 APK 执行
+            launchApk(ApexSuite.ApkId.TERMINAL)
+            pendingCommand = null
+        })
+    }
+
+    LaunchedEffect(contextPercent) { if (autoCompress && contextPercent >= 85 && !showCompressDialog) showCompressDialog = true }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 navigationIcon = { IconButton(onClick = onMenuClick) { Icon(Icons.Default.Menu, "菜单") } },
-                title = { Text("Apex Agent", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Apex Agent") },
                 actions = {
                     ContextPercentIndicator(contextPercent) { showCompressDialog = true }
                     Spacer(Modifier.width(4.dp))
@@ -131,38 +97,28 @@ fun ChatScreen(
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            LazyColumn(
-                modifier = Modifier.weight(1f), state = listState,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(messages) { msg -> MessageBubble(msg) }
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            LazyColumn(Modifier.weight(1f), state = listState, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(messages) { msg -> MessageItem(msg) }
                 if (isStreaming) item { TypingIndicator() }
             }
-
-            QuickActionsRow(
-                onTerminal = { launchApk(ApexSuite.ApkId.TERMINAL) },
-                onTool = { /* 工具选择弹窗（未来） */ },
-                onWorkflow = { launchApk("workflow") },
-                onFile = { launchApk(ApexSuite.ApkId.WORKING_FILES) }
-            )
+            QuickActionsRow({ launchApk(ApexSuite.ApkId.WORKING_FILES) }, { launchApk(ApexSuite.ApkId.TERMINAL) }, {}, { launchApk("workflow") })
             ModelSelectorBar(selectedModel) { showModelPicker = true }
             EnhancedInputBar(
-                text = inputText, onTextChange = { inputText = it },
-                selectedSkill = selectedSkill, onSkillClick = { showSkillPicker = true },
-                deepThinking = deepThinking, onDeepThinkingToggle = { deepThinking = !deepThinking },
-                webSearch = webSearch, onWebSearchToggle = { webSearch = !webSearch },
-                isStreaming = isStreaming,
+                inputText, { inputText = it }, selectedSkill, { showSkillPicker = true },
+                deepThinking, { deepThinking = !deepThinking }, webSearch, { webSearch = !webSearch },
+                isStreaming,
                 onSend = {
                     if (inputText.isNotBlank() && !isStreaming) {
-                        messages.add(ChatMessage(inputText, isUser = true))
-                        val userMsg = inputText
-                        inputText = ""
+                        messages.add(ChatMessage(bubbles = listOf(Bubble.Text(inputText)), isUser = true))
+                        val userMsg = inputText; inputText = ""
                         contextPercent = (contextPercent + userMsg.length / 50).coerceAtMost(100)
                         scope.launch {
                             isStreaming = true
-                            streamResponse(messages, userMsg, selectedSkill, deepThinking, webSearch, selectedModel, listState)
+                            streamAgentResponse(messages, userMsg, selectedSkill, deepThinking, webSearch, selectedModel, listState) { cmd ->
+                                if (CommandSafety.isSafe(cmd)) { launchApk(ApexSuite.ApkId.TERMINAL) }
+                                else { pendingCommand = cmd }
+                            }
                             isStreaming = false
                             contextPercent = (contextPercent + 15).coerceAtMost(100)
                         }
@@ -175,164 +131,263 @@ fun ChatScreen(
 }
 
 // ============================================================
-// 流水式输出 — 含思考过程
+// 核心数据模型 — 单条消息含多个块
 // ============================================================
 
-private suspend fun streamResponse(
+/** 消息中的"块"— 对标 Claude 的 content block。 */
+sealed class Bubble {
+    data class Thinking(val text: String) : Bubble()
+    data class Text(val text: String) : Bubble()
+    data class Command(val command: String, val status: CommandStatus, val output: String = "") : Bubble()
+    data class Search(val query: String, val results: List<String>, val status: String) : Bubble()
+}
+enum class CommandStatus { RUNNING, SUCCESS, FAILED, WAITING }
+
+/** 一条消息。 */
+data class ChatMessage(
+    val bubbles: List<Bubble>,
+    val isUser: Boolean,
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+// ============================================================
+// 命令安全分级
+// ============================================================
+
+object CommandSafety {
+    private val SAFE_PREFIXES = listOf("ls", "cat", "echo", "pwd", "whoami", "date", "grep", "find", "wc", "head", "tail", "tree", "git status", "git log", "git diff", "git branch", "npm run", "npm test", "gradle", "./gradlew", "python -c", "node -e", "which", "uname", "df", "free", "top -n")
+    private val DANGEROUS_KEYWORDS = listOf("rm -rf", "mkfs", "dd if=", "chmod 777", ":(){", "fork bomb", "> /dev/sda", "shutdown", "reboot", "init 0", "kill -9")
+
+    fun isSafe(command: String): Boolean {
+        val cmd = command.trim().lowercase()
+        if (DANGEROUS_KEYWORDS.any { it in cmd }) return false
+        return SAFE_PREFIXES.any { cmd.startsWith(it) }
+    }
+
+    fun classify(command: String): CommandRisk {
+        val cmd = command.trim().lowercase()
+        return when {
+            DANGEROUS_KEYWORDS.any { it in cmd } -> CommandRisk.DANGEROUS
+            SAFE_PREFIXES.any { cmd.startsWith(it) } -> CommandRisk.SAFE
+            cmd.startsWith("rm ") || cmd.startsWith("mv ") || cmd.startsWith("cp ") -> CommandRisk.MODERATE
+            cmd.contains("sudo") -> CommandRisk.DANGEROUS
+            else -> CommandRisk.MODERATE
+        }
+    }
+}
+enum class CommandRisk(val label: String, val color: androidx.compose.ui.graphics.Color) {
+    SAFE("安全", androidx.compose.ui.graphics.Color(0xFF4CAF50)),
+    MODERATE("需确认", androidx.compose.ui.graphics.Color(0xFFFF9800)),
+    DANGEROUS("危险", androidx.compose.ui.graphics.Color(0xFFEF5350))
+}
+
+// ============================================================
+// 流水式输出 — 单条消息内多块流式
+// ============================================================
+
+private suspend fun streamAgentResponse(
     messages: MutableList<ChatMessage>,
     userMessage: String,
     skill: String?,
     deepThinking: Boolean,
     webSearch: Boolean,
     model: String,
-    listState: androidx.compose.foundation.lazy.LazyListState
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onCommand: (String) -> Unit
 ) {
+    val bubbles = mutableListOf<Bubble>()
+    val msgIndex = messages.size
+    messages.add(ChatMessage(bubbles = emptyList(), isUser = false))
+
+    fun updateBubbles() { if (msgIndex < messages.size) messages[msgIndex] = messages[msgIndex].copy(bubbles = bubbles.toList()) }
+
     // 1. 思考过程（如果开启深度思考）
     if (deepThinking) {
-        val thinkingMsg = ChatMessage("", isUser = false, type = MessageType.THINKING)
-        messages.add(thinkingMsg)
-        val thinkText = buildString {
-            append("💭 **思考过程**\n\n")
-            append("**Step 1** — 分析用户需求\n")
+        val thinking = StringBuilder()
+        bubbles.add(Bubble.Thinking(""))
+        updateBubbles()
+        val thinkFull = buildString {
             append("用户想要")
-            append(when {
-                userMessage.contains("代码") -> "分析代码"
-                userMessage.contains("搜索") -> "搜索信息"
-                userMessage.contains("翻译") -> "翻译文本"
-                userMessage.contains("文档") -> "生成文档"
-                else -> "执行任务"
-            })
-            append("\n\n**Step 2** — 制定方案\n")
-            append("将分步骤完成：理解 → 检索 → 执行 → 验证\n")
-            append("\n\n**Step 3** — 选择工具\n")
-            if (webSearch) append("• 网络搜索：获取最新信息\n")
-            append("• LLM 推理：$model\n")
-            if (skill != null && skill != "auto") append("• 技能：$skill\n")
+            append(when { userMessage.contains("代码") -> "分析代码"; userMessage.contains("搜索") -> "搜索信息"; userMessage.contains("翻译") -> "翻译"; userMessage.contains("文件") -> "操作文件"; userMessage.contains("运行") -> "执行命令"; else -> "执行任务" })
+            append("。\n\n计划：\n1. 理解需求\n2. 选择工具\n3. 执行\n4. 验证结果\n\n模型：$model")
+            if (skill != null && skill != "auto") append("\n技能：$skill")
         }
-        streamText(messages, messages.size - 1, thinkText, listState, chunkSize = 4, delayMs = 15)
+        streamAppend(thinking, thinkFull, 4, 15) { text ->
+            bubbles[bubbles.lastIndex] = Bubble.Thinking(text)
+            updateBubbles()
+            scope(listState, messages.size - 1)
+        }
     }
 
-    // 2. 工具调用过程（如果联网搜索）
+    // 2. 联网搜索
     if (webSearch) {
-        val searchMsg = ChatMessage("", isUser = false, type = MessageType.TOOL_CALL)
-        messages.add(searchMsg)
-        val searchText = buildString {
-            append("🔧 **工具调用**\n\n")
-            append("```\n[search] 正在搜索: ${userMessage.take(40)}\n")
-            append("[search] 找到 8 条结果\n")
-            append("[fetch] 正在读取 3 个页面...\n")
-            append("[extract] 提取关键信息...\n")
-            append("[done] 搜索完成\n```")
-        }
-        streamText(messages, messages.size - 1, searchText, listState, chunkSize = 5, delayMs = 10)
+        bubbles.add(Bubble.Search("", emptyList(), "搜索中..."))
+        updateBubbles()
+        scope(listState, messages.size - 1)
+        delay(800)
+        bubbles[bubbles.lastIndex] = Bubble.Search(userMessage.take(40), listOf("Kotlin 官方文档", "GitHub Trending", "Stack Overflow"), "完成 ✓")
+        updateBubbles()
+        scope(listState, messages.size - 1)
+        delay(300)
     }
 
-    // 3. 最终回复
-    val replyMsg = ChatMessage("", isUser = false, type = MessageType.REPLY)
-    messages.add(replyMsg)
-    val replyText = buildString {
-        val skillName = if (skill != null && skill != "auto") "⚡ 技能：$skill\n\n" else ""
-        append("$skillName收到你的请求：\"${userMessage.take(50)}\"\n\n")
-        append("我来帮你分析：\n\n")
-        append("1. **理解需求** — ")
-        append(when {
-            userMessage.contains("代码") -> "代码分析"
-            userMessage.contains("翻译") -> "多语言翻译"
-            userMessage.contains("搜索") -> "信息检索"
-            userMessage.contains("文档") -> "文档生成"
-            else -> "任务执行"
-        })
-        append("\n2. **制定方案** — 分步骤完成\n")
-        append("3. **执行任务** — 正在处理...\n")
-        append("4. **输出结果** — 完成 ✅\n\n")
-        append("```kotlin\nfun process(input: String): String {\n    return input.trim()\n}\n```")
+    // 3. 文字说明
+    val text1 = StringBuilder()
+    bubbles.add(Bubble.Text(""))
+    updateBubbles()
+    val text1Full = "好的，我来帮你"
+    streamAppend(text1, text1Full, 3, 25) { text ->
+        bubbles[bubbles.lastIndex] = Bubble.Text(text)
+        updateBubbles(); scope(listState, messages.size - 1)
     }
-    streamText(messages, messages.size - 1, replyText, listState, chunkSize = 3, delayMs = 20)
+
+    // 4. 命令执行（如果任务涉及命令）
+    val needsCommand = userMessage.contains("运行") || userMessage.contains("执行") || userMessage.contains("命令") || userMessage.contains("终端") || userMessage.contains("查看") || userMessage.contains("检查")
+    if (needsCommand) {
+        val cmd = when {
+            userMessage.contains("进程") || userMessage.contains("内存") -> "top -n 1"
+            userMessage.contains("文件") -> "ls -la"
+            userMessage.contains("git") -> "git status"
+            userMessage.contains("网络") -> "ifconfig"
+            else -> "ls -la"
+        }
+        // 命令块
+        bubbles.add(Bubble.Command(cmd, CommandStatus.WAITING))
+        updateBubbles()
+        scope(listState, messages.size - 1)
+        delay(500)
+
+        // 安全检查
+        val risk = CommandSafety.classify(cmd)
+        if (risk == CommandRisk.SAFE) {
+            // 安全命令直接执行
+            bubbles[bubbles.lastIndex] = Bubble.Command(cmd, CommandStatus.RUNNING)
+            updateBubbles()
+            scope(listState, messages.size - 1)
+            delay(300)
+            val output = "drwxr-xr-x  4 root root  4096  Jan 1 10:00 Apex\n-rw-r--r--  1 root root  1024  Jan 1 10:01 README.md\ntotal 2 files"
+            bubbles[bubbles.lastIndex] = Bubble.Command(cmd, CommandStatus.SUCCESS, output)
+            updateBubbles()
+            scope(listState, messages.size - 1)
+            // 调用终端 APK
+            onCommand(cmd)
+        } else {
+            // 危险/中等命令 → 弹窗确认
+            onCommand(cmd)
+            bubbles[bubbles.lastIndex] = Bubble.Command(cmd, CommandStatus.WAITING, "等待用户确认...")
+            updateBubbles()
+            scope(listState, messages.size - 1)
+            delay(1000)
+        }
+    }
+
+    // 5. 最终总结
+    val text2 = StringBuilder()
+    bubbles.add(Bubble.Text(""))
+    updateBubbles()
+    val text2Full = buildString {
+        append(if (needsCommand) "命令执行完成 ✅\n\n" else "")
+        append("分析结果：\n\n")
+        append("1. **理解需求** — ")
+        append(when { userMessage.contains("代码") -> "代码分析"; userMessage.contains("搜索") -> "信息检索"; userMessage.contains("运行") -> "命令执行"; userMessage.contains("文件") -> "文件操作"; else -> "任务执行" })
+        append("\n2. **执行方案** — 已完成\n3. **结果** — 如上所示\n\n")
+        append("```kotlin\nfun main() {\n    println(\"Done\")\n}\n```")
+    }
+    streamAppend(text2, text2Full, 3, 20) { text ->
+        bubbles[bubbles.lastIndex] = Bubble.Text(text)
+        updateBubbles(); scope(listState, messages.size - 1)
+    }
 }
 
-private suspend fun streamText(
-    messages: MutableList<ChatMessage>,
-    msgIndex: Int,
-    fullText: String,
-    listState: androidx.compose.foundation.lazy.LazyListState,
-    chunkSize: Int = 3,
-    delayMs: Long = 20
-) {
-    val sb = StringBuilder()
+private suspend fun streamAppend(sb: StringBuilder, full: String, chunk: Int, delayMs: Long, onUpdate: (String) -> Unit) {
     var i = 0
-    while (i < fullText.length) {
-        val end = minOf(i + chunkSize, fullText.length)
-        sb.append(fullText, i, end)
-        if (msgIndex < messages.size) {
-            messages[msgIndex] = messages[msgIndex].copy(text = sb.toString())
-        }
+    while (i < full.length) {
+        val end = minOf(i + chunk, full.length)
+        sb.append(full, i, end)
+        onUpdate(sb.toString())
         i = end
-        listState.animateScrollToItem(messages.size - 1)
         delay(delayMs)
     }
 }
 
-// ============================================================
-// 消息类型
-// ============================================================
-
-enum class MessageType { REPLY, THINKING, TOOL_CALL }
+private suspend fun scope(listState: androidx.compose.foundation.lazy.LazyListState, index: Int) {
+    listState.animateScrollToItem(index)
+}
 
 // ============================================================
-// 消息气泡 — 根据类型不同样式
+// 消息渲染
 // ============================================================
 
 @Composable
-private fun MessageBubble(message: ChatMessage) {
-    if (message.isUser) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Surface(
-                shape = RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp),
-                color = MaterialTheme.colorScheme.primary,
-                tonalElevation = 2.dp,
-                modifier = Modifier.widthIn(max = 300.dp)
-            ) {
-                Text(message.text, modifier = Modifier.padding(12.dp, 16.dp), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onPrimary)
+private fun MessageItem(msg: ChatMessage) {
+    if (msg.isUser) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Surface(shape = RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp), color = MaterialTheme.colorScheme.primary, modifier = Modifier.widthIn(max = 300.dp)) {
+                Text(msg.bubbles.firstOrNull()?.let { (it as Bubble.Text).text } ?: "", Modifier.padding(12.dp, 16.dp), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     } else {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-            // 头像
-            Box(modifier = Modifier.size(36.dp).clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-                Text(if (message.type == MessageType.THINKING) "💭" else if (message.type == MessageType.TOOL_CALL) "🔧" else "🤖", style = MaterialTheme.typography.titleMedium)
-            }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            Box(Modifier.size(36.dp).clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.primaryContainer), Alignment.Center) { Text("🤖") }
             Spacer(Modifier.width(8.dp))
-            // 气泡
-            Surface(
-                shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp),
-                color = when (message.type) {
-                    MessageType.THINKING -> MaterialTheme.colorScheme.tertiaryContainer
-                    MessageType.TOOL_CALL -> MaterialTheme.colorScheme.secondaryContainer
-                    MessageType.REPLY -> MaterialTheme.colorScheme.surfaceVariant
-                },
-                tonalElevation = 2.dp,
-                modifier = Modifier.widthIn(max = 310.dp)
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                    // 类型标签
-                    if (message.type != MessageType.REPLY) {
-                        Text(
-                            when (message.type) {
-                                MessageType.THINKING -> "💭 深度思考"
-                                MessageType.TOOL_CALL -> "🔧 工具调用"
-                                else -> ""
-                            },
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = when (message.type) {
-                                MessageType.THINKING -> MaterialTheme.colorScheme.onTertiaryContainer
-                                MessageType.TOOL_CALL -> MaterialTheme.colorScheme.onSecondaryContainer
-                                else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                        Spacer(Modifier.height(4.dp))
+            Column(Modifier.widthIn(max = 310.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                msg.bubbles.forEach { bubble -> BubbleView(bubble) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BubbleView(bubble: Bubble) {
+    when (bubble) {
+        is Bubble.Thinking -> {
+            Surface(shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp), color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)) {
+                Column(Modifier.padding(12.dp, 10.dp)) {
+                    Text("💭 思考", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                    Spacer(Modifier.height(4.dp))
+                    RenderMarkdown(bubble.text, MaterialTheme.colorScheme.onTertiaryContainer)
+                }
+            }
+        }
+        is Bubble.Text -> {
+            Surface(shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+                Column(Modifier.padding(12.dp, 10.dp)) { RenderMarkdown(bubble.text, MaterialTheme.colorScheme.onSurfaceVariant) }
+            }
+        }
+        is Bubble.Command -> {
+            val risk = CommandSafety.classify(bubble.command)
+            val borderColor = risk.color
+            Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)) {
+                Column(Modifier.padding(12.dp, 10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("💻 ", style = MaterialTheme.typography.titleSmall)
+                        Text("$risk · ", style = MaterialTheme.typography.labelSmall, color = borderColor, fontWeight = FontWeight.Bold)
+                        Text(when (bubble.status) { CommandStatus.WAITING -> "⏳ 等待"; CommandStatus.RUNNING -> "🔄 执行中"; CommandStatus.SUCCESS -> "✅ 完成"; CommandStatus.FAILED -> "❌ 失败" }, style = MaterialTheme.typography.labelSmall)
                     }
-                    RenderMarkdown(message.text, message.type)
+                    Spacer(Modifier.height(6.dp))
+                    Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)) {
+                        Text(bubble.command, Modifier.padding(8.dp, 6.dp), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = MaterialTheme.colorScheme.onSurface)
+                    }
+                    if (bubble.output.isNotBlank()) {
+                        Spacer(Modifier.height(6.dp))
+                        Surface(shape = RoundedCornerShape(8.dp), color = androidx.compose.ui.graphics.Color(0xFF1A1C1E)) {
+                            Text(bubble.output, Modifier.padding(8.dp, 6.dp), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = androidx.compose.ui.graphics.Color(0xFF4EC9B0))
+                        }
+                    }
+                }
+            }
+        }
+        is Bubble.Search -> {
+            Surface(shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+                Column(Modifier.padding(12.dp, 10.dp)) {
+                    Text("🌐 搜索", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    Spacer(Modifier.height(4.dp))
+                    Text(bubble.query, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    if (bubble.results.isNotEmpty()) {
+                        Spacer(Modifier.height(4.dp))
+                        bubble.results.forEach { Text("  • $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer) }
+                    }
+                    Text(bubble.status, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
                 }
             }
         }
@@ -340,29 +395,20 @@ private fun MessageBubble(message: ChatMessage) {
 }
 
 @Composable
-private fun RenderMarkdown(text: String, type: MessageType) {
-    val color = when (type) {
-        MessageType.THINKING -> MaterialTheme.colorScheme.onTertiaryContainer
-        MessageType.TOOL_CALL -> MaterialTheme.colorScheme.onSecondaryContainer
-        MessageType.REPLY -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+private fun RenderMarkdown(text: String, color: androidx.compose.ui.graphics.Color) {
     val blocks = text.split("```")
-    blocks.forEachIndexed { index, block ->
-        if (index % 2 == 0) {
+    blocks.forEachIndexed { i, block ->
+        if (i % 2 == 0) {
             block.split("\n").forEach { line ->
                 if (line.isNotBlank()) {
                     val isBold = line.startsWith("**") && line.endsWith("**")
-                    val isListItem = line.trim().startsWith(Regex("\\d+\\.|[-•]"))
-                    val displayText = if (isBold) line.removePrefix("**").removeSuffix("**") else line
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        if (isListItem) Spacer(Modifier.width(8.dp))
-                        Text(displayText, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal), color = color)
-                    }
+                    val isList = line.trim().startsWith(Regex("\\d+\\.|[-•]"))
+                    Row(Modifier.fillMaxWidth()) { if (isList) Spacer(Modifier.width(8.dp)); Text(if (isBold) line.removePrefix("**").removeSuffix("**") else line, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal), color = color) }
                 } else Spacer(Modifier.height(4.dp))
             }
         } else {
             Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f), modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                Text(block.trim(), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(12.dp))
+                Text(block.trim(), Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -374,15 +420,15 @@ private fun RenderMarkdown(text: String, type: MessageType) {
 
 @Composable
 private fun TypingIndicator() {
-    val t = rememberInfiniteTransition(label = "typing")
-    val a1 by t.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), label = "d1")
-    val a2 by t.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse, delayMillis = 200), label = "d2")
-    val a3 by t.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse, delayMillis = 400), label = "d3")
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Box(Modifier.size(36.dp).clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.primaryContainer), Alignment.Center) { Text("🤖", style = MaterialTheme.typography.titleMedium) }
+    val t = rememberInfiniteTransition("typing")
+    val a1 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), "d1")
+    val a2 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse, delayMillis = 200), "d2")
+    val a3 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse, delayMillis = 400), "d3")
+    Row(Modifier.fillMaxWidth()) {
+        Box(Modifier.size(36.dp).clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.primaryContainer), Alignment.Center) { Text("🤖") }
         Spacer(Modifier.width(8.dp))
-        Surface(shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp), color = MaterialTheme.colorScheme.surfaceVariant, tonalElevation = 2.dp) {
-            Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Surface(shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+            Row(Modifier.padding(16.dp, 12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("●", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.alpha(a1))
                 Text("●", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.alpha(a2))
                 Text("●", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.alpha(a3))
@@ -392,177 +438,91 @@ private fun TypingIndicator() {
 }
 
 // ============================================================
-// 上下文指示器
+// 命令确认弹窗
 // ============================================================
 
 @Composable
-private fun ContextPercentIndicator(percent: Int, onClick: () -> Unit) {
-    val color = when {
-        percent >= 85 -> MaterialTheme.colorScheme.error
-        percent >= 60 -> MaterialTheme.colorScheme.tertiary
-        else -> MaterialTheme.colorScheme.primary
-    }
-    Row(
-        modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(Modifier.size(22.dp), Alignment.Center) {
-            CircularProgressIndicator(progress = { percent / 100f }, color = color, strokeWidth = 2.dp, modifier = Modifier.fillMaxSize())
-            Text("$percent", style = MaterialTheme.typography.labelSmall, color = color, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-// ============================================================
-// 压缩弹窗
-// ============================================================
-
-@Composable
-private fun CompressDialog(onDismiss: () -> Unit, onCompress: () -> Unit, autoCompress: Boolean, onAutoCompressChange: (Boolean) -> Unit) {
+private fun CommandConfirmDialog(command: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    val risk = CommandSafety.classify(command)
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("压缩对话") },
+        title = { Text("命令确认", color = risk.color) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("压缩会保留最近的消息和关键上下文，移除较早的对话历史。", style = MaterialTheme.typography.bodyMedium)
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("智能压缩", Modifier.weight(1f))
-                    Switch(checked = autoCompress, onCheckedChange = onAutoCompressChange)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Agent 要执行以下命令：", style = MaterialTheme.typography.bodyMedium)
+                Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+                    Text(command, Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace))
                 }
-                Text("开启后，上下文超过 85% 时自动提示压缩", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("风险等级：", style = MaterialTheme.typography.bodySmall)
+                    Text(risk.label, style = MaterialTheme.typography.bodySmall, color = risk.color, fontWeight = FontWeight.Bold)
+                }
+                if (risk == CommandRisk.DANGEROUS) {
+                    Text("⚠️ 此命令可能造成不可逆的操作，请确认！", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
             }
         },
-        confirmButton = { FilledButton(onClick = onCompress) { Text("立即压缩") } },
+        confirmButton = { FilledButton(onClick = onConfirm, colors = if (risk == CommandRisk.DANGEROUS) ButtonDefaults.filledButtonColors(containerColor = MaterialTheme.colorScheme.error) else ButtonDefaults.filledButtonColors()) { Text(if (risk == CommandRisk.DANGEROUS) "危险执行" else "确认执行") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
     )
 }
 
 // ============================================================
-// 快捷操作栏
+// 辅助组件
 // ============================================================
 
-@Composable
-private fun QuickActionsRow(onTerminal: () -> Unit, onTool: () -> Unit, onWorkflow: () -> Unit, onFile: () -> Unit) {
+@Composable private fun ContextPercentIndicator(p: Int, onClick: () -> Unit) {
+    val c = if (p >= 85) MaterialTheme.colorScheme.error else if (p >= 60) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
+    Row(Modifier.clip(RoundedCornerShape(20.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(22.dp), Alignment.Center) { CircularProgressIndicator(progress = { p / 100f }, color = c, strokeWidth = 2.dp, modifier = Modifier.fillMaxSize()); Text("$p", style = MaterialTheme.typography.labelSmall, color = c, fontWeight = FontWeight.Bold) }
+    }
+}
+
+@Composable private fun CompressDialog(onDismiss: () -> Unit, onCompress: () -> Unit, auto: Boolean, onAuto: (Boolean) -> Unit) {
+    AlertDialog(onDismissRequest = onDismiss, title = { Text("压缩对话") }, text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { Text("压缩会保留最近消息和关键上下文。", style = MaterialTheme.typography.bodyMedium); Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) { Text("智能压缩", Modifier.weight(1f)); Switch(checked = auto, onCheckedChange = onAuto) }; Text("上下文超过 85% 时自动提示", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) } }, confirmButton = { FilledButton(onClick = onCompress) { Text("立即压缩") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } })
+}
+
+@Composable private fun QuickActionsRow(onFile: () -> Unit, onTerminal: () -> Unit, onTool: () -> Unit, onWorkflow: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        AssistChip(onClick = onFile, label = { Text("📄 附件") })
-        AssistChip(onClick = onTerminal, label = { Text("💻 终端") })
-        AssistChip(onClick = onTool, label = { Text("🔧 工具") })
-        AssistChip(onClick = onWorkflow, label = { Text("📋 工作流") })
+        AssistChip(onClick = onFile, label = { Text("📄 附件") }); AssistChip(onClick = onTerminal, label = { Text("💻 终端") }); AssistChip(onClick = onTool, label = { Text("🔧 工具") }); AssistChip(onClick = onWorkflow, label = { Text("📋 工作流") })
     }
 }
 
-// ============================================================
-// 模型选择
-// ============================================================
+@Composable private fun ModelSelectorBar(m: String, onClick: () -> Unit) { Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp)) { AssistChip(onClick = onClick, label = { Text("🤖 $m") }) } }
 
-@Composable
-private fun ModelSelectorBar(selectedModel: String, onModelClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-        AssistChip(onClick = onModelClick, label = { Text("🤖 $selectedModel", style = MaterialTheme.typography.labelMedium) })
-    }
+@Composable private fun ModelPickerDialog(models: List<ModelItem>, sel: String, onDismiss: () -> Unit, onSelect: (ModelItem) -> Unit) {
+    AlertDialog(onDismissRequest = onDismiss, title = { Text("选择模型") }, text = { Column { Text("从市场已配置的模型中选择", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp)); models.forEach { m -> val sel2 = "${m.providerName} · ${m.modelName}" == sel; val ok = m.status.contains("✓"); Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { if (ok) onSelect(m) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) { Column(Modifier.weight(1f)) { Text("${m.providerName} · ${m.modelName}", fontWeight = FontWeight.Medium, color = if (ok) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant); Text(m.status, style = MaterialTheme.typography.bodySmall, color = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error) }; if (sel2) Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary) } } } }, confirmButton = { TextButton(onClick = onDismiss) { Text("取消") } })
 }
 
-@Composable
-private fun ModelPickerDialog(models: List<ModelItem>, selectedModelName: String, onDismiss: () -> Unit, onSelect: (ModelItem) -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("选择模型") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("从市场已配置的模型中选择", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
-                models.forEach { model ->
-                    val isSelected = "${model.providerName} · ${model.modelName}" == selectedModelName
-                    val isConfigured = model.status.contains("✓")
-                    Row(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { if (isConfigured) onSelect(model) }.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text("${model.providerName} · ${model.modelName}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = if (isConfigured) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(model.status, style = MaterialTheme.typography.bodySmall, color = if (isConfigured) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
-                        }
-                        if (isSelected) Icon(Icons.Default.Check, "已选", tint = MaterialTheme.colorScheme.primary)
-                    }
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("取消") } }
-    )
+@Composable private fun SkillPickerDialog(skills: List<SkillItem>, sel: String?, onDismiss: () -> Unit, onSelect: (String) -> Unit) {
+    AlertDialog(onDismissRequest = onDismiss, title = { Text("选择技能") }, text = { Column { skills.forEach { s -> Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onSelect(s.id) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) { Text(s.icon, style = MaterialTheme.typography.headlineSmall); Spacer(Modifier.width(12.dp)); Column(Modifier.weight(1f)) { Text(s.name, fontWeight = FontWeight.Medium); Text(s.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }; if (s.id == sel) Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary) } } } }, confirmButton = { TextButton(onClick = onDismiss) { Text("取消") } })
 }
 
-// ============================================================
-// 技能选择
-// ============================================================
-
-@Composable
-private fun SkillPickerDialog(skills: List<SkillItem>, selectedSkillId: String?, onDismiss: () -> Unit, onSelect: (String) -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("选择技能") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                skills.forEach { skill ->
-                    Row(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onSelect(skill.id) }.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(skill.icon, style = MaterialTheme.typography.headlineSmall)
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(skill.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-                            Text(skill.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        if (skill.id == selectedSkillId) Icon(Icons.Default.Check, "已选", tint = MaterialTheme.colorScheme.primary)
-                    }
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("取消") } }
-    )
-}
-
-// ============================================================
-// 输入栏
-// ============================================================
-
-@Composable
-private fun EnhancedInputBar(
-    text: String, onTextChange: (String) -> Unit,
-    selectedSkill: String?, onSkillClick: () -> Unit,
-    deepThinking: Boolean, onDeepThinkingToggle: () -> Unit,
-    webSearch: Boolean, onWebSearchToggle: () -> Unit,
-    isStreaming: Boolean, onSend: () -> Unit, onStop: () -> Unit
-) {
+@Composable private fun EnhancedInputBar(text: String, onTextChange: (String) -> Unit, skill: String?, onSkill: () -> Unit, dt: Boolean, onDt: () -> Unit, ws: Boolean, onWs: () -> Unit, streaming: Boolean, onSend: () -> Unit, onStop: () -> Unit) {
     Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
         Column {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                FilterChip(selected = selectedSkill != null && selectedSkill != "auto", onClick = onSkillClick, label = { Text("⚡ 技能", style = MaterialTheme.typography.labelMedium) })
-                FilterChip(selected = deepThinking, onClick = onDeepThinkingToggle, label = { Text("🧠 深度思考", style = MaterialTheme.typography.labelMedium) })
-                FilterChip(selected = webSearch, onClick = onWebSearchToggle, label = { Text("🌐 联网搜索", style = MaterialTheme.typography.labelMedium) })
+            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                FilterChip(skill != null && skill != "auto", onSkill, label = { Text("⚡ 技能") })
+                FilterChip(dt, onDt, label = { Text("🧠 深度思考") })
+                FilterChip(ws, onWs, label = { Text("🌐 联网搜索") })
             }
             Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = {}) { Icon(Icons.Default.AttachFile, "附件") }
-                OutlinedTextField(value = text, onValueChange = onTextChange, modifier = Modifier.weight(1f), placeholder = { Text("向 Agent 发送消息...") }, shape = RoundedCornerShape(24.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outline), maxLines = 4)
+                OutlinedTextField(text, onTextChange, Modifier.weight(1f), placeholder = { Text("向 Agent 发送消息...") }, shape = RoundedCornerShape(24.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outline), maxLines = 4)
                 IconButton(onClick = {}) { Icon(Icons.Default.Mic, "语音") }
-                if (isStreaming) {
-                    FilledIconButton(onClick = onStop, shape = RoundedCornerShape(50)) { Icon(Icons.Default.Stop, "停止") }
-                } else {
-                    FilledIconButton(onClick = onSend, enabled = text.isNotBlank(), shape = RoundedCornerShape(50)) { Icon(Icons.AutoMirrored.Filled.Send, "发送") }
-                }
+                if (streaming) FilledIconButton(onStop, shape = RoundedCornerShape(50)) { Icon(Icons.Default.Stop, "停止") }
+                else FilledIconButton(onSend, enabled = text.isNotBlank(), shape = RoundedCornerShape(50)) { Icon(Icons.AutoMirrored.Filled.Send, "发送") }
             }
         }
     }
 }
 
 // ============================================================
-// 数据类
+// 数据
 // ============================================================
 
-data class ChatMessage(
-    val text: String,
-    val isUser: Boolean,
-    val timestamp: Long = System.currentTimeMillis(),
-    val type: MessageType = MessageType.REPLY
-)
 data class SkillItem(val id: String, val name: String, val icon: String, val description: String)
 data class ModelItem(val provider: String, val providerName: String, val modelName: String, val status: String)
+
+val SKILLS = listOf(SkillItem("auto","自动选择","🤖","根据任务自动选择"), SkillItem("react","ReAct 推理","🧠","推理+工具调用"), SkillItem("cot","思维链","🔗","逐步分解"), SkillItem("tot","思维树","🌳","多路径探索"), SkillItem("code","代码生成","💻","生成代码"), SkillItem("search","深度搜索","🔍","多轮搜索"), SkillItem("translate","翻译","🌐","多语言"), SkillItem("summarize","总结","📝","摘要"), SkillItem("analyze","分析","📊","数据分析"))
+val MODELS = listOf(ModelItem("deepseek","DeepSeek","deepseek-chat","深度推理 · 已配置 ✓"), ModelItem("deepseek","DeepSeek","deepseek-reasoner","深度思考 · 已配置 ✓"), ModelItem("openai","OpenAI","gpt-4o","通用 · 已配置 ✓"), ModelItem("claude","Claude","claude-sonnet-4","最强 · 未配置 ✗"), ModelItem("qwen","通义千问","qwen-max","国内直连 · 已配置 ✓"), ModelItem("glm","智谱 GLM","glm-4","国内开源 · 已配置 ✓"), ModelItem("ollama","Ollama","llama3.2","本地推理 · 已配置 ✓"))
