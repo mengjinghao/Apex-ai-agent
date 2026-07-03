@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apex AI Agent — 流水式输出预览</title>
+<style>
+:root{--md-primary:#0061A4;--md-on-primary:#FFF;--md-primary-container:#D1E4FF;--md-on-primary-container:#001D36;--md-secondary-container:#D7E3F7;--md-on-secondary-container:#101C2B;--md-tertiary:#6B5778;--md-tertiary-container:#F2DAFF;--md-on-tertiary-container:#251431;--md-error:#BA1A1A;--md-error-container:#FFDAD6;--md-bg:#FDFCFF;--md-on-bg:#1A1C1E;--md-surface:#FDFCFF;--md-on-surface:#1A1C1E;--md-surface-variant:#DFE2EB;--md-on-sv:#43474E;--md-outline:#73777F;--md-p-d:#9ECAFF;--md-pc-d:#00497D;--md-tc-d:#524060;--md-sc-d:#3B4858;--md-bg-d:#1A1C1E;--md-s-d:#1A1C1E;--md-sv-d:#43474E;--md-osv-d:#C3C7CF;--ff:'Roboto','Google Sans','Noto Sans SC',sans-serif;--mono:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--ff);background:#E0E0E0;display:flex;justify-content:center;gap:32px;padding:48px 32px;flex-wrap:wrap}
+.phone{width:390px;height:844px;border-radius:48px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.2);position:relative;display:flex;flex-direction:column}
+.light{background:var(--md-bg);color:var(--md-on-bg)}.dark{background:var(--md-bg-d);color:var(--md-osv-d)}
+.label{position:absolute;top:-28px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:600;color:#666;white-space:nowrap}
+.topbar{height:56px;display:flex;align-items:center;padding:0 8px;gap:4px;flex-shrink:0}.light .topbar{background:var(--md-surface)}.dark .topbar{background:var(--md-s-d)}
+.hm{width:40px;height:40px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}.hm .ln{width:18px;height:2px;background:currentColor;margin:1.5px 0}
+.tbt{font-size:19px;font-weight:700;flex:1;padding-left:4px}
+.ctx{display:flex;align-items:center;padding:0 10px;height:30px;border-radius:15px;cursor:pointer}.light .ctx{background:var(--md-surface-variant)}.dark .ctx{background:var(--md-sv-d)}
+.ctx .ring{width:20px;height:20px;position:relative}.ctx .ring svg{transform:rotate(-90deg)}.ctx .ring .p{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;font-weight:700}
+.ib{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}
+.content{flex:1;overflow-y:auto;padding:12px 16px}.content::-webkit-scrollbar{display:none}
+.chat{display:flex;flex-direction:column;gap:8px}
+.msg{display:flex;gap:8px}.msg.u{justify-content:flex-end}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}.light .av.ai{background:var(--md-primary-container)}.dark .av.ai{background:var(--md-pc-d)}
+.cols{max-width:320px;display:flex;flex-direction:column;gap:5px}
+/* Bubble types */
+.b-think{border-radius:14px 14px 14px 4px;padding:10px 12px}.light .b-think{background:rgba(242,218,255,.5);color:var(--md-on-tertiary-container)}.dark .b-think{background:rgba(82,64,96,.4);color:#E0D4F0}
+.b-text{border-radius:14px 14px 14px 4px;padding:10px 12px}.light .b-text{background:var(--md-surface-variant);color:var(--md-on-sv)}.dark .b-text{background:var(--md-sv-d);color:var(--md-osv-d)}
+.b-user{border-radius:14px 14px 4px 14px;padding:10px 12px;background:var(--md-primary);color:var(--md-on-primary)}
+.b-cmd{border-radius:12px;padding:10px 12px;border:1.5px solid}.light .b-cmd{background:var(--md-surface)}.dark .b-cmd{background:var(--md-s-d)}
+.b-cmd.safe{border-color:#4CAF50}.b-cmd.mod{border-color:#FF9800}.b-cmd.danger{border-color:#EF5350}
+.b-search{border-radius:14px 14px 14px 4px;padding:10px 12px}.light .b-search{background:var(--md-secondary-container);color:var(--md-on-secondary-container)}.dark .b-search{background:var(--md-sc-d);color:#D7E3F7}
+.b-label{font-size:11px;font-weight:700;margin-bottom:3px}
+.cmd-bar{display:flex;align-items:center;gap:4px;font-size:11px;margin-bottom:4px}
+.cmd-text{border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;margin:4px 0}.light .cmd-text{background:rgba(0,0,0,.05)}.dark .cmd-text{background:rgba(255,255,255,.08)}
+.cmd-out{border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:11px;background:#1A1C1E;color:#4EC9B0;margin-top:4px;white-space:pre-wrap}
+.md-code{display:block;border-radius:6px;padding:8px 10px;font-family:var(--mono);font-size:12px;margin:4px 0;white-space:pre-wrap}.light .md-code{background:rgba(0,0,0,.06)}.dark .md-code{background:rgba(255,255,255,.08)}
+.md-list{padding-left:10px;padding-top:1px}.md-bold{font-weight:700}
+.cursor{display:inline-block;width:2px;height:14px;background:currentColor;animation:bc 1s infinite;vertical-align:middle}@keyframes bc{0%,50%{opacity:1}51%,100%{opacity:0}}
+.qa{display:flex;gap:6px;padding:4px 16px;flex-shrink:0}.qc{height:30px;padding:0 10px;border-radius:15px;display:inline-flex;align-items:center;font-size:12px;font-weight:500;cursor:pointer}.light .qc{background:var(--md-surface-variant);color:var(--md-on-sv)}.dark .qc{background:var(--md-sv-d);color:var(--md-osv-d)}.light .qc:hover{background:var(--md-primary-container);color:var(--md-on-primary-container)}
+.mb{padding:2px 16px}.mc{height:30px;padding:0 10px;border-radius:15px;display:inline-flex;align-items:center;font-size:12px;font-weight:500;gap:4px;cursor:pointer}.light .mc{background:var(--md-primary-container);color:var(--md-on-primary-container)}.dark .mc{background:var(--md-pc-d);color:var(--md-on-primary-container)}
+.ic{flex-shrink:0}.light .ic{background:var(--md-surface);box-shadow:0 -4px 12px rgba(0,0,0,.05)}.dark .ic{background:var(--md-s-d);box-shadow:0 -4px 12px rgba(0,0,0,.3)}
+.fr{display:flex;gap:4px;padding:5px 10px;align-items:center}.fc{height:30px;padding:0 10px;border-radius:15px;display:inline-flex;align-items:center;font-size:12px;font-weight:500;gap:4px;cursor:pointer;border:2px solid transparent}.light .fc{background:var(--md-surface-variant);color:var(--md-on-sv)}.dark .fc{background:var(--md-sv-d);color:var(--md-osv-d)}.light .fc.act{background:var(--md-secondary-container);color:var(--md-on-secondary-container);border-color:var(--md-primary)}.dark .fc.act{background:var(--md-sc-d);border-color:var(--md-p-d)}
+.ir{display:flex;align-items:center;gap:6px;padding:4px 10px 8px}.tif{flex:1;height:44px;border-radius:22px;padding:0 16px;display:flex;align-items:center;font-size:14px}.light .tif{background:var(--md-surface);border:1px solid var(--md-outline);color:var(--md-on-sv)}.dark .tif{background:var(--md-s-d);border:1px solid #555;color:var(--md-osv-d)}
+.sb{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}.sb.send{background:var(--md-primary);color:var(--md-on-primary)}.sb.stop{background:var(--md-error);color:#fff}
+/* Dialog */
+.dlg-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200}
+.dlg{width:320px;border-radius:24px;padding:20px}.light .dlg{background:var(--md-surface)}.dark .dlg{background:var(--md-s-d)}
+.dlg h3{font-size:18px;font-weight:700;margin-bottom:12px}.dlg .body{font-size:14px;margin-bottom:8px}
+.dlg .cmd-box{border-radius:8px;padding:10px;font-family:var(--mono);font-size:13px;margin:8px 0}.light .dlg .cmd-box{background:var(--md-surface-variant)}.dark .dlg .cmd-box{background:var(--md-sv-d)}
+.dlg .risk{display:flex;align-items:center;gap:6px;font-size:13px;margin:8px 0}
+.dlg .warn{font-size:12px;color:var(--md-error);margin:8px 0}
+.dlg .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.dlg .btn{padding:8px 20px;border-radius:18px;font-size:14px;font-weight:500;cursor:pointer}
+.dlg .btn-ok{background:var(--md-primary);color:#fff}.dlg .btn-danger{background:var(--md-error);color:#fff}.dlg .btn-cancel{background:transparent}
+/* Drawer */
+.d-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100}
+.d{position:absolute;top:0;left:0;width:280px;height:100%;padding:20px;overflow-y:auto;animation:si .3s}@keyframes si{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+.light .d{background:var(--md-surface)}.dark .d{background:var(--md-s-d)}
+.d h2{font-size:20px;font-weight:700;margin-bottom:2px}.d .ver{font-size:12px;opacity:.6;margin-bottom:20px}
+.d-div{height:1px;margin:10px 0}.light .d-div{background:var(--md-surface-variant)}.dark .d-div{background:var(--md-sv-d)}
+.d-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:14px;cursor:pointer;font-size:15px;font-weight:500}.light .d-item.active{background:var(--md-secondary-container);color:var(--md-on-secondary-container)}.dark .d-item.active{background:var(--md-sc-d)}
+.d-about{padding:14px;margin-top:6px}.d-about .t{font-size:13px;font-weight:600;margin-bottom:6px}.d-about .i{font-size:12px;opacity:.6;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- 1. 完整流水式输出 — 思考+搜索+命令+回复（亮色） -->
+<div style="position:relative">
+<div class="label">1. 完整流水式输出 — 思考→搜索→命令→回复（亮色）</div>
+<div class="phone light">
+  <div class="topbar"><div class="hm"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><span class="tbt">Apex Agent</span><div class="ctx"><div class="ring"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--md-surface-variant)" stroke-width="2"/><circle cx="10" cy="10" r="8" fill="none" stroke="var(--md-primary)" stroke-width="2" stroke-dasharray="50.27" stroke-dashoffset="44.24"/></svg><div class="p" style="color:var(--md-primary)">12</div></div></div><div class="ib">📦</div><div class="ib">⋮</div></div>
+  <div class="content">
+    <div class="chat">
+      <!-- 用户消息 -->
+      <div class="msg u"><div class="b-user" style="max-width:300px;">帮我查看当前目录的文件并分析项目结构</div></div>
+      <!-- AI 消息 — 单条多块 -->
+      <div class="msg"><div class="av ai">🤖</div><div class="cols">
+        <!-- 💭 思考 -->
+        <div class="b-think"><div class="b-label">💭 思考</div>用户想要执行命令。<br><br><span class="md-bold">计划：</span><br>1. 理解需求<br>2. 选择工具<br>3. 执行<br>4. 验证结果<br><br>模型：DeepSeek · deepseek-chat<br>技能：深度搜索</div>
+        <!-- 🌐 搜索 -->
+        <div class="b-search"><div class="b-label">🌐 搜索</div>查看当前目录的文件并分析项目结构<br>&nbsp;&nbsp;• Kotlin 官方文档<br>&nbsp;&nbsp;• GitHub Trending<br>&nbsp;&nbsp;• Stack Overflow<br>完成 ✓</div>
+        <!-- 📝 文字 -->
+        <div class="b-text">好的，我来帮你</div>
+        <!-- 💻 命令 -->
+        <div class="b-cmd safe">
+          <div class="cmd-bar">💻 <span style="color:#4CAF50;font-weight:700;">SAFE</span> · ✅ 完成</div>
+          <div class="cmd-text">ls -la</div>
+          <div class="cmd-out">drwxr-xr-x  4 root root  4096  Jan 1 10:00 Apex
+-rw-r--r--  1 root root  1024  Jan 1 10:01 README.md
+-rwxr-xr-x  1 root root  2048  Jan 1 10:02 gradlew
+total 3 files</div>
+        </div>
+        <!-- 📝 最终回复 -->
+        <div class="b-text">命令执行完成 ✅<br><br>分析结果：<br><br><span class="md-list">1. <span class="md-bold">理解需求</span> — 命令执行</span><br><span class="md-list">2. <span class="md-bold">执行方案</span> — 已完成</span><br><span class="md-list">3. <span class="md-bold">结果</span> — 如上所示</span><br><br><span class="md-code">fun main() {
+    println("Done")
+}</span></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="qa"><div class="qc">📄 附件</div><div class="qc">💻 终端</div><div class="qc">🔧 工具</div><div class="qc">📋 工作流</div></div>
+  <div class="mb"><div class="mc">🤖 DeepSeek · deepseek-chat</div></div>
+  <div class="ic"><div class="fr"><div class="fc act">⚡ 深度搜索</div><div class="fc act">🧠 深度思考</div><div class="fc act">🌐 联网搜索</div></div><div class="ir"><div class="ib">📎</div><div class="tif">向 Agent 发送消息...</div><div class="ib">🎤</div><div class="sb send">➤</div></div></div>
+</div>
+</div>
+
+<!-- 2. 流式输出中 — 思考过程流式（暗色） -->
+<div style="position:relative">
+<div class="label">2. 流式输出中 — 思考流式（暗色）</div>
+<div class="phone dark">
+  <div class="topbar"><div class="hm"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><span class="tbt">Apex Agent</span><div class="ctx"><div class="ring"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--md-sv-d)" stroke-width="2"/><circle cx="10" cy="10" r="8" fill="none" stroke="var(--md-tertiary)" stroke-width="2" stroke-dasharray="50.27" stroke-dashoffset="20.11"/></svg><div class="p" style="color:var(--md-tertiary)">60</div></div></div><div class="ib">📦</div><div class="ib">⋮</div></div>
+  <div class="content">
+    <div class="chat">
+      <div class="msg u"><div class="b-user" style="max-width:300px;">分析这段代码</div></div>
+      <div class="msg"><div class="av ai">🤖</div><div class="cols">
+        <div class="b-think"><div class="b-label">💭 思考</div>用户想要分析代码。<br><br><span class="md-bold">计划：</span><br>1. 理解需求<br>2. 选择工具<br>3. 执行<span class="cursor"></span></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="qa"><div class="qc">📄 附件</div><div class="qc">💻 终端</div><div class="qc">🔧 工具</div><div class="qc">📋 工作流</div></div>
+  <div class="mb"><div class="mc">🤖 通义千问 · qwen-max</div></div>
+  <div class="ic"><div class="fr"><div class="fc">⚡ 自动</div><div class="fc act">🧠 深度思考</div><div class="fc">🌐 搜索</div></div><div class="ir"><div class="ib">📎</div><div class="tif">向 Agent 发送消息...</div><div class="ib">🎤</div><div class="sb stop">⬛</div></div></div>
+</div>
+</div>
+
+<!-- 3. 危险命令确认弹窗（暗色） -->
+<div style="position:relative">
+<div class="label">3. 危险命令确认弹窗（暗色）</div>
+<div class="phone dark">
+  <div class="topbar"><div class="hm"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><span class="tbt">Apex Agent</span><div class="ctx"><div class="ring"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--md-sv-d)" stroke-width="2"/><circle cx="10" cy="10" r="8" fill="none" stroke="var(--md-tertiary)" stroke-width="2" stroke-dasharray="50.27" stroke-dashoffset="25.14"/></svg><div class="p" style="color:var(--md-tertiary)">50</div></div></div><div class="ib">📦</div></div>
+  <div class="content">
+    <div class="chat">
+      <div class="msg u"><div class="b-user" style="max-width:300px;">删除 /tmp 目录下所有文件</div></div>
+      <div class="msg"><div class="av ai">🤖</div><div class="cols">
+        <div class="b-text">好的，我来帮你删除 /tmp 目录下的文件</div>
+        <div class="b-cmd danger">
+          <div class="cmd-bar">💻 <span style="color:#EF5350;font-weight:700;">DANGEROUS</span> · ⏳ 等待</div>
+          <div class="cmd-text">rm -rf /tmp/*</div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <!-- 弹窗 -->
+  <div class="dlg-bg"><div class="dlg">
+    <h3 style="color:#EF5350;">命令确认</h3>
+    <div class="body">Agent 要执行以下命令：</div>
+    <div class="cmd-box">rm -rf /tmp/*</div>
+    <div class="risk">风险等级：<span style="color:#EF5350;font-weight:700;">危险</span></div>
+    <div class="warn">⚠️ 此命令可能造成不可逆的操作，请确认！</div>
+    <div class="btns"><div class="btn btn-cancel">取消</div><div class="btn btn-danger">危险执行</div></div>
+  </div></div>
+  <div class="qa"><div class="qc">📄 附件</div><div class="qc">💻 终端</div><div class="qc">🔧 工具</div><div class="qc">📋 工作流</div></div>
+  <div class="mb"><div class="mc">🤖 DeepSeek · deepseek-chat</div></div>
+  <div class="ic"><div class="fr"><div class="fc">⚡ 技能</div><div class="fc">🧠 深度思考</div><div class="fc">🌐 搜索</div></div><div class="ir"><div class="ib">📎</div><div class="tif">向 Agent 发送消息...</div><div class="ib">🎤</div><div class="sb send">➤</div></div></div>
+</div>
+</div>
+
+<!-- 4. 抽屉导航 — 含关于（亮色） -->
+<div style="position:relative">
+<div class="label">4. 左侧抽屉 — 含关于（亮色）</div>
+<div class="phone light">
+  <div class="topbar"><div class="hm"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><span class="tbt">Apex Agent</span><div class="ctx"><div class="ring"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--md-surface-variant)" stroke-width="2"/><circle cx="10" cy="10" r="8" fill="none" stroke="var(--md-primary)" stroke-width="2" stroke-dasharray="50.27" stroke-dashoffset="44.24"/></svg><div class="p" style="color:var(--md-primary)">12</div></div></div></div>
+  <div class="content"><div class="chat"><div class="msg"><div class="av ai">🤖</div><div class="b-text">你好，我是 Apex AI 助手。</div></div></div></div>
+  <div class="qa"><div class="qc">📄 附件</div><div class="qc">💻 终端</div><div class="qc">🔧 工具</div><div class="qc">📋 工作流</div></div>
+  <div class="mb"><div class="mc">🤖 DeepSeek · deepseek-chat</div></div>
+  <div class="ic"><div class="fr"><div class="fc">⚡ 技能</div><div class="fc">🧠 深度思考</div><div class="fc">🌐 搜索</div></div><div class="ir"><div class="ib">📎</div><div class="tif">向 Agent 发送消息...</div><div class="ib">🎤</div><div class="sb send">➤</div></div></div>
+  <div class="d-bg"></div>
+  <div class="d"><h2>Apex AI Agent</h2><div class="ver">v1.0.0 · 套件 6/9 已安装</div><div class="d-div"></div>
+    <div class="d-item active">💬 Agent</div><div class="d-item">📦 套件</div><div class="d-item">📊 诊断</div><div class="d-item">⚙️ 设置</div><div class="d-div"></div><div class="d-item">ℹ️ 关于</div>
+    <div class="d-about"><div class="t">Apex Suite · Material You 3</div><div class="i">开发者：MJH<br>QQ：2544240258<br>微信：meng4117222</div></div>
+  </div>
+</div>
+</div>
+
+<!-- 5. 套件管理（亮色） -->
+<div style="position:relative">
+<div class="label">5. 套件管理（亮色）</div>
+<div class="phone light">
+  <div class="topbar"><div class="hm"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><span class="tbt">套件管理</span></div>
+  <div class="content">
+    <div style="border-radius:20px;padding:20px;background:var(--md-primary-container);color:var(--md-on-primary-container);margin-bottom:8px;"><div style="font-size:22px;font-weight:700;">Apex 套件</div><div style="font-size:15px;margin-top:6px;">已安装 6 / 9</div><div style="font-size:12px;opacity:.7;">必须 6 个 · 可选 3 个</div></div>
+    <div style="font-size:13px;font-weight:600;color:var(--md-primary);margin:12px 0 6px;">必须组件</div>
+    <div style="border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:6px;background:var(--md-surface);box-shadow:0 1px 3px rgba(0,0,0,.08);"><div style="width:44px;height:44px;border-radius:50%;background:var(--md-primary-container);display:flex;align-items:center;justify-content:center;font-size:22px;">✓</div><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Apex 主应用</div><div style="font-size:12px;opacity:.7;">普通 Agent + 设置 + 权限 + 诊断</div></div><div style="width:36px;height:36px;border-radius:50%;background:var(--md-secondary-container);display:flex;align-items:center;justify-content:center;">↗</div></div>
+    <div style="border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:6px;background:var(--md-surface);box-shadow:0 1px 3px rgba(0,0,0,.08);"><div style="width:44px;height:44px;border-radius:50%;background:var(--md-primary-container);display:flex;align-items:center;justify-content:center;font-size:22px;">✓</div><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Apex 狂暴模式</div><div style="font-size:12px;opacity:.7;">31 个技能 + 7 种预设 + 4 种执行</div></div><div style="width:36px;height:36px;border-radius:50%;background:var(--md-secondary-container);display:flex;align-items:center;justify-content:center;">↗</div></div>
+    <div style="font-size:13px;font-weight:600;color:var(--md-tertiary);margin:12px 0 6px;">可选组件</div>
+    <div style="border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:6px;background:var(--md-surface);box-shadow:0 1px 3px rgba(0,0,0,.08);"><div style="width:44px;height:44px;border-radius:50%;background:var(--md-error-container);display:flex;align-items:center;justify-content:center;font-size:22px;">✗</div><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Apex 工作文件区</div><div style="font-size:12px;opacity:.7;">VSCode 式代码浏览 + 快照</div></div><div style="width:36px;height:36px;border-radius:50%;background:var(--md-primary);color:#fff;display:flex;align-items:center;justify-content:center;">⬇</div></div>
+  </div>
+</div>
+</div>
+
+<!-- 6. 设置（亮色） -->
+<div style="position:relative">
+<div class="label">6. 设置（亮色）</div>
+<div class="phone light">
+  <div class="topbar"><div class="hm"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><span class="tbt">设置</span></div>
+  <div class="content">
+    <div style="font-size:13px;font-weight:600;color:var(--md-primary);margin:8px 0 6px;">外观</div>
+    <div style="border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:6px;background:var(--md-surface);"><span style="font-size:22px;">🎨</span><div style="flex:1;"><div style="font-size:15px;font-weight:500;">动态取色</div><div style="font-size:12px;opacity:.7;">跟随系统壁纸自动配色</div></div><div style="width:48px;height:30px;border-radius:15px;background:var(--md-primary);position:relative;"><div style="width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:4px;left:22px;"></div></div></div>
+    <div style="border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:6px;background:var(--md-surface);"><span style="font-size:22px;">🌙</span><div style="flex:1;"><div style="font-size:15px;font-weight:500;">深色模式</div><div style="font-size:12px;opacity:.7;">跟随系统 / 浅色 / 深色</div></div><div style="width:48px;height:30px;border-radius:15px;background:var(--md-primary);position:relative;"><div style="width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:4px;left:22px;"></div></div></div>
+    <div style="font-size:13px;font-weight:600;color:var(--md-primary);margin:8px 0 6px;">权限管理</div>
+    <div style="border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:6px;background:var(--md-surface);"><span style="font-size:22px;">🔒</span><div style="flex:1;"><div style="font-size:15px;font-weight:500;">存储权限</div><div style="font-size:12px;opacity:.7;">已授予</div></div><span style="color:var(--md-primary);">✓</span></div>
+    <div style="font-size:13px;font-weight:600;color:var(--md-primary);margin:8px 0 6px;">高级</div>
+    <div style="border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:6px;background:var(--md-surface);"><span style="font-size:22px;">⚡</span><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Shizuku</div><div style="font-size:12px;opacity:.7;">已连接（v13）</div></div><span style="opacity:.5;">›</span></div>
+    <div style="border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:6px;background:var(--md-surface);"><span style="font-size:22px;">ℹ️</span><div style="flex:1;"><div style="font-size:15px;font-weight:500;">关于 Apex</div><div style="font-size:12px;opacity:.7;">版本 1.0.0 · 开发者 MJH</div></div><span style="opacity:.5;">›</span></div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
