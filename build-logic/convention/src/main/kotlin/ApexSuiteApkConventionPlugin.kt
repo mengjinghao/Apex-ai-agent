@@ -39,6 +39,9 @@ class ApexSuiteApkConventionPlugin : Plugin<Project> {
             // 先应用基础 application convention
             pluginManager.apply("apex.android.application")
 
+            // 自动应用模块归属校验（防止 lib:* 被错误打包进非授权 APK）
+            pluginManager.apply("apex.module.ownership")
+
             // 注入套件级 SDK 依赖
             dependencies.apply {
                 add("implementation", project(":sdk:common-core"))

@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("io.objectbox")
     alias(libs.plugins.google.hilt.android)
+    // 模块归属校验 — 防止 lib:* 被打包进主 APK
+    id("apex.module.ownership")
 }
 
 val localProperties = Properties()
@@ -213,10 +215,21 @@ dependencies {
     implementation(project(":sdk:auth"))
     implementation(project(":sdk:storage"))
 
-    // 套件级新增功能库（主 APK 也可直接使用）
-    implementation(project(":lib:multi-agent"))
-    implementation(project(":lib:workflow"))
-    implementation(project(":lib:working-files"))
+    // ============================================================
+    // ⚠️ 模块归属规则（见 docs/architecture/MODULE_OWNERSHIP.md）
+    // ============================================================
+    // lib:* 模块是"功能 APK 私有库"，只打包进对应 APK，不打包进主 APK。
+    // 主 APK 通过 ApexClient 跨 APK 调用这些功能，无需直接依赖。
+    //
+    //   :lib:multi-agent   → 只属于 :apk:multi-agent
+    //   :lib:workflow      → 只属于 :apk:workflow
+    //   :lib:working-files → 只属于 :apk:working-files
+    //
+    // 如需在主 APK 中使用，应通过：
+    //   ApexClient.workingFiles.startAgentSession(...)
+    //   ApexClient.workflow.execute(...)
+    //   ApexClient.multiAgent.runCollaboration(...)
+    // ============================================================
 
     // Burst Mode 微内核架构模块
     implementation(project(":domain"))

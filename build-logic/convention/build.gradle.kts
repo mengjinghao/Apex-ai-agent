@@ -53,5 +53,10 @@ gradlePlugin {
             id = "apex.suite.apk"
             implementationClass = "ApexSuiteApkConventionPlugin"
         }
+        // 模块归属校验（防止 lib:* 被错误地打包进非授权 APK）
+        register("moduleOwnership") {
+            id = "apex.module.ownership"
+            implementationClass = "ModuleOwnershipPlugin"
+        }
     }
 }

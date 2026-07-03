@@ -55,10 +55,18 @@ include(":sdk:watchdog")         // 看门狗：心跳 + 死亡监听 + 自愈
 include(":sdk:auth")             // 共享认证 + 权限桥（SharedUserId 共享权限）
 include(":sdk:storage")          // 共享存储：DataStore + Room 基类
 
-// ---------- 新增功能库 ----------
-include(":lib:multi-agent")      // 多 Agent 协作库（角色分工 + 黑板 + 协作模式）
-include(":lib:workflow")         // 工作流库（DAG 编排 + 节点执行）
-include(":lib:working-files")    // 工作文件区库（文件夹绑定 + 实时跟随 + 代码预览）
+// ---------- 功能 APK 私有库（⚠️ 只打包进对应 APK，不打包进主 APK） ----------
+// 归属规则见 docs/architecture/MODULE_OWNERSHIP.md
+// 由 ModuleOwnershipPlugin 在编译时强制校验，违规即构建失败
+//
+//   :lib:multi-agent   → 只属于 :apk:multi-agent
+//   :lib:workflow      → 只属于 :apk:workflow
+//   :lib:working-files → 只属于 :apk:working-files
+//
+// 其他 APK（含主 APK）通过 ApexClient 跨 APK 调用这些库的能力
+include(":lib:multi-agent")      // 多 Agent 协作库（角色分工 + 黑板 + 协作模式）→ :apk:multi-agent 私有
+include(":lib:workflow")         // 工作流库（DAG 编排 + 节点执行）→ :apk:workflow 私有
+include(":lib:working-files")    // 工作文件区库（快照/diff/分支/Agent流程/时间机器）→ :apk:working-files 私有
 
 // ---------- 核心层（原有） ----------
 include(":core:burst-kernel")    // 狂暴模式微内核
