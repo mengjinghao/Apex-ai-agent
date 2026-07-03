@@ -242,6 +242,72 @@ class MarketServiceFacade(private val context: Context) {
     }
 
     /**
+     * 列出套件中所有 APK 的安装状态（用于"套件 APK 商店"UI）。
+     *
+     * 返回每个 APK 的描述符 + 安装状态 + 已安装版本。
+     */
+    fun listSuiteApks(): List<SuiteApkStatus> {
+        return com.apex.sdk.common.ApkDescriptors.ALL.map { desc ->
+            val installed = com.apex.sdk.common.ApkDependencyManager.isApkInstalled(context, desc.apkId)
+            val version = if (installed) com.apex.sdk.common.ApkDependencyManager.getInstalledVersion(context, desc.apkId) else null
+            val missingDeps = com.apex.sdk.common.ApkDependencyManager.checkDependencies(context, desc.apkId)
+            SuiteApkStatus(
+                apkId = desc.apkId,
+                packageName = desc.packageName,
+                displayName = desc.displayName,
+                description = desc.description,
+                necessity = desc.necessity.name,
+                capabilities = desc.capabilities,
+                dependsOn = desc.dependsOn,
+                approxSizeMb = desc.approxSizeMb,
+                downloadUrl = desc.downloadUrl,
+                installed = installed,
+                installedVersion = version,
+                missingDependencies = missingDeps.map { it.apkId }
+            )
+        }
+    }
+
+    /**
+     * 安装套件 APK（跳转到下载页或启动本地 APK 文件安装）。
+     *
+     * @param apkId 要安装的 APK ID
+     * @param apkFileUri 已下载的 APK 文件 URI（可选，未提供则跳转下载页）
+     * @return 是否成功启动安装流程
+     */
+    fun installSuiteApk(apkId: String, apkFileUri: String? = null): Boolean {
+        return if (apkFileUri != null) {
+            com.apex.sdk.common.ApkDependencyManager.startInstallFromUri(
+                context,
+                android.net.Uri.parse(apkFileUri)
+            )
+        } else {
+            com.apex.sdk.common.ApkDependencyManager.openDownloadPage(context, apkId)
+        }
+    }
+
+    /**
+     * 启动套件 APK。
+     */
+    fun launchSuiteApk(apkId: String): Boolean {
+        return com.apex.sdk.common.ApkDependencyManager.launchApk(context, apkId)
+    }
+
+    /**
+     * 获取套件安装摘要。
+     */
+    fun getSuiteInstallSummary(): String {
+        return com.apex.sdk.common.ApkDependencyManager.getInstallSummary(context)
+    }
+
+    /**
+     * 检查所有必须 APK 是否已安装。
+     */
+    fun checkRequiredApks(): List<String> {
+        return com.apex.sdk.common.ApkDependencyManager.checkRequiredApks(context).map { it.apkId }
+    }
+
+    /**
      * 生成 MCP 配置文件（多种格式）。
      */
     fun generateMcpConfig(format: String = "APEX_AGENT"): String {
@@ -358,6 +424,27 @@ data class OverviewDto(
     val enabledCount: Int,
     val disabledCount: Int
 )
+
+/** 套件中单个 APK 的安装状态。 */
+data class SuiteApkStatus(
+    val apkId: String,
+    val packageName: String,
+    val displayName: String,
+    val description: String,
+    /** REQUIRED / OPTIONAL / DEBUG */
+    val necessity: String,
+    val capabilities: List<String>,
+    val dependsOn: List<String>,
+    val approxSizeMb: Int,
+    val downloadUrl: String,
+    val installed: Boolean,
+    val installedVersion: String?,
+    /** 该 APK 依赖但未安装的其他 APK ID 列表。 */
+    val missingDependencies: List<String>
+) {
+    /** 是否可立即使用（已安装且所有依赖已安装）。 */
+    val isReady: Boolean get() = installed && missingDependencies.isEmpty()
+}
 
 // 扩展函数：模型 → DTO
 private fun MarketItem.toDto(): MarketItemDto = MarketItemDto(

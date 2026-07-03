@@ -13,22 +13,37 @@
 
 ## 📐 项目定位
 
-**Apex AI Agent** 是 [Apex-auto-agent](https://github.com/mengjinghao/Apex-auto-agent) 的**多 APK 重构版**，把单体应用拆分为：
+**Apex AI Agent** 是 [Apex-auto-agent](https://github.com/mengjinghao/Apex-auto-agent) 的**多 APK 重构版**，把单体应用拆分为 **10 个 APK**，分为三类：
+
+### 必须 APK（5 个，约 100MB）— 核心功能必备
 
 | APK | 包名 | 承载功能 |
 |-----|------|----------|
 | **Main App** | `com.apex.agent` | 普通 Agent 模式 + 设置 + 权限管理 + 业务编排 |
-| **Engine** | `com.apex.apk.engine` | AIDL + Shizuku + 无障碍服务 |
-| **Rage Mode** | `com.apex.apk.rage` | 狂暴模式微内核 + 全部狂暴技能 |
-| **Multi-Agent** | `com.apex.apk.multiagent` | 多 Agent 协作（角色 + 黑板 + 5 种协作模式） |
-| **Workflow** | `com.apex.apk.workflow` | 工作流 DAG 编排 + 8 种节点类型 |
-| **Market** | `com.apex.apk.market` | 技能 / 插件 / MCP / 模型 / Agent 角色集成与管理 |
+| **Engine** | `com.apex.apk.engine` | Shell 执行 + 5 个工具 + 容器 + 无障碍 + Shizuku |
 | **Terminal** | `com.apex.apk.terminal` | 三块终端（普通 / 多 Agent / 狂暴）+ C++ PTY |
-| **Working Files** | `com.apex.apk.workingfiles` | 工作文件夹绑定 + 实时跟随 + 代码预览 |
-| **Diagnostics** | `com.apex.apk.diagnostics` | 日志 / 性能 / 调试（补充） |
-| **Voice** | `com.apex.apk.voice` | 语音输入 / TTS / ASR（补充） |
+| **Market** | `com.apex.apk.market` | 27 个市场（技能/MCP/插件/模型）+ 安装管理 |
+| **Working Files** | `com.apex.apk.workingfiles` | 工作文件夹绑定 + 实时监听 + 代码预览 |
 
-📖 **完整架构文档**：[docs/architecture/MULTI_APK_ARCHITECTURE.md](docs/architecture/MULTI_APK_ARCHITECTURE.md)
+### 可选 APK（4 个，按需安装）
+
+| APK | 包名 | 承载功能 | 触发场景 |
+|-----|------|----------|----------|
+| **Rage Mode** | `com.apex.apk.rage` | 狂暴模式 + 31 个内置技能 | 用户切换狂暴模式时 |
+| **Multi-Agent** | `com.apex.apk.multiagent` | 多 Agent 协作（5 种模式） | 用户切换多 Agent 模式时 |
+| **Workflow** | `com.apex.apk.workflow` | 工作流 DAG + 8 种节点 | 用户创建工作流时 |
+| **Voice** | `com.apex.apk.voice` | TTS + ASR 语音 | 用户启用语音时 |
+
+### 调试 APK（1 个，开发者使用）
+
+| APK | 包名 | 承载功能 |
+|-----|------|----------|
+| **Diagnostics** | `com.apex.apk.diagnostics` | 日志收集 + 性能监控 + 崩溃堆栈 |
+
+📖 **完整文档**：
+- [APK 依赖与安装指南](docs/architecture/APK_DEPENDENCIES.md) — **必读**
+- [多 APK 架构详解](docs/architecture/MULTI_APK_ARCHITECTURE.md)
+- [API 速查表](docs/architecture/API_REFERENCE.md)
 
 ---
 

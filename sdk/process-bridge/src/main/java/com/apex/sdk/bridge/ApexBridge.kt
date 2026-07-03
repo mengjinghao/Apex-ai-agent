@@ -89,7 +89,17 @@ object ApexBridge {
 
         // 2) AIDL 降级
         val bridge = BinderConnectionManager.lookup(serviceName)
-            ?: return BridgeResult.Failure(BridgeError.notInstalled(serviceName))
+        if (bridge == null) {
+            // 服务不可达，可能是 APK 未安装或未启动
+            // 通过 serviceName 反查 APK 描述符，返回友好错误
+            val apkId = mapServiceToApkId(serviceName)
+            val error = if (apkId != null) {
+                BridgeError.notInstalledFriendly(apkId)
+            } else {
+                BridgeError.notInstalled(serviceName)
+            }
+            return BridgeResult.Failure(error)
+        }
 
         return withContext(Dispatchers.IO) {
             val timeout = defaultTimeoutMs
@@ -287,6 +297,28 @@ class ApkBridgeStubAdapter(private val internal: IApkBridgeInternal) : IApkBridg
     }
 
     override fun getApkIdentity(): String = internal.javaClass.name
+}
+
+/**
+ * 服务名 → APK ID 的映射。
+ *
+ * 服务名是 method 的第一段（如 "engine/execute" → "engine"），
+ * 但 APK ID 可能不完全一致（如 "multi-agent" 包含连字符）。
+ * 用于 [ApexBridge.invoke] 在服务不可达时返回友好的未安装错误。
+ */
+private fun mapServiceToApkId(serviceName: String): String? {
+    return when (serviceName) {
+        "engine" -> com.apex.sdk.common.ApexSuite.ApkId.ENGINE
+        "rage" -> com.apex.sdk.common.ApexSuite.ApkId.RAGE
+        "multiagent", "multi-agent" -> com.apex.sdk.common.ApexSuite.ApkId.MULTI_AGENT
+        "workflow" -> com.apex.sdk.common.ApexSuite.ApkId.WORKFLOW
+        "market" -> com.apex.sdk.common.ApexSuite.ApkId.MARKET
+        "terminal" -> com.apex.sdk.common.ApexSuite.ApkId.TERMINAL
+        "workingfiles", "working-files" -> com.apex.sdk.common.ApexSuite.ApkId.WORKING_FILES
+        "diagnostics" -> com.apex.sdk.common.ApexSuite.ApkId.DIAGNOSTICS
+        "voice" -> com.apex.sdk.common.ApexSuite.ApkId.VOICE
+        else -> null
+    }
 }
 
 /**

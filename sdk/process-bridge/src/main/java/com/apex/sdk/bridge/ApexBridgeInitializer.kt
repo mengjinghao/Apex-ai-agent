@@ -60,6 +60,12 @@ class ApexBridgeInitializer : ContentProvider() {
         // 启动看门狗
         Watchdog.start()
 
+        // 注册包监听（监听套件中 APK 的安装/卸载）
+        ApkPackageMonitor.register(ctx)
+
+        // 刷新安装状态快照
+        com.apex.sdk.common.ApkDependencyManager.refreshInstallState(ctx)
+
         // 主 APK 自身：启动 BridgeRegistryService（其他 APK bindService 到此）
         // 非 主 APK：bindService 到主 APK 的 Registry
         if (apkId == ApexSuite.ApkId.MAIN) {
@@ -67,6 +73,22 @@ class ApexBridgeInitializer : ContentProvider() {
             // 同时也 bindToRegistry（bind 到自己）
             BridgeConnection.bindToRegistry(ctx) { connected ->
                 ApexLog.i(apkId, "[BridgeInitializer] self-bridge bound = $connected")
+            }
+
+            // 主 APK 启动时检查必须 APK 是否已安装
+            val missing = com.apex.sdk.common.ApkDependencyManager.checkRequiredApks(ctx)
+            if (missing.isNotEmpty()) {
+                ApexLog.w(apkId, "[BridgeInitializer] ${missing.size} required APKs missing: ${missing.map { it.apkId }}")
+                // 发布事件让 UI 显示提示
+                SuiteEventBus.publish(
+                    type = SuiteEventTypes.APK_REQUIRED_MISSING,
+                    payload = mapOf(
+                        "missingApkIds" to missing.map { it.apkId },
+                        "missingDisplayNames" to missing.map { it.displayName },
+                        "summary" to com.apex.sdk.common.ApkDependencyManager.buildMissingApksMessage(missing)
+                    ),
+                    sourceApk = apkId
+                )
             }
         } else {
             BridgeConnection.bindToRegistry(ctx) { connected ->

@@ -131,6 +131,43 @@ class MarketBridgeImpl(
                             put("config", config)
                         }.toString()
                     }
+                    "market/listSuiteApks" -> {
+                        val list = facade.listSuiteApks()
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", list.size)
+                            put("apks", list.joinToString("\n---\n") { a ->
+                                "${if (a.installed) "[✓]" else "[✗]"} ${a.displayName} (${a.necessity})" +
+                                if (a.installed) " v${a.installedVersion ?: "?"}" else " ~${a.approxSizeMb}MB" +
+                                if (a.missingDependencies.isNotEmpty()) " [missing deps: ${a.missingDependencies.joinToString(",")}]" else ""
+                            })
+                        }.toString()
+                    }
+                    "market/installSuiteApk" -> {
+                        val apkId = args["apkId"]?.jsonPrimitive?.content ?: ""
+                        val apkFileUri = args["apkFileUri"]?.jsonPrimitive?.content
+                        val ok = facade.installSuiteApk(apkId, apkFileUri)
+                        buildJsonObject { put("success", ok) }.toString()
+                    }
+                    "market/launchSuiteApk" -> {
+                        val apkId = args["apkId"]?.jsonPrimitive?.content ?: ""
+                        val ok = facade.launchSuiteApk(apkId)
+                        buildJsonObject { put("success", ok) }.toString()
+                    }
+                    "market/getSuiteInstallSummary" -> {
+                        buildJsonObject {
+                            put("success", true)
+                            put("summary", facade.getSuiteInstallSummary())
+                        }.toString()
+                    }
+                    "market/checkRequiredApks" -> {
+                        val missing = facade.checkRequiredApks()
+                        buildJsonObject {
+                            put("success", true)
+                            put("missingCount", missing.size)
+                            put("missingApkIds", missing.joinToString(","))
+                        }.toString()
+                    }
                     else -> errorResponse("unknown method: $method")
                 }
             }

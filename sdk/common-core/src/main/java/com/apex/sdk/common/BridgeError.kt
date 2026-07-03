@@ -40,6 +40,41 @@ data class BridgeError(
             sourceApk = apkId
         )
 
+        /**
+         * 友好的未安装错误（带显示名和安装建议）。
+         * 业务侧应优先使用本方法，UI 直接展示 message。
+         */
+        fun notInstalledFriendly(apkId: String): BridgeError {
+            val desc = ApkDescriptors.byId(apkId)
+            val necessityHint = when (desc?.necessity) {
+                ApkNecessity.REQUIRED -> "（必要组件，必须安装）"
+                ApkNecessity.OPTIONAL -> "（可选组件，按需安装）"
+                ApkNecessity.DEBUG -> "（调试组件）"
+                null -> ""
+            }
+            return BridgeError(
+                code = CODE_APK_NOT_INSTALLED,
+                message = "「${desc?.displayName ?: apkId}」未安装$necessityHint。" +
+                    "请前往下载页安装后再使用此功能。",
+                cause = "apkId=$apkId, package=${desc?.packageName}",
+                sourceApk = apkId
+            )
+        }
+
+        /**
+         * 能力缺失错误（用于按 capability 路由的调用）。
+         */
+        fun capabilityMissing(capability: String): BridgeError {
+            val providers = ApkDescriptors.byCapability(capability)
+            val names = providers.joinToString(" / ") { it.displayName }
+            return BridgeError(
+                code = CODE_APK_NOT_INSTALLED,
+                message = "能力 '$capability' 需要安装以下任一 APK：$names",
+                cause = "capability=$capability",
+                sourceApk = providers.firstOrNull()?.apkId
+            )
+        }
+
         fun notConnected(service: String) = BridgeError(
             code = CODE_SERVICE_NOT_CONNECTED,
             message = "Service '$service' is not connected"

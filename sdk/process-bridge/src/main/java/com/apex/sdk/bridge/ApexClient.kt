@@ -2,7 +2,10 @@ package com.apex.sdk.bridge
 
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
+import com.apex.sdk.common.ApkDependencyManager
+import com.apex.sdk.common.ApkDescriptors
 import com.apex.sdk.common.BridgeResult
+import android.content.Context
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -79,6 +82,10 @@ object ApexClient {
     // ============================================================
 
     class EngineClient {
+        /** 检查 Engine APK 是否已安装（必须组件）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.ENGINE)
+
         suspend fun executeShell(cmd: String): BridgeResult<String> = invoke("engine/executeShell", mapOf("cmd" to cmd))
 
         suspend fun executeShellViaShizuku(cmd: String): BridgeResult<String> =
@@ -126,6 +133,10 @@ object ApexClient {
     // ============================================================
 
     class RageClient {
+        /** 检查 Rage APK 是否已安装（可选组件，使用狂暴模式前必须安装）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.RAGE)
+
         suspend fun initialize(preset: String = "BALANCED"): BridgeResult<String> =
             invoke("rage/initialize", mapOf("preset" to preset), "rage")
 
@@ -164,6 +175,10 @@ object ApexClient {
     // ============================================================
 
     class MultiAgentClient {
+        /** 检查 Multi-Agent APK 是否已安装（可选组件，使用多 Agent 协作前必须安装）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.MULTI_AGENT)
+
         suspend fun registerAgent(agentId: String, displayName: String, role: String = "WORKER"): BridgeResult<String> =
             invoke("multiagent/registerAgent", mapOf(
                 "agentId" to agentId,
@@ -201,6 +216,10 @@ object ApexClient {
     // ============================================================
 
     class WorkflowClient {
+        /** 检查 Workflow APK 是否已安装（可选组件，使用工作流前必须安装）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.WORKFLOW)
+
         suspend fun register(workflowJson: String): BridgeResult<String> =
             invoke("workflow/register", mapOf("workflowJson" to workflowJson), "workflow")
 
@@ -225,6 +244,10 @@ object ApexClient {
     // ============================================================
 
     class MarketClient {
+        /** 检查 Market APK 是否已安装（必须组件）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.MARKET)
+
         suspend fun initialize(): BridgeResult<String> = invoke("market/initialize", emptyMap(), "market")
         suspend fun listMarkets(category: String): BridgeResult<String> =
             invoke("market/listMarkets", mapOf("category" to category), "market")
@@ -261,6 +284,20 @@ object ApexClient {
         suspend fun getUpdatable(): BridgeResult<String> = invoke("market/getUpdatable", emptyMap(), "market")
         suspend fun generateMcpConfig(format: String = "APEX_AGENT"): BridgeResult<String> =
             invoke("market/generateMcpConfig", mapOf("format" to format), "market")
+
+        // 套件 APK 商店 — 管理其他 APK 的安装
+        suspend fun listSuiteApks(): BridgeResult<String> = invoke("market/listSuiteApks", emptyMap(), "market")
+        suspend fun installSuiteApk(apkId: String, apkFileUri: String? = null): BridgeResult<String> {
+            val args = if (apkFileUri != null) mapOf("apkId" to apkId, "apkFileUri" to apkFileUri)
+                       else mapOf("apkId" to apkId)
+            return invoke("market/installSuiteApk", args, "market")
+        }
+        suspend fun launchSuiteApk(apkId: String): BridgeResult<String> =
+            invoke("market/launchSuiteApk", mapOf("apkId" to apkId), "market")
+        suspend fun getSuiteInstallSummary(): BridgeResult<String> =
+            invoke("market/getSuiteInstallSummary", emptyMap(), "market")
+        suspend fun checkRequiredApks(): BridgeResult<String> =
+            invoke("market/checkRequiredApks", emptyMap(), "market")
     }
 
     // ============================================================
@@ -268,6 +305,10 @@ object ApexClient {
     // ============================================================
 
     class TerminalClient {
+        /** 检查 Terminal APK 是否已安装（必须组件）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.TERMINAL)
+
         suspend fun createNormalSession(workingDir: String = "~"): BridgeResult<String> =
             invoke("terminal/createNormalSession", mapOf("workingDir" to workingDir), "terminal")
 
@@ -302,6 +343,10 @@ object ApexClient {
     // ============================================================
 
     class WorkingFilesClient {
+        /** 检查 Working Files APK 是否已安装（必须组件）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.WORKING_FILES)
+
         suspend fun bindFolder(folderId: String, displayName: String, path: String, mode: String = "ALL"): BridgeResult<String> =
             invoke("workingfiles/bindFolder", mapOf(
                 "folderId" to folderId, "displayName" to displayName,
@@ -358,6 +403,10 @@ object ApexClient {
     // ============================================================
 
     class DiagnosticsClient {
+        /** 检查 Diagnostics APK 是否已安装（调试组件，仅诊断场景使用）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.DIAGNOSTICS)
+
         suspend fun startLogCapture(): BridgeResult<String> = invoke("diagnostics/startLogCapture", emptyMap(), "diagnostics")
         suspend fun getRecentLogs(maxLines: Int = 500): BridgeResult<String> =
             invoke("diagnostics/getRecentLogs", mapOf("maxLines" to maxLines.toString()), "diagnostics")
@@ -376,6 +425,10 @@ object ApexClient {
     // ============================================================
 
     class VoiceClient {
+        /** 检查 Voice APK 是否已安装（可选组件，使用语音功能前必须安装）。 */
+        fun isAvailable(context: Context): Boolean =
+            ApkDependencyManager.isApkInstalled(context, ApexSuite.ApkId.VOICE)
+
         suspend fun initializeTts(language: String = "zh-CN"): BridgeResult<String> =
             invoke("voice/initializeTts", mapOf("language" to language), "voice")
 
@@ -410,6 +463,75 @@ object ApexClient {
 
         suspend fun cancelRecognition(): BridgeResult<String> = invoke("voice/cancelRecognition", emptyMap(), "voice")
     }
+
+    // ============================================================
+    // APK 依赖检查（业务侧调用前检查目标 APK 是否已安装）
+    // ============================================================
+
+    /**
+     * 检查指定 APK 是否已安装。
+     * 业务侧在调用可选 APK（如 Rage / Multi-Agent）前应先检查。
+     */
+    fun isApkInstalled(context: Context, apkId: String): Boolean =
+        ApkDependencyManager.isApkInstalled(context, apkId)
+
+    /**
+     * 检查指定能力是否有任意 APK 提供。
+     */
+    fun hasCapability(context: Context, capability: String): Boolean =
+        ApkDependencyManager.hasCapability(context, capability)
+
+    /**
+     * 要求某 APK 必须已安装，否则返回 [BridgeResult.Failure]。
+     * 业务侧用法：
+     *   ```kotlin
+     *   val ready = ApexClient.requireApk(context, ApexSuite.ApkId.RAGE)
+     *   if (ready is BridgeResult.Failure) return ready  // 友好错误
+     *   ApexClient.rage.startSession(...)
+     *   ```
+     */
+    fun requireApk(context: Context, apkId: String): BridgeResult<Unit> {
+        return if (ApkDependencyManager.isApkInstalled(context, apkId)) {
+            BridgeResult.Success(Unit)
+        } else {
+            BridgeResult.Failure(com.apex.sdk.common.BridgeError.notInstalledFriendly(apkId))
+        }
+    }
+
+    /**
+     * 要求某能力必须可用，否则返回 [BridgeResult.Failure]。
+     */
+    fun requireCapability(context: Context, capability: String): BridgeResult<Unit> {
+        return if (ApkDependencyManager.hasCapability(context, capability)) {
+            BridgeResult.Success(Unit)
+        } else {
+            BridgeResult.Failure(com.apex.sdk.common.BridgeError.capabilityMissing(capability))
+        }
+    }
+
+    /**
+     * 获取所有未安装的必须 APK。
+     */
+    fun getMissingRequired(context: Context): List<com.apex.sdk.common.ApkDescriptor> =
+        ApkDependencyManager.checkRequiredApks(context)
+
+    /**
+     * 获取套件安装摘要。
+     */
+    fun getInstallSummary(context: Context): String =
+        ApkDependencyManager.getInstallSummary(context)
+
+    /**
+     * 启动某 APK 的下载页（GitHub Release）。
+     */
+    fun openDownloadPage(context: Context, apkId: String): Boolean =
+        ApkDependencyManager.openDownloadPage(context, apkId)
+
+    /**
+     * 启动某 APK（如果已安装）。
+     */
+    fun launchApk(context: Context, apkId: String): Boolean =
+        ApkDependencyManager.launchApk(context, apkId)
 
     // ============================================================
     // 内部辅助

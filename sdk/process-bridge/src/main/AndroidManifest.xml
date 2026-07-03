@@ -14,6 +14,11 @@
         android:name="com.apex.sdk.bridge.permission.BIND"
         android:protectionLevel="signature" />
 
+    <!-- 用于安装套件中其他 APK（ApkDependencyManager.startInstallFromUri）。
+         只在主 APK 中申请，避免每个 APK 都弹权限请求。
+         但声明在 SDK 中确保所有 APK 都有此能力（市场 APK 也可触发安装）。 -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <application>
         <provider
             android:name="com.apex.sdk.bridge.ApexBridgeInitializer"

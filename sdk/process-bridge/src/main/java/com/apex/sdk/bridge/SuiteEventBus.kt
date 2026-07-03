@@ -81,4 +81,8 @@ object SuiteEventTypes {
     const val APK_LAUNCHED = "apk.launched"
     const val APK_CRASHED = "apk.crashed"
     const val APK_RECOVERED = "apk.recovered"
+    const val APK_INSTALLED = "apk.installed"
+    const val APK_UNINSTALLED = "apk.uninstalled"
+    const val APK_UPDATED = "apk.updated"
+    const val APK_REQUIRED_MISSING = "apk.required_missing"  // 必须组件缺失
 }
