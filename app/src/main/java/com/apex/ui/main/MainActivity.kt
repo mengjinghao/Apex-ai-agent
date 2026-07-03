@@ -1,15 +1,22 @@
 package com.apex.ui.main
 
-import android.app.Activity
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.apex.agent.ui.navigation.ApexMainScaffold
+import com.apex.agent.ui.theme.ApexTheme
 
 /**
- * 主 Activity — Stub。
- * 原 Compose 主界面已移除。此 stub 保留类引用，业务代码（BackgroundServiceManager /
- * AIForegroundService / AppIconManager）通过 Intent 启动此 Activity 来打开主界面。
+ * 主 Activity — Material You 3 风格。
  *
- * 恢复 UI 时，在此处添加 Compose setContent {} 即可。
+ * 5 个底部 Tab：
+ * - Agent（聊天）
+ * - 套件（APK 管理）
+ * - 协作（模式切换：普通/狂暴/多Agent）
+ * - 诊断（日志/性能/崩溃）
+ * - 设置
  */
-class MainActivity : Activity() {
+class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_INITIAL_MODE = "INITIAL_MODE"
@@ -17,9 +24,12 @@ class MainActivity : Activity() {
         const val EXTRA_CHAT_ID = "chat_id"
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Stub: 原 UI 显示主聊天界面，已移除
-        // 保留 Activity 让业务代码的 Intent 不会崩溃
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            ApexTheme {
+                ApexMainScaffold()
+            }
+        }
     }
 }
