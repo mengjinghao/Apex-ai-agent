@@ -27,6 +27,8 @@ import com.apex.data.model.ToolPrompt
 class AgentTerminalToolProvider(private val context: Context) {
 
     private val executor = AgentTerminalExecutor(context)
+    private val workingFilesExecutor = WorkingFilesExecutor(context)
+    val thinkingTracker = ThinkingProcessTracker()
 
     /**
      * 获取所有终端工具的 ToolPrompt(供 LLM function calling)
@@ -181,6 +183,142 @@ class AgentTerminalToolProvider(private val context: Context) {
             description = "获取执行统计(总执行数/成功率/平均耗时/活跃会话/后台任务)。",
             parametersStructured = emptyList(),
         ),
+
+        // === Working Files(项目文件操作) ===
+        ToolPrompt(
+            name = "wf_bind_folder",
+            description = "绑定项目文件夹到 Working Files。Agent 后续所有文件操作都通过 folder_id 引用。首次操作项目时必须先绑定。",
+            parametersStructured = listOf(
+                ToolParameterSchema("folder_id", "string", "文件夹唯一 ID(如 project1)", required = true),
+                ToolParameterSchema("display_name", "string", "显示名(如 MyProject)", required = true),
+                ToolParameterSchema("path", "string", "文件系统绝对路径(如 /sdcard/MyProject)", required = true),
+                ToolParameterSchema("mode", "string", "访问模式: ALL/READ_ONLY/WRITE_ONLY,默认 ALL", required = false),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_list_files",
+            description = "列出已绑定文件夹的文件列表(支持子目录)。",
+            parametersStructured = listOf(
+                ToolParameterSchema("folder_id", "string", "已绑定的文件夹 ID", required = true),
+                ToolParameterSchema("relative_path", "string", "相对子路径(如 src/main),默认根目录", required = false),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_read_file",
+            description = "读取项目文件内容。Agent 查看代码/配置文件时用。",
+            parametersStructured = listOf(
+                ToolParameterSchema("folder_id", "string", "文件夹 ID", required = true),
+                ToolParameterSchema("relative_path", "string", "文件相对路径(如 src/Main.kt)", required = true),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_write_file",
+            description = "写入项目文件。Agent 创建/修改代码时用。支持追加模式。",
+            parametersStructured = listOf(
+                ToolParameterSchema("folder_id", "string", "文件夹 ID", required = true),
+                ToolParameterSchema("relative_path", "string", "文件相对路径", required = true),
+                ToolParameterSchema("content", "string", "文件内容", required = true),
+                ToolParameterSchema("append", "boolean", "是否追加到末尾,默认 false(覆盖)", required = false),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_write_with_snapshot",
+            description = "写入文件并自动创建快照(推荐)。修改前自动保存旧版本,出问题可回退。Agent 修改项目代码时优先用这个。",
+            parametersStructured = listOf(
+                ToolParameterSchema("file_path", "string", "文件绝对路径", required = true),
+                ToolParameterSchema("root_path", "string", "项目根路径(用于快照关联)", required = true),
+                ToolParameterSchema("content", "string", "新文件内容", required = true),
+                ToolParameterSchema("agent_id", "string", "Agent ID", required = false),
+                ToolParameterSchema("agent_name", "string", "Agent 名称", required = false),
+                ToolParameterSchema("session_id", "string", "Agent 会话 ID", required = false),
+                ToolParameterSchema("description", "string", "修改说明(如'修改了 main 函数')", required = false),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_file_tree",
+            description = "获取目录树 JSON(含文件名/路径/大小/子节点)。Agent 快速了解项目结构。",
+            parametersStructured = listOf(
+                ToolParameterSchema("root_path", "string", "根路径", required = false),
+                ToolParameterSchema("max_depth", "number", "最大深度,默认 10", required = false),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_list_snapshots",
+            description = "列出文件的所有历史快照。Agent 查看修改历史。",
+            parametersStructured = listOf(
+                ToolParameterSchema("file_path", "string", "文件绝对路径", required = true),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_restore_snapshot",
+            description = "回退文件到指定快照版本。Agent 修改出错时可用此工具回退。",
+            parametersStructured = listOf(
+                ToolParameterSchema("snapshot_id", "string", "快照 ID(list_snapshots 返回)", required = true),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_diff",
+            description = "计算差异。支持:两个快照之间(before_id+after_id)、快照与当前(snapshot_id)、两段文本(old_content+new_content)。",
+            parametersStructured = listOf(
+                ToolParameterSchema("before_id", "string", "旧快照 ID(可选)", required = false),
+                ToolParameterSchema("after_id", "string", "新快照 ID(可选)", required = false),
+                ToolParameterSchema("snapshot_id", "string", "快照 ID(与当前文件对比,可选)", required = false),
+                ToolParameterSchema("old_content", "string", "旧文本(可选)", required = false),
+                ToolParameterSchema("new_content", "string", "新文本(可选)", required = false),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_start_agent_session",
+            description = "在 Working Files 中开始 Agent 执行会话。会记录 Agent 的所有操作步骤,形成可回溯的执行流程。",
+            parametersStructured = listOf(
+                ToolParameterSchema("agent_id", "string", "Agent ID", required = false),
+                ToolParameterSchema("agent_name", "string", "Agent 名称", required = false),
+                ToolParameterSchema("task_description", "string", "任务描述", required = true),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_record_step",
+            description = "记录 Agent 执行步骤到 Working Files(含受影响文件)。形成可回溯的项目修改历史。",
+            parametersStructured = listOf(
+                ToolParameterSchema("session_id", "string", "会话 ID", required = true),
+                ToolParameterSchema("type", "string", "步骤类型: ANALYZE/MODIFY/TEST/DEPLOY", required = true),
+                ToolParameterSchema("title", "string", "步骤标题", required = true),
+                ToolParameterSchema("description", "string", "详细描述", required = false),
+                ToolParameterSchema("affected_files", "array", "受影响文件列表", required = false),
+                ToolParameterSchema("is_success", "boolean", "是否成功,默认 true", required = false),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_finish_session",
+            description = "结束 Agent 执行会话。",
+            parametersStructured = listOf(
+                ToolParameterSchema("session_id", "string", "会话 ID", required = true),
+                ToolParameterSchema("final_result", "string", "最终结果摘要", required = false),
+                ToolParameterSchema("status", "string", "状态: COMPLETED/FAILED/CANCELLED", required = false),
+            ),
+        ),
+        ToolPrompt(
+            name = "wf_get_agent_flow",
+            description = "获取 Agent 执行流程(所有步骤的可视化时间线)。",
+            parametersStructured = listOf(
+                ToolParameterSchema("session_id", "string", "会话 ID", required = true),
+            ),
+        ),
+
+        // === 思考过程 ===
+        ToolPrompt(
+            name = "agent_think",
+            description = "记录 Agent 的思考过程。Agent 在调用工具前/分析结果后/做决策时,用此工具记录推理步骤。UI 会实时展示。",
+            parametersStructured = listOf(
+                ToolParameterSchema("type", "string", "思考类型: PLAN(计划)/REASONING(推理)/DECISION(决策)", required = true),
+                ToolParameterSchema("content", "string", "思考内容(为什么这样做/发现了什么/决定什么)", required = true),
+            ),
+        ),
+        ToolPrompt(
+            name = "agent_get_thinking",
+            description = "获取当前思考过程的所有步骤(JSON)。Agent 可回顾自己的推理历史。",
+            parametersStructured = emptyList(),
+        ),
     )
 
     /**
@@ -191,7 +329,63 @@ class AgentTerminalToolProvider(private val context: Context) {
      * @return 执行结果 JSON(返回给 LLM 作为 tool_result)
      */
     suspend fun executeToolCall(toolName: String, argumentsJson: String): String {
-        return executor.executeAgentTool(toolName, argumentsJson)
+        // 思考过程工具
+        if (toolName == "agent_think") {
+            val args = org.json.JSONObject(argumentsJson)
+            val type = args.optString("type", "REASONING")
+            val content = args.optString("content", "")
+            when (type.uppercase()) {
+                "PLAN" -> thinkingTracker.logPlan(content)
+                "DECISION" -> thinkingTracker.logDecision(content)
+                else -> thinkingTracker.logReasoning(content)
+            }
+            return org.json.JSONObject().put("success", true).put("recorded", true).toString()
+        }
+        if (toolName == "agent_get_thinking") {
+            return thinkingTracker.getCurrentSessionJson().toString()
+        }
+
+        // Working Files 工具(wf_*)
+        if (toolName.startsWith("wf_")) {
+            // 记录思考: Agent 调用了 Working Files 工具
+            val args = try { org.json.JSONObject(argumentsJson) } catch (e: Exception) { org.json.JSONObject() }
+            thinkingTracker.logToolCall(toolName, "操作项目文件", "通过 Working Files APK 操作", argumentsJson)
+
+            val startedAt = System.currentTimeMillis()
+            val result = workingFilesExecutor.executeAgentTool(toolName, argumentsJson)
+            val durationMs = System.currentTimeMillis() - startedAt
+
+            // 解析结果,记录分析
+            val resultJson = try { org.json.JSONObject(result) } catch (e: Exception) { org.json.JSONObject() }
+            val success = resultJson.optBoolean("success", false)
+            val analysis = if (success) "Working Files 操作成功" else "操作失败: ${resultJson.optString("error", "unknown")}"
+            thinkingTracker.logToolResult(toolName, success, analysis, durationMs)
+
+            return result
+        }
+
+        // 终端工具(agent_*)
+        // 记录思考: Agent 调用了终端工具
+        val args = try { org.json.JSONObject(argumentsJson) } catch (e: Exception) { org.json.JSONObject() }
+        val command = args.optString("command", args.optString("template_id", toolName))
+        thinkingTracker.logToolCall(toolName, "执行: $command".take(100), "Agent 通过终端工具操作", argumentsJson.take(200))
+
+        val startedAt = System.currentTimeMillis()
+        val result = executor.executeAgentTool(toolName, argumentsJson)
+        val durationMs = System.currentTimeMillis() - startedAt
+
+        // 解析结果,记录分析
+        val resultJson = try { org.json.JSONObject(result) } catch (e: Exception) { org.json.JSONObject() }
+        val success = resultJson.optBoolean("success", resultJson.optInt("exitCode", 0) == 0)
+        val analysis = if (success) {
+            val outputLen = resultJson.optString("stdout", "").length + resultJson.optString("result", "").length
+            "执行成功,输出 ${outputLen} 字符"
+        } else {
+            "执行失败: ${resultJson.optString("error", resultJson.optString("stderr", "exit ${resultJson.optInt("exitCode", -1)}"))}"
+        }
+        thinkingTracker.logToolResult(toolName, success, analysis, durationMs)
+
+        return result
     }
 
     /** 获取底层 executor(高级用法) */
@@ -200,5 +394,16 @@ class AgentTerminalToolProvider(private val context: Context) {
     /** 释放资源 */
     fun shutdown() {
         executor.shutdown()
+        thinkingTracker.clearCurrent()
+    }
+
+    /** 开始思考会话(Agent 执行任务前调用) */
+    fun startThinkingSession(taskDescription: String) {
+        thinkingTracker.startSession(taskDescription)
+    }
+
+    /** 结束思考会话 */
+    fun endThinkingSession(status: ThinkingProcessTracker.ThinkingSession.SessionStatus = ThinkingProcessTracker.ThinkingSession.SessionStatus.COMPLETED) {
+        thinkingTracker.endSession(status)
     }
 }
