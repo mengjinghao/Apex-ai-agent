@@ -37,6 +37,28 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 
+// ===== lib:market 集成 =====
+import com.apex.lib.market.InstallManager
+import com.apex.lib.market.InstallOutcome
+import com.apex.lib.market.InstallStatus
+import com.apex.lib.market.InstallTask
+import com.apex.lib.market.Installer
+import com.apex.lib.market.LlmInvocation
+import com.apex.lib.market.LlmInvoker as LibLlmInvoker
+import com.apex.lib.market.LlmResult
+import com.apex.lib.market.MarketCatalog
+import com.apex.lib.market.MarketCategory
+import com.apex.lib.market.MarketEngine
+import com.apex.lib.market.MarketEvent
+import com.apex.lib.market.MarketFetcher
+import com.apex.lib.market.MarketItem as LibMarketItem
+import com.apex.lib.market.InstalledItem as LibInstalledItem
+import com.apex.lib.market.ProviderInfo
+import com.apex.lib.market.SkillInvocation
+import com.apex.lib.market.SkillInvoker as LibSkillInvoker
+import com.apex.lib.market.SkillResult
+import kotlinx.coroutines.flow.SharedFlow
+
 /**
  * Market APK 的核心服务实现。
  *
@@ -69,6 +91,22 @@ class MarketServiceFacade(private val context: Context) {
     private val favorites: Favorites = Favorites(File(context.filesDir, "apex-market-favorites"))
     /** 使用统计 */
     private val usageStats: UsageStats = UsageStats(File(context.filesDir, "apex-market-stats"))
+
+    // ===== lib:market 引擎（持有并委托） =====
+    /**
+     * lib:market 引擎实例 — 持有独立的 cache/favorites/usageStats（基于 lib 模型），
+     * 并通过 [MarketFetcher] / [Installer] / [LibLlmInvoker] / [LibSkillInvoker]
+     * 4 个接口由本 Facade 提供实际实现（委托给 IntegrationCenter / LlmInvoker / LocalSkillInvoker）。
+     */
+    private val engine: MarketEngine =
+        MarketEngine(File(context.filesDir, "apex-market-lib"))
+
+    /** 暴露 lib 引擎的事件流（UI / 跨 APK 通知可订阅）。 */
+    val engineEvents: SharedFlow<MarketEvent> get() = engine.events
+
+    /** 暴露 lib 引擎的安装进度事件流。 */
+    val installEvents: SharedFlow<MarketEvent> get() = engine.installEvents()
+
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
     /**
@@ -82,9 +120,136 @@ class MarketServiceFacade(private val context: Context) {
         // 初始化 LLM 和 Skill Invoker
         llmInvoker = LlmInvoker(center!!.installedManager)
         localSkillInvoker = LocalSkillInvoker(center!!.installedManager)
+
+        // ===== 注入 lib:market 引擎的实际实现契约 =====
+        val c = center!!
+        engine.fetcher = MarketFetcher { libCat, query, marketId, limit ->
+            // 委托给 IntegrationCenter 的对应 module 搜索
+            val integCat = libCategoryToIntegration(libCat)
+            val filter = MarketSearchFilter(query = query, pageSize = limit)
+            val result = when (marketId) {
+                null, "" -> when (integCat) {
+                    IntegrationCategory.SKILLS -> c.skillModule?.searchAcrossMarkets(filter)
+                    IntegrationCategory.MCP -> c.mcpModule?.searchAcrossMarkets(filter)
+                    IntegrationCategory.PLUGINS -> c.pluginModule?.searchAcrossMarkets(filter)
+                    IntegrationCategory.MODEL_PLATFORMS -> c.modelPlatformModule?.searchAcrossMarkets(filter)
+                    else -> null
+                }
+                else -> when (integCat) {
+                    IntegrationCategory.SKILLS -> c.skillModule?.searchInMarket(marketId, filter)
+                    IntegrationCategory.MCP -> c.mcpModule?.searchInMarket(marketId, filter)
+                    IntegrationCategory.PLUGINS -> c.pluginModule?.searchInMarket(marketId, filter)
+                    IntegrationCategory.MODEL_PLATFORMS -> c.modelPlatformModule?.searchInMarket(marketId, filter)
+                    else -> null
+                }
+            } ?: MarketSearchResult(emptyList())
+            result.items.map { it.toLibItem() }
+        }
+        engine.installer = object : Installer {
+            override suspend fun install(
+                item: LibMarketItem,
+                targetPath: String?,
+                config: Map<String, String>,
+                onProgress: (Int, String) -> Unit
+            ): InstallOutcome {
+                val integCat = libCategoryToIntegration(item.categoryEnum)
+                val integItem = findItem(item.id, integCat)
+                    ?: return InstallOutcome(false, item.id, error = "item not found: ${item.id}")
+                val executor = c.installExecutor
+                    ?: return InstallOutcome(false, item.id, error = "InstallExecutor not available")
+                val r = executor.install(integItem, targetPath, config) { p ->
+                    onProgress(p.percent, p.state.name.lowercase())
+                }
+                return InstallOutcome(
+                    success = r.success,
+                    itemId = r.itemId,
+                    installedPath = r.installedPath,
+                    message = r.message,
+                    error = r.error
+                )
+            }
+
+            override suspend fun uninstall(itemId: String, deleteFiles: Boolean): Boolean {
+                return c.installExecutor?.uninstall(itemId, deleteFiles) ?: false
+            }
+
+            override suspend fun setEnabled(itemId: String, enabled: Boolean): Boolean {
+                return c.installedManager.setEnabled(itemId, enabled)
+            }
+
+            override suspend fun listInstalled(category: MarketCategory?): List<LibInstalledItem> {
+                val items = if (category != null) {
+                    c.getInstalledByCategory(libCategoryToIntegration(category))
+                } else {
+                    c.installedSnapshot.value.items
+                }
+                return items.map { it.toLibInstalled() }
+            }
+
+            override suspend fun listUpdatable(): List<LibInstalledItem> {
+                return c.getUpdatable().map { it.toLibInstalled() }
+            }
+
+            override suspend fun isInstalled(itemId: String): Boolean {
+                return c.installedManager.get(itemId) != null
+            }
+        }
+        engine.llmInvoker = object : LibLlmInvoker {
+            override suspend fun invoke(req: LlmInvocation): LlmResult {
+                val text = llmInvoker.invoke(
+                    req.provider, req.modelName, req.prompt,
+                    req.maxTokens, req.systemPrompt, req.temperature
+                )
+                return LlmResult(
+                    text = text,
+                    provider = req.provider,
+                    modelName = req.modelName
+                )
+            }
+
+            override fun listAvailableProviders(): List<ProviderInfo> {
+                return llmInvoker.listAvailableProviders().map {
+                    ProviderInfo(
+                        name = it.name,
+                        displayName = it.displayName,
+                        baseUrl = it.baseUrl,
+                        defaultModel = it.defaultModel,
+                        hasApiKey = it.hasApiKey,
+                        apiKeySource = it.apiKeySource,
+                        region = it.region,
+                        freeQuota = it.freeQuota,
+                        supportsStreaming = it.supportsStreaming
+                    )
+                }
+            }
+
+            override fun isProviderAvailable(provider: String): Boolean {
+                return llmInvoker.isProviderAvailable(provider)
+            }
+        }
+        engine.skillInvoker = object : LibSkillInvoker {
+            override suspend fun invoke(req: SkillInvocation): SkillResult {
+                return try {
+                    val result = localSkillInvoker.invoke(req.itemId, req.method, req.argsJson)
+                    SkillResult(success = true, resultJson = result)
+                } catch (t: Throwable) {
+                    SkillResult(success = false, error = t.message ?: t.javaClass.simpleName)
+                }
+            }
+
+            override fun listMethods(itemId: String): List<String> {
+                return localSkillInvoker.listMethods(itemId)
+            }
+
+            override fun getMetadata(itemId: String): String? {
+                return localSkillInvoker.getMetadata(itemId)
+            }
+        }
+        engine.initialize()
+
         _isInitialized.value = true
         val stats = center?.marketStats
-        ApexLog.i(ApexSuite.ApkId.MARKET, "[$TAG_SUB] initialized; markets: $stats")
+        ApexLog.i(ApexSuite.ApkId.MARKET, "[$TAG_SUB] initialized; markets: $stats; engine wired")
     }
 
     /**
@@ -729,6 +894,176 @@ class MarketServiceFacade(private val context: Context) {
     private fun parseCategory(name: String): IntegrationCategory {
         return runCatching { IntegrationCategory.valueOf(name) }.getOrDefault(IntegrationCategory.SKILLS)
     }
+
+    // ============================================================
+    // lib:market 引擎委托 API（基于 lib 模型 / BridgeResult）
+    // ============================================================
+
+    /** 暴露内部 [MarketEngine] 实例（高级调用方可直接访问 lib 全部 API）。 */
+    fun getEngine(): MarketEngine = engine
+
+    // ----- 市场目录（lib 镜像） -----
+
+    /** 列出 27 个内置市场目录（按分类，可选）。 */
+    suspend fun listCatalog(category: String? = null): BridgeResult<List<MarketCatalog.Entry>> {
+        val cat = category?.let { MarketCategory.fromIntegrationName(it) }
+        return engine.listCatalog(cat)
+    }
+
+    /** 在市场目录中按关键字搜索。 */
+    suspend fun searchCatalog(query: String, limit: Int = 50): BridgeResult<List<MarketCatalog.Entry>> =
+        engine.searchCatalog(query, limit)
+
+    // ----- 基于引擎的搜索（lib 模型，缓存优先 + 自动统计） -----
+
+    /**
+     * 通过 lib 引擎搜索（缓存优先，未命中调用 [MarketFetcher]）。
+     * 返回 lib 的 [LibMarketItem] 列表，便于跨 APK 透传。
+     */
+    suspend fun searchViaEngine(
+        category: String,
+        query: String = "",
+        marketId: String? = null,
+        limit: Int = 50,
+        useCache: Boolean = true
+    ): BridgeResult<List<LibMarketItem>> {
+        ensureInitialized()
+        val cat = MarketCategory.fromIntegrationName(category)
+        return engine.search(cat, query, marketId, limit, useCache)
+    }
+
+    // ----- 安装任务管理（lib 状态机） -----
+
+    /**
+     * 通过 lib 引擎入队安装（状态机 + 进度流）。
+     * @return taskId
+     */
+    suspend fun enqueueInstall(
+        itemId: String,
+        category: String,
+        name: String,
+        version: String = "",
+        marketId: String = "",
+        targetPath: String? = null,
+        config: Map<String, String> = emptyMap()
+    ): BridgeResult<String> {
+        ensureInitialized()
+        val cat = MarketCategory.fromIntegrationName(category)
+        val item = LibMarketItem(
+            id = itemId, name = name, version = version,
+            category = cat.name, marketId = marketId
+        )
+        return engine.install(item, targetPath, config)
+    }
+
+    /** 取消安装任务。 */
+    suspend fun cancelInstallTask(taskId: String): BridgeResult<Boolean> =
+        engine.cancelInstall(taskId)
+
+    /** 查询安装任务状态。 */
+    fun getInstallTask(taskId: String): InstallTask? = engine.getInstallTask(taskId)
+
+    /** 按 itemId 查找进行中的安装任务。 */
+    fun getInstallTaskByItem(itemId: String): InstallTask? = engine.getInstallTaskByItem(itemId)
+
+    /** 列出所有安装任务。 */
+    fun listInstallTasks(limit: Int = 100): List<InstallTask> = engine.listInstallTasks(limit)
+
+    /** 列出最近完成的安装任务。 */
+    fun listRecentCompletedInstalls(limit: Int = 20): List<InstallTask> =
+        engine.listRecentCompletedInstalls(limit)
+
+    // ----- LLM / Skill 通过引擎调用（lib 契约） -----
+
+    /** 通过 lib 引擎调用 LLM（使用注入的 [LibLlmInvoker]）。 */
+    suspend fun invokeLlmViaEngine(
+        provider: String,
+        modelName: String,
+        prompt: String,
+        maxTokens: Int = 2048,
+        systemPrompt: String? = null,
+        temperature: Float = 0.7f
+    ): BridgeResult<LlmResult> {
+        ensureInitialized()
+        return engine.invokeLlm(
+            LlmInvocation(
+                provider = provider, modelName = modelName, prompt = prompt,
+                maxTokens = maxTokens, systemPrompt = systemPrompt, temperature = temperature
+            )
+        )
+    }
+
+    /** 通过 lib 引擎调用本地技能。 */
+    suspend fun invokeSkillViaEngine(
+        itemId: String,
+        method: String,
+        argsJson: String = "{}"
+    ): BridgeResult<SkillResult> {
+        ensureInitialized()
+        return engine.invokeSkill(SkillInvocation(itemId = itemId, method = method, argsJson = argsJson))
+    }
+
+    /** 列出可用 Provider（lib 模型）。 */
+    suspend fun listProvidersViaEngine(): BridgeResult<List<ProviderInfo>> {
+        ensureInitialized()
+        return engine.listAvailableProviders()
+    }
+
+    // ----- 引擎事件流访问 -----
+
+    /** 引擎事件流（lib [MarketEvent]）。 */
+    fun engineEventsFlow(): SharedFlow<MarketEvent> = engine.events
+
+    /** 安装进度事件流。 */
+    fun installEventsFlow(): SharedFlow<MarketEvent> = engine.installEvents()
+
+    // ============================================================
+    // lib ↔ integration 模型互转
+    // ============================================================
+
+    /** lib [MarketCategory] → integration [IntegrationCategory]。 */
+    private fun libCategoryToIntegration(cat: MarketCategory): IntegrationCategory = when (cat) {
+        MarketCategory.SKILL -> IntegrationCategory.SKILLS
+        MarketCategory.MCP -> IntegrationCategory.MCP
+        MarketCategory.PLUGIN -> IntegrationCategory.PLUGINS
+        MarketCategory.MODEL -> IntegrationCategory.MODEL_PLATFORMS
+        MarketCategory.AGENT_ROLE -> IntegrationCategory.SKILLS  // AGENT_ROLE 复用 SKILLS 桶
+    }
+
+    /** integration [MarketItem] → lib [LibMarketItem]。 */
+    private fun MarketItem.toLibItem(): LibMarketItem = LibMarketItem(
+        id = id,
+        name = name,
+        author = author,
+        description = description,
+        version = version,
+        category = category.name,
+        sourceUrl = sourceUrl,
+        downloadUrl = downloadUrl,
+        iconUrl = iconUrl,
+        marketId = marketId,
+        installed = isInstalled,
+        hasUpdate = hasUpdate,
+        rating = rating,
+        downloadCount = downloadCount,
+        downloadSizeBytes = downloadSizeBytes,
+        tags = tags,
+        metadata = metadata
+    )
+
+    /** integration [InstalledItem] → lib [LibInstalledItem]。 */
+    private fun InstalledItem.toLibInstalled(): LibInstalledItem = LibInstalledItem(
+        itemId = id,
+        name = name,
+        category = category.name,
+        installedVersion = installedVersion,
+        latestVersion = latestVersion,
+        installedAt = installedAt,
+        enabled = enabled,
+        installedPath = installedPath,
+        marketId = marketId,
+        hasUpdate = hasUpdate
+    )
 }
 
 // ============================================================

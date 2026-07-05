@@ -2,6 +2,14 @@ package com.apex.apk.engine
 
 import android.content.Context
 import android.os.Build
+import com.apex.lib.engine.ContainerAction
+import com.apex.lib.engine.ContainerStatusInfo
+import com.apex.lib.engine.DeviceInfo
+import com.apex.lib.engine.EngineGateway
+import com.apex.lib.engine.EngineOrchestrator
+import com.apex.lib.engine.ShellResult
+import com.apex.lib.engine.ShizukuCommandResult
+import com.apex.lib.engine.ToolDescriptor
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
 import com.apex.sdk.common.BridgeResult
@@ -11,16 +19,17 @@ import com.apex.sdk.common.bridgeRun
  * Engine APK 的核心服务实现。
  *
  * **职责**：
- *   - 包装 `:engine` 模块的 [EngineService][com.ai.assistance.apex.engine.EngineService]
- *   - 对其他 APK 暴露统一的 Kotlin API（通过 TypedServiceRegistry 注册）
- *   - 当其他 APK 与本 APK 同进程时，调用方直接拿到本实例，零延迟
+ *   - 作为 [EngineGateway] 的实现，向 `:lib:engine` 提供底层 `:engine` 模块能力
+ *   - 持有 [EngineOrchestrator]，把高层编排（命令路由 / 状态机 / 工具校验 / Shizuku 降级）委托给 lib
+ *   - 保留 Android 侧句柄：bindService / AIDL / ShizukuManager / PermissionManager / 无障碍服务
+ *   - 对其他 APK 暴露统一的 Kotlin API（通过 TypedServiceRegistry 注册），同进程零延迟
  *
  * **能力清单**：
- *   1. Shell 执行（普通 + Shizuku 高权限）
+ *   1. Shell 执行（普通 + Shizuku 高权限，含自动降级）
  *   2. 工具调用（5 个内置工具：file/network/system/process/code）
- *   3. 容器管理（proot 沙箱启动/停止/重启）
+ *   3. 容器管理（proot 沙箱启动/停止/重启 + 生命周期状态机）
  *   4. 无障碍服务（点击/滑动/截图/UI 树）
- *   5. 权限检查
+ *   5. 权限检查 / Shizuku 状态查询
  *
  * **使用方式**（其他 APK）：
  *   ```kotlin
@@ -33,10 +42,13 @@ import com.apex.sdk.common.bridgeRun
  *   `:engine` 模块的 EngineService 跑在独立进程 `:engine_process`，
  *   调用方需要 bindService + AIDL 才能拿到 IEngineService。
  *   本 Facade 内部封装了 bindService 的细节，对外只暴露 Kotlin 方法。
+ *
+ * **数据模型**：[ShellResult] / [ToolDescriptor] / [ContainerStatusInfo] / [DeviceInfo]
+ *   已迁移到 `:lib:engine`（com.apex.lib.engine.*），本文件不再持有。
  */
-class EngineServiceFacade(private val context: Context) {
+class EngineServiceFacade(private val context: Context) : EngineGateway {
 
-    private const val TAG_SUB = "EngineFacade"
+    private val TAG_SUB = "EngineFacade"
 
     private var engineService: com.ai.assistance.apex.engine.IEngineService? = null
     private var serviceConnection: android.content.ServiceConnection? = null
@@ -48,6 +60,125 @@ class EngineServiceFacade(private val context: Context) {
     /** 输出监听器列表，跨 APK 共享。 */
     private val outputListeners = mutableListOf<(String) -> Unit>()
     private val statusListeners = mutableListOf<(Int) -> Unit>()
+
+    /**
+     * 高层编排器。`by lazy` 避免在构造函数中泄漏未完成的 `this`。
+     * 调用任何高层 API 时会自动初始化。
+     */
+    val orchestrator: EngineOrchestrator by lazy { EngineOrchestrator(this) }
+
+    // ============================================================
+    // EngineGateway 实现：底层能力（供 orchestrator 调用）
+    // ============================================================
+
+    override fun isBound(): Boolean = bound
+
+    override fun getEngineVersion(): String = try {
+        engineService?.engineVersion ?: "unknown"
+    } catch (_: Throwable) { "unknown" }
+
+    override suspend fun rawExecuteShell(command: String): BridgeResult<ShellResult> = bridgeRun {
+        val svc = engineService ?: throw IllegalStateException("EngineService not bound")
+        val result = svc.executeCommand(command)
+        ShellResult(
+            stdout = result.output,
+            stderr = result.error,
+            exitCode = result.exitCode,
+            success = result.success,
+            executionTimeMs = result.executionTime
+        )
+    }
+
+    override suspend fun rawExecuteShellViaShizuku(command: String): BridgeResult<ShizukuCommandResult> = bridgeRun {
+        if (!shizukuManager.isAvailable()) {
+            throw IllegalStateException("Shizuku not available")
+        }
+        if (!shizukuManager.isPermissionGranted()) {
+            throw IllegalStateException("Shizuku permission not granted")
+        }
+        val r = shizukuManager.executeCommand(command)
+        ShizukuCommandResult(
+            exitCode = r.exitCode,
+            output = r.output,
+            error = r.error
+        )
+    }
+
+    override suspend fun rawExecuteTool(toolName: String, args: String): BridgeResult<ShellResult> = bridgeRun {
+        val svc = engineService ?: throw IllegalStateException("EngineService not bound")
+        val result = svc.executeTool(toolName, args)
+        ShellResult(
+            stdout = result.output,
+            stderr = result.error,
+            exitCode = result.exitCode,
+            success = result.success,
+            executionTimeMs = result.executionTime
+        )
+    }
+
+    override suspend fun rawListTools(): BridgeResult<List<ToolDescriptor>> = bridgeRun {
+        val svc = engineService ?: throw IllegalStateException("EngineService not bound")
+        svc.availableTools.map { t ->
+            ToolDescriptor(
+                name = t.name,
+                description = t.description,
+                category = t.category,
+                parameters = t.parameters.toList(),
+                requiresRoot = t.requiresRoot
+            )
+        }
+    }
+
+    override suspend fun rawStartContainer(): BridgeResult<Boolean> = bridgeRun {
+        engineService?.startContainer() ?: false
+    }
+
+    override suspend fun rawStopContainer(): BridgeResult<Boolean> = bridgeRun {
+        engineService?.stopContainer() ?: false
+    }
+
+    override suspend fun rawRestartContainer(): BridgeResult<Boolean> = bridgeRun {
+        engineService?.restartContainer() ?: false
+    }
+
+    override suspend fun rawGetContainerStatus(): BridgeResult<ContainerStatusInfo?> = bridgeRun {
+        engineService?.containerStatus?.let { s ->
+            ContainerStatusInfo(
+                statusCode = s.statusCode,
+                statusMessage = s.statusMessage,
+                pid = s.pid,
+                startTime = s.startTime,
+                rootfsPath = s.rootfsPath
+            )
+        }
+    }
+
+    override suspend fun rawGetContainerOutput(): BridgeResult<String> = bridgeRun {
+        engineService?.containerOutput ?: ""
+    }
+
+    override fun isShizukuAvailable(): Boolean = shizukuManager.isAvailable()
+
+    override fun isShizukuPermissionGranted(): Boolean = shizukuManager.isPermissionGranted()
+
+    override fun getShizukuVersion(): Int = shizukuManager.getVersion()
+
+    override fun requestShizukuPermission(requestCode: Int) {
+        shizukuManager.requestPermission(requestCode)
+    }
+
+    override fun getDeviceInfo(): DeviceInfo = DeviceInfo(
+        brand = Build.BRAND,
+        model = Build.MODEL,
+        sdkInt = Build.VERSION.SDK_INT,
+        release = Build.VERSION.RELEASE,
+        manufacturer = Build.MANUFACTURER,
+        abis = Build.SUPPORTED_ABIS.toList()
+    )
+
+    // ============================================================
+    // 绑定 / 解绑
+    // ============================================================
 
     /**
      * 绑定到 `:engine` 模块的 EngineService。
@@ -122,8 +253,6 @@ class EngineServiceFacade(private val context: Context) {
         engineService = null
     }
 
-    fun isBound(): Boolean = bound
-
     /** 添加容器输出监听。 */
     fun addOutputListener(listener: (String) -> Unit) {
         synchronized(outputListeners) { outputListeners.add(listener) }
@@ -142,103 +271,52 @@ class EngineServiceFacade(private val context: Context) {
     }
 
     // ============================================================
-    // Shell 执行
+    // 高层 API（委托给 orchestrator）
     // ============================================================
 
     /**
      * 执行 shell 命令（容器内 proot 沙箱）。
-     * @return stdout + exitCode
+     * 等价于 `orchestrator.executeCommand(cmd, preferShizuku=false)`。
      */
-    suspend fun executeShell(command: String): BridgeResult<ShellResult> = bridgeRun {
-        val svc = engineService ?: throw IllegalStateException("EngineService not bound")
-        val result = svc.executeCommand(command)
-        ShellResult(
-            stdout = result.output,
-            stderr = result.error,
-            exitCode = result.exitCode,
-            success = result.success,
-            executionTimeMs = result.executionTime
-        )
-    }
+    suspend fun executeShell(command: String): BridgeResult<ShellResult> =
+        orchestrator.executeCommand(command, preferShizuku = false)
 
     /**
      * 通过 Shizuku 执行 shell 命令（高权限，无需 root）。
-     * @return ShizukuManager.CommandResult
+     * 不可用时直接返回 Failure，不降级。
      */
-    suspend fun executeShellViaShizuku(command: String): BridgeResult<com.ai.assistance.apex.engine.shizuku.ShizukuManager.CommandResult> = bridgeRun {
-        if (!shizukuManager.isAvailable()) {
-            throw IllegalStateException("Shizuku not available")
-        }
-        if (!shizukuManager.isPermissionGranted()) {
-            throw IllegalStateException("Shizuku permission not granted")
-        }
-        shizukuManager.executeCommand(command)
-    }
+    suspend fun executeShellViaShizuku(command: String): BridgeResult<ShizukuCommandResult> =
+        orchestrator.executeShellViaShizuku(command)
 
-    // ============================================================
-    // 工具调用
-    // ============================================================
-
-    suspend fun executeTool(toolName: String, args: String): BridgeResult<ShellResult> = bridgeRun {
-        val svc = engineService ?: throw IllegalStateException("EngineService not bound")
-        val result = svc.executeTool(toolName, args)
-        ShellResult(
-            stdout = result.output,
-            stderr = result.error,
-            exitCode = result.exitCode,
-            success = result.success,
-            executionTimeMs = result.executionTime
-        )
-    }
+    /** 执行内置工具（带工具名校验）。 */
+    suspend fun executeTool(toolName: String, args: String): BridgeResult<ShellResult> =
+        orchestrator.executeToolSafe(toolName, args)
 
     /** 列出所有可用工具。 */
-    suspend fun listTools(): BridgeResult<List<ToolDescriptor>> = bridgeRun {
-        val svc = engineService ?: throw IllegalStateException("EngineService not bound")
-        svc.availableTools.map { t ->
-            ToolDescriptor(
-                name = t.name,
-                description = t.description,
-                category = t.category,
-                parameters = t.parameters.toList(),
-                requiresRoot = t.requiresRoot
-            )
-        }
-    }
+    suspend fun listTools(): BridgeResult<List<ToolDescriptor>> =
+        orchestrator.listTools()
 
     // ============================================================
-    // 容器管理
+    // 容器管理（委托给 orchestrator + lifecycle）
     // ============================================================
 
-    suspend fun startContainer(): BridgeResult<Boolean> = bridgeRun {
-        engineService?.startContainer() ?: false
-    }
+    suspend fun startContainer(): BridgeResult<Boolean> =
+        orchestrator.manageContainer(ContainerAction.START)
 
-    suspend fun stopContainer(): BridgeResult<Boolean> = bridgeRun {
-        engineService?.stopContainer() ?: false
-    }
+    suspend fun stopContainer(): BridgeResult<Boolean> =
+        orchestrator.manageContainer(ContainerAction.STOP)
 
-    suspend fun restartContainer(): BridgeResult<Boolean> = bridgeRun {
-        engineService?.restartContainer() ?: false
-    }
+    suspend fun restartContainer(): BridgeResult<Boolean> =
+        orchestrator.manageContainer(ContainerAction.RESTART)
 
-    suspend fun getContainerStatus(): BridgeResult<ContainerStatusInfo?> = bridgeRun {
-        engineService?.containerStatus?.let { s ->
-            ContainerStatusInfo(
-                statusCode = s.statusCode,
-                statusMessage = s.statusMessage,
-                pid = s.pid,
-                startTime = s.startTime,
-                rootfsPath = s.rootfsPath
-            )
-        }
-    }
+    suspend fun getContainerStatus(): BridgeResult<ContainerStatusInfo?> =
+        orchestrator.queryContainerStatus()
 
-    suspend fun getContainerOutput(): BridgeResult<String> = bridgeRun {
-        engineService?.containerOutput ?: ""
-    }
+    suspend fun getContainerOutput(): BridgeResult<String> =
+        orchestrator.getContainerOutput()
 
     // ============================================================
-    // 无障碍服务
+    // 无障碍服务（保留在 APK，未下沉到 lib）
     // ============================================================
 
     /** 检查无障碍服务是否已启用。 */
@@ -292,7 +370,7 @@ class EngineServiceFacade(private val context: Context) {
     }
 
     // ============================================================
-    // 权限
+    // 权限（保留在 APK）
     // ============================================================
 
     fun checkPermission(permission: String): Boolean = permissionManager.checkPermission(permission)
@@ -300,35 +378,6 @@ class EngineServiceFacade(private val context: Context) {
     fun getRequiredPermissions(): List<String> = permissionManager.requiredPermissions
 
     fun getDangerousPermissions(): List<String> = permissionManager.dangerousPermissions
-
-    /** Shizuku 是否可用。 */
-    fun isShizukuAvailable(): Boolean = shizukuManager.isAvailable()
-
-    /** Shizuku 版本。 */
-    fun getShizukuVersion(): Int = shizukuManager.getVersion()
-
-    /** Shizuku 权限是否已授予。 */
-    fun isShizukuPermissionGranted(): Boolean = shizukuManager.isPermissionGranted()
-
-    /** 请求 Shizuku 权限。 */
-    fun requestShizukuPermission(requestCode: Int = 0) {
-        shizukuManager.requestPermission(requestCode)
-    }
-
-    /** 引擎版本。 */
-    fun getEngineVersion(): String = try {
-        engineService?.engineVersion ?: "unknown"
-    } catch (_: Throwable) { "unknown" }
-
-    /** 设备信息（补充）。 */
-    fun getDeviceInfo(): DeviceInfo = DeviceInfo(
-        brand = Build.BRAND,
-        model = Build.MODEL,
-        sdkInt = Build.VERSION.SDK_INT,
-        release = Build.VERSION.RELEASE,
-        manufacturer = Build.MANUFACTURER,
-        abis = Build.SUPPORTED_ABIS.toList()
-    )
 
     /** 释放资源。 */
     fun shutdown() {
@@ -338,45 +387,3 @@ class EngineServiceFacade(private val context: Context) {
         unbind()
     }
 }
-
-/** Shell 执行结果。 */
-data class ShellResult(
-    val stdout: String,
-    val stderr: String,
-    val exitCode: Int,
-    val success: Boolean,
-    val executionTimeMs: Long
-)
-
-/** 工具描述。 */
-data class ToolDescriptor(
-    val name: String,
-    val description: String,
-    val category: String,
-    val parameters: List<String>,
-    val requiresRoot: Boolean
-)
-
-/** 容器状态。 */
-data class ContainerStatusInfo(
-    val statusCode: Int,
-    val statusMessage: String,
-    val pid: Int,
-    val startTime: Long,
-    val rootfsPath: String
-) {
-    val isRunning: Boolean get() = statusCode == 2
-    val isStarting: Boolean get() = statusCode == 1
-    val isStopped: Boolean get() = statusCode == 0
-    val isError: Boolean get() = statusCode == -1
-}
-
-/** 设备信息。 */
-data class DeviceInfo(
-    val brand: String,
-    val model: String,
-    val sdkInt: Int,
-    val release: String,
-    val manufacturer: String,
-    val abis: List<String>
-)

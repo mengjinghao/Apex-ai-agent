@@ -31,7 +31,12 @@ class ModuleOwnershipPlugin : Plugin<Project> {
     private val ownershipRules: Map<String, Set<String>> = mapOf(
         ":lib:multi-agent" to setOf(":apk:multi-agent"),
         ":lib:workflow" to setOf(":apk:workflow"),
-        ":lib:working-files" to setOf(":apk:working-files")
+        ":lib:working-files" to setOf(":apk:working-files"),
+        ":lib:engine" to setOf(":apk:engine"),
+        ":lib:rage" to setOf(":apk:rage"),
+        ":lib:market" to setOf(":apk:market"),
+        ":lib:terminal" to setOf(":apk:terminal"),
+        ":lib:voice" to setOf(":apk:voice")
     )
 
     override fun apply(target: Project) {
@@ -80,6 +85,11 @@ class ModuleOwnershipPlugin : Plugin<Project> {
                         appendLine("  - 多 Agent：ApexClient.multiAgent.*")
                         appendLine("  - 工作流：ApexClient.workflow.*")
                         appendLine("  - 工作文件：ApexClient.workingFiles.*")
+                        appendLine("  - 引擎：ApexClient.engine.*")
+                        appendLine("  - 狂暴模式：ApexClient.rage.*")
+                        appendLine("  - 市场：ApexClient.market.*")
+                        appendLine("  - 终端：ApexClient.terminal.*")
+                        appendLine("  - 语音：ApexClient.voice.*")
                         appendLine("========================================")
                     }
                     throw GradleException(msg)

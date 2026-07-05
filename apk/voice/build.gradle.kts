@@ -32,6 +32,7 @@ android {
 
 dependencies {
     implementation(project(":sdk:common-ui"))
+    implementation(project(":lib:voice"))
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
 }

@@ -2,6 +2,9 @@ package com.apex.apk.engine
 
 import android.content.Intent
 import android.os.IBinder
+import com.apex.lib.engine.ContainerStatusInfo
+import com.apex.lib.engine.DeviceInfo
+import com.apex.lib.engine.ShellResult
 import com.apex.sdk.bridge.ApkBridgeStubAdapter
 import com.apex.sdk.bridge.IApkBridgeInternal
 import com.apex.sdk.bridge.TypedServiceRegistry
@@ -114,7 +117,7 @@ class EngineBridgeImpl(
                     "engine/isShizukuPermissionGranted" -> JsonPrimitive(facade.isShizukuPermissionGranted()).toString()
                     "engine/getShizukuVersion" -> JsonPrimitive(facade.getShizukuVersion()).toString()
                     "engine/requestShizukuPermission" -> {
-                        facade.requestShizukuPermission()
+                        facade.requestShizukuPermission(0)
                         JsonPrimitive(true).toString()
                     }
                     "engine/getEngineVersion" -> JsonPrimitive(facade.getEngineVersion()).toString()

@@ -31,6 +31,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":lib:market"))
     implementation(project(":sdk:common-ui"))
     implementation(project(":core:integration"))
 

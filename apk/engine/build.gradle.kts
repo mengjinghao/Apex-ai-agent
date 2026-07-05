@@ -34,6 +34,8 @@ dependencies {
     // SDK deps auto-injected by apex.suite.apk convention plugin
     implementation(project(":sdk:common-ui"))
     implementation(project(":engine"))
+    // 私有领域层：Shell/工具/容器/Shizuku 编排逻辑
+    implementation(project(":lib:engine"))
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)

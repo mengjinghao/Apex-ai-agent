@@ -62,11 +62,21 @@ include(":sdk:storage")          // 共享存储：DataStore + Room 基类
 //   :lib:multi-agent   → 只属于 :apk:multi-agent
 //   :lib:workflow      → 只属于 :apk:workflow
 //   :lib:working-files → 只属于 :apk:working-files
+//   :lib:engine        → 只属于 :apk:engine
+//   :lib:rage          → 只属于 :apk:rage
+//   :lib:market        → 只属于 :apk:market
+//   :lib:terminal      → 只属于 :apk:terminal
+//   :lib:voice         → 只属于 :apk:voice
 //
 // 其他 APK（含主 APK）通过 ApexClient 跨 APK 调用这些库的能力
 include(":lib:multi-agent")      // 多 Agent 协作库（角色分工 + 黑板 + 协作模式）→ :apk:multi-agent 私有
 include(":lib:workflow")         // 工作流库（DAG 编排 + 节点执行）→ :apk:workflow 私有
 include(":lib:working-files")    // 工作文件区库（快照/diff/分支/Agent流程/时间机器）→ :apk:working-files 私有
+include(":lib:engine")           // 引擎领域库（模型/容器生命周期/工具目录/编排/Shizuku策略）→ :apk:engine 私有
+include(":lib:rage")             // 狂暴模式库（任务/技能目录/架构师/引擎/预设）→ :apk:rage 私有
+include(":lib:market")           // 市场库（目录/缓存/收藏/统计/安装管理/引擎）→ :apk:market 私有
+include(":lib:terminal")         // 终端库（会话管理/PTY契约/命令历史/输出缓冲/引擎）→ :apk:terminal 私有
+include(":lib:voice")            // 语音库（TTS/ASR契约/会话/对话缓冲/引擎/预设）→ :apk:voice 私有
 
 // ---------- 核心层（原有） ----------
 include(":core:burst-kernel")    // 狂暴模式微内核

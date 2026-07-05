@@ -33,6 +33,7 @@ android {
 dependencies {
     implementation(project(":sdk:common-ui"))
     implementation(project(":ai-terminal"))
+    implementation(project(":lib:terminal"))
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)

@@ -40,6 +40,10 @@ import com.apex.apk.rage.agent.ExecutionRecord
 import com.apex.apk.rage.agent.AgentStepRecord
 import com.apex.apk.rage.agent.DynamicAgentInfo
 import com.apex.apk.rage.agent.TaskIndexEntry
+import com.apex.lib.rage.RageEngine
+import com.apex.lib.rage.RageModeConfig
+import com.apex.lib.rage.RageStrategyPreset
+import com.apex.lib.rage.RagePresets
 
 /**
  * Rage Mode APK 的核心服务实现（完整版）。
@@ -88,7 +92,7 @@ import com.apex.apk.rage.agent.TaskIndexEntry
  */
 class RageServiceFacade(private val context: Context) {
 
-    private const val TAG_SUB = "RageFacade"
+    private val TAG_SUB = "RageFacade"
 
     private var burstMode: BurstMode? = null
     private val _isInitialized = MutableStateFlow(false)
@@ -97,10 +101,13 @@ class RageServiceFacade(private val context: Context) {
     /** 事件桥接器 — BurstMode 事件 → SuiteEventBus */
     val eventBridge: RageEventBridge = RageEventBridge()
 
-    /** 4 Agent 架构师 — 狂暴模式核心架构 */
-    val architect: RageAgentArchitect = RageAgentArchitect()
+    /** 狂暴模式核心引擎 — 持有架构师 + 31 技能目录 + 内存任务存储 */
+    private val engine: RageEngine = RageEngine()
 
-    /** 任务历史持久化 */
+    /** 4 Agent 架构师 — 委托给引擎 */
+    val architect: RageAgentArchitect get() = engine.architect
+
+    /** 任务历史持久化（文件存储，与引擎的内存任务存储互补） */
     val taskStore: RageTaskStore = RageTaskStore(context)
 
     /** 当前活跃会话：sessionId → RageSession。 */
@@ -925,6 +932,140 @@ class RageServiceFacade(private val context: Context) {
     }
 
     // ============================================================
+    // 4 Agent 架构师 — 委托给 RageEngine
+    // ============================================================
+
+    /**
+     * 使用 4 Agent 架构执行任务。
+     *
+     * 流程：Planner(架构师) → Searcher(领航员) → 动态扩容 → Executor(码农) → Critic(质检员)
+     * - 黑板架构（全局共享状态）
+     * - 全局容错（连续 maxRetries 次失败 → 终止 → 重新规划）
+     * - Git 分支管理 + 沙盒执行
+     *
+     * 委托给 [engine.startTask]，同时持久化到文件历史 [taskStore]。
+     */
+    suspend fun executeArchitectTask(
+        taskDescription: String,
+        preset: String = "BALANCED",
+        onProgress: ((Float, String) -> Unit)? = null
+    ): BridgeResult<TaskExecutionResult> = bridgeRun {
+        ApexLog.i(ApexSuite.ApkId.RAGE, "[$TAG_SUB] architect execute: ${taskDescription.take(60)}")
+        val result = engine.startTask(taskDescription, preset, onProgress).getOrThrow()
+        // 同时保存到文件历史
+        taskStore.saveTask(result, taskDescription)
+        result
+    }
+
+    /**
+     * 获取 4 核心 Agent 配置。
+     */
+    fun getCoreAgents(): Map<String, com.apex.apk.rage.agent.AgentConfig> = engine.coreAgents
+
+    /**
+     * 切换核心 Agent 开关。
+     */
+    fun toggleCoreAgent(agentId: String): Boolean = engine.toggleAgent(agentId)
+
+    /**
+     * 设置扩容策略开关。
+     */
+    fun setExpandStrategy(
+        autoExpand: Boolean? = null,
+        gitBranching: Boolean? = null,
+        sandboxExec: Boolean? = null,
+        githubSearch: Boolean? = null,
+        codeRag: Boolean? = null
+    ) {
+        autoExpand?.let { engine.autoExpand = it }
+        gitBranching?.let { engine.gitBranching = it }
+        sandboxExec?.let { engine.sandboxExec = it }
+        githubSearch?.let { engine.githubSearch = it }
+        codeRag?.let { engine.codeRag = it }
+    }
+
+    /**
+     * 获取扩容策略状态。
+     */
+    fun getExpandStrategy(): ExpandStrategyInfo = ExpandStrategyInfo(
+        autoExpand = engine.autoExpand,
+        gitBranching = engine.gitBranching,
+        sandboxExec = engine.sandboxExec,
+        githubSearch = engine.githubSearch,
+        codeRag = engine.codeRag,
+        maxRetries = engine.maxRetries
+    )
+
+    /**
+     * 获取当前动态扩容 Agent 列表。
+     */
+    fun getDynamicAgents(): List<DynamicAgentInfo> = engine.dynamicAgents
+
+    /**
+     * 获取黑板快照。
+     */
+    fun getArchitectBlackboard(): Map<String, String> = engine.getBlackboardSnapshot()
+
+    /**
+     * 获取任务历史列表（文件持久化）。
+     */
+    fun getTaskHistory(): List<TaskIndexEntry> = taskStore.loadIndex()
+
+    /**
+     * 获取任务全流程详情（含所有步骤，文件持久化）。
+     */
+    fun getTaskDetail(taskId: String): TaskExecutionResult? = taskStore.loadTask(taskId)
+
+    /**
+     * 删除历史任务。
+     */
+    fun deleteTask(taskId: String): Boolean = taskStore.deleteTask(taskId)
+
+    /**
+     * 清空所有历史任务。
+     */
+    fun clearTaskHistory(): Int = taskStore.clearAll()
+
+    /**
+     * 获取执行历史记录（内存中的）。
+     */
+    fun getExecutionHistory(): List<ExecutionRecord> = engine.getExecutionHistory()
+
+    /**
+     * 清空执行历史（内存）。
+     */
+    fun clearExecutionHistory(): Int = engine.clearExecutionHistory()
+
+    /**
+     * 手动 spawn 一个特化 Agent。
+     */
+    fun spawnAgent(name: String, systemPrompt: String, tools: List<String>): DynamicAgentInfo =
+        engine.spawnAgent(name, systemPrompt, tools)
+
+    /**
+     * 终止动态 Agent。
+     */
+    fun terminateAgent(agentId: String): Boolean = engine.terminateAgent(agentId)
+
+    /**
+     * 切换策略预设（委托给引擎）。
+     */
+    fun switchRagePreset(preset: RageStrategyPreset) {
+        engine.switchPreset(preset)
+    }
+
+    /**
+     * 获取引擎运行指标。
+     */
+    fun getRageMetrics(): com.apex.lib.rage.RageMetrics = engine.getMetrics().getOrNull()
+        ?: com.apex.lib.rage.RageMetrics()
+
+    /**
+     * 列出内置技能目录（31 个）。
+     */
+    fun listRageSkills(): List<com.apex.lib.rage.RageSkillDescriptor> = engine.listSkills().getOrNull() ?: emptyList()
+
+    // ============================================================
     // 内部辅助
     // ============================================================
 
@@ -1065,120 +1206,6 @@ data class CacheStatsInfo(
     val missCount: Long,
     val hitRate: Double
 )
-
-// ============================================================
-// 4 Agent 架构师 — 狂暴模式核心架构（接入 RageAgentArchitect）
-// ============================================================
-
-/**
- * 使用 4 Agent 架构执行任务。
- *
- * 流程：Planner(架构师) → Searcher(领航员) → 动态扩容 → Executor(码农) → Critic(质检员)
- * - 黑板架构（全局共享状态）
- * - 全局容错（连续 3 次失败 → 终止 → 重新规划）
- * - Git 分支管理 + 沙盒执行
- */
-suspend fun executeArchitectTask(
-    taskDescription: String,
-    preset: String = "BALANCED",
-    onProgress: ((Float, String) -> Unit)? = null
-): BridgeResult<TaskExecutionResult> = bridgeRun {
-    ApexLog.i(ApexSuite.ApkId.RAGE, "[$TAG_SUB] architect execute: ${taskDescription.take(60)}")
-    val result = architect.executeTask(taskDescription, preset, onProgress ?: { _, _ -> })
-    // 保存到历史
-    taskStore.saveTask(result, taskDescription)
-    result
-}
-
-/**
- * 获取 4 核心 Agent 配置。
- */
-fun getCoreAgents(): Map<String, com.apex.apk.rage.agent.AgentConfig> = architect.coreAgents.toMap()
-
-/**
- * 切换核心 Agent 开关。
- */
-fun toggleCoreAgent(agentId: String): Boolean = architect.toggleAgent(agentId)
-
-/**
- * 设置扩容策略开关。
- */
-fun setExpandStrategy(
-    autoExpand: Boolean? = null,
-    gitBranching: Boolean? = null,
-    sandboxExec: Boolean? = null,
-    githubSearch: Boolean? = null,
-    codeRag: Boolean? = null
-) {
-    autoExpand?.let { architect.autoExpand = it }
-    gitBranching?.let { architect.gitBranching = it }
-    sandboxExec?.let { architect.sandboxExec = it }
-    githubSearch?.let { architect.githubSearch = it }
-    codeRag?.let { architect.codeRag = it }
-}
-
-/**
- * 获取扩容策略状态。
- */
-fun getExpandStrategy(): ExpandStrategyInfo = ExpandStrategyInfo(
-    autoExpand = architect.autoExpand,
-    gitBranching = architect.gitBranching,
-    sandboxExec = architect.sandboxExec,
-    githubSearch = architect.githubSearch,
-    codeRag = architect.codeRag,
-    maxRetries = architect.maxRetries
-)
-
-/**
- * 获取当前动态扩容 Agent 列表。
- */
-fun getDynamicAgents(): List<DynamicAgentInfo> = architect.dynamicAgents.toList()
-
-/**
- * 获取黑板快照。
- */
-fun getArchitectBlackboard(): Map<String, String> = architect.getBlackboardSnapshot()
-
-/**
- * 获取任务历史列表。
- */
-fun getTaskHistory(): List<TaskIndexEntry> = taskStore.loadIndex()
-
-/**
- * 获取任务全流程详情（含所有步骤）。
- */
-fun getTaskDetail(taskId: String): TaskExecutionResult? = taskStore.loadTask(taskId)
-
-/**
- * 删除历史任务。
- */
-fun deleteTask(taskId: String): Boolean = taskStore.deleteTask(taskId)
-
-/**
- * 清空所有历史任务。
- */
-fun clearTaskHistory(): Int = taskStore.clearAll()
-
-/**
- * 获取执行历史记录（内存中的）。
- */
-fun getExecutionHistory(): List<ExecutionRecord> = architect.getExecutionHistory()
-
-/**
- * 清空执行历史（内存）。
- */
-fun clearExecutionHistory(): Int = architect.clearHistory()
-
-/**
- * 手动 spawn 一个特化 Agent。
- */
-fun spawnAgent(name: String, systemPrompt: String, tools: List<String>): DynamicAgentInfo =
-    architect.spawnAgent(name, systemPrompt, tools)
-
-/**
- * 终止动态 Agent。
- */
-fun terminateAgent(agentId: String): Boolean = architect.terminateAgent(agentId)
 
 /** 扩容策略信息。 */
 data class ExpandStrategyInfo(

@@ -39,6 +39,9 @@ dependencies {
     implementation(project(":plugins:burst-builtin"))
     implementation(project(":domain"))
 
+    // 狂暴模式核心库（4 Agent 架构师 + 31 技能目录 + 引擎 + 内存任务存储）
+    implementation(project(":lib:rage"))
+
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
 
