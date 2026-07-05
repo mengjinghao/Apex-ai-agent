@@ -36,6 +36,11 @@
 | `:lib:multi-agent` | `:apk:multi-agent` | ~80KB | 多 Agent 协作引擎，只有多 Agent APK 需要 |
 | `:lib:workflow` | `:apk:workflow` | ~60KB | 工作流 DAG 编排，只有工作流 APK 需要 |
 | `:lib:working-files` | `:apk:working-files` | ~200KB（含 java-diff-utils ~500KB） | 代码编辑器 + 快照 + diff + 分支 + Agent流程 + 时间机器 + 冲突检测 + 回放 |
+| `:lib:engine` | `:apk:engine` | ~40KB | 引擎领域层（模型/容器生命周期状态机/工具目录/编排器/Shizuku策略），Engine APK 私有 |
+| `:lib:rage` | `:apk:rage` | ~120KB | 狂暴模式核心（31 技能目录/任务存储/4 Agent 架构师/引擎/预设），Rage APK 私有 |
+| `:lib:market` | `:apk:market` | ~150KB | 市场核心（27 市场目录/缓存/收藏/统计/安装状态机/调用契约/引擎），Market APK 私有 |
+| `:lib:terminal` | `:apk:terminal` | ~70KB | 终端领域层（三块会话/PTY 契约/命令历史/输出缓冲/引擎/预设），Terminal APK 私有 |
+| `:lib:voice` | `:apk:voice` | ~60KB | 语音核心（TTS/ASR 契约/会话管理/对话缓冲/引擎/预设），Voice APK 私有 |
 
 ### 1.3 按需引用模块（不限制）
 
@@ -62,7 +67,12 @@
 private val ownershipRules: Map<String, Set<String>> = mapOf(
     ":lib:multi-agent" to setOf(":apk:multi-agent"),
     ":lib:workflow" to setOf(":apk:workflow"),
-    ":lib:working-files" to setOf(":apk:working-files")
+    ":lib:working-files" to setOf(":apk:working-files"),
+    ":lib:engine" to setOf(":apk:engine"),
+    ":lib:rage" to setOf(":apk:rage"),
+    ":lib:market" to setOf(":apk:market"),
+    ":lib:terminal" to setOf(":apk:terminal"),
+    ":lib:voice" to setOf(":apk:voice")
 )
 ```
 
@@ -89,6 +99,11 @@ private val ownershipRules: Map<String, Set<String>> = mapOf(
   - 多 Agent：ApexClient.multiAgent.*
   - 工作流：ApexClient.workflow.*
   - 工作文件：ApexClient.workingFiles.*
+  - 引擎：ApexClient.engine.*
+  - 狂暴模式：ApexClient.rage.*
+  - 市场：ApexClient.market.*
+  - 终端：ApexClient.terminal.*
+  - 语音：ApexClient.voice.*
 ========================================
 ```
 

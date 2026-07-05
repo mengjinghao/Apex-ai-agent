@@ -1066,6 +1066,88 @@ class RageServiceFacade(private val context: Context) {
     fun listRageSkills(): List<com.apex.lib.rage.RageSkillDescriptor> = engine.listSkills().getOrNull() ?: emptyList()
 
     // ============================================================
+    // lib:rage 引擎新能力 — 薄委托（供 BridgeImpl 路由）
+    // ============================================================
+
+    /**
+     * 查找技能：先按 ID，找不到再按显示名。
+     */
+    fun findRageSkill(idOrName: String): com.apex.lib.rage.RageSkillDescriptor? {
+        engine.findSkill(idOrName).getOrNull()?.let { return it }
+        return engine.findSkillByName(idOrName).getOrNull()
+    }
+
+    /**
+     * 按分类查询技能。
+     */
+    fun findRageSkillsByCategory(
+        category: com.apex.lib.rage.RageSkillCategory
+    ): List<com.apex.lib.rage.RageSkillDescriptor> =
+        engine.findSkillsByCategory(category).getOrNull() ?: emptyList()
+
+    /**
+     * 全部技能分类。
+     */
+    fun listRageSkillCategories(): List<com.apex.lib.rage.RageSkillCategory> =
+        com.apex.lib.rage.RageSkillCategory.values().toList()
+
+    /**
+     * 列出引擎内存任务（可选按状态过滤）。
+     */
+    fun listRageTasks(
+        status: com.apex.lib.rage.RageTaskStatus? = null
+    ): List<com.apex.lib.rage.RageTask> {
+        val all = engine.listTasks().getOrNull() ?: emptyList()
+        return if (status != null) all.filter { it.status == status } else all
+    }
+
+    /**
+     * 获取单个引擎内存任务。
+     */
+    fun getRageTask(taskId: String): com.apex.lib.rage.RageTask? =
+        engine.getTask(taskId).getOrNull()
+
+    /**
+     * 应用引擎配置（热更新架构师参数）。
+     */
+    fun applyRageConfig(config: com.apex.lib.rage.RageModeConfig) {
+        engine.applyConfig(config)
+    }
+
+    /**
+     * 列出全部策略预设（4 套）。
+     */
+    fun listRagePresets(): List<com.apex.lib.rage.RageStrategyPreset> =
+        com.apex.lib.rage.RagePresets.ALL
+
+    /**
+     * 按名称获取预设配置（找不到返回 BALANCED）。
+     */
+    fun getRagePreset(name: String): com.apex.lib.rage.RageModeConfig =
+        com.apex.lib.rage.RagePresets.forName(name)
+
+    /**
+     * 架构师状态聚合快照（活跃 Agent 数 / 黑板键数 / 执行历史 / 并发）。
+     */
+    fun getRageArchitectState(): RageArchitectState {
+        val core = engine.coreAgents
+        val dynamic = engine.dynamicAgents
+        val blackboard = engine.getBlackboardSnapshot()
+        val metrics = engine.getMetrics().getOrNull() ?: com.apex.lib.rage.RageMetrics()
+        return RageArchitectState(
+            coreAgentCount = core.size,
+            activeCoreAgentCount = core.values.count { it.enabled },
+            dynamicAgentCount = dynamic.size,
+            blackboardKeys = blackboard.size,
+            executionHistoryCount = engine.getExecutionHistory().size,
+            currentConcurrency = metrics.currentConcurrency,
+            peakConcurrency = metrics.peakConcurrency,
+            maxRetries = engine.maxRetries,
+            autoExpand = engine.autoExpand
+        )
+    }
+
+    // ============================================================
     // 内部辅助
     // ============================================================
 
@@ -1215,4 +1297,17 @@ data class ExpandStrategyInfo(
     val githubSearch: Boolean,
     val codeRag: Boolean,
     val maxRetries: Int
+)
+
+/** 架构师状态聚合快照（lib:rage 引擎视图）。 */
+data class RageArchitectState(
+    val coreAgentCount: Int,
+    val activeCoreAgentCount: Int,
+    val dynamicAgentCount: Int,
+    val blackboardKeys: Int,
+    val executionHistoryCount: Int,
+    val currentConcurrency: Int,
+    val peakConcurrency: Int,
+    val maxRetries: Int,
+    val autoExpand: Boolean
 )

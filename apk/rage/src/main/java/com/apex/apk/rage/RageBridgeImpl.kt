@@ -505,6 +505,203 @@ class RageBridgeImpl(
                         val agentId = args["agentId"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.terminateAgent(agentId)) { JsonPrimitive(it) }
                     }
+
+                    // ===== lib:rage 引擎新能力（任务/技能/架构师/配置/预设） =====
+
+                    // --- 技能查询（lib:rage 31 内置技能目录） ---
+                    "rage/findSkill" -> {
+                        val idOrName = args["skillId"]?.jsonPrimitive?.content
+                            ?: args["name"]?.jsonPrimitive?.content ?: ""
+                        val skill = facade.findRageSkill(idOrName)
+                        if (skill != null) {
+                            buildJsonObject {
+                                put("success", true)
+                                put("found", true)
+                                put("skillId", skill.id)
+                                put("name", skill.name)
+                                put("description", skill.description)
+                                put("category", skill.category.name)
+                                put("priority", skill.priority)
+                                put("tags", skill.tags.joinToString(","))
+                                put("parameters", skill.parameters.entries.joinToString(";") { "${it.key}=${it.value}" })
+                            }.toString()
+                        } else {
+                            buildJsonObject { put("success", true); put("found", false) }.toString()
+                        }
+                    }
+                    "rage/findSkillsByCategory" -> {
+                        val catStr = args["category"]?.jsonPrimitive?.content ?: ""
+                        val category = runCatching {
+                            com.apex.lib.rage.RageSkillCategory.valueOf(catStr.uppercase())
+                        }.getOrNull()
+                        if (category == null) {
+                            buildJsonObject {
+                                put("success", false)
+                                put("errorMessage", "unknown category: $catStr (valid: ${com.apex.lib.rage.RageSkillCategory.values().joinToString(",") { it.name }})")
+                            }.toString()
+                        } else {
+                            val list = facade.findRageSkillsByCategory(category)
+                            buildJsonObject {
+                                put("success", true)
+                                put("category", category.name)
+                                put("count", list.size)
+                                put("skills", list.joinToString("\n") {
+                                    "${it.id}: ${it.name} - ${it.description.take(60)} (priority=${it.priority})"
+                                })
+                            }.toString()
+                        }
+                    }
+                    "rage/listCategories" -> {
+                        val cats = facade.listRageSkillCategories()
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", cats.size)
+                            put("categories", cats.joinToString("\n") { c ->
+                                "${c.name}: ${facade.findRageSkillsByCategory(c).size} skills"
+                            })
+                        }.toString()
+                    }
+
+                    // --- 引擎内存任务（RageTask） ---
+                    "rage/listTasks" -> {
+                        val statusStr = args["status"]?.jsonPrimitive?.content
+                        val status = statusStr?.let {
+                            runCatching { com.apex.lib.rage.RageTaskStatus.valueOf(it.uppercase()) }.getOrNull()
+                        }
+                        val list = facade.listRageTasks(status)
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", list.size)
+                            if (status != null) put("filter", status.name)
+                            put("tasks", list.joinToString("\n") { t ->
+                                "${t.id}|${t.status.name}|${t.preset}|${t.description.take(40)}|prog=${t.progress}|dur=${t.durationMs}ms"
+                            })
+                        }.toString()
+                    }
+                    "rage/getTask" -> {
+                        val taskId = args["taskId"]?.jsonPrimitive?.content ?: ""
+                        val task = facade.getRageTask(taskId)
+                        if (task != null) {
+                            buildJsonObject {
+                                put("success", true)
+                                put("found", true)
+                                put("taskId", task.id)
+                                put("description", task.description)
+                                put("preset", task.preset)
+                                put("status", task.status.name)
+                                put("progress", task.progress)
+                                put("createdAt", task.createdAt)
+                                put("startedAt", task.startedAt ?: 0L)
+                                put("completedAt", task.completedAt ?: 0L)
+                                put("agentInvocations", task.agentInvocations)
+                                put("retryCount", task.retryCount)
+                                put("durationMs", task.durationMs)
+                                if (task.result != null) put("result", task.result)
+                                if (task.errorMessage != null) put("errorMessage", task.errorMessage)
+                            }.toString()
+                        } else {
+                            buildJsonObject { put("success", true); put("found", false) }.toString()
+                        }
+                    }
+
+                    // --- 架构师 Agent 管理（flat 路由，与 rage/architect/* 等价） ---
+                    "rage/toggleAgent" -> {
+                        val agentId = args["agentId"]?.jsonPrimitive?.content ?: ""
+                        val enabled = facade.toggleCoreAgent(agentId)
+                        buildJsonObject { put("success", true); put("enabled", enabled) }.toString()
+                    }
+                    "rage/spawnAgent" -> {
+                        val displayName = args["displayName"]?.jsonPrimitive?.content ?: ""
+                        val role = args["role"]?.jsonPrimitive?.content ?: ""
+                        val capabilities = args["capabilities"]?.jsonPrimitive?.content?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() }
+                            ?: emptyList()
+                        val name = if (displayName.isNotBlank()) displayName else role
+                        val systemPrompt = if (role.isNotBlank()) role else displayName
+                        val agent = facade.spawnAgent(name, systemPrompt, capabilities)
+                        buildJsonObject {
+                            put("success", true)
+                            put("agentId", agent.id)
+                            put("name", agent.name)
+                            put("systemPrompt", agent.systemPrompt)
+                            put("tools", agent.tools.joinToString(","))
+                            put("status", agent.status)
+                        }.toString()
+                    }
+                    "rage/getCoreAgents" -> {
+                        val agents = facade.getCoreAgents()
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", agents.size)
+                            put("agents", agents.values.joinToString("\n") { "${it.id}|${it.displayName}|${it.roleDisplay}|enabled=${it.enabled}" })
+                        }.toString()
+                    }
+                    "rage/getArchitectState" -> {
+                        val s = facade.getRageArchitectState()
+                        buildJsonObject {
+                            put("success", true)
+                            put("coreAgentCount", s.coreAgentCount)
+                            put("activeCoreAgentCount", s.activeCoreAgentCount)
+                            put("dynamicAgentCount", s.dynamicAgentCount)
+                            put("blackboardKeys", s.blackboardKeys)
+                            put("executionHistoryCount", s.executionHistoryCount)
+                            put("currentConcurrency", s.currentConcurrency)
+                            put("peakConcurrency", s.peakConcurrency)
+                            put("maxRetries", s.maxRetries)
+                            put("autoExpand", s.autoExpand)
+                        }.toString()
+                    }
+
+                    // --- 配置与预设（lib:rage RageModeConfig / RagePresets） ---
+                    "rage/applyConfig" -> {
+                        val maxConcurrency = args["maxConcurrency"]?.jsonPrimitive?.content?.toIntOrNull() ?: 4
+                        val defaultTimeoutMs = args["defaultTimeoutMs"]?.jsonPrimitive?.content?.toLongOrNull() ?: 60_000L
+                        val maxRetries = args["maxRetries"]?.jsonPrimitive?.content?.toIntOrNull() ?: 3
+                        val enableAutoExpand = args["enableAutoExpand"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: true
+                        val enableGitBranching = args["enableGitBranching"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: true
+                        val enableSandboxExec = args["enableSandboxExec"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: true
+                        val enableGithubSearch = args["enableGithubSearch"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false
+                        val enableCodeRag = args["enableCodeRag"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: true
+                        val config = com.apex.lib.rage.RageModeConfig(
+                            maxConcurrency = maxConcurrency,
+                            defaultTimeoutMs = defaultTimeoutMs,
+                            maxRetries = maxRetries,
+                            enableAutoExpand = enableAutoExpand,
+                            enableGitBranching = enableGitBranching,
+                            enableSandboxExec = enableSandboxExec,
+                            enableGithubSearch = enableGithubSearch,
+                            enableCodeRag = enableCodeRag
+                        )
+                        facade.applyRageConfig(config)
+                        buildJsonObject { put("success", true) }.toString()
+                    }
+                    "rage/listPresets" -> {
+                        val presets = facade.listRagePresets()
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", presets.size)
+                            put("presets", presets.joinToString("\n") { p ->
+                                val cfg = facade.getRagePreset(p.name)
+                                "${p.name}|conc=${cfg.maxConcurrency}|timeout=${cfg.defaultTimeoutMs}ms|retries=${cfg.maxRetries}|autoExpand=${cfg.enableAutoExpand}|sandbox=${cfg.enableSandboxExec}"
+                            })
+                        }.toString()
+                    }
+                    "rage/getPreset" -> {
+                        val name = args["name"]?.jsonPrimitive?.content ?: "BALANCED"
+                        val cfg = facade.getRagePreset(name)
+                        buildJsonObject {
+                            put("success", true)
+                            put("name", name.uppercase())
+                            put("maxConcurrency", cfg.maxConcurrency)
+                            put("defaultTimeoutMs", cfg.defaultTimeoutMs)
+                            put("maxRetries", cfg.maxRetries)
+                            put("enableAutoExpand", cfg.enableAutoExpand)
+                            put("enableGitBranching", cfg.enableGitBranching)
+                            put("enableSandboxExec", cfg.enableSandboxExec)
+                            put("enableGithubSearch", cfg.enableGithubSearch)
+                            put("enableCodeRag", cfg.enableCodeRag)
+                        }.toString()
+                    }
+
                     else -> errorResponse("unknown method: $method")
                 }
             }

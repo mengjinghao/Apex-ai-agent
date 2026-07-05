@@ -1,10 +1,17 @@
 package com.apex.apk.market
 
+import com.apex.lib.market.MarketCatalog
+import com.apex.lib.market.MarketCategory
+import com.apex.lib.market.MarketEvent
 import com.apex.sdk.bridge.IApkBridgeInternal
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
 import com.apex.sdk.common.BridgeResult
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -422,6 +429,155 @@ class MarketBridgeImpl(
                     "market/diagnose" -> {
                         buildResult(facade.diagnose()) { JsonPrimitive(it) }
                     }
+
+                    // ===== lib:market 引擎：目录元数据 + 安装任务状态（走 lib 引擎而非旧 IntegrationCenter 路径） =====
+                    "market/listCatalog" -> {
+                        buildResult(facade.getEngine().listCatalog(null)) { list ->
+                            buildJsonObject {
+                                put("count", list.size)
+                                put("catalog", list.joinToString("\n") {
+                                    "${it.marketId}|${it.displayName}|${it.category.name}|${it.description.take(50)}|enabled=${it.builtin}"
+                                })
+                            }
+                        }
+                    }
+                    "market/listCatalogByCategory" -> {
+                        val cat = args["category"]?.jsonPrimitive?.content ?: "SKILLS"
+                        val mc = MarketCategory.fromIntegrationName(cat)
+                        buildResult(facade.getEngine().listCatalog(mc)) { list ->
+                            buildJsonObject {
+                                put("category", mc.name)
+                                put("count", list.size)
+                                put("catalog", list.joinToString("\n") {
+                                    "${it.marketId}|${it.displayName}|${it.description.take(50)}"
+                                })
+                            }
+                        }
+                    }
+                    "market/getCatalogEntry" -> {
+                        val marketId = args["marketId"]?.jsonPrimitive?.content ?: ""
+                        val entry = MarketCatalog.byId(marketId)
+                        if (entry == null) {
+                            buildJsonObject {
+                                put("success", false); put("found", false)
+                                put("errorMessage", "market not found: $marketId")
+                            }.toString()
+                        } else {
+                            buildJsonObject {
+                                put("success", true); put("found", true)
+                                put("marketId", entry.marketId)
+                                put("displayName", entry.displayName)
+                                put("category", entry.category.name)
+                                put("description", entry.description)
+                                put("sourceUrl", entry.sourceUrl)
+                                put("requiresNetwork", entry.requiresNetwork)
+                                put("builtin", entry.builtin)
+                                put("enabled", entry.builtin)
+                                entry.iconUrl?.let { put("iconUrl", it) }
+                            }.toString()
+                        }
+                    }
+                    "market/catalogStats" -> {
+                        buildResult(facade.getEngine().catalogStats()) { stats ->
+                            buildJsonObject {
+                                put("totalCount", stats.values.sum())
+                                stats.forEach { (cat, n) -> put(cat.name, n) }
+                            }
+                        }
+                    }
+                    "market/getInstallTask" -> {
+                        val taskId = args["taskId"]?.jsonPrimitive?.content ?: ""
+                        val task = facade.getEngine().getInstallTask(taskId)
+                        if (task == null) {
+                            buildJsonObject { put("success", false); put("found", false) }.toString()
+                        } else {
+                            buildJsonObject {
+                                put("success", true); put("found", true)
+                                put("taskId", task.taskId)
+                                put("itemId", task.itemId)
+                                put("itemName", task.itemName)
+                                put("status", task.status.name)
+                                put("progress", task.progress)
+                                put("stage", task.stage)
+                                put("category", task.category.name)
+                                put("startedAt", task.startedAt)
+                                task.completedAt?.let { put("completedAt", it) }
+                                task.installedPath?.let { put("installedPath", it) }
+                                task.error?.let { put("error", it) }
+                                task.message?.let { put("message", it) }
+                            }.toString()
+                        }
+                    }
+                    "market/listInstallTasks" -> {
+                        val statusFilter = args["status"]?.jsonPrimitive?.content
+                        val limit = args["limit"]?.jsonPrimitive?.content?.toIntOrNull() ?: 100
+                        val all = facade.getEngine().listInstallTasks(limit)
+                        val filtered = if (statusFilter.isNullOrBlank()) all
+                            else all.filter { it.status.name == statusFilter.uppercase() }
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", filtered.size)
+                            put("tasks", filtered.joinToString("\n") {
+                                "${it.taskId}|${it.itemId}|${it.status.name}|${it.progress}%|${it.stage}"
+                            })
+                        }.toString()
+                    }
+                    "market/cancelInstallTask" -> {
+                        val taskId = args["taskId"]?.jsonPrimitive?.content ?: ""
+                        buildResult(facade.getEngine().cancelInstall(taskId)) { JsonPrimitive(it) }
+                    }
+                    "market/searchViaEngine" -> {
+                        val cat = args["category"]?.jsonPrimitive?.content ?: "SKILLS"
+                        val query = args["query"]?.jsonPrimitive?.content ?: ""
+                        val limit = args["limit"]?.jsonPrimitive?.content?.toIntOrNull() ?: 50
+                        val marketId = args["marketId"]?.jsonPrimitive?.content
+                        buildResult(facade.searchViaEngine(cat, query, marketId, limit)) { list ->
+                            buildJsonObject {
+                                put("count", list.size)
+                                put("items", list.joinToString("\n") {
+                                    "${it.id}: ${it.name} v${it.version} [${it.category}]"
+                                })
+                            }
+                        }
+                    }
+                    "market/enqueueInstallViaEngine" -> {
+                        val itemId = args["itemId"]?.jsonPrimitive?.content ?: ""
+                        val cat = args["category"]?.jsonPrimitive?.content ?: "SKILLS"
+                        val name = args["name"]?.jsonPrimitive?.content ?: itemId
+                        val version = args["version"]?.jsonPrimitive?.content ?: ""
+                        val marketId = args["marketId"]?.jsonPrimitive?.content ?: ""
+                        val targetPath = args["targetPath"]?.jsonPrimitive?.content
+                        buildResult(facade.enqueueInstall(itemId, cat, name, version, marketId, targetPath)) { taskId ->
+                            buildJsonObject { put("taskId", taskId) }
+                        }
+                    }
+                    "market/getHotItems" -> {
+                        val limit = args["limit"]?.jsonPrimitive?.content?.toIntOrNull() ?: 20
+                        buildResult(facade.getEngine().getHotItems(limit)) { list ->
+                            buildJsonObject {
+                                put("count", list.size)
+                                put("items", list.joinToString("\n") {
+                                    "${it.itemId}|${it.name}|invokes=${it.invokeCount}|views=${it.viewCount}|searches=${it.searchCount}"
+                                })
+                            }
+                        }
+                    }
+                    "market/getEngineEvents" -> {
+                        val since = args["since"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
+                        val limit = args["limit"]?.jsonPrimitive?.content?.toIntOrNull() ?: 50
+                        val collectMs = args["collectMs"]?.jsonPrimitive?.content?.toLongOrNull() ?: 500L
+                        val flow = facade.getEngine().events
+                        val collected: List<MarketEvent> = withTimeoutOrNull(collectMs) {
+                            flow.filter { eventTimestamp(it) >= since }.take(limit).toList()
+                        } ?: emptyList()
+                        buildJsonObject {
+                            put("success", true)
+                            put("count", collected.size)
+                            put("collectWindowMs", collectMs)
+                            put("events", collected.joinToString("\n") { describeMarketEvent(it) })
+                        }.toString()
+                    }
+
                     else -> errorResponse("unknown method: $method")
                 }
             }
@@ -452,4 +608,37 @@ class MarketBridgeImpl(
         put("success", false)
         put("errorMessage", message)
     }.toString()
+
+    // ===== lib:market MarketEvent 辅助（getEngineEvents 路由用） =====
+
+    private fun eventTimestamp(e: MarketEvent): Long = when (e) {
+        is MarketEvent.SearchCompleted -> e.timestamp
+        is MarketEvent.FavoriteAdded -> e.timestamp
+        is MarketEvent.FavoriteRemoved -> e.timestamp
+        is MarketEvent.InstallQueued -> e.timestamp
+        is MarketEvent.InstallProgress -> e.timestamp
+        is MarketEvent.InstallCompleted -> e.timestamp
+        is MarketEvent.InstallFailed -> e.timestamp
+        is MarketEvent.Uninstalled -> e.timestamp
+        is MarketEvent.CacheInvalidated -> e.timestamp
+        is MarketEvent.UsageRecorded -> e.timestamp
+    }
+
+    private fun describeMarketEvent(e: MarketEvent): String = when (e) {
+        is MarketEvent.SearchCompleted ->
+            "SearchCompleted[${e.category}] q=\"${e.query.take(30)}\" n=${e.resultCount} cache=${e.fromCache} @${e.timestamp}"
+        is MarketEvent.FavoriteAdded -> "FavoriteAdded[${e.itemId}] @${e.timestamp}"
+        is MarketEvent.FavoriteRemoved -> "FavoriteRemoved[${e.itemId}] @${e.timestamp}"
+        is MarketEvent.InstallQueued -> "InstallQueued[${e.taskId}] item=${e.itemId} @${e.timestamp}"
+        is MarketEvent.InstallProgress ->
+            "InstallProgress[${e.taskId}] item=${e.itemId} ${e.progress}% ${e.stage} @${e.timestamp}"
+        is MarketEvent.InstallCompleted ->
+            "InstallCompleted[${e.taskId}] item=${e.itemId} -> ${e.installedPath} @${e.timestamp}"
+        is MarketEvent.InstallFailed ->
+            "InstallFailed[${e.taskId}] item=${e.itemId} err=${e.error} @${e.timestamp}"
+        is MarketEvent.Uninstalled -> "Uninstalled[${e.itemId}] @${e.timestamp}"
+        is MarketEvent.CacheInvalidated ->
+            "CacheInvalidated market=${e.marketId ?: "ALL"} n=${e.entryCount} @${e.timestamp}"
+        is MarketEvent.UsageRecorded -> "UsageRecorded[${e.itemId}] type=${e.eventType} @${e.timestamp}"
+    }
 }

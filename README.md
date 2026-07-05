@@ -155,10 +155,15 @@ Apex-ai-agent/
 │   ├── watchdog/                 # 心跳 + 死亡监听 + 自愈
 │   ├── auth/                     # PermissionBridge
 │   └── storage/                  # ApexDataStore
-├── lib/                          # 新增功能库
-│   ├── multi-agent/              # 多 Agent 协作引擎
-│   ├── workflow/                 # 工作流 DAG 编排
-│   └── working-files/            # 文件监听 + 代码预览
+├── lib/                          # 功能 APK 私有库（只打包进对应 APK）
+│   ├── multi-agent/              # 多 Agent 协作引擎 → :apk:multi-agent
+│   ├── workflow/                 # 工作流 DAG 编排 → :apk:workflow
+│   ├── working-files/            # 文件监听 + 代码预览 → :apk:working-files
+│   ├── engine/                   # 引擎领域层（容器状态机/工具目录/编排） → :apk:engine
+│   ├── rage/                     # 狂暴模式核心（31 技能/架构师/任务存储） → :apk:rage
+│   ├── market/                   # 市场核心（27 目录/缓存/安装状态机） → :apk:market
+│   ├── terminal/                 # 终端领域层（会话/PTY契约/历史/缓冲） → :apk:terminal
+│   └── voice/                    # 语音核心（TTS/ASR契约/会话/对话缓冲） → :apk:voice
 ├── core/                         # 原有核心层
 │   ├── burst-kernel/             # 狂暴模式微内核
 │   ├── burst-mode/               # 狂暴模式专属库
