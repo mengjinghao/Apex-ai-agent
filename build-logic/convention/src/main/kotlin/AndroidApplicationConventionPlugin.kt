@@ -66,9 +66,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 }
             }
 
-            dependencies {
-                add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.0.3")
-            }
+            target.dependencies.add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.0.3")
         }
     }
 }
