@@ -31,6 +31,7 @@ android {
 }
 
 dependencies {
+    api(project(":sdk:process-bridge"))  // Explicit for AIDL source propagation
     // SDK deps auto-injected by apex.suite.apk convention plugin
     implementation(project(":sdk:common-ui"))
     implementation(project(":engine"))
