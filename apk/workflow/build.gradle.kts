@@ -31,6 +31,7 @@ android {
 }
 
 dependencies {
+    api(project(":sdk:process-bridge"))  // Explicit for AIDL source propagation
     implementation(project(":sdk:common-ui"))
     implementation(project(":lib:workflow"))
 
