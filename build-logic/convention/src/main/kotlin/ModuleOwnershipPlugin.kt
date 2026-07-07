@@ -2,6 +2,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.GradleException
 
 /**
  * 模块归属校验插件 — 编译时检查 lib:* 模块只被授权的 APK 引用。
@@ -58,7 +59,7 @@ class ModuleOwnershipPlugin : Plugin<Project> {
                     // 只检查可以解析的 configuration
                     if (!config.isCanBeResolved) return@configureEach
 
-                    config.dependencies.forEach { dep ->
+                    config.dependencies.forEach { dep: org.gradle.api.artifacts.Dependency ->
                         if (dep is ProjectDependency) {
                             val depPath = dep.dependencyProject.path
                             val allowedOwners = ownershipRules[depPath]
