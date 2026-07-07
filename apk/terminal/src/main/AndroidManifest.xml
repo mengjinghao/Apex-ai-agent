@@ -13,15 +13,15 @@
         android:name=".TerminalApplication"
         android:allowBackup="false"
         android:label="@string/apk_label"
-        android:supportsRtl="true"
         android:process="${apexMainProcess}"
+        tools:replace="android:label"
+        android:supportsRtl="true"
         android:theme="@style/Theme.ApexSuite"
         tools:targetApi="34">
         <service
             android:name=".TerminalHostService"
             android:permission="com.apex.sdk.bridge.permission.BIND"
             android:exported="true"
-            android:process="${apexMainProcess}">
             <intent-filter>
                 <action android:name="com.apex.sdk.bridge.BIND_TERMINAL" />
             </intent-filter>
@@ -29,7 +29,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:process="${apexMainProcess}"
             android:theme="@style/Theme.ApexSuite">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

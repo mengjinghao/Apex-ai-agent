@@ -12,10 +12,10 @@ import com.apex.sdk.bridge.IBridgeCallback;
 interface IRageBridge {
 
     /// 启动狂暴模式会话
-    String startSession(BridgeParcel config);
+    String startSession(in BridgeParcel config);
 
     /// 异步执行一个任务
-    void executeAsync(String sessionId, BridgeParcel request, IBridgeCallback callback);
+    void executeAsync(String sessionId, in BridgeParcel request, IBridgeCallback callback);
 
     /// 暂停 / 恢复 / 终止
     boolean pauseSession(String sessionId);
@@ -26,7 +26,7 @@ interface IRageBridge {
     List<String> listSkills();
 
     /// 加载自定义技能
-    boolean loadSkill(BridgeParcel manifest);
+    boolean loadSkill(in BridgeParcel manifest);
 
     /// 心跳
     long heartbeat();

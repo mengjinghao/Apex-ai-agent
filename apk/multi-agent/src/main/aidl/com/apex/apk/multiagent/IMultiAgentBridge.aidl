@@ -10,10 +10,10 @@ import com.apex.sdk.bridge.IBridgeCallback;
 interface IMultiAgentBridge {
 
     /// 注册一个 Agent
-    boolean registerAgent(BridgeParcel agentSpec);
+    boolean registerAgent(in BridgeParcel agentSpec);
 
     /// 启动一次协作会话
-    void runCollaborationAsync(BridgeParcel config, IBridgeCallback callback);
+    void runCollaborationAsync(in BridgeParcel config, IBridgeCallback callback);
 
     /// 列出所有注册的 Agent
     List<String> listAgents();

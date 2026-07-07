@@ -10,10 +10,10 @@ import com.apex.sdk.bridge.IBridgeCallback;
 interface IWorkflowBridge {
 
     /// 注册一个工作流定义
-    boolean registerWorkflow(BridgeParcel workflowDef);
+    boolean registerWorkflow(in BridgeParcel workflowDef);
 
     /// 异步执行工作流
-    void executeAsync(String workflowId, BridgeParcel inputs, IBridgeCallback callback);
+    void executeAsync(String workflowId, in BridgeParcel inputs, IBridgeCallback callback);
 
     /// 列出所有已注册的工作流
     List<String> listWorkflows();

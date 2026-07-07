@@ -11,7 +11,7 @@ import com.apex.sdk.bridge.BridgeParcel;
 interface IWorkingFilesBridge {
 
     /// 绑定一个工作文件夹
-    boolean bindFolder(BridgeParcel folderSpec);
+    boolean bindFolder(in BridgeParcel folderSpec);
 
     /// 解绑
     boolean unbindFolder(String folderId);

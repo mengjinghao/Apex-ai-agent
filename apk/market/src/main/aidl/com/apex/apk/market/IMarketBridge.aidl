@@ -22,13 +22,13 @@ import com.apex.sdk.bridge.IBridgeCallback;
 interface IMarketBridge {
 
     /// 搜索市场
-    BridgeParcel search(BridgeParcel request);
+    BridgeParcel search(in BridgeParcel request);
 
     /// 列出已安装的资产
     BridgeParcel listInstalled(String category);
 
     /// 安装一个资产
-    void installAsync(BridgeParcel request, IBridgeCallback callback);
+    void installAsync(in BridgeParcel request, IBridgeCallback callback);
 
     /// 卸载
     boolean uninstall(String assetId);
@@ -37,10 +37,10 @@ interface IMarketBridge {
     boolean setEnabled(String assetId, boolean enabled);
 
     /// 调用云端模型（统一入口）
-    void invokeModelAsync(BridgeParcel request, IBridgeCallback callback);
+    void invokeModelAsync(in BridgeParcel request, IBridgeCallback callback);
 
     /// 调用本地技能 / 插件 / MCP
-    BridgeParcel invokeLocalSkill(BridgeParcel request);
+    BridgeParcel invokeLocalSkill(in BridgeParcel request);
 
     /// 心跳
     long heartbeat();

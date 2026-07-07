@@ -51,7 +51,7 @@ object ApexBridge {
      *
      * 业务侧拿到 T 后，直接调用方法即可，无需关心是 in-process 还是 cross-process。
      */
-    inline fun <reified T : Any> get(serviceName: String): T? {
+    fun <T : Any> get(serviceName: String): T? {
         // 1) 进程内直接命中
         InProcessRegistry.lookup<T>(serviceName)?.let {
             ApexLog.v(ApexSuite.ApkId.MAIN, "[$TAG_SUB] in-process hit: $serviceName")
@@ -234,6 +234,18 @@ object ApexBridge {
             ?: return BridgeResult.Failure(BridgeError.notInstalled(serviceName))
         return withContext(Dispatchers.IO) {
             bridgeRun { bridge.closeStream(channelName) }
+        }
+    }
+
+    /**
+     * 统一的错误处理包装：将普通函数调用结果包装为 [BridgeResult]。
+     * 捕获所有异常，转为 [BridgeResult.Failure]。
+     */
+    private inline fun <T> bridgeRun(block: () -> T): BridgeResult<T> {
+        return try {
+            BridgeResult.Success(block())
+        } catch (t: Throwable) {
+            BridgeResult.Failure(BridgeError.fromThrowable(t, "bridge"))
         }
     }
 }
