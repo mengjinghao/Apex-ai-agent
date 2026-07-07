@@ -41,6 +41,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_17
                     targetCompatibility = JavaVersion.VERSION_17
+                    isCoreLibraryDesugaringEnabled = true
                 }
 
                 buildFeatures {
@@ -64,6 +65,11 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         excludes += "META-INF/io.netty.versions.properties"
                     }
                 }
+            }
+        }
+
+            dependencies {
+                add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.0.3")
             }
         }
     }
