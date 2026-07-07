@@ -38,7 +38,7 @@ class ApexSuiteApkConventionPlugin : Plugin<Project> {
             // 注入套件级 SDK 依赖
             dependencies.apply {
                 add("implementation", project(":sdk:common-core"))
-                add("implementation", project(":sdk:process-bridge"))
+                add("api", project(":sdk:process-bridge"))
                 add("implementation", project(":sdk:watchdog"))
                 add("implementation", project(":sdk:auth"))
                 add("implementation", project(":sdk:storage"))
