@@ -6,6 +6,8 @@
 #include <dirent.h>
 #include <cstring>
 
+#include <unistd.h>
+
 PerformanceMonitor::PerformanceMonitor() : running(true) {
     monitorThread = std::thread(&PerformanceMonitor::monitorLoop, this);
     LOGI("PerformanceMonitor initialized");
