@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.apex.agent.update.CheckResult
 import com.apex.agent.update.DownloadProgress
 import com.apex.agent.update.UpdateState
 import com.apex.agent.update.formatBytes
@@ -150,6 +149,24 @@ private fun UpdateAvailableBody(state: UpdateState.UpdateAvailable) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        // SHA-256 校验状态徽章
+        if (state.expectedSha256 != null) {
+            Spacer(Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(
+                        "✓ 已附 SHA-256 校验",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
         Spacer(Modifier.height(16.dp))
         // 更新日志
         Text(

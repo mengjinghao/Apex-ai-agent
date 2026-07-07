@@ -33,6 +33,8 @@ object UpdateSettings {
     const val KEY_LAST_CHECK_TIMESTAMP = "update.last_check_ts"
     const val KEY_LAST_IGNORED_VERSION = "update.last_ignored_version"
     const val KEY_DOWNLOAD_OVER_WIFI_ONLY = "update.download_wifi_only"
+    const val KEY_FIRST_LAUNCH_DONE = "update.first_launch_done"
+    const val KEY_LAST_DOWNLOAD_MIRROR_ID = "update.last_dl_mirror_id"
 
     /** 仓库归属。 */
     fun repoOwnerFlow(context: Context): Flow<String> =
@@ -108,6 +110,22 @@ object UpdateSettings {
 
     suspend fun setLastCheckTimestamp(context: Context, ts: Long) {
         ApexDataStore.putLong(context, KEY_LAST_CHECK_TIMESTAMP, ts)
+    }
+
+    /** 是否完成过首次启动标记。首次启动后会延迟 30 秒再检查，避免与冷启动 IO 抢资源。 */
+    suspend fun isFirstLaunchDone(context: Context): Boolean =
+        ApexDataStore.getBooleanSync(context, KEY_FIRST_LAUNCH_DONE, default = false)
+
+    suspend fun markFirstLaunchDone(context: Context) {
+        ApexDataStore.putBoolean(context, KEY_FIRST_LAUNCH_DONE, true)
+    }
+
+    /** 上次下载成功的镜像 id（用于在镜像列表中把它前置，加快下一次下载）。 */
+    suspend fun getLastDownloadMirrorId(context: Context): String =
+        ApexDataStore.getStringSync(context, KEY_LAST_DOWNLOAD_MIRROR_ID, default = "")
+
+    suspend fun setLastDownloadMirrorId(context: Context, id: String) {
+        ApexDataStore.putString(context, KEY_LAST_DOWNLOAD_MIRROR_ID, id)
     }
 
     suspend fun setRepo(context: Context, owner: String, name: String) {
@@ -212,5 +230,39 @@ internal fun formatBytes(bytes: Long): String {
         v /= 1024.0
         idx++
     }
-    return if (idx == 0) "${bytes} B" else String.format("%.1f %s", v, units[idx])
+    return if (idx == 0) "${bytes} B" else String.format(java.util.Locale.US, "%.1f %s", v, units[idx])
+}
+
+/**
+ * 从 Release 资源列表或 release notes 中提取某个 APK 对应的 SHA-256。
+ *
+ * 解析优先级：
+ * 1. 同目录的 `<apk-name>.sha256` / `<apk-name>.sha256sum` 资源（内容形如 `abcdef  app.apk`）；
+ * 2. release notes 中匹配 `SHA-256[:\s]+([0-9a-fA-F]{64})` 的行；
+ * 3. release notes 中匹配 `<apk-name>[:\s]+([0-9a-fA-F]{64})` 的行。
+ *
+ * 找不到时返回 null，调用方应跳过哈希校验仅做长度校验。
+ */
+internal fun extractSha256(release: UpdateRelease, apkAsset: UpdateAsset): String? {
+    // 1. 查同名 sha256 资源
+    val shaAsset = release.assets.firstOrNull { a ->
+        val n = a.name.lowercase()
+        val apk = apkAsset.name.lowercase()
+        n == "$apk.sha256" || n == "$apk.sha256sum" || n == "$apk.txt"
+    }
+    if (shaAsset != null) {
+        // GitHub 资源需要 token 才能直接拉内容，这里只能拿到 URL。
+        // 简化处理：仅尝试从 URL 文件名推断（无法直接 fetch，因为浏览器下载会跳转）。
+        // 实际下载时再尝试拉取 .sha256 内容并比对。
+        return null
+    }
+    val notes = release.body ?: return null
+    // 2. release notes 中的 "SHA-256: <hex>"
+    val shaRegex = Regex("(?:SHA-?256|sha256)[:\\s]+([0-9a-fA-F]{64})", RegexOption.IGNORE_CASE)
+    shaRegex.find(notes)?.let { return it.groupValues[1].lowercase() }
+    // 3. release notes 中的 "<apk-name>: <hex>"
+    val apkName = Regex.escape(apkAsset.name)
+    val nameRegex = Regex("$apkName[:\\s]+([0-9a-fA-F]{64})", RegexOption.IGNORE_CASE)
+    nameRegex.find(notes)?.let { return it.groupValues[1].lowercase() }
+    return null
 }

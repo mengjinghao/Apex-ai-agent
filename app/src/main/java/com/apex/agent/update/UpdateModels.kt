@@ -54,7 +54,9 @@ sealed class CheckResult {
         /** 释放日志（Markdown 原文） */
         val changelog: String,
         /** 估算大小（人类可读） */
-        val sizeText: String
+        val sizeText: String,
+        /** 期望的 SHA-256（小写 hex），null 表示未知 */
+        val expectedSha256: String?
     ) : CheckResult()
 
     /** 检查失败（网络 / 解析 / 镜像全部不可达） */

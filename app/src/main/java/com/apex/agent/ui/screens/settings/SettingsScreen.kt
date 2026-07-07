@@ -150,7 +150,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {}) 
                 SettingsCard(Icons.Default.SystemUpdate, "检查更新", updateSubtitle) {
                     TextButton(onClick = {
                         showUpdateDialog = true
-                        scope.launch { hotUpdateManager.checkForUpdate(force = true) }
+                        scope.launch { hotUpdateManager.checkForUpdate(force = true, notifyOnAvailable = false) }
                     }) { Text("检查") }
                 }
             }
@@ -200,7 +200,9 @@ fun SettingsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {}) 
         ModalBottomSheet(onDismissRequest = { showUpdateSettings = false }) {
             UpdateSettingsSection(
                 onCheckNow = {
-                    scope.launch { hotUpdateManager.checkForUpdate(force = true) }
+                    scope.launch {
+                        hotUpdateManager.checkForUpdate(force = true, notifyOnAvailable = false)
+                    }
                 },
                 onShowUpdateDialog = {
                     showUpdateSettings = false

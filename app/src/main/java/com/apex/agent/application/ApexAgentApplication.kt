@@ -680,7 +680,10 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
      * 1. 加载已保存的自定义镜像源（合并到内置列表）；
      * 2. 若用户开启了"启动时自动检查"且距上次检查已超过设定间隔，则在后台静默检查一次。
      *
-     * 设计原则：热更新检查不应阻塞应用启动，所有失败均吞掉并记录日志。
+     * 设计原则：
+     * - 热更新检查不应阻塞应用启动，所有失败均吞掉并记录日志；
+     * - 首次启动延迟 30 秒检查，避免与冷启动 IO 抢资源；
+     * - 后续启动立即检查（间隔由 [com.apex.agent.update.UpdateSettings] 控制）。
      */
     private fun initializeHotUpdate() {
         try {
@@ -702,16 +705,23 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
                     return@launch
                 }
 
+                // 首次启动延迟 30 秒，避免与冷启动 IO 抢资源
+                val isFirstLaunch = !com.apex.agent.update.UpdateSettings.isFirstLaunchDone(applicationContext)
+                if (isFirstLaunch) {
+                    AppLogger.d(TAG, "【热更新】首次启动，延迟 30 秒后检查")
+                    kotlinx.coroutines.delay(30_000L)
+                    com.apex.agent.update.UpdateSettings.markFirstLaunchDone(applicationContext)
+                }
+
                 AppLogger.d(TAG, "【热更新】开始后台检查...")
-                val result = manager.checkForUpdate(force = true)
+                val result = manager.checkForUpdate(force = true, notifyOnAvailable = true)
                 when (result) {
                     is com.apex.agent.update.CheckResult.UpToDate -> {
                         AppLogger.d(TAG, "【热更新】已是最新版本 ${result.latestVersion}")
                     }
                     is com.apex.agent.update.CheckResult.UpdateAvailable -> {
                         AppLogger.i(TAG, "【热更新】发现新版本 ${result.release.tagName}")
-                        // 仅记录日志并刷新 StateFlow；UI 端在设置页或主界面会观察到状态变化
-                        // 用户主动打开"软件更新"对话框时即可看到
+                        // 通知已由 UpdateNotifier 在 checkForUpdate 内部发出
                     }
                     is com.apex.agent.update.CheckResult.Failed -> {
                         AppLogger.w(TAG, "【热更新】检查失败：${result.reason}")

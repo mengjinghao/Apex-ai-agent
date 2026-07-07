@@ -101,9 +101,13 @@ class HotUpdateManager private constructor(
      * 检查更新。
      *
      * @param force true 表示无视最小检查间隔强制请求。
+     * @param notifyOnAvailable true 表示后台静默检查发现新版本时弹系统通知（默认 true）。
      * @return [CheckResult]
      */
-    suspend fun checkForUpdate(force: Boolean = false): CheckResult = withContext(Dispatchers.IO) {
+    suspend fun checkForUpdate(
+        force: Boolean = false,
+        notifyOnAvailable: Boolean = true
+    ): CheckResult = withContext(Dispatchers.IO) {
         if (!force) {
             if (!UpdateSettings.shouldCheckNow(context)) {
                 AppLogger.i(TAG, "距上次检查时间过短，跳过（force=false）")
@@ -114,6 +118,13 @@ class HotUpdateManager private constructor(
             }
         }
 
+        // 网络预检：无网络直接给分类错误，不发请求
+        if (!com.apex.util.NetworkUtils.isNetworkAvailable(context)) {
+            val err = UpdateError.NoNetwork()
+            _state.value = UpdateState.Idle
+            return@withContext err.toCheckFailed()
+        }
+
         _state.value = UpdateState.Checking
         try {
             val owner = UpdateSettings.getRepoOwner(context)
@@ -121,17 +132,23 @@ class HotUpdateManager private constructor(
             val includePre = UpdateSettings.isIncludePrerelease(context)
             val current = currentVersionName()
 
-            val release = fetchLatestRelease(owner, name, includePre)
-                ?: return@withContext CheckResult.Failed(
-                    "未找到可用的 Release（仓库 $owner/$name 可能尚未发布版本）"
-                ).also { _state.value = UpdateState.Idle }
+            val release = try {
+                fetchLatestRelease(owner, name, includePre)
+            } catch (t: Throwable) {
+                _state.value = UpdateState.Idle
+                val err = classifyError(t)
+                return@withContext err.toCheckFailed()
+            } ?: run {
+                _state.value = UpdateState.Idle
+                return@withContext UpdateError.NoRelease().toCheckFailed()
+            }
 
             UpdateSettings.setLastCheckTimestamp(context, System.currentTimeMillis())
 
             val apkAsset = pickApkAsset(release)
-                ?: return@withContext CheckResult.Failed(
+                ?: return@withContext UpdateError.NoRelease(
                     "Release ${release.tagName} 未包含可识别的 APK 资源"
-                ).also { _state.value = UpdateState.Idle }
+                ).toCheckFailed().also { _state.value = UpdateState.Idle }
 
             val latestTag = release.tagName
             if (!VersionComparator.isNewer(latestTag, current)) {
@@ -146,6 +163,11 @@ class HotUpdateManager private constructor(
                 return@withContext CheckResult.UpToDate(current, latestTag)
             }
 
+            val sha = extractSha256(release, apkAsset)
+            if (sha != null) {
+                AppLogger.i(TAG, "推断到 SHA-256: $sha")
+            }
+
             _state.value = UpdateState.UpdateAvailable(
                 currentVersion = current,
                 latestVersion = latestTag,
@@ -153,15 +175,26 @@ class HotUpdateManager private constructor(
                 sizeText = formatBytes(apkAsset.size),
                 sizeBytes = apkAsset.size,
                 release = release,
-                asset = apkAsset
+                asset = apkAsset,
+                expectedSha256 = sha
             )
+
+            // 后台静默检查发现新版本时弹通知
+            if (notifyOnAvailable) {
+                UpdateNotifier.getInstance(context).notifyUpdateAvailable(
+                    version = latestTag,
+                    sizeText = formatBytes(apkAsset.size),
+                    htmlUrl = release.htmlUrl
+                )
+            }
 
             CheckResult.UpdateAvailable(
                 currentVersion = current,
                 release = release,
                 apkAsset = apkAsset,
                 changelog = release.body ?: "(无更新日志)",
-                sizeText = formatBytes(apkAsset.size)
+                sizeText = formatBytes(apkAsset.size),
+                expectedSha256 = sha
             )
         } catch (ce: CancellationException) {
             _state.value = UpdateState.Idle
@@ -169,7 +202,29 @@ class HotUpdateManager private constructor(
         } catch (t: Throwable) {
             AppLogger.e(TAG, "检查更新失败", t)
             _state.value = UpdateState.Idle
-            CheckResult.Failed(t.message ?: "未知错误", t)
+            classifyError(t).toCheckFailed()
+        }
+    }
+
+    /**
+     * 把任意异常分类为 [UpdateError]。
+     * 用于向 UI 提供更友好的错误信息。
+     */
+    private fun classifyError(t: Throwable): UpdateError {
+        val msg = t.message ?: t.javaClass.simpleName
+        return when {
+            t is kotlinx.coroutines.CancellationException -> UpdateError.Cancelled
+            msg.contains("Unable to resolve host", true) ||
+            msg.contains("timeout", true) ||
+            msg.contains("Connection", true) ||
+            t is java.net.UnknownHostException ||
+            t is java.net.SocketTimeoutException ||
+            t is java.io.IOException -> UpdateError.NetworkError(t)
+            msg.contains("JSON", true) || t is kotlinx.serialization.SerializationException ->
+                UpdateError.ParseError(t)
+            msg.contains("403", true) -> UpdateError.RateLimited(resetEpochSec = null)
+            msg.contains("404", true) -> UpdateError.NoRelease()
+            else -> UpdateError.Unknown(t)
         }
     }
 
@@ -178,34 +233,71 @@ class HotUpdateManager private constructor(
      *
      * @param release 目标 Release
      * @param asset 目标 APK 资源
+     * @param expectedSha256 期望的 SHA-256（小写 hex），null 表示跳过哈希校验
      * @param onProgress 进度回调（主线程之外）
      */
     suspend fun downloadAndInstall(
         release: UpdateRelease,
         asset: UpdateAsset,
+        expectedSha256: String? = null,
         onProgress: (DownloadProgress) -> Unit = {}
     ): Result<File> = withContext(Dispatchers.IO) {
-        val mirrors = registry.enabledMirrors().ifEmpty { MirrorSourceRegistry.BUILTIN_MIRRORS }
+        // WiFi-only 检查
+        if (UpdateSettings.isDownloadWifiOnly(context) && !com.apex.util.NetworkUtils.isWifiConnected(context)) {
+            val err = UpdateError.WifiOnly()
+            _state.value = UpdateState.Failed(err.message)
+            UpdateNotifier.getInstance(context).notifyDownloadFailed(err.message)
+            return@withContext Result.failure(IllegalStateException(err.message))
+        }
+
+        val registry = MirrorSourceRegistry.getInstance(context)
+        var mirrors = registry.enabledMirrors().ifEmpty { MirrorSourceRegistry.BUILTIN_MIRRORS }
+        // 把上次成功的镜像前置，加快下一次下载
+        val lastSuccessId = UpdateSettings.getLastDownloadMirrorId(context)
+        if (lastSuccessId.isNotBlank()) {
+            mirrors = mirrors.sortedByDescending { it.id == lastSuccessId }
+        }
         val targetDir = File(context.cacheDir, "hotupdate").apply { mkdirs() }
         val targetFile = File(targetDir, "apex-${release.tagName}-${asset.name}")
 
+        val notifier = UpdateNotifier.getInstance(context)
         var lastError: Throwable? = null
-        for (mirror in mirrors) {
+        for ((index, mirror) in mirrors.withIndex()) {
             try {
-                AppLogger.i(TAG, "尝试镜像：${mirror.name} (${mirror.id})")
+                AppLogger.i(TAG, "尝试镜像[${index + 1}/${mirrors.size}]：${mirror.name} (${mirror.id})")
                 val url = wrapUrlWithMirror(mirror, asset.browserDownloadUrl)
                 val downloaded = downloadFile(
                     url = url,
                     target = targetFile,
                     expectedSize = if (asset.size > 0) asset.size else -1L,
                     mirrorId = mirror.id,
+                    mirrorName = mirror.name,
                     onProgress = onProgress
                 )
+
+                // SHA-256 校验（仅当 expectedSha256 非空）
+                if (expectedSha256 != null) {
+                    val actual = sha256OfFile(downloaded)
+                    if (!actual.equals(expectedSha256, ignoreCase = true)) {
+                        AppLogger.e(TAG, "SHA-256 校验失败：expected=$expectedSha256 actual=$actual")
+                        downloaded.delete()
+                        val errMsg = "SHA-256 校验失败（期望 $expectedSha256，实际 $actual）"
+                        _state.value = UpdateState.Failed(errMsg)
+                        UpdateNotifier.getInstance(context).notifyDownloadFailed(errMsg)
+                        return@withContext Result.failure(java.io.IOException(errMsg))
+                    }
+                    AppLogger.i(TAG, "SHA-256 校验通过：$actual")
+                }
+
                 AppLogger.i(TAG, "下载完成：${downloaded.length()} 字节（via ${mirror.name}）")
+                UpdateSettings.setLastDownloadMirrorId(context, mirror.id)
+                notifier.cancelProgress()
                 triggerInstall(downloaded)
+                notifier.notifyDownloadComplete(release.tagName)
                 _state.value = UpdateState.Downloaded
                 return@withContext Result.success(downloaded)
             } catch (ce: CancellationException) {
+                notifier.cancelProgress()
                 throw ce
             } catch (t: Throwable) {
                 AppLogger.w(TAG, "镜像 ${mirror.name} 失败：${t.message}")
@@ -214,14 +306,19 @@ class HotUpdateManager private constructor(
             }
         }
 
-        _state.value = UpdateState.Failed(lastError?.message ?: "所有镜像均失败")
-        Result.failure(lastError ?: IllegalStateException("所有镜像均失败"))
+        val triedCount = mirrors.size
+        val finalErr = UpdateError.AllMirrorsFailed(triedCount)
+        _state.value = UpdateState.Failed(finalErr.message)
+        notifier.cancelProgress()
+        notifier.notifyDownloadFailed(finalErr.message)
+        Result.failure(lastError ?: IllegalStateException(finalErr.message))
     }
 
     /** 取消正在进行的下载。 */
     fun cancelDownload() {
         currentDownloadJob.getAndSet(null)?.cancel()
         _state.value = UpdateState.Idle
+        UpdateNotifier.getInstance(context).cancelProgress()
         AppLogger.i(TAG, "用户取消下载")
     }
 
@@ -247,7 +344,12 @@ class HotUpdateManager private constructor(
         // 取消任何已在进行的下载，并把新 job 原子写入（避免竞态）
         val job = downloadScope.launch {
             try {
-                val result = downloadAndInstall(s.release, s.asset, onProgress)
+                val result = downloadAndInstall(
+                    release = s.release,
+                    asset = s.asset,
+                    expectedSha256 = s.expectedSha256,
+                    onProgress = onProgress
+                )
                 if (result.isFailure) {
                     _state.value = UpdateState.Failed(result.exceptionOrNull()?.message ?: "下载失败")
                 }
@@ -380,38 +482,68 @@ class HotUpdateManager private constructor(
     }
 
     /**
-     * 下载单个文件，支持进度回调与简单校验。
+     * 下载单个文件，支持进度回调、断点续传与简单校验。
+     *
+     * 断点续传策略：
+     * - 若 [target] 已存在且大小 < [expectedSize]，发送 `Range: bytes=<existing>-` 请求；
+     * - 服务器返回 206 → 追加写入；
+     * - 服务器返回 200 → 重新覆盖写入（不支持 Range）；
+     * - 完成后做 Content-Length 校验。
+     *
+     * 进度同时通过 [onProgress] 回调和 [UpdateNotifier] 系统通知暴露。
      */
     private suspend fun downloadFile(
         url: String,
         target: File,
         expectedSize: Long,
         mirrorId: String,
+        mirrorName: String,
         onProgress: (DownloadProgress) -> Unit
     ): File = withContext(Dispatchers.IO) {
-        // 删除可能残留的半成品
-        if (target.exists()) target.delete()
+        val existingLen = if (target.exists()) target.length() else 0L
+        val canResume = existingLen > 0 && (expectedSize <= 0 || existingLen < expectedSize)
+        val resumeFrom = if (canResume) existingLen else 0L
 
-        val req = Request.Builder()
+        if (!canResume && target.exists()) {
+            target.delete()
+        }
+
+        val reqBuilder = Request.Builder()
             .url(url)
             .header("User-Agent", USER_AGENT)
             .header("Accept", "application/vnd.android.package-archive, application/octet-stream, */*")
-            .build()
+        if (canResume) {
+            reqBuilder.header("Range", "bytes=$resumeFrom-")
+        }
+        val req = reqBuilder.build()
 
         httpClient.newCall(req).execute().use { resp ->
-            if (!resp.isSuccessful) {
+            val isPartial = resp.code == 206
+            if (!resp.isSuccessful && !isPartial) {
                 throw IllegalStateException("下载失败 HTTP ${resp.code}")
             }
-            val total = expectedSize.takeIf { it > 0 }
-                ?: resp.header("Content-Length")?.toLongOrNull()
-                ?: -1L
+            // 服务器是否真的支持续传？只有 206 + Content-Range 才算
+            val supportsResume = isPartial && resp.header("Content-Range") != null
+            val actualResumeFrom = if (supportsResume) resumeFrom else 0L
+            if (!supportsResume && target.exists()) {
+                target.delete()
+            }
+
+            val contentLen = resp.header("Content-Length")?.toLongOrNull() ?: -1L
+            val total = when {
+                expectedSize > 0 -> expectedSize
+                supportsResume && contentLen > 0 -> actualResumeFrom + contentLen
+                contentLen > 0 -> contentLen
+                else -> -1L
+            }
             val body = resp.body ?: throw IllegalStateException("响应体为空")
             val input = body.byteStream()
-            val output = target.outputStream()
+            val output = java.io.FileOutputStream(target, supportsResume)
             val buffer = ByteArray(8 * 1024)
-            var bytesRead = 0L
+            var bytesRead = actualResumeFrom
             var lastEmit = 0L
             val startTs = System.currentTimeMillis()
+            val notifier = UpdateNotifier.getInstance(context)
             try {
                 while (true) {
                     val n = input.read(buffer)
@@ -421,7 +553,7 @@ class HotUpdateManager private constructor(
                     val now = System.currentTimeMillis()
                     if (now - lastEmit >= 200L) {
                         val elapsedSec = (now - startTs).coerceAtLeast(1L) / 1000.0
-                        val speed = if (elapsedSec > 0) ((bytesRead / elapsedSec).toLong()) else 0L
+                        val speed = if (elapsedSec > 0) ((bytesRead - actualResumeFrom) / elapsedSec).toLong() else 0L
                         val percent = if (total > 0) ((bytesRead * 100) / total).toInt() else -1
                         val progress = DownloadProgress(
                             bytesRead = bytesRead,
@@ -432,6 +564,7 @@ class HotUpdateManager private constructor(
                         )
                         _state.value = UpdateState.Downloading(progress)
                         onProgress(progress)
+                        notifier.notifyProgress(percent, bytesRead, total, mirrorName)
                         lastEmit = now
                     }
                 }
@@ -440,15 +573,26 @@ class HotUpdateManager private constructor(
                 output.closeQuietly()
             }
 
-            // 简单完整性校验
+            // 大小校验
             if (total > 0 && target.length() != total) {
                 throw IllegalStateException("文件大小不匹配 expected=$total actual=${target.length()}")
             }
-
-            // 可选 SHA-256 校验：若 Release 资源有同名的 .sha256 / .sha256sum 文件，则比对
-            // 这里简化处理：只做长度校验，签名校验交给 PackageInstaller
             target
         }
+    }
+
+    /** 计算文件 SHA-256（小写 hex）。 */
+    private fun sha256OfFile(file: File): String {
+        val md = java.security.MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { fis ->
+            val buf = ByteArray(64 * 1024)
+            while (true) {
+                val n = fis.read(buf)
+                if (n <= 0) break
+                md.update(buf, 0, n)
+            }
+        }
+        return md.digest().joinToString("") { "%02x".format(it) }
     }
 
     /** 调起系统安装界面。 */
@@ -496,7 +640,9 @@ sealed class UpdateState {
         /** 完整的 Release 对象，用于直接触发下载。 */
         val release: UpdateRelease? = null,
         /** 选中的 APK 资源。 */
-        val asset: UpdateAsset? = null
+        val asset: UpdateAsset? = null,
+        /** 期望的 SHA-256（小写 hex），null 表示未知。 */
+        val expectedSha256: String? = null
     ) : UpdateState()
     /** 下载中 */
     data class Downloading(val progress: DownloadProgress) : UpdateState()

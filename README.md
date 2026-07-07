@@ -334,6 +334,40 @@ GitHub 未认证 API 限流为 **60 次/小时/IP**。模块已内置：
 - 403 → 记录限流日志并降级为"检查失败"
 - 所有镜像均失败 → 显示失败状态，用户可手动重试
 
+### 高级特性
+
+| 特性 | 说明 |
+|------|------|
+| **网络预检** | 检查前先 `NetworkUtils.isNetworkAvailable`，无网络直接返回友好错误，不发请求 |
+| **WiFi-only 真实生效** | 下载前检查 `isWifiConnected`，移动网络下直接拒绝并提示用户 |
+| **断点续传** | 下载中断后再次尝试同镜像时发送 `Range: bytes=<existing>-`，服务器返回 206 则追加写入；返回 200 则覆盖重下 |
+| **SHA-256 校验** | 自动从 release notes 解析 `SHA-256: <hex>` 或 `<apk-name>: <hex>`，校验失败删除文件并报错 |
+| **错误分类** | `UpdateError` 区分 NoNetwork / WifiOnly / RateLimited / NoRelease / NetworkError / ParseError / AllMirrorsFailed / IntegrityError / Cancelled / Unknown |
+| **系统通知** | 三个通道：`apex.update.available`（发现新版本）、`apex.update.progress`（下载进度，常驻通知栏）、`apex.update.result`（完成/失败） |
+| **首次启动延迟** | 首次启动延迟 30 秒检查，避免与冷启动 IO 抢资源 |
+| **镜像智能排序** | 上次下载成功的镜像自动前置，加快下一次下载 |
+| **取消下载** | `SupervisorJob` + `AtomicReference` 跟踪下载 Job，用户可随时取消 |
+| **ProGuard 规则** | 已添加 `@Serializable` 数据类与 sealed class 子类的 keep 规则，release 模式不会崩溃 |
+| **单元测试** | `VersionComparatorTest` 覆盖版本比较、SHA-256 解析、镜像 URL 包装等核心逻辑 |
+
+### 模块结构（含优化后）
+
+```
+app/src/main/java/com/apex/agent/update/
+├── UpdateModels.kt              # 数据模型
+├── UpdateError.kt               # 错误分类（10 种）
+├── UpdateSettings.kt            # 偏好设置 + 版本比较 + SHA-256 解析
+├── MirrorSourceRegistry.kt      # 镜像源注册表
+├── HotUpdateManager.kt          # 核心管理器（网络预检/WiFi/续传/SHA256/通知）
+├── UpdateNotifier.kt            # 系统通知（3 通道）
+└── ui/
+    ├── UpdateDialog.kt          # 更新对话框（含 SHA-256 徽章）
+    └── UpdateSettingsSection.kt # 镜像管理 + 偏好设置 UI
+
+app/src/test/java/com/apex/agent/update/
+└── VersionComparatorTest.kt     # 版本比较 + formatBytes + extractSha256 单元测试
+```
+
 ---
 
 ## 📄 License

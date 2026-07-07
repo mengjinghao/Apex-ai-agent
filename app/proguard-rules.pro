@@ -23,6 +23,22 @@
 # 保留 Shizuku 相关类
 -keep class rikka.shizuku.** { *; }
 
+# === 热更新模块（com.apex.agent.update）===
+# 保留所有 @Serializable 数据类，避免 R8 在 release 模式下移除 kotlinx.serialization 所需的合成方法
+-keep,allowobfuscation,allowshrinking @kotlinx.serialization.Serializable class com.apex.agent.update.**
+-keepclassmembers class com.apex.agent.update.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.apex.agent.update.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+# 保留 UpdateState / CheckResult / UpdateError sealed class子类，避免反射枚举/类型分发失败
+-keep class com.apex.agent.update.UpdateState$* { *; }
+-keep class com.apex.agent.update.CheckResult$* { *; }
+-keep class com.apex.agent.update.UpdateError$* { *; }
+# 保留 UpdateNotifier 使用的 NotificationCompat.Builder 调用链
+-keep class androidx.core.app.NotificationCompat$Builder { *; }
+
 # 保留 Shower 相关 Binder IPC 类型，确保与 shower-server.jar 的类名保持一致
 -keep class com.ai.assistance.shower.ShowerBinderContainer { *; }
 -keep class com.ai.assistance.shower.IShowerService { *; }
