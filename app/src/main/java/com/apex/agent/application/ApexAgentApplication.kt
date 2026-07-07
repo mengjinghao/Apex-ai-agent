@@ -334,6 +334,9 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
             // 初始化 BurstKernel —— 通过 Hilt EntryPoint 取 adapter，激活 SWARM 协作
             initializeBurstKernel()
 
+            // 初始化热更新：加载镜像源并按需后台检查
+            initializeHotUpdate()
+
             val totalBg = System.currentTimeMillis() - bgStart
             AppLogger.d(TAG, "【后台初始化】全部完成 - 总耗时: ${totalBg}ms")
 
@@ -668,6 +671,55 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
             AppLogger.i(TAG, "BurstKernel 已启动，SWARM 协作 ${if (adapter != null) "已激活" else "回退到本地"}")
         } catch (e: Exception) {
             AppLogger.e(TAG, "BurstKernel 启动失败: ${e.message}", e)
+        }
+    }
+
+    /**
+     * 初始化热更新模块。
+     *
+     * 1. 加载已保存的自定义镜像源（合并到内置列表）；
+     * 2. 若用户开启了"启动时自动检查"且距上次检查已超过设定间隔，则在后台静默检查一次。
+     *
+     * 设计原则：热更新检查不应阻塞应用启动，所有失败均吞掉并记录日志。
+     */
+    private fun initializeHotUpdate() {
+        try {
+            val manager = com.apex.agent.update.HotUpdateManager.getInstance(applicationContext)
+            val registry = com.apex.agent.update.MirrorSourceRegistry.getInstance(applicationContext)
+
+            applicationScope.launch(Dispatchers.IO) {
+                // 1. 加载镜像源
+                registry.load()
+
+                // 2. 自动检查（受偏好控制）
+                val autoCheck = com.apex.agent.update.UpdateSettings.isAutoCheckEnabled(applicationContext)
+                if (!autoCheck) {
+                    AppLogger.d(TAG, "【热更新】用户关闭了自动检查，跳过")
+                    return@launch
+                }
+                if (!com.apex.agent.update.UpdateSettings.shouldCheckNow(applicationContext)) {
+                    AppLogger.d(TAG, "【热更新】距上次检查时间过短，跳过自动检查")
+                    return@launch
+                }
+
+                AppLogger.d(TAG, "【热更新】开始后台检查...")
+                val result = manager.checkForUpdate(force = true)
+                when (result) {
+                    is com.apex.agent.update.CheckResult.UpToDate -> {
+                        AppLogger.d(TAG, "【热更新】已是最新版本 ${result.latestVersion}")
+                    }
+                    is com.apex.agent.update.CheckResult.UpdateAvailable -> {
+                        AppLogger.i(TAG, "【热更新】发现新版本 ${result.release.tagName}")
+                        // 仅记录日志并刷新 StateFlow；UI 端在设置页或主界面会观察到状态变化
+                        // 用户主动打开"软件更新"对话框时即可看到
+                    }
+                    is com.apex.agent.update.CheckResult.Failed -> {
+                        AppLogger.w(TAG, "【热更新】检查失败：${result.reason}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "热更新初始化失败: ${e.message}", e)
         }
     }
 

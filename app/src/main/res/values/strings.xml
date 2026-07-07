@@ -57,4 +57,24 @@
     <string name="action_paste">粘贴</string>
     <string name="action_select_all">全选</string>
     <string name="title_activity_crash_report">崩溃报告</string>
+
+    <!-- Hot Update / 热更新 -->
+    <string name="hot_update_title">软件更新</string>
+    <string name="hot_update_check">检查更新</string>
+    <string name="hot_update_checking">正在检查 GitHub Releases…</string>
+    <string name="hot_update_available">发现新版本 %1$s</string>
+    <string name="hot_update_up_to_date">已是最新版本</string>
+    <string name="hot_update_download_now">立即更新</string>
+    <string name="hot_update_later">稍后</string>
+    <string name="hot_update_skip_version">跳过该版本</string>
+    <string name="hot_update_download_progress">下载中 %1$d%%</string>
+    <string name="hot_update_download_complete">下载完成，请在弹出的系统安装界面完成更新</string>
+    <string name="hot_update_cancel">取消下载</string>
+    <string name="hot_update_mirror_manage">镜像源管理</string>
+    <string name="hot_update_mirror_builtin">内置</string>
+    <string name="hot_update_mirror_test">测试</string>
+    <string name="hot_update_mirror_add">添加自定义镜像</string>
+    <string name="hot_update_auto_check">启动时自动检查</string>
+    <string name="hot_update_include_prerelease">包含预发布版本</string>
+    <string name="hot_update_wifi_only">仅 Wi-Fi 下载</string>
 </resources>

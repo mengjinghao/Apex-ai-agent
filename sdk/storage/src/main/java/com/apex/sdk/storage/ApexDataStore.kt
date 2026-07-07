@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
@@ -40,6 +42,12 @@ object ApexDataStore {
     fun int(context: Context, key: String, default: Int = 0): Flow<Int> =
         context.apexDataStore.data.map { it[intPreferencesKey(key)] ?: default }
 
+    fun long(context: Context, key: String, default: Long = 0L): Flow<Long> =
+        context.apexDataStore.data.map { it[longPreferencesKey(key)] ?: default }
+
+    fun stringSet(context: Context, key: String, default: Set<String> = emptySet()): Flow<Set<String>> =
+        context.apexDataStore.data.map { it[stringSetPreferencesKey(key)] ?: default }
+
     fun boolean(context: Context, key: String, default: Boolean = false): Flow<Boolean> =
         context.apexDataStore.data.map { it[booleanPreferencesKey(key)] ?: default }
 
@@ -52,6 +60,14 @@ object ApexDataStore {
         context.apexDataStore.edit { it[intPreferencesKey(key)] = value }
     }
 
+    suspend fun putLong(context: Context, key: String, value: Long) {
+        context.apexDataStore.edit { it[longPreferencesKey(key)] = value }
+    }
+
+    suspend fun putStringSet(context: Context, key: String, value: Set<String>) {
+        context.apexDataStore.edit { it[stringSetPreferencesKey(key)] = value }
+    }
+
     suspend fun putBoolean(context: Context, key: String, value: Boolean) {
         context.apexDataStore.edit { it[booleanPreferencesKey(key)] = value }
     }
@@ -62,8 +78,14 @@ object ApexDataStore {
     suspend fun getIntSync(context: Context, key: String, default: Int = 0): Int =
         int(context, key, default).first()
 
+    suspend fun getLongSync(context: Context, key: String, default: Long = 0L): Long =
+        long(context, key, default).first()
+
     suspend fun getBooleanSync(context: Context, key: String, default: Boolean = false): Boolean =
         boolean(context, key, default).first()
+
+    suspend fun getStringSetSync(context: Context, key: String, default: Set<String> = emptySet()): Set<String> =
+        stringSet(context, key, default).first()
 
     suspend fun remove(context: Context, key: String) {
         context.apexDataStore.edit { it.remove(stringPreferencesKey(key)) }

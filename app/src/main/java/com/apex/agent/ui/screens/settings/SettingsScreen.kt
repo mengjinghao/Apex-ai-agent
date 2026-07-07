@@ -17,6 +17,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.apex.agent.update.HotUpdateManager
+import com.apex.agent.update.MirrorSourceRegistry
+import com.apex.agent.update.UpdateState
+import com.apex.agent.update.ui.UpdateDialog
+import com.apex.agent.update.ui.UpdateSettingsSection
 import com.apex.sdk.common.ApkDependencyManager
 import com.apex.utils.ThemeManager
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +56,12 @@ fun SettingsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {}) 
     var suiteInstalled by remember { mutableStateOf(0) }
     var suiteTotal by remember { mutableStateOf(0) }
 
+    // 热更新
+    val hotUpdateManager = remember { HotUpdateManager.getInstance(context) }
+    val updateState by hotUpdateManager.state.collectAsState()
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    var showUpdateSettings by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             // Shizuku
@@ -63,6 +74,8 @@ fun SettingsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {}) 
             // 套件
             suiteTotal = com.apex.sdk.common.ApkDescriptors.ALL.size
             suiteInstalled = com.apex.sdk.common.ApkDescriptors.ALL.count { ApkDependencyManager.isApkInstalled(context, it.apkId) }
+            // 镜像源
+            MirrorSourceRegistry.getInstance(context).load()
         }
     }
 
@@ -121,10 +134,79 @@ fun SettingsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {}) 
             item { SettingsCard(Icons.Default.Accessibility, "无障碍服务", "在系统设置中启用") { Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant) } }
             item { SettingsCard(Icons.Default.Apps, "套件状态", "$suiteInstalled / $suiteTotal 个 APK 已安装") { Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant) } }
 
+            // 软件更新（热更新）
+            item { SectionHeader("软件更新") }
+            item {
+                val updateSubtitle = when (updateState) {
+                    is UpdateState.UpdateAvailable ->
+                        "发现新版本 ${(updateState as UpdateState.UpdateAvailable).latestVersion}，点击更新"
+                    is UpdateState.Downloading -> {
+                        val p = (updateState as UpdateState.Downloading).progress
+                        "下载中 ${p.percent}%"
+                    }
+                    UpdateState.Checking -> "正在检查更新..."
+                    else -> "当前版本 ${hotUpdateManager.currentVersionName()} · 来自 GitHub Releases"
+                }
+                SettingsCard(Icons.Default.SystemUpdate, "检查更新", updateSubtitle) {
+                    TextButton(onClick = {
+                        showUpdateDialog = true
+                        scope.launch { hotUpdateManager.checkForUpdate(force = true) }
+                    }) { Text("检查") }
+                }
+            }
+            item {
+                SettingsCard(
+                    Icons.Default.Cloud,
+                    "镜像源管理",
+                    "免费 GitHub 加速镜像，可启用/禁用/添加自定义"
+                ) {
+                    TextButton(onClick = { showUpdateSettings = true }) { Text("管理") }
+                }
+            }
+
             // 关于
             item { SectionHeader("关于") }
             item { SettingsCard(Icons.Default.Info, "关于 Apex", "版本 1.0.0 · 开发者 MJH") { Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant) } }
             item { SettingsCard(Icons.Default.Person, "联系方式", "QQ: 2544240258 · 微信: meng4117222") { Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant) } }
+        }
+    }
+
+    // 更新对话框
+    if (showUpdateDialog) {
+        UpdateDialog(
+            state = updateState,
+            onDismiss = { showUpdateDialog = false },
+            onCheck = {
+                scope.launch { hotUpdateManager.checkForUpdate(force = true) }
+            },
+            onDownload = {
+                val s = updateState
+                if (s is UpdateState.UpdateAvailable && s.release != null && s.asset != null) {
+                    hotUpdateManager.startDownload()
+                } else {
+                    hotUpdateManager.notifyFailed("当前无可下载的更新，请先检查")
+                }
+            },
+            onCancel = { hotUpdateManager.cancelDownload() },
+            onIgnore = { v ->
+                scope.launch { hotUpdateManager.ignoreVersion(v) }
+                showUpdateDialog = false
+            }
+        )
+    }
+
+    // 镜像源管理弹层
+    if (showUpdateSettings) {
+        ModalBottomSheet(onDismissRequest = { showUpdateSettings = false }) {
+            UpdateSettingsSection(
+                onCheckNow = {
+                    scope.launch { hotUpdateManager.checkForUpdate(force = true) }
+                },
+                onShowUpdateDialog = {
+                    showUpdateSettings = false
+                    showUpdateDialog = true
+                }
+            )
         }
     }
 }

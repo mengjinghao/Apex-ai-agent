@@ -232,6 +232,110 @@ Apex-ai-agent/
 
 ---
 
+## 🔥 热更新（Hot Update）
+
+主 APK 内置**自更新模块**，从 GitHub Releases 拉取新版本 APK 并调起系统安装器，
+无需第三方应用商店。同时内置多套**免费 GitHub 加速镜像**，国内用户可在设置中按需启用或自行添加。
+
+### 工作流程
+
+```
+App 启动 → Application.initializeHotUpdate()
+              │
+              ▼
+   镜像源加载（ApexDataStore）
+              │
+              ▼
+   判断是否到达检查间隔（默认 6h）
+              │
+              ▼
+   GET https://api.github.com/repos/{owner}/{repo}/releases/latest
+              │
+              ▼
+   版本号比较（语义化版本）→ 有新版？
+              │ 是
+              ▼
+   StateFlow 刷新为 UpdateAvailable（设置页 / 主界面可观察）
+              │ 用户点击"立即更新"
+              ▼
+   按镜像顺序下载 APK（首个成功即用）
+   ├─ GitHub 直连
+   ├─ ghproxy.com
+   ├─ mirror.ghproxy.com
+   ├─ ghps.cc
+   ├─ github.moeyy.xyz
+   ├─ gh-proxy.com
+   ├─ kkgithub.com
+   └─ 用户自定义镜像…
+              │
+              ▼
+   完整性校验（Content-Length）
+              │
+              ▼
+   FileProvider 暴露 APK → ACTION_VIEW → 系统安装界面
+```
+
+### 模块结构
+
+```
+app/src/main/java/com/apex/agent/update/
+├── UpdateModels.kt              # 数据模型（UpdateRelease / CheckResult / MirrorSource）
+├── UpdateSettings.kt            # 偏好设置 + 语义化版本比较工具
+├── MirrorSourceRegistry.kt      # 镜像源注册表（内置 + 自定义）
+├── HotUpdateManager.kt          # 核心管理器（检查 / 下载 / 校验 / 安装）
+└── ui/
+    ├── UpdateDialog.kt          # 更新对话框（版本信息 / 更新日志 / 下载进度）
+    └── UpdateSettingsSection.kt # 镜像管理 + 偏好设置 Compose UI
+```
+
+### 内置免费镜像
+
+| id | 名称 | 模板 | 特点 |
+|----|------|------|------|
+| `direct` | GitHub 直连 | `{url}` | 原始地址，海外最快 |
+| `ghproxy` | ghproxy.com | `https://ghproxy.com/{url}` | 老牌加速，国内可用 |
+| `ghproxy-net` | mirror.ghproxy.com | `https://mirror.ghproxy.com/{url}` | ghproxy 备用节点 |
+| `ghps` | ghps.cc | `https://ghps.cc/{url}` | Free CDN mirror |
+| `moeyy` | github.moeyy.xyz | `https://github.moeyy.xyz/{url}` | moeyy 加速 |
+| `gh-proxy` | gh-proxy.com | `https://gh-proxy.com/{url}` | 公益代理 |
+| `kkgithub` | kkgithub.com | 域名替换型 | 替换 github.com → kkgithub.com |
+| `gcore` | gh.api.99988866.xyz | `https://gh.api.99988866.xyz/{url}` | 备用节点 |
+
+### 用户操作
+
+1. **设置 → 软件更新 → 检查更新** — 立即检查 GitHub Releases（无视检查间隔）
+2. **设置 → 软件更新 → 镜像源管理** — 启用/禁用镜像、添加自定义镜像、测试镜像连通性
+3. **设置 → 软件更新 → 镜像源管理 → GitHub 仓库** — 切换检查的仓库（默认 `mengjinghao/Apex-ai-agent`）
+4. **设置 → 软件更新 → 镜像源管理 → 启动时自动检查 / 包含预发布 / 仅 Wi-Fi 下载**
+
+### 添加自定义镜像
+
+镜像 URL 模板中使用 `{url}` 作为 GitHub 原始下载地址占位符，例如：
+
+```
+https://your-mirror.example.com/{url}
+```
+
+下载时，模块会按列表顺序尝试每个**已启用**的镜像，首个成功即用，失败自动回退下一个。
+镜像列表通过 `ApexDataStore`（跨 APK 共享）持久化。
+
+### 配置 Release
+
+1. 在 GitHub 仓库 → Releases → Draft a new release
+2. Tag 命名建议 `v1.2.3`（语义化版本）
+3. 上传 `.apk` 文件作为 Release Asset
+4. Release body 作为更新日志，支持 Markdown，对话框会按行渲染 `-` / `*` 开头的列表项
+
+### API 限制与降级
+
+GitHub 未认证 API 限流为 **60 次/小时/IP**。模块已内置：
+- 6 小时最小检查间隔（可配置 1–168 小时）
+- 404 → 视为"无 Release"，不报错
+- 403 → 记录限流日志并降级为"检查失败"
+- 所有镜像均失败 → 显示失败状态，用户可手动重试
+
+---
+
 ## 📄 License
 
 Apache License 2.0 — 见 [LICENSE](./LICENSE)
