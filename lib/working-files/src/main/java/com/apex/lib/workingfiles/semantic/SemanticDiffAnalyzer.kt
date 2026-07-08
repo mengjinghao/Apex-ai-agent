@@ -26,7 +26,7 @@ object SemanticDiffAnalyzer {
         val addedLines = diff.hunks.flatMap { it.lines }.filter { it.type == DiffLineType.ADDED }
         val removedLines = diff.hunks.flatMap { it.lines }.filter { it.type == DiffLineType.REMOVED }
 
-        val changeType = detectChangeType(addedLines, removedLines, diff)
+        val changeType = detectChangeType(addedLines, removedLines)
         val riskLevel = detectRiskLevel(diff, addedLines, removedLines)
         val affectedSymbols = detectAffectedSymbols(addedLines, removedLines)
         val breakingChanges = detectBreakingChanges(addedLines, removedLines)

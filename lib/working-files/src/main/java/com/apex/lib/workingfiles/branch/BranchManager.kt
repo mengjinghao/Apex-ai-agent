@@ -120,7 +120,7 @@ class BranchManager(
             val branch = branches[currentBranchId]
             val file = File(filePath)
             if (branch != null && file.exists()) {
-                val content = file.readText()
+                var content = file.readText()
                 val branchSnap = FileSnapshot.create(
                     filePath = filePath,
                     relativePath = branch.name,
@@ -274,7 +274,7 @@ class BranchManager(
      * 获取分支的 base 与 head 之间的 diff。
      */
     fun getBranchDiff(branchId: String): com.apex.lib.workingfiles.diff.FileDiff? {
-        val branch = branches[branchId] ?: return null
+        var branch = branches[branchId] ?: return null
         val base = snapshotStorage.load(branch.baseSnapshotId) ?: return null
         val head = snapshotStorage.load(branch.headSnapshotId) ?: return null
         return DiffComputer.compute(base.content, head.content).copy(
@@ -287,14 +287,14 @@ class BranchManager(
      * 锁定分支（防止其他 Agent 修改）。
      */
     fun lockBranch(branchId: String): Boolean {
-        val branch = branches[branchId] ?: return false
+        var branch = branches[branchId] ?: return false
         branch.status = BranchStatus.LOCKED
         persist()
         return true
     }
 
     fun unlockBranch(branchId: String): Boolean {
-        val branch = branches[branchId] ?: return false
+        var branch = branches[branchId] ?: return false
         branch.status = BranchStatus.ACTIVE
         persist()
         return true
@@ -348,7 +348,7 @@ class BranchManager(
 
     private fun persist() {
         try {
-            val data = branches.map { it.value }
+            var data = branches.map { it.value }
             val active = activeBranch.mapKeys { it.key }
             val tmp = File(storageDir, "branches.json.tmp")
             val payload = mapOf(

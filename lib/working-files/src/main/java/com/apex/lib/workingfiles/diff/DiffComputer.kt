@@ -116,40 +116,40 @@ object DiffComputer {
                         diffLines.add(DiffLine(
                             type = DiffLineType.ADDED,
                             content = diffLine.substring(1),
-                            oldLineNumber = null,
-                            newLineNumber = newLineNum++
+                            oldLine = null,
+                            newLine = newLineNum++
                         ))
                     }
                     diffLine.startsWith("-") -> {
                         diffLines.add(DiffLine(
                             type = DiffLineType.REMOVED,
                             content = diffLine.substring(1),
-                            oldLineNumber = oldLineNum++,
-                            newLineNumber = null
+                            oldLine = oldLineNum++,
+                            newLine = null
                         ))
                     }
                     diffLine.startsWith(" ") -> {
                         diffLines.add(DiffLine(
                             type = DiffLineType.CONTEXT,
                             content = diffLine.substring(1),
-                            oldLineNumber = oldLineNum++,
-                            newLineNumber = newLineNum++
+                            oldLine = oldLineNum++,
+                            newLine = newLineNum++
                         ))
                     }
                     diffLine.isEmpty() -> {
                         diffLines.add(DiffLine(
                             type = DiffLineType.CONTEXT,
                             content = "",
-                            oldLineNumber = oldLineNum++,
-                            newLineNumber = newLineNum++
+                            oldLine = oldLineNum++,
+                            newLine = newLineNum++
                         ))
                     }
                 }
                 i++
             }
 
-            val oldEnd = diffLines.filter { it.oldLineNumber != null }.maxOrNull()?.oldLineNumber ?: oldStart
-            val newEnd = diffLines.filter { it.newLineNumber != null }.maxOrNull()?.newLineNumber ?: newStart
+            val oldEnd = diffLines.filter { it.oldLine != null }.maxOrNull()?.oldLine ?: oldStart
+            val newEnd = diffLines.filter { it.newLine != null }.maxOrNull()?.newLine ?: newStart
             hunks.add(DiffHunk(oldStart, oldEnd, newStart, newEnd, diffLines))
         }
 

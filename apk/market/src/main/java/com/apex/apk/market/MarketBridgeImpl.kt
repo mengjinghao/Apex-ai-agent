@@ -293,18 +293,18 @@ class MarketBridgeImpl(
                     // ===== Apex 独有增强：使用统计 =====
                     "market/getItemStats" -> {
                         val itemId = args["itemId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.getItemStats(itemId)) { s ->
-                            if (s == null) buildJsonObject { put("found", false) }
-                            else buildJsonObject {
-                                put("found", true)
-                                put("searchCount", s.searchCount)
-                                put("viewCount", s.viewCount)
-                                put("installCount", s.installCount)
-                                put("invokeCount", s.invokeCount)
-                                put("isInstalled", s.isInstalled)
-                                put("favorited", s.favorited)
-                            }
-                        }
+                        val statsResult = facade.getItemStats(itemId)
+                        val s = statsResult.getOrNull()
+                        if (s == null) buildJsonObject { put("found", false) }.toString()
+                        else buildJsonObject {
+                            put("found", true)
+                            put("searchCount", s.searchCount)
+                            put("viewCount", s.viewCount)
+                            put("installCount", s.installCount)
+                            put("invokeCount", s.invokeCount)
+                            put("isInstalled", s.isInstalled)
+                            put("favorited", s.favorited)
+                        }.toString()
                     }
                     "market/getRecentlyUsed" -> {
                         val limit = args["limit"]?.jsonPrimitive?.content?.toIntOrNull() ?: 20
@@ -388,7 +388,9 @@ class MarketBridgeImpl(
                             val parts = entry.split(",")
                             Triple(parts.getOrNull(0) ?: "", parts.getOrNull(1) ?: "SKILLS", parts.getOrNull(2) ?: "")
                         }
-                        buildResult(facade.batchInstall(items).getOrNull() ?: emptyList()) { list ->
+                        val batchResult = facade.batchInstall(items)
+                        val list = batchResult.getOrNull() ?: emptyList<InstallResultDto>()
+                        buildResult(BridgeResult.Success(list)) { l ->
                             buildJsonObject {
                                 put("count", list.size)
                                 put("successCount", list.count { it.success })

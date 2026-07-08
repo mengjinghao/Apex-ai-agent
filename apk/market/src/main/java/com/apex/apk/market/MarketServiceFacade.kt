@@ -1,5 +1,3 @@
-@file:OptIn(kotlin.experimental.ExperimentalTypeInference::class)
-
 package com.apex.apk.market
 
 import com.apex.agent.integration.api.IntegrationCategory
@@ -76,8 +74,6 @@ import kotlinx.coroutines.flow.SharedFlow
  *   6. 调用本地技能 / 插件 / MCP（已安装后零延迟直调）
  *   7. 集成 GitHub 等平台（任意 APK 可用）
  */
-@file:OptIn(kotlin.experimental.ExperimentalTypeInference::class)
-
 class MarketServiceFacade(private val context: Context) {
 
     private val TAG_SUB = "MarketFacade"
@@ -253,7 +249,7 @@ class MarketServiceFacade(private val context: Context) {
         engine.initialize()
 
         _isInitialized.value = true
-        val marketStats = center?.marketStats
+        val stats = center?.marketStats
         ApexLog.i(ApexSuite.ApkId.MARKET, "[$TAG_SUB] initialized; markets: $marketStats; engine wired")
     }
 
@@ -807,9 +803,9 @@ class MarketServiceFacade(private val context: Context) {
             val cat = parseCategory(category)
             val item = findItem(itemId, cat) ?: run {
                 results.add(InstallResultDto(false, itemId, null, null, "item not found"))
-                continue
+                return@bridgeRun BridgeResult.Success(results)
             }
-            val executor = center?.installExecutor ?: continue
+            val executor = center?.installExecutor ?: return@bridgeRun BridgeResult.Success(results)
             val r = executor.install(item, targetPath)
             results.add(InstallResultDto(
                 success = r.success, itemId = r.itemId,
@@ -849,7 +845,7 @@ class MarketServiceFacade(private val context: Context) {
         ensureInitialized()
         val updatable = center?.getUpdatable() ?: emptyList()
         val items = updatable.map { Triple(it.id, it.category.name, "" as String) }
-        batchInstall(items)
+        batchInstall(items).getOrNull() ?: emptyList()
     }
 
     /** 刷新所有市场（清缓存 + 重新加载）。 */
