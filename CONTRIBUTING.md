@@ -134,11 +134,46 @@ Closes #123
 
 1. **Fork & Clone**：Fork 仓库到个人空间
 2. **创建分支**：`git checkout -b feature/your-feature`
-3. **开发 & 测试**：确保 `./gradlew test` 通过
+3. **开发 & 测试**：确保 `./gradlew testDebugUnitTest` 通过
 4. **代码审计**：运行 `bash scripts/code_audit/run_audit.sh`
-5. **提交 PR**：目标分支为 `develop`
-6. **Review**：至少 1 位 reviewer 批准
-7. **合并**：Squash merge 到 develop
+5. **提交 PR**：目标分支为 `develop`（或 `main`）
+6. **CI 检查**：PR 提交后会自动触发 CI，必须全部通过：
+   - **Compile Check** — `compileDebugKotlin` 编译通过
+   - **Unit Tests** — `testDebugUnitTest` 全部通过
+   - **Lint** — `:app:lintDebug` 无 fatal 错误
+   - **Code Quality** — `!!`/`runBlocking`/catch-all 统计（仅报告不阻断）
+   - **Security Scan** — 依赖漏洞/权限/密钥泄露扫描
+7. **Review**：至少 1 位 reviewer 批准
+8. **合并**：Squash merge
+
+### CI/CD 流水线说明
+
+| Workflow | 文件 | 触发 | 作用 |
+|----------|------|------|------|
+| **CI** | `.github/workflows/ci.yml` | push/PR 到 main/develop | 编译 + 单测 + lint，**阻断合并** |
+| **Code Quality** | `.github/workflows/code-quality.yml` | push/PR + 每周一 | 扫描 `!!`/`runBlocking`/catch-all/明文URL，**仅报告** |
+| **Security Scan** | `.github/workflows/security.yml` | push/PR + 每周一 | 依赖漏洞 + 权限审计 + 密钥泄露，**high/critical 阻断** |
+| **Build & Release APK** | `.github/workflows/release-apk.yml` | tag `v*` 或手动 | 构建 9 个 APK 并发布 Release |
+| **Docs** | `.github/workflows/docs.yml` | push 到 main | 生成 API 文档 |
+
+### 本地预检
+
+提交前建议在本地跑：
+
+```bash
+# 快速编译检查（最快反馈）
+./gradlew compileDebugKotlin
+
+# 单元测试
+./gradlew testDebugUnitTest
+
+# Lint
+./gradlew :app:lintDebug
+
+# 风险模式扫描（与 CI code-quality 一致）
+grep -rn '!!' --include='*.kt' app/ sdk/ core/ lib/ | wc -l
+grep -rn 'runBlocking' --include='*.kt' app/ sdk/ core/ lib/ | wc -l
+```
 
 ### PR 标题
 

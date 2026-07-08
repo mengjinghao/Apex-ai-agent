@@ -1,0 +1,136 @@
+# ============================================================
+# Apex AI Agent · 代码质量扫描
+# ------------------------------------------------------------
+# 触发：push 到 main，或 PR
+# 任务：统计并报告高风险代码模式
+#   - !! 强制解包（NPE 风险）
+#   - runBlocking（线程阻塞 / ANR 风险）
+#   - catch-all 异常捕获（吞错误）
+#   - 明文 http:// URL（安全合规）
+#   - TODO/FIXME 遗留项
+# 设计：仅报告不阻断（先建立基线，后续逐步收紧为阻断）
+# ============================================================
+name: Code Quality
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    # 每周一早上 9 点（亚洲/上海）跑一次全量扫描
+    - cron: '0 1 * * 1'
+
+jobs:
+  scan:
+    name: Risk Pattern Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan risky code patterns
+        run: |
+          # 关闭 set -e，让 grep 无匹配（返回 1）时不中断脚本
+          set +e
+          echo "## 🔍 代码质量扫描报告" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ----------------------------------------------------------
+          # 1. 强制解包 !! （NPE 风险）
+          # ----------------------------------------------------------
+          BANG_BANG=$(grep -rn '!!' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | grep -v '// ' | grep -v '\* ' | wc -l)
+          echo "### ⚠️ 强制解包 \`!!\`（NPE 风险）" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "发现 **${BANG_BANG}** 处 \`!!\` 强制解包" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>Top 20 文件</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep -rn '!!' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | grep -v '// ' | grep -v '\* ' | cut -d: -f1 | sort | uniq -c | sort -rn | head -20 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ----------------------------------------------------------
+          # 2. runBlocking（ANR 风险）
+          # ----------------------------------------------------------
+          RUN_BLOCKING=$(grep -rn 'runBlocking' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | wc -l)
+          MAIN_RUN_BLOCKING=$(grep -rn 'runBlocking' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | grep -i 'main\|ui\|activity\|fragment\|composable' | wc -l)
+          echo "### ⚠️ \`runBlocking\`（ANR 风险）" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "发现 **${RUN_BLOCKING}** 处 \`runBlocking\`（其中约 **${MAIN_RUN_BLOCKING}** 处疑似主线程/UI 上下文）" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>疑似主线程调用</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep -rn 'runBlocking' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | grep -i 'main\|ui\|activity\|fragment\|composable' | head -20 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ----------------------------------------------------------
+          # 3. catch-all 异常捕获（吞错误）
+          # ----------------------------------------------------------
+          CATCH_ALL=$(grep -rnE 'catch\s*\(\s*(e|ex|throwable|t)\s*:\s*(Exception|Throwable|RuntimeException)\s*\)' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | wc -l)
+          EMPTY_CATCH=$(grep -rnE 'catch\s*\([^)]*\)\s*\{\s*\}' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | wc -l)
+          echo "### ⚠️ Catch-all 异常捕获" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "发现 **${CATCH_ALL}** 处宽泛 catch，其中 **${EMPTY_CATCH}** 处空 catch（完全吞错误）" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ----------------------------------------------------------
+          # 4. 明文 HTTP URL（安全合规）
+          # ----------------------------------------------------------
+          HTTP_URLS=$(grep -rn 'http://' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | grep -v 'localhost\|127.0.0.1\|10.0.2.2\|//schemas.android\|//www.w3.org\|//xmlpull\|//example.com\|//json-schema\|//kotlinlang\|//developer.android\|//docs.oracle' | wc -l)
+          echo "### 🔒 明文 HTTP URL（安全合规）" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "发现 **${HTTP_URLS}** 处疑似明文 \`http://\` URL（已排除 localhost/示例）" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>明细</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep -rn 'http://' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | grep -v 'localhost\|127.0.0.1\|10.0.2.2\|//schemas.android\|//www.w3.org\|//xmlpull\|//example.com\|//json-schema\|//kotlinlang\|//developer.android\|//docs.oracle' | head -20 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ----------------------------------------------------------
+          # 5. TODO / FIXME 遗留项
+          # ----------------------------------------------------------
+          TODOS=$(grep -rn 'TODO\|FIXME\|HACK\|XXX' --include='*.kt' app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ 2>/dev/null | wc -l)
+          echo "### 📝 TODO / FIXME 遗留项" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "发现 **${TODOS}** 处 TODO/FIXME/HACK/XXX" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ----------------------------------------------------------
+          # 6. 大文件（>1000 行，复杂度热点）
+          # ----------------------------------------------------------
+          echo "### 📏 大文件（>1000 行）" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>Top 20</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          find app/ sdk/ core/ lib/ engine/ plugins/ ai-terminal/ domain/ database/ background/ file/ -name '*.kt' -exec wc -l {} \; 2>/dev/null | sort -rn | awk '$1 > 1000' | head -20 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ----------------------------------------------------------
+          # 总结
+          # ----------------------------------------------------------
+          echo "### 📊 总结" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 风险类型 | 数量 | 严重度 |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`!!\` 强制解包 | ${BANG_BANG} | 高（NPE） |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`runBlocking\` | ${RUN_BLOCKING} | 高（ANR） |" >> $GITHUB_STEP_SUMMARY
+          echo "| catch-all | ${CATCH_ALL} | 中 |" >> $GITHUB_STEP_SUMMARY
+          echo "| 空 catch | ${EMPTY_CATCH} | 高 |" >> $GITHUB_STEP_SUMMARY
+          echo "| 明文 HTTP URL | ${HTTP_URLS} | 中 |" >> $GITHUB_STEP_SUMMARY
+          echo "| TODO/FIXME | ${TODOS} | 低 |" >> $GITHUB_STEP_SUMMARY
+
+          echo ""
+          echo "Scan complete. See job summary for details."

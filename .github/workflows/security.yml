@@ -1,0 +1,244 @@
+# ============================================================
+# Apex AI Agent · 安全扫描
+# ------------------------------------------------------------
+# 触发：push 到 main，PR，每周一定时
+# 任务：
+#   1. 依赖漏洞扫描（Gradle Dependency Check / OWASP）
+#   2. Android 权限审计
+#   3. 签名配置检查
+#   4. 敏感信息泄露检查（硬编码 token/key）
+# 设计：严重漏洞阻断合并，其余仅报告
+# ============================================================
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # 每周一 02:00 UTC（10:00 北京时间）
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+# 显式声明权限：dependency-submission 需要 contents: write 提交依赖图
+permissions:
+  contents: write
+
+jobs:
+  # ============================================================
+  # Job 1: 依赖漏洞扫描（仅在 PR 触发 dependency-review）
+  # ============================================================
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # fork PR 没有写权限，跳过 dependency-submission
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK components
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;34.0.0" \
+            "cmake;3.22.1" \
+            "ndk;26.3.11579264" > /dev/null 2>&1 || true
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+
+      - name: Fix gradle.properties for CI
+        run: |
+          sed -i 's|-Djava.io.tmpdir=C:/Users/18119/AppData/Local/Temp|-Djava.io.tmpdir=/tmp|g' gradle.properties
+          sed -i 's|-Dobjectbox.properties=C:/Users/18119/Desktop/android-agent/.objectbox-build.properties||g' gradle.properties
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Generate dependency graph
+        uses: gradle/actions/dependency-submission@v4
+        with:
+          build-root-directory: .
+
+      - name: Review dependencies (PR only)
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          # 只阻断 high/critical
+          fail-on-severity: high
+          # 允许常见开源许可证
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+
+  # ============================================================
+  # Job 2: Android 权限审计
+  # ============================================================
+  permission-audit:
+    name: Android Permission Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Audit AndroidManifest permissions
+        run: |
+          echo "## 🔐 Android 权限审计" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # 高风险权限清单
+          HIGH_RISK_PERMS="MANAGE_EXTERNAL_STORAGE READ_EXTERNAL_STORAGE WRITE_EXTERNAL_STORAGE SYSTEM_ALERT_WINDOW REQUEST_INSTALL_PACKAGES QUERY_ALL_PACKAGES BIND_ACCESSIBILITY_SERVICE BIND_VOICE_INTERACTION SCHEDULE_EXACT_ALARM"
+
+          echo "### 高风险权限使用情况" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 权限 | 使用模块数 | 说明 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-----------|------|" >> $GITHUB_STEP_SUMMARY
+
+          for perm in $HIGH_RISK_PERMS; do
+            count=$(grep -rl "$perm" --include='AndroidManifest.xml' . 2>/dev/null | wc -l)
+            if [ "$count" -gt 0 ]; then
+              case $perm in
+                MANAGE_EXTERNAL_STORAGE) desc="所有文件访问（Google Play 限制）" ;;
+                READ_EXTERNAL_STORAGE|WRITE_EXTERNAL_STORAGE) desc="存储访问（Android 13+ 已废弃）" ;;
+                SYSTEM_ALERT_WINDOW) desc="悬浮窗" ;;
+                REQUEST_INSTALL_PACKAGES) desc="安装未知 APK" ;;
+                QUERY_ALL_PACKAGES) desc="查询所有包（Google Play 限制）" ;;
+                BIND_ACCESSIBILITY_SERVICE) desc="无障碍服务" ;;
+                BIND_VOICE_INTERACTION) desc="语音交互" ;;
+                SCHEDULE_EXACT_ALARM) desc="精确闹钟（Android 12+ 限制）" ;;
+                *) desc="" ;;
+              esac
+              echo "| \`$perm\` | $count | $desc |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 所有权限清单" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>展开</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep -rh 'uses-permission' --include='AndroidManifest.xml' . 2>/dev/null | sed 's/.*android:name="\([^"]*\)".*/\1/' | sort -u >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # Job 3: 敏感信息泄露检查
+  # ============================================================
+  secret-scan:
+    name: Secret Leak Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for hardcoded secrets
+        run: |
+          echo "## 🔑 敏感信息泄露扫描" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # 检查常见 secret 模式
+          FOUND=0
+          REPORT=""
+
+          # GitHub PAT
+          PATS=$(grep -rnE 'ghp_[A-Za-z0-9]{36}' --include='*.kt' --include='*.kts' --include='*.xml' --include='*.properties' --include='*.yml' . 2>/dev/null | grep -v '.git/' | wc -l)
+          if [ "$PATS" -gt 0 ]; then
+            REPORT="$REPORT\n- GitHub PAT: ${PATS} 处"
+            FOUND=$((FOUND + PATS))
+          fi
+
+          # AWS keys
+          AWS=$(grep -rnE 'AKIA[0-9A-Z]{16}' --include='*.kt' --include='*.kts' --include='*.xml' --include='*.properties' . 2>/dev/null | wc -l)
+          if [ "$AWS" -gt 0 ]; then
+            REPORT="$REPORT\n- AWS Access Key: ${AWS} 处"
+            FOUND=$((FOUND + AWS))
+          fi
+
+          # Google API key
+          GOOGLE=$(grep -rnE 'AIza[0-9A-Za-z\-_]{35}' --include='*.kt' --include='*.kts' --include='*.xml' --include='*.properties' . 2>/dev/null | wc -l)
+          if [ "$GOOGLE" -gt 0 ]; then
+            REPORT="$REPORT\n- Google API Key: ${GOOGLE} 处"
+            FOUND=$((FOUND + GOOGLE))
+          fi
+
+          # 通用 API key 模式（key="..."长度>20）
+          GENERIC=$(grep -rnE '(api[_-]?key|secret|token|password)\s*[=:]\s*["\x27][A-Za-z0-9+/=]{20,}' --include='*.kt' --include='*.kts' --include='*.properties' -i . 2>/dev/null | grep -v 'test\|Test\|TEST\|example\|sample\|placeholder\|dummy\|TODO\|FIXME\|your_\|xxx\|REPLACE\|INSERT' | wc -l)
+          if [ "$GENERIC" -gt 0 ]; then
+            REPORT="$REPORT\n- 通用 API Key/Secret: ${GENERIC} 处"
+            FOUND=$((FOUND + GENERIC))
+          fi
+
+          if [ "$FOUND" -gt 0 ]; then
+            echo "### 🚨 发现疑似硬编码密钥" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "共 **${FOUND}** 处疑似泄露：" >> $GITHUB_STEP_SUMMARY
+            echo -e "$REPORT" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "请立即轮换相关密钥，并改用环境变量或 secrets 管理。" >> $GITHUB_STEP_SUMMARY
+            # 不阻断，仅警告（避免误报阻塞流程）
+          else
+            echo "### ✅ 未发现硬编码密钥" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for .env / keystore in git
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 敏感文件检查" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          SENSITIVE_FILES=0
+          for pattern in '*.jks' '*.keystore' '.env' 'local.properties' 'google-services.json'; do
+            found=$(find . -name "$pattern" -not -path './.git/*' 2>/dev/null)
+            if [ -n "$found" ]; then
+              echo "- ⚠️ \`$pattern\` 已提交: $found" >> $GITHUB_STEP_SUMMARY
+              SENSITIVE_FILES=$((SENSITIVE_FILES + 1))
+            fi
+          done
+          if [ "$SENSITIVE_FILES" -eq 0 ]; then
+            echo "✅ 未发现敏感文件被提交" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ============================================================
+  # Job 4: 签名配置检查
+  # ============================================================
+  signing-config-check:
+    name: Signing Config Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check signing config
+        run: |
+          echo "## ✍️ 签名配置检查" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # 检查 build.gradle.kts 中是否有硬编码的签名密码
+          HARDCODED=$(grep -rn 'storePassword\|keyPassword' --include='*.kts' --include='*.gradle' . 2>/dev/null | grep -v 'localProperties\|getProperty\|findProperty\|//\|signingConfig' | wc -l)
+          if [ "$HARDCODED" -gt 0 ]; then
+            echo "### 🚨 发现硬编码签名密码" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "共 **${HARDCODED}** 处硬编码 storePassword/keyPassword，应改用 local.properties 或环境变量。" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ✅ 签名密码未硬编码" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # 检查 .gitignore 是否忽略 keystore
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if grep -q '\.jks\|\.keystore' .gitignore 2>/dev/null; then
+            echo "✅ .gitignore 已配置忽略 keystore 文件" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ .gitignore 未配置忽略 keystore 文件" >> $GITHUB_STEP_SUMMARY
+          fi

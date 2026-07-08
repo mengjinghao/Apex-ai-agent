@@ -1,0 +1,241 @@
+# ============================================================
+# Apex AI Agent · CI 主流水线
+# ------------------------------------------------------------
+# 触发：push 到 main/develop 分支，或任意 PR
+# 任务：编译检查 + 单元测试 + lint（不构建 APK，APK 构建见 release-apk.yml）
+# 设计：fail-fast，任何步骤失败即阻止合并
+# ============================================================
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '17'
+  GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.parallel=true -Xmx4g'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================
+  # Job 1: 编译检查 — 确保代码能编译通过（不跑测试，最快反馈）
+  # ============================================================
+  compile:
+    name: Compile Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK components
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;34.0.0" \
+            "cmake;3.22.1" \
+            "ndk;26.3.11579264" > /dev/null 2>&1 || true
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle
+          key: gradle-compile-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-compile-${{ runner.os }}-
+
+      - name: Fix gradle.properties for CI
+        run: |
+          # 移除硬编码的 Windows 路径
+          sed -i 's|-Djava.io.tmpdir=C:/Users/18119/AppData/Local/Temp|-Djava.io.tmpdir=/tmp|g' gradle.properties
+          sed -i 's|-Dobjectbox.properties=C:/Users/18119/Desktop/android-agent/.objectbox-build.properties||g' gradle.properties
+          # 创建 local.properties
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Compile all modules
+        run: ./gradlew compileDebugKotlin --no-daemon --continue 2>&1
+        # 注意：不用 || true，编译失败必须阻断
+
+      - name: Upload build reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-reports
+          path: |
+            **/build/reports/
+            **/build/outputs/logs/
+          retention-days: 7
+
+  # ============================================================
+  # Job 2: 单元测试 — 跑所有 testImplementation 的 JVM 单测
+  # ============================================================
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: compile
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK components
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;34.0.0" \
+            "cmake;3.22.1" \
+            "ndk;26.3.11579264" > /dev/null 2>&1 || true
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle
+          key: gradle-test-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-test-${{ runner.os }}-
+
+      - name: Fix gradle.properties for CI
+        run: |
+          sed -i 's|-Djava.io.tmpdir=C:/Users/18119/AppData/Local/Temp|-Djava.io.tmpdir=/tmp|g' gradle.properties
+          sed -i 's|-Dobjectbox.properties=C:/Users/18119/Desktop/android-agent/.objectbox-build.properties||g' gradle.properties
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon --continue 2>&1
+
+      - name: Generate test report
+        if: always()
+        run: |
+          echo "## Unit Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          # 统计通过/失败
+          PASSED=$(find . -path "*/build/test-results/testDebugUnitTest/*.xml" -exec grep -h 'testsuite ' {} \; | grep -o 'tests="[0-9]*"' | grep -o '[0-9]*' | awk '{s+=$1} END{print s}')
+          FAILED=$(find . -path "*/build/test-results/testDebugUnitTest/*.xml" -exec grep -h 'testsuite ' {} \; | grep -o 'failures="[0-9]*"' | grep -o '[0-9]*' | awk '{s+=$1} END{print s}')
+          ERRORS=$(find . -path "*/build/test-results/testDebugUnitTest/*.xml" -exec grep -h 'testsuite ' {} \; | grep -o 'errors="[0-9]*"' | grep -o '[0-9]*' | awk '{s+=$1} END{print s}')
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Passed | ${PASSED:-0} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed | ${FAILED:-0} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Errors | ${ERRORS:-0} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 14
+
+  # ============================================================
+  # Job 3: Lint 检查 — Android Lint + Kotlin 代码规范
+  # ============================================================
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: compile
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK components
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;34.0.0" \
+            "cmake;3.22.1" \
+            "ndk;26.3.11579264" > /dev/null 2>&1 || true
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle
+          key: gradle-lint-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-lint-${{ runner.os }}-
+
+      - name: Fix gradle.properties for CI
+        run: |
+          sed -i 's|-Djava.io.tmpdir=C:/Users/18119/AppData/Local/Temp|-Djava.io.tmpdir=/tmp|g' gradle.properties
+          sed -i 's|-Dobjectbox.properties=C:/Users/18119/Desktop/android-agent/.objectbox-build.properties||g' gradle.properties
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run Android Lint (app module)
+        run: ./gradlew :app:lintDebug --no-daemon 2>&1
+
+      - name: Upload lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: |
+            **/build/reports/lint-results-*.html
+            **/build/reports/lint-results-*.xml
+          retention-days: 14

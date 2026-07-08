@@ -131,11 +131,13 @@ jobs:
           fi
 
       - name: Build Release APKs
+        id: build_release
         if: steps.buildtype.outputs.build_type == 'release' || steps.buildtype.outputs.build_type == 'both'
-        run: ./gradlew assembleRelease --no-daemon --continue -x lint 2>&1 || true
+        continue-on-error: true
+        run: ./gradlew assembleRelease --no-daemon --continue -x lint 2>&1
 
       - name: Check build results
-        if: steps.buildtype.outputs.build_type == 'release' || steps.buildtype.outputs.build_type == 'both'
+        if: always() && (steps.buildtype.outputs.build_type == 'release' || steps.buildtype.outputs.build_type == 'both')
         run: |
           SUCCESS=""
           FAILED=""
@@ -165,8 +167,10 @@ jobs:
           fi
 
       - name: Build Debug APKs
+        id: build_debug
         if: steps.buildtype.outputs.build_type == 'debug' || steps.buildtype.outputs.build_type == 'both'
-        run: ./gradlew assembleDebug --no-daemon --continue -x lint 2>&1 || true
+        continue-on-error: true
+        run: ./gradlew assembleDebug --no-daemon --continue -x lint 2>&1
 
       - name: Collect APKs
         id: collect
