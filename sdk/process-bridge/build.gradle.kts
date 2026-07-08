@@ -1,5 +1,6 @@
 plugins {
     id("apex.android.library")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -14,7 +15,6 @@ android {
         buildConfig = true
     }
 
-    // Export AIDL sources to consuming modules
     publishing {
         singleVariant("release") {
             withSourcesJar()
@@ -28,4 +28,5 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
 }

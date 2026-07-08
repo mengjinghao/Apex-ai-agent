@@ -430,16 +430,8 @@ object ApexClient {
         suspend fun setEnabled(itemId: String, enabled: Boolean): BridgeResult<String> =
             invoke("market/setEnabled", mapOf("itemId" to itemId, "enabled" to enabled.toString()), "market")
 
-        suspend fun invokeModel(provider: String, modelName: String, prompt: String, maxTokens: Int = 2048): BridgeResult<String> =
-            invoke("market/invokeModel", mapOf(
-                "provider" to provider, "modelName" to modelName,
-                "prompt" to prompt, "maxTokens" to maxTokens.toString()
             ), "market")
 
-        suspend fun invokeLocalSkill(itemId: String, method: String, argsJson: String): BridgeResult<String> =
-            invoke("market/invokeLocalSkill", mapOf(
-                "itemId" to itemId, "method" to method, "argsJson" to argsJson
-            ), "market")
 
         suspend fun getOverview(): BridgeResult<String> = invoke("market/getOverview", emptyMap(), "market")
         suspend fun getUpdatable(): BridgeResult<String> = invoke("market/getUpdatable", emptyMap(), "market")

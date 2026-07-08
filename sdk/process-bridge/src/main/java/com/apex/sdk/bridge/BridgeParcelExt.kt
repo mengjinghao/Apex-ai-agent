@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonPrimitive
  *
  * AIDL 自动生成的 BuildConfig 类只有 getter/setter，业务代码应使用本扩展函数。
  */
-data class BridgeParcel(
+data class BridgeParcelExt(
     var method: String = "",
     var traceId: String = "",
     var args: ByteArray = ByteArray(0),
@@ -64,7 +64,7 @@ data class BridgeParcel(
     companion object {
         @JvmField
         val CREATOR = object : Parcelable.Creator<BridgeParcel> {
-            override fun createFromParcel(source: Parcel) = BridgeParcel(source)
+            override fun createFromParcel(source: Parcel) = BridgeParcelExt(source)
             override fun newArray(size: Int) = arrayOfNulls<BridgeParcel>(size)
         }
 
@@ -74,7 +74,7 @@ data class BridgeParcel(
         }
 
         fun success(method: String, traceId: String, resultBytes: ByteArray): BridgeParcel =
-            BridgeParcel(
+            BridgeParcelExt(
                 method = method,
                 traceId = traceId,
                 result = resultBytes,
@@ -85,7 +85,7 @@ data class BridgeParcel(
             success(method, traceId, json.encodeToString(JsonElement.serializer(), jsonElement).toByteArray(Charsets.UTF_8))
 
         fun failure(method: String, traceId: String, errorCode: Int, message: String): BridgeParcel =
-            BridgeParcel(
+            BridgeParcelExt(
                 method = method,
                 traceId = traceId,
                 errorCode = errorCode,
@@ -93,7 +93,7 @@ data class BridgeParcel(
             )
 
         fun request(method: String, traceId: String, argsBytes: ByteArray): BridgeParcel =
-            BridgeParcel(
+            BridgeParcelExt(
                 method = method,
                 traceId = traceId,
                 args = argsBytes
