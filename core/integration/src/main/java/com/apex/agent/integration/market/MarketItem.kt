@@ -2,7 +2,6 @@ package com.apex.agent.integration.market
 
 import kotlinx.serialization.Serializable
 import com.apex.agent.integration.api.IntegrationCategory
-import com.apex.agent.integration.api.IntegrationSourceType
 
 /**
  * 集成项状态。

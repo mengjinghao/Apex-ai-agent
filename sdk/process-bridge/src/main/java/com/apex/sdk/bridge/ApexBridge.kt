@@ -105,7 +105,7 @@ object ApexBridge {
             val timeout = defaultTimeoutMs
             val result = withTimeoutOrNull(timeout) {
                 suspendCancellableCoroutine<BridgeParcel> { cont ->
-                    val parcel = BridgeParcel.request(
+                    val parcel = BridgeParcelExt.request(
                         method = method,
                         traceId = traceId,
                         argsBytes = argsJson.toByteArray(Charsets.UTF_8)
@@ -115,7 +115,7 @@ object ApexBridge {
                         cont.resume(resp)
                     } catch (t: Throwable) {
                         cont.resume(
-                            BridgeParcel.failure(
+                            BridgeParcelExt.failure(
                                 method = method,
                                 traceId = traceId,
                                 errorCode = BridgeError.CODE_BUSINESS_FAILURE,
@@ -169,7 +169,7 @@ object ApexBridge {
         return withContext(Dispatchers.IO) {
             withTimeoutOrNull(defaultTimeoutMs * 4L) {
                 suspendCancellableCoroutine<BridgeResult<String>> { cont ->
-                    val parcel = BridgeParcel.request(
+                    val parcel = BridgeParcelExt.request(
                         method = method,
                         traceId = traceId,
                         argsBytes = argsJson.toByteArray(Charsets.UTF_8)
@@ -273,9 +273,9 @@ class ApkBridgeStubAdapter(private val internal: IApkBridgeInternal) : IApkBridg
         return try {
             val args = String(parcel.args, Charsets.UTF_8)
             val result = internal.invoke(parcel.method, args)
-            BridgeParcel.success(parcel.method, parcel.traceId, result.toByteArray(Charsets.UTF_8))
+            BridgeParcelExt.success(parcel.method, parcel.traceId, result.toByteArray(Charsets.UTF_8))
         } catch (t: Throwable) {
-            BridgeParcel.failure(
+            BridgeParcelExt.failure(
                 parcel.method,
                 parcel.traceId,
                 BridgeError.CODE_BUSINESS_FAILURE,
@@ -293,7 +293,7 @@ class ApkBridgeStubAdapter(private val internal: IApkBridgeInternal) : IApkBridg
                     callback.onProgress(percent, msg)
                 } catch (_: Throwable) {}
             }
-            val resp = BridgeParcel.success(parcel.method, parcel.traceId, result.toByteArray(Charsets.UTF_8))
+            val resp = BridgeParcelExt.success(parcel.method, parcel.traceId, result.toByteArray(Charsets.UTF_8))
             callback.onSuccess(resp)
         } catch (t: Throwable) {
             callback.onFailure(BridgeError.CODE_BUSINESS_FAILURE, t.message)

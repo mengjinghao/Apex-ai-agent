@@ -430,9 +430,6 @@ object ApexClient {
         suspend fun setEnabled(itemId: String, enabled: Boolean): BridgeResult<String> =
             invoke("market/setEnabled", mapOf("itemId" to itemId, "enabled" to enabled.toString()), "market")
 
-            ), "market")
-
-
         suspend fun getOverview(): BridgeResult<String> = invoke("market/getOverview", emptyMap(), "market")
         suspend fun getUpdatable(): BridgeResult<String> = invoke("market/getUpdatable", emptyMap(), "market")
         suspend fun generateMcpConfig(format: String = "APEX_AGENT"): BridgeResult<String> =
