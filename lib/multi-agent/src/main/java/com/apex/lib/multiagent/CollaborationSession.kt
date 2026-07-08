@@ -284,7 +284,7 @@ class CollaborationSession(
                     Triple(agentId, output, dur)
                 } catch (t: Throwable) {
                     val dur = System.currentTimeMillis() - startMs
-                    recordInvocation(agent, input, AgentOutput(result = "", success.let { false }), 0, dur, false, t.message)
+                    recordInvocation(agent, input, AgentOutput(result = "", false), 0, dur, false, t.message)
                     eventSink.tryEmit(MultiAgentEvent.AgentFailed(sessionId, agentId, t.message ?: "unknown"))
                     null
                 }

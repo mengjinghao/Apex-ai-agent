@@ -78,7 +78,7 @@ class CommandHistory(private val maxEntries: Int = 500) {
         } else {
             return null  // 已到顶
         }
-        return entries[cursor]
+        return entries.toList()[cursor]
     }
 
     /**

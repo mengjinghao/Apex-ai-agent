@@ -35,7 +35,7 @@ import java.io.File
 class MarketEngine(
     private val storageDir: File
 ) {
-    private const val TAG_SUB = "MarketEngine"
+    private val TAG_SUB = "MarketEngine"
 
     // ===== 子组件（lib 内部） =====
     /** 市场缓存。 */

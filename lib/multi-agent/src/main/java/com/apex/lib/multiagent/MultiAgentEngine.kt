@@ -55,12 +55,12 @@ class MultiAgentEngine {
         sessionId
     }
 
-    suspend fun executeSession(sessionId: String): BridgeResult<SessionResult> = bridgeRun {
+    suspend fun executeSession(sessionId: String): SessionResult = bridgeRun {
         val session = sessions[sessionId] ?: throw IllegalStateException("session not found: $sessionId")
         session.execute()
     }
 
-    suspend fun run(config: CollaborationConfig): BridgeResult<SessionResult> = bridgeRun {
+    suspend fun run(config: CollaborationConfig): SessionResult = bridgeRun {
         val sessionId = startSession(config).getOrNull() ?: throw IllegalStateException("failed to start session")
         executeSession(sessionId)
     }

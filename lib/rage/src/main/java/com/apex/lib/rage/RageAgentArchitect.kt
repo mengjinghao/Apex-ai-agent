@@ -254,7 +254,7 @@ class RageAgentArchitect {
         return coreAgents[agentId]!!.enabled
     }
 
-    fun getExecutionHistory(): List<ExecutionRecord> = executionHistory.toList()
+    fun fetchExecutionHistory(): List<ExecutionRecord> = executionHistory.toList()
     fun getTaskDetail(taskId: String): ExecutionRecord? = executionHistory.find { it.taskId == taskId }
     fun clearHistory(): Int { val n = executionHistory.size; executionHistory.clear(); return n }
     fun getBlackboardSnapshot(): Map<String, String> = blackboard.mapValues { it.value.value }
