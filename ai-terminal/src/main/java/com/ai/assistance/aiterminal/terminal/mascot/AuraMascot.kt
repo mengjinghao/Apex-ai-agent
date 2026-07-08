@@ -671,17 +671,17 @@ object AuraMascot {
         AuraForm.LOADING -> "⏳"
         AuraForm.CELEBRATING -> "🎉"
         AuraForm.CURIOUS -> "👀"
-        AuraForm.SHIELDING -> "🛡️",
-        AuraForm.REMEMBERING -> "🧠",
-        AuraForm.ANALYZING -> "🔍",
-        AuraForm.LEARNING -> "📚",
-        AuraForm.NETWORKING -> "🌐",
-        AuraForm.ROOT -> "👑",
-        AuraForm.PLANNING -> "🗺️",
-        AuraForm.COMPILING -> "⚙️",
-        AuraForm.CONNECTING -> "🔌",
-        AuraForm.TOOLING -> "🛠️",
-        AuraForm.SKILLING -> "💎",
+        AuraForm.SHIELDING -> "🛡️"
+        AuraForm.REMEMBERING -> "🧠"
+        AuraForm.ANALYZING -> "🔍"
+        AuraForm.LEARNING -> "📚"
+        AuraForm.NETWORKING -> "🌐"
+        AuraForm.ROOT -> "👑"
+        AuraForm.PLANNING -> "🗺️"
+        AuraForm.COMPILING -> "⚙️"
+        AuraForm.CONNECTING -> "🔌"
+        AuraForm.TOOLING -> "🛠️"
+        AuraForm.SKILLING -> "💎"
         AuraForm.MCPING -> "🔗"
     }
 

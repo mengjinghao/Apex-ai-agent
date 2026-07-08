@@ -57,6 +57,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
     
     implementation("androidx.work:work-runtime-ktx:2.8.1")
+    implementation(project(":sdk:process-bridge"))
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     
     

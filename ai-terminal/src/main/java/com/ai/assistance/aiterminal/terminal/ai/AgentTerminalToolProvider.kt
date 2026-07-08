@@ -1,8 +1,8 @@
 package com.ai.assistance.aiterminal.terminal.ai
 
 import android.content.Context
-import com.apex.data.model.ToolParameterSchema
-import com.apex.data.model.ToolPrompt
+import com.ai.assistance.aiterminal.terminal.data.model.ToolParameterSchema
+import com.ai.assistance.aiterminal.terminal.data.model.ToolPrompt
 
 /**
  * Agent 终端工具提供者 — 把 [AgentTerminalExecutor] 的工具注册到 LLM Tool Call 系统
