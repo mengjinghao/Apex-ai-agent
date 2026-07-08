@@ -68,51 +68,51 @@ class RiskAssessor {
 
         // 复杂度
         factors.add(RiskFactor(
-            "complexity", factorWeights["complexity"]!!,
+            "complexity", factorWeights["complexity"] ?: 0f,
             context.taskComplexity / 5f,
-            factorWeights["complexity"]!! * context.taskComplexity / 5f
+            factorWeights["complexity"] ?: 0f * context.taskComplexity / 5f
         ))
 
         // 工具危险级
         factors.add(RiskFactor(
-            "toolDanger", factorWeights["toolDanger"]!!,
+            "toolDanger", factorWeights["toolDanger"] ?: 0f,
             context.toolDangerLevel / 5f,
-            factorWeights["toolDanger"]!! * context.toolDangerLevel / 5f
+            factorWeights["toolDanger"] ?: 0f * context.toolDangerLevel / 5f
         ))
 
         // 历史失败率
         factors.add(RiskFactor(
-            "failureRate", factorWeights["failureRate"]!!,
+            "failureRate", factorWeights["failureRate"] ?: 0f,
             context.historicalFailureRate,
-            factorWeights["failureRate"]!! * context.historicalFailureRate
+            factorWeights["failureRate"] ?: 0f * context.historicalFailureRate
         ))
 
         // 资源压力
         factors.add(RiskFactor(
-            "resourcePressure", factorWeights["resourcePressure"]!!,
+            "resourcePressure", factorWeights["resourcePressure"] ?: 0f,
             context.resourcePressure,
-            factorWeights["resourcePressure"]!! * context.resourcePressure
+            factorWeights["resourcePressure"] ?: 0f * context.resourcePressure
         ))
 
         // Root 权限
         factors.add(RiskFactor(
-            "rootRequired", factorWeights["rootRequired"]!!,
+            "rootRequired", factorWeights["rootRequired"] ?: 0f,
             if (context.isRootRequired) 1f else 0f,
-            if (context.isRootRequired) factorWeights["rootRequired"]!! else 0f
+            if (context.isRootRequired) factorWeights["rootRequired"] ?: 0f else 0f
         ))
 
         // 影响用户数据
         factors.add(RiskFactor(
-            "affectsUserData", factorWeights["affectsUserData"]!!,
+            "affectsUserData", factorWeights["affectsUserData"] ?: 0f,
             if (context.affectsUserData) 1f else 0f,
-            if (context.affectsUserData) factorWeights["affectsUserData"]!! else 0f
+            if (context.affectsUserData) factorWeights["affectsUserData"] ?: 0f else 0f
         ))
 
         // 不可逆
         factors.add(RiskFactor(
-            "irreversible", factorWeights["irreversible"]!!,
+            "irreversible", factorWeights["irreversible"] ?: 0f,
             if (!context.isReversible) 1f else 0f,
-            if (!context.isReversible) factorWeights["irreversible"]!! else 0f
+            if (!context.isReversible) factorWeights["irreversible"] ?: 0f else 0f
         ))
 
         val score = factors.sumOf { it.contribution.toDouble() }.toFloat().coerceIn(0f, 1f)
