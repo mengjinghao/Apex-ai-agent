@@ -1,5 +1,7 @@
 package com.apex.apk.market
 
+import com.apex.agent.integration.api.IntegrationCategory
+
 import android.content.Context
 import com.apex.agent.integration.api.IntegrationCenter
 import com.apex.agent.integration.api.IntegrationOverview
@@ -75,7 +77,7 @@ import kotlinx.coroutines.flow.SharedFlow
  */
 class MarketServiceFacade(private val context: Context) {
 
-    private const val TAG_SUB = "MarketFacade"
+    private val TAG_SUB = "MarketFacade"
 
     private var center: IntegrationCenter? = null
     private val _isInitialized = MutableStateFlow(false)

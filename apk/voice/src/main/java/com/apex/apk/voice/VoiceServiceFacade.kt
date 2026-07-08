@@ -75,7 +75,7 @@ import kotlin.coroutines.resume
  */
 class VoiceServiceFacade(private val context: Context) : TtsGateway, AsrGateway {
 
-    private const val TAG_SUB = "VoiceFacade"
+    private val TAG_SUB = "VoiceFacade"
 
     // ===== Android 资源 =====
     private var tts: TextToSpeech? = null

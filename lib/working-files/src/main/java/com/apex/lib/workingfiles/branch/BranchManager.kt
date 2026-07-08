@@ -115,7 +115,7 @@ class BranchManager(
      */
     fun switchToMain(filePath: String): Boolean {
         // 保存当前分支状态
-        val currentBranchId = activeBranch[filePath]
+        var currentBranchId = activeBranch[filePath]
         if (currentBranchId != null) {
             val branch = branches[currentBranchId]
             val file = File(filePath)

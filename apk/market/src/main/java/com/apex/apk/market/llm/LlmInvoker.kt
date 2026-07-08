@@ -1,5 +1,7 @@
 package com.apex.apk.market.llm
 
+import com.apex.agent.integration.api.IntegrationCategory
+
 import com.apex.agent.integration.category.models.BuiltinModelProviders
 import com.apex.agent.integration.installed.InstalledManager
 import com.apex.sdk.common.ApexLog

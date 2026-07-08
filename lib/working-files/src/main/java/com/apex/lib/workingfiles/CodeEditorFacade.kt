@@ -84,7 +84,7 @@ import java.io.File
 class CodeEditorFacade(
     private val context: android.content.Context
 ) {
-    private const val TAG_SUB = "CodeEditor"
+    private val TAG_SUB = "CodeEditor"
 
     private val baseDir = File(context.filesDir, "apex-code-editor").apply { mkdirs() }
     private val snapshotStorage = SnapshotStorage(File(baseDir, "snapshots"))

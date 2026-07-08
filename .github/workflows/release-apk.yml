@@ -139,11 +139,19 @@ jobs:
         run: |
           SUCCESS=""
           FAILED=""
-          for target in :apk:engine :apk:rage :apk:multi-agent :apk:workflow :apk:market :apk:working-files :apk:voice :app :apk:terminal; do
-            apk=$(find . -path "*/build/outputs/apk/release/*.apk" 2>/dev/null | grep "$target" | head -1)
+          # Find all built APKs
+          echo "=== All APK files found ==="
+          find . -path "*/build/outputs/apk/release/*.apk" 2>/dev/null | sort
+          echo "=== Checking each target ==="
+          for dir in apk/engine apk/rage apk/multi-agent apk/workflow apk/market apk/working-files apk/voice app apk/terminal; do
+            target=$(echo "$dir" | tr '/' ':')
+            target=":$target"
+            apk=$(find "$dir/build/outputs/apk/release" -name "*.apk" 2>/dev/null | head -1)
             if [ -n "$apk" ]; then
+              echo "✅ Found: $target -> $apk"
               SUCCESS="$SUCCESS $target"
             else
+              echo "❌ Missing: $target"
               FAILED="$FAILED $target"
             fi
           done
