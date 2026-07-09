@@ -155,8 +155,8 @@ class StreamGroupBuilder<TAG> {
         }
 
         return StreamGroup(
-                tag = tag!!,
-                stream = stream!!,
+                tag = requireNotNull(tag),
+                stream = requireNotNull(stream),
                 processor = processor,
                 children = children.toMutableList()
         )

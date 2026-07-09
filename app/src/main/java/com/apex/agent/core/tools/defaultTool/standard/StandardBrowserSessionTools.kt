@@ -307,7 +307,7 @@ class StandardBrowserSessionTools(internal val context: Context) : ToolExecutor 
         val code =
             when {
                 ref != null -> buildClickCode(session, ref, button, doubleClick, modifiers)
-                else -> buildClickCodeForSelector(selector!!, button, doubleClick, modifiers)
+                else -> buildClickCodeForSelector(requireNotNull(selector), button, doubleClick, modifiers)
             }
         val jsResult =
             when {
@@ -322,7 +322,7 @@ class StandardBrowserSessionTools(internal val context: Context) : ToolExecutor 
                 else ->
                     dispatchClickBySelector(
                         webView = session.webView,
-                        selector = selector!!,
+                        selector = requireNotNull(selector),
                         button = button,
                         modifiers = modifiers,
                         doubleClick = doubleClick

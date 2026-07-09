@@ -23,7 +23,7 @@ class Caretaker<T>(private val maxDepth: Int = 20) {
 
     fun save(originator: Originator<T>) {
         val memento = originator.createMemento()
-        if (currentMemento != null) undoStack.addLast(currentMemento!!)
+        if (currentMemento != null) undoStack.addLast(requireNotNull(currentMemento))
         if (undoStack.size > maxDepth) undoStack.removeFirst()
         currentMemento = memento
         redoStack.clear()
@@ -31,7 +31,7 @@ class Caretaker<T>(private val maxDepth: Int = 20) {
 
     fun undo(originator: Originator<T>): Boolean {
         val memento = undoStack.removeLastOrNull() ?: return false
-        redoStack.addLast(currentMemento!!)
+        redoStack.addLast(requireNotNull(currentMemento))
         if (redoStack.size > maxDepth) redoStack.removeFirst()
         currentMemento = memento
         return originator.restore(memento)
@@ -39,7 +39,7 @@ class Caretaker<T>(private val maxDepth: Int = 20) {
 
     fun redo(originator: Originator<T>): Boolean {
         val memento = redoStack.removeLastOrNull() ?: return false
-        undoStack.addLast(currentMemento!!)
+        undoStack.addLast(requireNotNull(currentMemento))
         currentMemento = memento
         return originator.restore(memento)
     }

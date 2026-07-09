@@ -111,7 +111,7 @@ class SmartSkillRouter {
      */
     private fun routeByRules(features: TaskFeatures): RoutingDecision {
         val candidates = ruleTable[features.taskType]
-            ?: ruleTable["reasoning"]!!
+            ?: ruleTable.getValue("reasoning")
 
         // 根据复杂度调整
         val adjusted = when {
@@ -202,7 +202,7 @@ class SmartSkillRouter {
         }
 
         // 随机分配
-        val candidates = ruleTable[features.taskType] ?: ruleTable["reasoning"]!!
+        val candidates = ruleTable[features.taskType] ?: ruleTable.getValue("reasoning")
         val chosen = candidates.random()
         abTestAssignments[taskId] = chosen
 

@@ -1112,13 +1112,13 @@ class MessageProcessingDelegate(
 
                 val waitDurationMs =
                     if (requestStartElapsed > 0L && firstResponseElapsed != null) {
-                        (firstResponseElapsed!! - requestStartElapsed).coerceAtLeast(0L)
+                        (requireNotNull(firstResponseElapsed) - requestStartElapsed).coerceAtLeast(0L)
                     } else {
                         0L
                     }
                 val outputDurationMs =
                     if (firstResponseElapsed != null) {
-                        (messageTimingNow() - firstResponseElapsed!!).coerceAtLeast(0L)
+                        (messageTimingNow() - requireNotNull(firstResponseElapsed)).coerceAtLeast(0L)
                     } else {
                         0L
                     }

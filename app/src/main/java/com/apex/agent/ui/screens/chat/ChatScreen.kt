@@ -79,7 +79,7 @@ fun ChatScreen(
         }, autoCompress, { autoCompress = it })
     }
     if (pendingCommand != null) {
-        CommandConfirmDialog(pendingCommand!!, { pendingCommand = null }, {
+        CommandConfirmDialog(requireNotNull(pendingCommand), { pendingCommand = null }, {
             // 确认执行 → 跳转终端 APK 执行
             launchApk(ApexSuite.ApkId.TERMINAL)
             pendingCommand = null
@@ -91,7 +91,7 @@ fun ChatScreen(
     // 切换会话时加载历史消息
     LaunchedEffect(currentSessionId) {
         if (currentSessionId != null && sessionManager != null) {
-            val stored = sessionManager.loadMessages(currentSessionId!!)
+            val stored = sessionManager.loadMessages(requireNotNull(currentSessionId))
             if (stored.isNotEmpty()) {
                 messages.clear()
                 messages.addAll(stored.map { it.toChatMessage() })

@@ -39,7 +39,7 @@ class ShizukuShellExecutor(private val context: Context) : ShellExecutor {
         val now = System.currentTimeMillis()
 
         if (now - lastPermissionCheckTime < PERMISSION_CACHE_TTL && cachedPermissionStatus != null) {
-            return cachedPermissionStatus!!
+            return requireNotNull(cachedPermissionStatus)
         }
 
         val status = try {
@@ -161,7 +161,7 @@ private class ShizukuShellProcess(
                 BufferedReader(InputStreamReader(inputStream)).use { reader ->
                     var line: String?
                     while (reader.readLine().also { line = it } != null && !destroyed) {
-                        emit(line!!)
+                        emit(requireNotNull(line))
                     }
                 }
             }
@@ -176,7 +176,7 @@ private class ShizukuShellProcess(
                 BufferedReader(InputStreamReader(errorStream)).use { reader ->
                     var line: String?
                     while (reader.readLine().also { line = it } != null && !destroyed) {
-                        emit(line!!)
+                        emit(requireNotNull(line))
                     }
                 }
             }

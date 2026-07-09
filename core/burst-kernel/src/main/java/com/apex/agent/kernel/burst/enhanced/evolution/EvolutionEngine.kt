@@ -182,7 +182,7 @@ class EvolutionEngine(
         val record = EvolutionRecord(
             generation = currentGen + 1,
             timestamp = System.currentTimeMillis(),
-            bestIndividual = _bestIndividual.value!!,
+            bestIndividual = requireNotNull(_bestIndividual.value),
             avgFitness = avgFitness,
             stage = _stage.value
         )
@@ -261,7 +261,7 @@ class EvolutionEngine(
         val child = mutableMapOf<String, Any>()
         val allKeys = config1.keys + config2.keys
         for (key in allKeys) {
-            child[key] = if (Math.random() < 0.5) config1[key] ?: config2[key]!! else config2[key] ?: config1[key]!!
+            child[key] = if (Math.random() < 0.5) config1[key] ?: config2.getValue(key) else config2[key] ?: config1.getValue(key)
         }
         return child
     }

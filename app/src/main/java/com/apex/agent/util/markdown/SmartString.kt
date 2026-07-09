@@ -42,13 +42,13 @@ class SmartString(initialContent: String = "") {
         val currentLength = builder.length
         
         // 如果长度没变且有缓存，直接返回缓�?       if (currentLength == lastLength && cachedString != null) {
-            return cachedString!!
+            return requireNotNull(cachedString)
         }
         
         // 内容已变化，重新生成字符串并缓存
         lastLength = currentLength
         cachedString = builder.toString()
-        return cachedString!!
+        return requireNotNull(cachedString)
     }
     
     /**

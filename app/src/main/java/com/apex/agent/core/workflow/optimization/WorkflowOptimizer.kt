@@ -429,9 +429,9 @@ class WorkflowStepOptimizer(private val name: String = "step-optimizer") {
         outputSizeHistory.computeIfAbsent(stepId) { mutableListOf() }.add(outputSize)
         executionTimeHistory.computeIfAbsent(stepId) { mutableListOf() }.add(durationMs)
 
-        trimHistory(inputSizeHistory[stepId]!!)
-        trimHistory(outputSizeHistory[stepId]!!)
-        trimHistory(executionTimeHistory[stepId]!!)
+        trimHistory(inputSizeHistory.getValue(stepId))
+        trimHistory(outputSizeHistory.getValue(stepId))
+        trimHistory(executionTimeHistory.getValue(stepId))
 
         val avgExecTime = executionTimeHistory[stepId]?.average() ?: durationMs.toDouble()
         val avgInputSize = inputSizeHistory[stepId]?.average() ?: inputSize.toDouble()
