@@ -1,6 +1,6 @@
 [versions]
 # 核心版本
-kotlin = "2.1.0"
+kotlin = "2.0.21"
 agp = "8.7.3"
 # AndroidX
 core-ktx = "1.10.1"
