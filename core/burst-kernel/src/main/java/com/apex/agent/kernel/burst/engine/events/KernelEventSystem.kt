@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.flow.map
 
 /**
  * E6: 内核事件系统
@@ -122,4 +123,3 @@ class KernelEventSystem {
     }
 }
 
-import kotlinx.coroutines.flow.map

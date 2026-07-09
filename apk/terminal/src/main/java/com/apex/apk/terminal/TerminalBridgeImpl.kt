@@ -56,17 +56,17 @@ class TerminalBridgeImpl(
                 when (method) {
                     "terminal/createNormalSession" -> {
                         val dir = args["workingDir"]?.jsonPrimitive?.content ?: "~"
-                        buildResult(facade.createNormalSession(dir)) { JsonPrimitive(it) }
+                        buildResult(facade.createNormalSession(dir)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "terminal/createMultiAgentSession" -> {
                         val dir = args["workingDir"]?.jsonPrimitive?.content ?: "~"
                         val agentId = args["agentId"]?.jsonPrimitive?.content ?: "builtin.supervisor"
-                        buildResult(facade.createMultiAgentSession(dir, agentId)) { JsonPrimitive(it) }
+                        buildResult(facade.createMultiAgentSession(dir, agentId)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "terminal/createBurstSession" -> {
                         val dir = args["workingDir"]?.jsonPrimitive?.content ?: "~"
                         val profile = args["burstProfile"]?.jsonPrimitive?.content ?: "BALANCED"
-                        buildResult(facade.createBurstSession(dir, profile)) { JsonPrimitive(it) }
+                        buildResult(facade.createBurstSession(dir, profile)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "terminal/writeInput" -> {
                         val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
@@ -87,7 +87,7 @@ class TerminalBridgeImpl(
                     }
                     "terminal/destroySession" -> {
                         val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.destroySession(sessionId)) { JsonPrimitive(it) }
+                        buildResult(facade.destroySession(sessionId)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "terminal/listSessions" -> {
                         val list = facade.listSessions()

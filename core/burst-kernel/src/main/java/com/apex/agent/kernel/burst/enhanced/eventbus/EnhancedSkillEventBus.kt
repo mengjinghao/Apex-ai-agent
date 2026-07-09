@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.filter
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.flow.map
 
 /**
  * B26: 技能事件总线增强
@@ -187,4 +188,3 @@ class EnhancedSkillEventBus(
 }
 
 // 导入 map
-import kotlinx.coroutines.flow.map
