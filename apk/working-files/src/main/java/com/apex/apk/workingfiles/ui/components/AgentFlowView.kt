@@ -109,7 +109,7 @@ private fun SessionHeader(session: AgentSession) {
                 text = session.agentName,
                 color = CodeColors.EditorForeground,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SEMIBOLD
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(8.dp))
             Surface(
@@ -173,7 +173,7 @@ private fun StatItem(label: String, value: String, color: Color) {
             text = value,
             color = color,
             fontSize = 16.sp,
-            fontWeight = FontWeight.SEMIBOLD,
+            fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.Monospace
         )
         Text(
@@ -249,7 +249,7 @@ private fun StepCard(
                     text = step.type.displayName,
                     color = dotColor,
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.SEMIBOLD
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -263,7 +263,7 @@ private fun StepCard(
                 text = step.title,
                 color = CodeColors.EditorForeground,
                 fontSize = 13.sp,
-                fontWeight = FontWeight.MEDIUM
+                fontWeight = FontWeight.Normal
             )
             if (step.description.isNotBlank()) {
                 Text(

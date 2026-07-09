@@ -69,7 +69,7 @@ fun BranchManagerView(
                 text = "虚拟分支",
                 color = CodeColors.EditorForeground,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.SEMIBOLD
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.weight(1f))
             // main 状态
@@ -167,7 +167,7 @@ private fun BranchItem(
                 text = name,
                 color = CodeColors.EditorForeground,
                 fontSize = 13.sp,
-                fontWeight = FontWeight.MEDIUM,
+                fontWeight = FontWeight.Normal,
                 fontFamily = FontFamily.Monospace
             )
             Spacer(modifier = Modifier.width(8.dp))

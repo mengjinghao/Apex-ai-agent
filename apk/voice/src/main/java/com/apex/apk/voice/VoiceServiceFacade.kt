@@ -324,7 +324,6 @@ class VoiceServiceFacade(private val context: Context) : TtsGateway, AsrGateway 
     suspend fun startListening(sessionId: String): BridgeResult<String> = engine.startListening(sessionId)
 
     /** 停止监听（会话式）。 */
-    suspend fun stopListening(sessionId: String): BridgeResult<Unit> = engine.stopListening(sessionId)
 
     /** 取消识别（会话式）。 */
     suspend fun cancelListening(sessionId: String): BridgeResult<Unit> = engine.cancelListening(sessionId)

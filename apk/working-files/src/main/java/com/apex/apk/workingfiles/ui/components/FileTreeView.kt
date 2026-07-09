@@ -54,7 +54,7 @@ fun FileTreeView(
                     text = "资源管理器",
                     color = CodeColors.EditorForeground,
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.SEMIBOLD,
+                    fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
                 )
             }

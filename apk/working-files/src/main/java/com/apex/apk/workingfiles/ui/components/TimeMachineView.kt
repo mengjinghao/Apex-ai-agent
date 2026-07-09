@@ -69,7 +69,7 @@ fun TimeMachineView(
                 text = "时间机器",
                 color = CodeColors.EditorForeground,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.SEMIBOLD
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(

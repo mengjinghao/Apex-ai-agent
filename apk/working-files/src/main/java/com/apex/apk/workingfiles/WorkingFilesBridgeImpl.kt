@@ -36,7 +36,7 @@ class WorkingFilesBridgeImpl(
                     }
                     "workingfiles/unbindFolder" -> {
                         val id = args["folderId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.unbindFolder(id)) { JsonPrimitive(it) }
+                        buildResult(facade.unbindFolder(id)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/listFolders" -> {
                         val list = facade.listFolders()
@@ -70,29 +70,29 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/readFile" -> {
                         val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
                         val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.readFile(folderId, relPath)) { JsonPrimitive(it) }
+                        buildResult(facade.readFile(folderId, relPath)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/writeFile" -> {
                         val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
                         val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
                         val content = args["content"]?.jsonPrimitive?.content ?: ""
                         val append = args["append"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false
-                        buildResult(facade.writeFile(folderId, relPath, content, append)) { JsonPrimitive(it) }
+                        buildResult(facade.writeFile(folderId, relPath, content, append)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/deleteFile" -> {
                         val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
                         val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.deleteFile(folderId, relPath)) { JsonPrimitive(it) }
+                        buildResult(facade.deleteFile(folderId, relPath)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/createDirectory" -> {
                         val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
                         val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.createDirectory(folderId, relPath)) { JsonPrimitive(it) }
+                        buildResult(facade.createDirectory(folderId, relPath)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/exists" -> {
                         val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
                         val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.exists(folderId, relPath)) { JsonPrimitive(it) }
+                        buildResult(facade.exists(folderId, relPath)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/loadCodeFile" -> {
                         val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
@@ -234,11 +234,11 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/restoreSnapshot" -> {
                         val id = args["snapshotId"]?.jsonPrimitive?.content ?: ""
                         val operator = args["operator"]?.jsonPrimitive?.content ?: "user"
-                        buildResult(facade.restoreSnapshot(id, operator)) { JsonPrimitive(it) }
+                        buildResult(facade.restoreSnapshot(id, operator)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/deleteAllSnapshots" -> {
                         val filePath = args["filePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.deleteAllSnapshots(filePath)) { JsonPrimitive(it) }
+                        buildResult(facade.deleteAllSnapshots(filePath)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/computeDiff" -> {
                         val old = args["oldContent"]?.jsonPrimitive?.content ?: ""
@@ -313,7 +313,7 @@ class WorkingFilesBridgeImpl(
                         val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
                         val finalResult = args["finalResult"]?.jsonPrimitive?.content
                         val status = args["status"]?.jsonPrimitive?.content ?: "COMPLETED"
-                        buildResult(facade.finishAgentSession(sessionId, finalResult, status)) { JsonPrimitive(it) }
+                        buildResult(facade.finishAgentSession(sessionId, finalResult, status)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/getAgentFlow" -> {
                         val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
@@ -384,7 +384,7 @@ class WorkingFilesBridgeImpl(
                     }
                     "workingfiles/deleteAgentSession" -> {
                         val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.deleteAgentSession(sessionId)) { JsonPrimitive(it) }
+                        buildResult(facade.deleteAgentSession(sessionId)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/getSnapshotStats" -> {
                         val stats = facade.getSnapshotStats()
@@ -415,11 +415,11 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/switchToBranch" -> {
                         val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
                         val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.switchToBranch(fp, bid)) { JsonPrimitive(it) }
+                        buildResult(facade.switchToBranch(fp, bid)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/switchToMain" -> {
                         val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.switchToMain(fp)) { JsonPrimitive(it) }
+                        buildResult(facade.switchToMain(fp)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/mergeBranch" -> {
                         val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
@@ -431,14 +431,14 @@ class WorkingFilesBridgeImpl(
                                 put("newSnapshotId", r.newSnapshotId ?: "")
                                 if (r.conflict != null) {
                                     put("hasConflict", true)
-                                    put("conflictLines", r.conflict.conflictLines)
+                                    put("conflictLines", r.conflictVal.conflictLines)
                                 }
                             }
                         }
                     }
                     "workingfiles/discardBranch" -> {
                         val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.discardBranch(bid)) { JsonPrimitive(it) }
+                        buildResult(facade.discardBranch(bid)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/listBranches" -> {
                         val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
@@ -477,7 +477,7 @@ class WorkingFilesBridgeImpl(
                     }
                     "workingfiles/deleteBranch" -> {
                         val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.deleteBranch(bid)) { JsonPrimitive(it) }
+                        buildResult(facade.deleteBranch(bid)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
 
                     // ===== Apex 独有增强：智能回退 =====
@@ -547,7 +547,7 @@ class WorkingFilesBridgeImpl(
                     // ===== Apex 独有增强：时间机器 =====
                     "workingfiles/loadTimeMachine" -> {
                         val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.loadTimeMachine(fp)) { JsonPrimitive(it) }
+                        buildResult(facade.loadTimeMachine(fp)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/timeMachineJumpTo" -> {
                         val idx = args["index"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
@@ -595,15 +595,15 @@ class WorkingFilesBridgeImpl(
                     }
                     "workingfiles/releaseFileLock" -> {
                         val token = args["token"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.releaseFileLock(token)) { JsonPrimitive(it) }
+                        buildResult(facade.releaseFileLock(token)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/releaseAllLocksForAgent" -> {
                         val aid = args["agentId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.releaseAllLocksForAgent(aid)) { JsonPrimitive(it) }
+                        buildResult(facade.releaseAllLocksForAgent(aid)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/isFileLocked" -> {
                         val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.isFileLocked(fp)) { JsonPrimitive(it) }
+                        buildResult(facade.isFileLocked(fp)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/getFileLockStatus" -> {
                         val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
@@ -640,7 +640,7 @@ class WorkingFilesBridgeImpl(
                     // ===== Apex 独有增强：变更回放 =====
                     "workingfiles/loadReplayer" -> {
                         val sid = args["sessionId"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.loadReplayer(sid)) { JsonPrimitive(it) }
+                        buildResult(facade.loadReplayer(sid)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/playReplay" -> {
                         val speed = args["speed"]?.jsonPrimitive?.content?.toFloatOrNull() ?: 1.0f
@@ -667,7 +667,7 @@ class WorkingFilesBridgeImpl(
                         buildResult(facade.setReplaySpeed(speed)) { JsonObject(emptyMap()) }
                     }
                     "workingfiles/replayProgress" -> {
-                        buildResult(facade.replayProgress()) { JsonPrimitive(it) }
+                        buildResult(facade.replayProgress()) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/bindFolderByUri" -> {
                         val id = args["folderId"]?.jsonPrimitive?.content ?: ""
@@ -691,14 +691,14 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/readFileByUri" -> {
                         val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
                         val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
-                        buildResult(facade.readFileByUri(folderId, relPath)) { JsonPrimitive(it) }
+                        buildResult(facade.readFileByUri(folderId, relPath)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     "workingfiles/writeFileByUri" -> {
                         val folderId = args["folderId"]?.jsonPrimitive?.content ?: ""
                         val relPath = args["relativePath"]?.jsonPrimitive?.content ?: ""
                         val content = args["content"]?.jsonPrimitive?.content ?: ""
                         val append = args["append"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false
-                        buildResult(facade.writeFileByUri(folderId, relPath, content, append)) { JsonPrimitive(it) }
+                        buildResult(facade.writeFileByUri(folderId, relPath, content, append)) { buildJsonObject { put("result", JsonPrimitive(it)) } }
                     }
                     else -> errorResponse("unknown method: $method")
                 }

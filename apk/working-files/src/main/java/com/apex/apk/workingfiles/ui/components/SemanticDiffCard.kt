@@ -54,7 +54,7 @@ fun SemanticDiffCard(
                     text = semantic.changeType.displayName,
                     color = changeTypeColor(semantic.changeType),
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.SEMIBOLD
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = semantic.summary,
@@ -76,7 +76,7 @@ fun SemanticDiffCard(
                 text = "影响范围",
                 color = CodeColors.LineNumberForeground,
                 fontSize = 10.sp,
-                fontWeight = FontWeight.SEMIBOLD
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             semantic.affectedSymbols.take(5).forEach { symbol ->
@@ -125,7 +125,7 @@ fun SemanticDiffCard(
                             text = "破坏性变更 (${semantic.breakingChanges.size})",
                             color = CodeColors.Error,
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.SEMIBOLD
+                            fontWeight = FontWeight.Bold
                         )
                     }
                     semantic.breakingChanges.forEach { change ->
@@ -175,7 +175,7 @@ private fun RiskBadge(riskLevel: RiskLevel) {
             text = "${riskLevel.displayName}风险",
             color = color,
             fontSize = 10.sp,
-            fontWeight = FontWeight.MEDIUM,
+            fontWeight = FontWeight.Normal,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
         )
     }

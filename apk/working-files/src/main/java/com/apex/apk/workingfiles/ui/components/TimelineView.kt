@@ -69,7 +69,7 @@ fun TimelineView(
                 text = "时间线",
                 color = CodeColors.EditorForeground,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.SEMIBOLD
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(

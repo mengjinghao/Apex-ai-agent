@@ -168,7 +168,7 @@ class MainActivity : ComponentActivity() {
                                             if (snapR is com.apex.sdk.common.BridgeResult.Success) {
                                                 snapR.value?.let { s ->
                                                     fileContent = s.content
-                                                    fileLanguage = CodePreview.detectLanguage(s.relativePath)
+                                                    fileLanguage = Text.detectLanguage(s.relativePath)
                                                     selectedFilePath = s.filePath
                                                     // 加载与当前的 diff
                                                     val diffR = withContext(Dispatchers.IO) { f.diffWithCurrent(snap.id) }
@@ -334,7 +334,7 @@ class MainActivity : ComponentActivity() {
                     text = "Agent 会话",
                     color = CodeColors.EditorForeground,
                     fontSize = 12.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.SEMIBOLD
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -358,7 +358,7 @@ class MainActivity : ComponentActivity() {
                             text = session.agentName + " · " + session.mode.displayName,
                             color = CodeColors.EditorForeground,
                             fontSize = 12.sp,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.MEDIUM
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Normal
                         )
                         Text(
                             text = session.taskDescription,
