@@ -156,7 +156,7 @@ class SkillBenchmark(private val context: Context) {
 
     private fun measureLoadTime(toolPackage: ToolPackage): Long {
         val startTime = System.currentTimeMillis()
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 toolPackage.tools.forEach { tool ->
                     if (tool.script.isNotBlank()) {
@@ -169,7 +169,7 @@ class SkillBenchmark(private val context: Context) {
 
     private fun measureScriptParseTime(scriptContent: String): Long {
         val startTime = System.currentTimeMillis()
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 scriptContent.toString()
             }
@@ -178,7 +178,7 @@ class SkillBenchmark(private val context: Context) {
     }
 
     private fun runToolWarmup(toolPackage: ToolPackage) {
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 toolPackage.tools.firstOrNull()?.let { tool ->
                     if (tool.script.isNotBlank()) {
@@ -189,7 +189,7 @@ class SkillBenchmark(private val context: Context) {
     }
 
     private fun warmupScript(scriptContent: String) {
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 scriptContent.hashCode()
             }
@@ -198,7 +198,7 @@ class SkillBenchmark(private val context: Context) {
 
     private fun measureToolExecutionTime(toolPackage: ToolPackage): Long {
         val startTime = System.currentTimeMillis()
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 toolPackage.tools.forEachIndexed { index, tool ->
                     if (tool.script.isNotBlank() && index < 3) {
@@ -211,7 +211,7 @@ class SkillBenchmark(private val context: Context) {
 
     private fun measureScriptExecutionTime(scriptContent: String): Long {
         val startTime = System.currentTimeMillis()
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 repeat(10) {
                     scriptContent.length

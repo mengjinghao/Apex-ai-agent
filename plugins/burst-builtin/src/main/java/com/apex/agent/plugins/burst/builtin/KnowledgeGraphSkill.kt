@@ -3,8 +3,10 @@ package com.apex.agent.plugins.burst.builtin
 import com.apex.agent.domain.model.BurstTask
 import com.apex.agent.plugins.burst.base.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync
+import kotlinx.coroutines.Dispatchers.Mutex
+import kotlinx.coroutines.sync
+import kotlinx.coroutines.Dispatchers.withLock
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -48,7 +50,7 @@ class KnowledgeGraphSkill : IBurstSkill {
         this.context = context
     }
     
-    override fun execute(task: BurstTask): BurstSkillResult = runBlocking {
+    override fun execute(task: BurstTask): BurstSkillResult = runBlocking(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
         
         try {
@@ -111,7 +113,7 @@ class KnowledgeGraphSkill : IBurstSkill {
         relation.id
     }
     
-    fun buildFromText(text: String): List<String> = runBlocking {
+    fun buildFromText(text: String): List<String> = runBlocking(Dispatchers.IO) {
         val entityIds = mutableListOf<String>()
         val sentences = text.split(Regex("[.!?]+")).filter { it.isNotBlank() }
         

@@ -1,5 +1,7 @@
 package com.apex.agent.core.tools.defaultTool.standard
 
+import kotlinx.coroutines.Dispatchers
+
 import android.content.Context
 import com.apex.agent.R
 import com.apex.agent.util.AppLogger
@@ -25,7 +27,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
 
     /** 创建或获取一个终端会�?
     fun createOrGetSession(tool: AITool): ToolResult {
-        return runBlocking {
+        return runBlocking(Dispatchers.IO) {
             try {
                 val sessionName = tool.parameters.find { it.name == "session_name" }?.value
                 if (sessionName.isNullOrBlank()) {
@@ -79,7 +81,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
 
     /** 在指定的终端会话中执行命�?/
     fun executeCommandInSession(tool: AITool): ToolResult {
-        return runBlocking {
+        return runBlocking(Dispatchers.IO) {
             try {
                 val command = tool.parameters.find { param -> param.name == "command" }?.value ?: ""
                 val sessionId = tool.parameters.find { param -> param.name == "session_id" }?.value
@@ -190,7 +192,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
 
     /** 在隐藏终端执行器中执行命�?/
     fun executeHiddenCommand(tool: AITool): ToolResult {
-        return runBlocking {
+        return runBlocking(Dispatchers.IO) {
             try {
                 val command = tool.parameters.find { it.name == "command" }?.value ?: ""
                 if (command.isBlank()) {
@@ -271,7 +273,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
 
     /** 向指定的终端会话写入输入 */
     fun inputInSession(tool: AITool): ToolResult {
-        return runBlocking {
+        return runBlocking(Dispatchers.IO) {
             val sessionId = tool.parameters.find { it.name == "session_id" }?.value
             try {
                 if (sessionId.isNullOrBlank()) {
@@ -349,7 +351,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
 
     /** 关闭一个终端会�?
     fun closeSession(tool: AITool): ToolResult {
-        return runBlocking {
+        return runBlocking(Dispatchers.IO) {
             val sessionId = tool.parameters.find { it.name == "session_id" }?.value
             try {
                 if (sessionId.isNullOrBlank()) {
@@ -390,7 +392,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
 
     /** 获取终端会话当前屏幕内容（不包含历史滚动缓冲�?/
     fun getSessionScreen(tool: AITool): ToolResult {
-        return runBlocking {
+        return runBlocking(Dispatchers.IO) {
             val sessionId = tool.parameters.find { it.name == "session_id" }?.value
             try {
                 if (sessionId.isNullOrBlank()) {

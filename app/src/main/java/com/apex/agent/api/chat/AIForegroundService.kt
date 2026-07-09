@@ -209,7 +209,7 @@ chatId
 }")                if (ActivityLifecycleManager.getCurrentActivity() != null) {
                     AppLogger.d(TAG, "应用在前台，无需发送会话完成通知")                    return
 }
-                val appContext = context.applicationContext                val displayPreferences = DisplayPreferencesManager.getInstance(appContext)                val enableReplyNotification = runBlocking {
+                val appContext = context.applicationContext                val displayPreferences = DisplayPreferencesManager.getInstance(appContext)                val enableReplyNotification = runBlocking(Dispatchers.IO) {
                     displayPreferences.enableReplyNotification.first()
 }
                 if (!enableReplyNotification) {
@@ -220,10 +220,10 @@ chatId
 chatId
 }")                    return
 }
-                val enableReplyNotificationSound = runBlocking {
+                val enableReplyNotificationSound = runBlocking(Dispatchers.IO) {
                     displayPreferences.enableReplyNotificationSound.first()
 }
-                val enableReplyNotificationVibration = runBlocking {
+                val enableReplyNotificationVibration = runBlocking(Dispatchers.IO) {
                     displayPreferences.enableReplyNotificationVibration.first()
 }
                 val replyChannelId =                    ensureReplyNotificationChannel(                        context = appContext,                        enableSound = enableReplyNotificationSound,                        enableVibration = enableReplyNotificationVibration                    )                val cleanedReplyContent = WaifuMessageProcessor.cleanContentForWaifu(rawReplyContent)                var notificationDefaults = NotificationCompat.DEFAULT_LIGHTS                if (enableReplyNotificationSound) {
@@ -352,7 +352,7 @@ e.message
 }
         private fun hasPersistentForegroundResponsibilityConfigured(context: Context): Boolean {
             val appContext = context.applicationContext            val alwaysListeningEnabled = runCatching {
-                runBlocking {
+                runBlocking(Dispatchers.IO) {
                     WakeWordPreferences(appContext).alwaysListeningEnabledFlow.first()
 }
 
@@ -706,7 +706,7 @@ shouldHide
 }
     private fun isAlwaysListeningEnabledNow(): Boolean {
         return try {
-            runBlocking {
+            runBlocking(Dispatchers.IO) {
  wakePrefs.alwaysListeningEnabledFlow.first()
 }
 

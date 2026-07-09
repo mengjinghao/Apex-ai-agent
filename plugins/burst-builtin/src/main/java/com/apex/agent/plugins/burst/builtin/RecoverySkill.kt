@@ -1,5 +1,7 @@
 package com.apex.agent.plugins.burst.builtin
 
+import kotlinx.coroutines.Dispatchers
+
 import com.apex.agent.domain.model.BurstTask
 import com.apex.agent.plugins.burst.base.*
 import kotlinx.coroutines.*
@@ -42,7 +44,7 @@ class RecoverySkill : IBurstSkill {
         this.context = context
     }
     
-    override fun execute(task: BurstTask): BurstSkillResult = runBlocking {
+    override fun execute(task: BurstTask): BurstSkillResult = runBlocking(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
         
         try {
@@ -74,7 +76,7 @@ class RecoverySkill : IBurstSkill {
                     val result = recoverTask(checkpointId)
                     
                     val suggestions = if (!result.success && context.utilityProcessor?.isEnabled == true) {
-                        runBlocking {
+                        runBlocking(Dispatchers.IO) {
                             context.utilityProcessor!!.suggestRecovery(result.message)
                         }
                     } else emptyList()

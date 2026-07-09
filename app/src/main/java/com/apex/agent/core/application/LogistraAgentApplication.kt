@@ -394,10 +394,10 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
 
     private fun startGlobalAIForegroundServiceIfNeeded() {
         try {
-            // val alwaysListeningEnabled = runBlocking {
+            // val alwaysListeningEnabled = runBlocking(Dispatchers.IO) {
             //     WakeWordPreferences(applicationContext).alwaysListeningEnabledFlow.first()
             // }
-            val externalHttpEnabled = runBlocking {
+            val externalHttpEnabled = runBlocking(Dispatchers.IO) {
                 ExternalHttpApiPreferences.getInstance(applicationContext).enabledFlow.first()
             }
             if ((/* !alwaysListeningEnabled &amp;&amp; */ !externalHttpEnabled) || AIForegroundService.isRunning.get()) {
@@ -420,7 +420,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
     private fun initializeAppLanguage() {
         try {
             // 同步获取已保存的语言设置
-            val languageCode = runBlocking {
+            val languageCode = runBlocking(Dispatchers.IO) {
                 try {
                     // 使用更安全的方式检查preferencesManager
                     val manager = runCatching { preferencesManager }.getOrNull()

@@ -53,7 +53,7 @@ class ProblemLibraryTool private constructor(private val context: Context) {
 
     private val memoryRepository: MemoryRepository
         get() {
-            val profileId = kotlinx.coroutines.runBlocking {
+            val profileId = kotlinx.coroutines.runBlocking(Dispatchers.IO) {
                 com.apex.data.preferences.preferencesManager.activeProfileIdFlow.first()
             }
             return MemoryRepository(context, profileId)
@@ -113,7 +113,7 @@ class ProblemLibraryTool private constructor(private val context: Context) {
     @Deprecated("This method saves to a legacy data structure.")
     fun saveProblemRecord(record: ProblemRecord) {
         AppLogger.d(TAG, "[Legacy] 开始保存问题记�?UUID: ${record.uuid}")
-        kotlinx.coroutines.runBlocking {
+        kotlinx.coroutines.runBlocking(Dispatchers.IO) {
             try {
                 // 转换为Memory对象
                 val memory = convertToMemory(record)
@@ -138,7 +138,7 @@ class ProblemLibraryTool private constructor(private val context: Context) {
 
     // 获取所有问题记�?   @Deprecated("This method retrieves legacy data.")
     fun getAllProblemRecords(): List<ProblemRecord> {
-        return kotlinx.coroutines.runBlocking {
+        return kotlinx.coroutines.runBlocking(Dispatchers.IO) {
             try {
                 // 查询带有ProblemLibrary标签的所有Memory
                 val memories = memoryRepository.searchMemories("ProblemLibrary_Legacy")
@@ -177,7 +177,7 @@ class ProblemLibraryTool private constructor(private val context: Context) {
     // 删除问题记录
     @Deprecated("This method deletes legacy data.")
     fun deleteProblemRecord(uuid: String): Boolean {
-        return kotlinx.coroutines.runBlocking {
+        return kotlinx.coroutines.runBlocking(Dispatchers.IO) {
             try {
                 val memory = memoryRepository.getMemoryByUuid(uuid)
                 if (memory != null) {

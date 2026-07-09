@@ -3,8 +3,10 @@ package com.apex.agent.plugins.burst.builtin
 import com.apex.agent.domain.model.BurstTask
 import com.apex.agent.plugins.burst.base.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.sync
+import kotlinx.coroutines.Dispatchers.Semaphore
+import kotlinx.coroutines.sync
+import kotlinx.coroutines.Dispatchers.withPermit
 
 /**
  * 流处理器技能
@@ -43,7 +45,7 @@ class StreamProcessorSkill : IBurstSkill {
         this.context = context
     }
     
-    override fun execute(task: BurstTask): BurstSkillResult = runBlocking {
+    override fun execute(task: BurstTask): BurstSkillResult = runBlocking(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
         
         try {
@@ -84,7 +86,7 @@ class StreamProcessorSkill : IBurstSkill {
             
             val rawResult = results.joinToString("")
             val finalResult = if (context.utilityProcessor?.isEnabled == true && rawResult.length > 100) {
-                runBlocking {
+                runBlocking(Dispatchers.IO) {
                     context.utilityProcessor!!.formatForContext(rawResult, rawResult.length)
                 }
             } else rawResult

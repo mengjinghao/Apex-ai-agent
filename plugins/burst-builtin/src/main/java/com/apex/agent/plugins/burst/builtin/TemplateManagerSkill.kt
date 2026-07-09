@@ -1,5 +1,7 @@
 package com.apex.agent.plugins.burst.builtin
 
+import kotlinx.coroutines.Dispatchers
+
 import com.apex.agent.domain.model.BurstTask
 import com.apex.agent.plugins.burst.base.*
 import kotlinx.coroutines.*
@@ -40,7 +42,7 @@ class TemplateManagerSkill : IBurstSkill {
         this.context = context
     }
     
-    override fun execute(task: BurstTask): BurstSkillResult = runBlocking {
+    override fun execute(task: BurstTask): BurstSkillResult = runBlocking(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
         
         try {
@@ -53,7 +55,7 @@ class TemplateManagerSkill : IBurstSkill {
                     val templateDescription = task.metadata["description"] ?: ""
                     val rawFiles = task.input.text ?: ""
                     val files = if (context.utilityProcessor?.isEnabled == true && rawFiles.isNotBlank()) {
-                        val cleaned = runBlocking { context.utilityProcessor!!.cleanResponse(rawFiles) }
+                        val cleaned = runBlocking(Dispatchers.IO) { context.utilityProcessor!!.cleanResponse(rawFiles) }
                         cleaned.split("\n").filter { it.isNotBlank() }
                     } else {
                         rawFiles.split("\n").filter { it.isNotBlank() }

@@ -5,10 +5,14 @@ import com.apex.agent.core.cache.CachePolicy
 import com.apex.agent.core.cache.CacheStats
 import com.apex.agent.core.cache.ICacheStore
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow
+import kotlinx.coroutines.Dispatchers.Flow
+import kotlinx.coroutines.flow
+import kotlinx.coroutines.Dispatchers.MutableStateFlow
+import kotlinx.coroutines.flow
+import kotlinx.coroutines.Dispatchers.asStateFlow
+import kotlinx.coroutines.flow
+import kotlinx.coroutines.Dispatchers.map
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
@@ -100,16 +104,16 @@ class AsyncCacheStore<V>(
     fun getPendingCount(): Long = pendingOperations.get()
     fun getFailedCount(): Long = failedOperations.get()
 
-    override fun get(key: String): CacheEntry<V>? = runBlocking { getAsync(key)?.let { CacheEntry(key, it) } }
-    override fun put(entry: CacheEntry<V>) { runBlocking { putAsync(entry.key, entry.value, entry.ttl) } }
-    override fun remove(key: String): Boolean = runBlocking { removeAsync(key) }
+    override fun get(key: String): CacheEntry<V>? = runBlocking(Dispatchers.IO) { getAsync(key)?.let { CacheEntry(key, it) } }
+    override fun put(entry: CacheEntry<V>) { runBlocking(Dispatchers.IO) { putAsync(entry.key, entry.value, entry.ttl) } }
+    override fun remove(key: String): Boolean = runBlocking(Dispatchers.IO) { removeAsync(key) }
     override fun clear() { delegate.clear() }
     override fun contains(key: String): Boolean = delegate.contains(key)
     override fun size(): Int = delegate.size()
     override fun stats(): CacheStats = delegate.stats()
     override fun evict(policy: CachePolicy): List<String> = delegate.evict(policy)
     override fun warmUp(keys: Collection<String>): Int {
-        return runBlocking {
+        return runBlocking(Dispatchers.IO) {
             var loaded = 0
             for (key in keys) {
                 if (getAsync(key) != null) loaded++
