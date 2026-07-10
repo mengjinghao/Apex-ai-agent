@@ -14,6 +14,12 @@ android {
         versionName = "1.0.0"
     }
 
+    sourceSets {
+        getByName("main") {
+            aidl.srcDirs("../sdk/common-core/src/main/aidl")
+        }
+    }
+
     buildFeatures {
         compose = true
         aidl = true

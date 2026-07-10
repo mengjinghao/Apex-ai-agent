@@ -133,6 +133,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
+    sourceSets {
+        getByName("main") {
+            aidl.srcDirs("sdk/common-core/src/main/aidl")
+        }
+    }
+
     buildFeatures {
         compose = true
         aidl = true
