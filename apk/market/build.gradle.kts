@@ -30,16 +30,7 @@ android {
     }
 }
 
-android {
-        packaging {
-            resources {
-                excludes += "/META-INF/{AL2.0,LGPL2.1}"
-                pickFirsts += ["**/com/apex/sdk/bridge/BridgeParcel*.class"]
-            }
-        }
-    }
-
-    dependencies {
+dependencies {
     api(project(":sdk:process-bridge"))  // Explicit for AIDL source propagation
     implementation(project(":lib:market"))
     implementation(project(":sdk:common-ui"))
