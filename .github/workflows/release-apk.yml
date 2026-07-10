@@ -79,6 +79,7 @@ jobs:
             gradle-${{ runner.os }}-
 
       - name: Decode signing keystore
+        env:
           SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
         run: |
           if [ -z "$SIGNING_KEYSTORE" ]; then
@@ -91,6 +92,7 @@ jobs:
           ls -la $HOME/keystore/apex-release.jks
 
       - name: Create local.properties
+        env:
           RELEASE_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
@@ -225,11 +227,8 @@ jobs:
           draft: false
           prerelease: ${{ github.event_name == 'workflow_dispatch' }}
           files: artifacts/*.apk
-        permissions:
-  contents: write
-
-env:
-          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cleanup keystore
         if: always()
