@@ -13,12 +13,6 @@ android {
         versionName = "1.0.0"
     }
 
-    sourceSets {
-        getByName("main") {
-            aidl.srcDirs("../sdk/process-bridge/src/main/aidl")
-        }
-    }
-
     buildFeatures {
         compose = true
         aidl = true
