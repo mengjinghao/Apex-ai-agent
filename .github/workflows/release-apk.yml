@@ -224,8 +224,7 @@ jobs:
           draft: false
           prerelease: ${{ github.event_name == 'workflow_dispatch' }}
           files: artifacts/*.apk
-          generate_release_notes: true
-        env:
+                  env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cleanup keystore
