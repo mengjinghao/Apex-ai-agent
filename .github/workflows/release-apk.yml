@@ -79,10 +79,6 @@ jobs:
             gradle-${{ runner.os }}-
 
       - name: Decode signing keystore
-        permissions:
-  contents: write
-
-env:
           SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
         run: |
           if [ -z "$SIGNING_KEYSTORE" ]; then
@@ -95,10 +91,6 @@ env:
           ls -la $HOME/keystore/apex-release.jks
 
       - name: Create local.properties
-        permissions:
-  contents: write
-
-env:
           RELEASE_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
