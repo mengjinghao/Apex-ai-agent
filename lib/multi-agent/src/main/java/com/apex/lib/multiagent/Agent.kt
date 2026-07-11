@@ -124,7 +124,7 @@ data class SessionResult(
     val finalOutput: String,
     val agentInvocations: Int,
     val durationMs: Long,
-    @kotlinx.serialization.Contextual val blackboardSnapshot: Map<String, Any>,
+    @kotlinx.serialization.Transient val blackboardSnapshot: Map<String, Any> = emptyMap(),
     val rounds: Int = 0,
     val successRate: Float = 1.0f,
     val agentResults: Map<String, String> = emptyMap(),

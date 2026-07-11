@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -40,7 +39,6 @@ dependencies {
     // Room for state persistence
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.oshai.kotlin.logging.jvm)
