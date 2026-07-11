@@ -16,7 +16,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            aidl.srcDirs("sdk/common-core/src/main/aidl")
+            aidl.srcDirs("../../sdk/common-core/src/main/aidl")
         }
     }
 
