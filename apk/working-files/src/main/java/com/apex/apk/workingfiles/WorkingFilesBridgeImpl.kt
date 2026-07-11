@@ -431,7 +431,7 @@ class WorkingFilesBridgeImpl(
                                 put("newSnapshotId", r.newSnapshotId ?: "")
                                 if (r.conflict != null) {
                                     put("hasConflict", true)
-                                    put("conflictLines", r."".conflictLines)
+                                    put("conflictLines", r.conflict?.conflictLines ?: emptyList())
                                 }
                             }
                         }

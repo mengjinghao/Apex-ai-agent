@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class TerminalServiceFacade(private val context: Context) {
 
-    private const val TAG_SUB = "TerminalFacade"
+    private val TAG_SUB = "TerminalFacade"
 
     private var apexTerminal: ApexTerminal? = null
     private val _isInitialized = MutableStateFlow(false)

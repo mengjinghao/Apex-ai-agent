@@ -9,6 +9,7 @@ import com.apex.sdk.common.BridgeResult
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -251,7 +252,7 @@ class TerminalBridgeImpl(
         com.apex.sdk.bridge.StreamChannelRegistry.close(channelName)
     }
 
-    private fun <T> buildResult(result: BridgeResult<T>, transform: (T) -> JsonObject): String = when (result) {
+    private fun <T> buildResult(result: BridgeResult<T>, transform: (T) -> JsonElement): String = when (result) {
         is BridgeResult.Success -> buildJsonObject {
             put("success", true)
             put("data", transform(result.value))
