@@ -14,7 +14,7 @@
         android:allowBackup="false"
         android:label="@string/apk_label"
         android:process="${apexMainProcess}"
-        tools:replace="android:label"
+        tools:replace="android:label,android:theme"
         android:supportsRtl="true"
         android:theme="@style/Theme.ApexSuite"
         tools:targetApi="34">

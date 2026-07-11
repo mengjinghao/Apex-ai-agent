@@ -10,14 +10,14 @@
         android:pathData="M54,8 A46,46 0 1,1 54,100 A46,46 0 1,1 54,8"
         android:strokeWidth="2.8"
         android:strokeColor="#4ECDC4"
-        android:fillColor="transparent"/>
+        android:fillColor="#00000000"/>
 
     <!-- 内层装饰圆环 -->
     <path
         android:pathData="M54,22 A32,32 0 1,1 54,86 A32,32 0 1,1 54,22"
         android:strokeWidth="2"
         android:strokeColor="#4ECDC4"
-        android:fillColor="transparent"/>
+        android:fillColor="#00000000"/>
 
     <!-- 安卓机器人：爬在外层圆环上（姿态自然） -->
     <!-- 机器人头部 -->
