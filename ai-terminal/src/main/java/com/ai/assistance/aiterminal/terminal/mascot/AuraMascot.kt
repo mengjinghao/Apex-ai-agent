@@ -81,6 +81,17 @@ object AuraMascot {
         AuraForm.CELEBRATING -> celebratingFrames
         AuraForm.CURIOUS -> curiousFrames
         AuraForm.SHIELDING -> shieldingFrames
+        AuraForm.REMEMBERING -> idleFrames
+        AuraForm.ANALYZING -> thinkingFrames
+        AuraForm.LEARNING -> evolvingFrames
+        AuraForm.NETWORKING -> collaboratingFrames
+        AuraForm.ROOT -> executingFrames
+        AuraForm.PLANNING -> thinkingFrames
+        AuraForm.COMPILING -> executingFrames
+        AuraForm.CONNECTING -> loadingFrames
+        AuraForm.TOOLING -> executingFrames
+        AuraForm.SKILLING -> loadingFrames
+        AuraForm.MCPING -> loadingFrames
     }
 
     // ===== IDLE 漂浮（4 帧波浪 + 光点）— 精致版 =====
@@ -640,17 +651,17 @@ object AuraMascot {
         AuraForm.LOADING -> 160L
         AuraForm.CELEBRATING -> 380L
         AuraForm.CURIOUS -> 600L
-        AuraForm.SHIELDING -> 450L,
-        AuraForm.REMEMBERING -> 650L,
-        AuraForm.ANALYZING -> 500L,
-        AuraForm.LEARNING -> 700L,
-        AuraForm.NETWORKING -> 400L,
-        AuraForm.ROOT -> 600L,
-        AuraForm.PLANNING -> 550L,
-        AuraForm.COMPILING -> 320L,
-        AuraForm.CONNECTING -> 450L,
-        AuraForm.TOOLING -> 500L,
-        AuraForm.SKILLING -> 480L,
+        AuraForm.SHIELDING -> 450L
+        AuraForm.REMEMBERING -> 650L
+        AuraForm.ANALYZING -> 500L
+        AuraForm.LEARNING -> 700L
+        AuraForm.NETWORKING -> 400L
+        AuraForm.ROOT -> 600L
+        AuraForm.PLANNING -> 550L
+        AuraForm.COMPILING -> 320L
+        AuraForm.CONNECTING -> 450L
+        AuraForm.TOOLING -> 500L
+        AuraForm.SKILLING -> 480L
         AuraForm.MCPING -> 460L
     }
 

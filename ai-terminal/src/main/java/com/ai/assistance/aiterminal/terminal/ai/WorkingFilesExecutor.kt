@@ -298,8 +298,10 @@ class WorkingFilesExecutor(private val context: Context) {
     private suspend fun safeCall(block: suspend () -> com.apex.sdk.common.BridgeResult<String>): Result<String> = withContext(Dispatchers.IO) {
         try {
             val r = block()
-            if (r.isSuccess) Result.success(r.data ?: "")
-            else Result.failure(Exception(r.errorMessage ?: "Unknown error"))
+            when (r) {
+                is com.apex.sdk.common.BridgeResult.Success -> Result.success(r.value ?: "")
+                is com.apex.sdk.common.BridgeResult.Failure -> Result.failure(Exception(r.error.message ?: "Unknown error"))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }

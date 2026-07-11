@@ -323,7 +323,7 @@ private fun StepCard(
                 if (!step.isSuccess && step.errorMessage != null) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "❌ ${step.errorMessage?.let { e -> e.take(50)}",
+                        text = "❌ ${step.errorMessage?.take(50)}",
                         color = CodeColors.Error,
                         fontSize = 10.sp,
                         maxLines = 1

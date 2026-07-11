@@ -11,7 +11,7 @@ import com.ai.assistance.aiterminal.terminal.ai.TerminalToolDefinition
 import com.ai.assistance.aiterminal.terminal.ai.TerminalToolCallHandler
 import com.ai.assistance.aiterminal.terminal.ai.TerminalToolExecutor
 import com.ai.assistance.aiterminal.terminal.ai.ToolExecutionResult
-import com.ai.assistance.aiterminal.terminal.data.model.ToolPrompt
+import com.ai.assistance.aiterminal.terminal.model.ToolPrompt
 import com.ai.assistance.aiterminal.terminal.ai.DangerousCommandPatterns
 import com.ai.assistance.aiterminal.terminal.ai.CommandRiskAssessor
 import com.ai.assistance.aiterminal.terminal.ai.RiskAssessmentResult

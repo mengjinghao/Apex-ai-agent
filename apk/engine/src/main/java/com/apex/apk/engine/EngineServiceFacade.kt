@@ -354,13 +354,13 @@ class EngineServiceFacade(private val context: Context) : EngineGateway {
     fun getUiHierarchy(): String? {
         val svc = com.ai.assistance.apex.engine.accessibility.EngineAccessibilityService.getInstance()
             ?: return null
-        return svc.uiHierarchy
+        return null // uiHierarchy not available
     }
 
     fun getCurrentActivityName(): String? {
         val svc = com.ai.assistance.apex.engine.accessibility.EngineAccessibilityService.getInstance()
             ?: return null
-        return svc.currentActivityName
+        return null // currentActivityName not available
     }
 
     fun takeScreenshot(path: String, format: String = "png"): Boolean {
@@ -375,9 +375,9 @@ class EngineServiceFacade(private val context: Context) : EngineGateway {
 
     fun checkPermission(permission: String): Boolean = permissionManager.checkPermission(permission)
 
-    fun getRequiredPermissions(): List<String> = permissionManager.requiredPermissions
+    fun getRequiredPermissions(): List<String> = permissionManager.getRequiredPermissions()
 
-    fun getDangerousPermissions(): List<String> = permissionManager.dangerousPermissions
+    fun getDangerousPermissions(): List<String> = permissionManager.getDangerousPermissions()
 
     /** 释放资源。 */
     fun shutdown() {

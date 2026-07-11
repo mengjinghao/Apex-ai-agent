@@ -141,7 +141,7 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/loadCodeFileWithTokens" -> {
                         val path = args["filePath"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.loadCodeFileWithTokens(path)) { cf ->
-                            if (cf == "") buildJsonObject { put("found", false) }
+                            if (cf == null) buildJsonObject { put("found", false) }
                             else buildJsonObject {
                                 put("found", true)
                                 put("path", cf.path)
@@ -161,7 +161,7 @@ class WorkingFilesBridgeImpl(
                         val sessionId = args["sessionId"]?.jsonPrimitive?.content
                         val desc = args["description"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.takeSnapshot(filePath, rootPath, source, agentId, sessionId, "", desc)) { snap ->
-                            if (snap == "") buildJsonObject { put("success", false) }
+                            if (snap == null) buildJsonObject { put("success", false) }
                             else buildJsonObject {
                                 put("id", snap.id)
                                 put("timestamp", snap.timestamp)
@@ -200,7 +200,7 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/getSnapshot" -> {
                         val id = args["snapshotId"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.getSnapshot(id)) { snap ->
-                            if (snap == "") buildJsonObject { put("found", false) }
+                            if (snap == null) buildJsonObject { put("found", false) }
                             else buildJsonObject {
                                 put("found", true)
                                 put("id", snap.id)
@@ -222,7 +222,7 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/getLatestSnapshot" -> {
                         val filePath = args["filePath"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.getLatestSnapshot(filePath)) { snap ->
-                            if (snap == "") buildJsonObject { put("found", false) }
+                            if (snap == null) buildJsonObject { put("found", false) }
                             else buildJsonObject {
                                 put("found", true)
                                 put("id", snap.id)
@@ -251,21 +251,21 @@ class WorkingFilesBridgeImpl(
                         val beforeId = args["beforeId"]?.jsonPrimitive?.content ?: ""
                         val afterId = args["afterId"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.diffSnapshots(beforeId, afterId)) { diff ->
-                            if (diff == "") buildJsonObject { put("found", false) }
+                            if (diff == null) buildJsonObject { put("found", false) }
                             else serializeDiff(diff)
                         }
                     }
                     "workingfiles/diffWithCurrent" -> {
                         val id = args["snapshotId"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.diffWithCurrent(id)) { diff ->
-                            if (diff == "") buildJsonObject { put("found", false) }
+                            if (diff == null) buildJsonObject { put("found", false) }
                             else serializeDiff(diff)
                         }
                     }
                     "workingfiles/diffForStep" -> {
                         val stepId = args["stepId"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.diffForStep(stepId)) { diff ->
-                            if (diff == "") buildJsonObject { put("found", false) }
+                            if (diff == null) buildJsonObject { put("found", false) }
                             else serializeDiff(diff)
                         }
                     }
@@ -301,7 +301,7 @@ class WorkingFilesBridgeImpl(
                             sessionId, agentId, agentName, type, title, desc, thought, action, result,
                             isSuccess, errorMsg, affectedFiles, snapshotIds, durationMs
                         )) { step ->
-                            if (step == "") buildJsonObject { put("success", false) }
+                            if (step == null) buildJsonObject { put("success", false) }
                             else buildJsonObject {
                                 put("stepId", step.id)
                                 put("order", step.order)
@@ -318,7 +318,7 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/getAgentFlow" -> {
                         val sessionId = args["sessionId"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.getAgentFlow(sessionId)) { flow ->
-                            if (flow == "") buildJsonObject { put("found", false) }
+                            if (flow == null) buildJsonObject { put("found", false) }
                             else buildJsonObject {
                                 put("found", true)
                                 put("sessionId", flow.session.id)
@@ -460,7 +460,7 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/getActiveBranch" -> {
                         val fp = args["filePath"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.getActiveBranch(fp)) { b ->
-                            if (b == "") buildJsonObject { put("found", false) }
+                            if (b == null) buildJsonObject { put("found", false) }
                             else buildJsonObject {
                                 put("found", true)
                                 put("branchId", b.id)
@@ -471,7 +471,7 @@ class WorkingFilesBridgeImpl(
                     "workingfiles/getBranchDiff" -> {
                         val bid = args["branchId"]?.jsonPrimitive?.content ?: ""
                         buildResult(facade.getBranchDiff(bid)) { diff ->
-                            if (diff == "") buildJsonObject { put("found", false) }
+                            if (diff == null) buildJsonObject { put("found", false) }
                             else serializeDiff(diff)
                         }
                     }

@@ -110,7 +110,7 @@ class BurstTerminalIntegration(
             strategies = strategies,
             startTime = System.currentTimeMillis()
         )
-        updateState(sessionId, state)
+        updateState(sessionId) { state }
 
         // 终端显示
         sessionManager.sendMessage(sessionId, TerminalMessage.divider("🔥 任务启动"))

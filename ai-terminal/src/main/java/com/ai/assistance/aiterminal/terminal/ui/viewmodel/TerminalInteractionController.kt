@@ -314,7 +314,7 @@ class TerminalInteractionController(
         }
 
         // 搜索命令历史
-        val historyResults = completer.search(query)
+        val historyResults = completer.getAllCommands().filter { it.contains(query, ignoreCase = true) }
         val messages = historyResults.map { TerminalMessage.command(it) }
         viewState.setSearchResults(messages)
     }

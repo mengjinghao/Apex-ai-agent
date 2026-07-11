@@ -310,8 +310,8 @@ class AgentTerminalExecutor(private val context: Context) {
         maxResults: Int = 50,
     ): JSONArray = withContext(Dispatchers.IO) {
         val results = JSONArray()
-        val regex = try { Regex(pattern) } catch { return@withContext results }
-        val fileRegex = try { Regex(filePattern.replace("*", ".*").replace("?", ".")) } catch { return@withContext results }
+        val regex = try { Regex(pattern) } catch (e: Exception) { return@withContext results }
+        val fileRegex = try { Regex(filePattern.replace("*", ".*").replace("?", ".")) } catch (e: Exception) { return@withContext results }
 
         val root = File(resolvePath(path, System.getProperty("user.home") ?: "/"))
         var count = 0
@@ -369,7 +369,7 @@ class AgentTerminalExecutor(private val context: Context) {
     data class BgTask(
         val taskId: String,
         val command: String,
-        val status: BgTaskStatus,
+        var status: BgTaskStatus,
         val output: StringBuilder = StringBuilder(),
         val startedAt: Long = System.currentTimeMillis(),
         var endedAt: Long? = null,

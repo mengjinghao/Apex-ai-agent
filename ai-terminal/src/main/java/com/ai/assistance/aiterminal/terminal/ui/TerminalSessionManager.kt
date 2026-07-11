@@ -137,7 +137,7 @@ class TerminalSessionManager {
      * 切换活跃会话。
      */
     fun switchSession(sessionId: String): Boolean {
-        if (sessionId !in sessions) return false
+        if (!sessions.containsKey(sessionId)) return false
         _activeSessionId.value = sessionId
         return true
     }

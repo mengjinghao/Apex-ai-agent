@@ -92,8 +92,8 @@ class TerminalToolCallHandler(private val context: Context) {
             tools.put(JSONObject().apply {
                 put("type", "function")
                 put("function", JSONObject().apply {
-                    put("name", tool.toolName)
-                    put("description", tool.context.ifEmpty { tool.prompt })
+                    put("name", tool.name)
+                    put("description", tool.description)
                     put("parameters", JSONObject().apply {
                         put("type", "object")
                         put("properties", JSONObject())

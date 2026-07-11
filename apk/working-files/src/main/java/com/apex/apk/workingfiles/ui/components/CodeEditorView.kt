@@ -110,7 +110,7 @@ fun CodeEditorView(
                             .padding(vertical = 1.dp)
                     ) {
                         Text(
-                            text = if (line.isEmpty()) " " else highlightLine(line, language, tokens, index),
+                            text = if (line.isEmpty()) AnnotatedString(" ") else highlightLine(line, language, tokens, index),
                             color = CodeColors.EditorForeground,
                             fontSize = fontSize.sp,
                             fontFamily = FontFamily.Monospace,
