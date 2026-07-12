@@ -60,7 +60,7 @@ class KernelCapabilityRegistry {
     fun query(query: CapabilityQuery = CapabilityQuery()): List<Capability> {
         return capabilities.values.filter { cap ->
             (query.category == null || cap.category == query.category) &&
-            (query.nameContains == null || cap.name.containsKey(query.nameContains, ignoreCase = true)) &&
+            (query.nameContains == null || cap.name.contains(query.nameContains, ignoreCase = true)) &&
             (query.provider == null || cap.provider == query.provider) &&
             (query.minVersion == null || compareVersions(cap.version, query.minVersion) >= 0)
         }.sortedBy { it.name }

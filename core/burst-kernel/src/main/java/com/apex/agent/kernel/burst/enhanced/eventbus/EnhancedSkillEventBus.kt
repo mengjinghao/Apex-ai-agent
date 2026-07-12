@@ -131,7 +131,7 @@ class EnhancedSkillEventBus(
     /**
      * 订阅特定类型
      */
-    fun <reified T : BurstEvent> subscribeType(): kotlinx.coroutines.flow.Flow<T> {
+    inline fun <reified T : BurstEvent> subscribeType(): kotlinx.coroutines.flow.Flow<T> {
         return _events.asSharedFlow().filter { it is T }.map { it as T }
     }
 
