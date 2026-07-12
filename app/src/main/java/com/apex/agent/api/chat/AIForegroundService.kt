@@ -165,11 +165,12 @@ class AIForegroundService : Service() {
         enableSound: Boolean,
         enableVibration: Boolean
         ): String =
-        when {
-                enableSound && enableVibration -> "${
-REPLY_CHANNEL_ID_PREFIX
-}_sound_vibration"                enableSound -> "${REPLY_CHANNEL_ID_PREFIX}_sound"                enableVibration -> "${REPLY_CHANNEL_ID_PREFIX}_vibration"                else -> "${REPLY_CHANNEL_ID_PREFIX}_silent"
-}
+        return when {
+            enableSound && enableVibration -> "${REPLY_CHANNEL_ID_PREFIX}_sound_vibration"
+            enableSound -> "${REPLY_CHANNEL_ID_PREFIX}_sound"
+            enableVibration -> "${REPLY_CHANNEL_ID_PREFIX}_vibration"
+            else -> "${REPLY_CHANNEL_ID_PREFIX}_silent"
+        }
         private fun getReplyNotificationChannelNameRes(
         enableSound: Boolean,
         enableVibration: Boolean
@@ -260,12 +261,11 @@ REPLY_CHANNEL_ID_PREFIX
                 inputStream?.use { stream ->
  BitmapFactory.decodeStream(stream)
 }
-
-} catch (e: Exception) {
-                AppLogger.e(TAG, "从URI加载Bitmap失败: ${
-e.message
-}", e)                null"
-}
+        } catch (e: Exception) {
+                AppLogger.e(TAG, "从URI加载Bitmap失败: ${e.message}", e)
+                null
+            }
+        }
 
 }
         fun notifyReplyCompleted(
@@ -357,9 +357,7 @@ e.message
                 manager.notify(tag, REPLY_NOTIFICATION_ID, notificationBuilder.build())
                 AppLogger.d(TAG, "AI回复通知已发，chatId=${chatId}, tag=${tag}")
 } catch (e: Exception) {
-                AppLogger.e(TAG, "发送AI回复通知失败: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "发送AI回复通知失败: ${e.message}", e)"
 }
 
 }
@@ -373,9 +371,7 @@ e.message
             try {
                 context.startService(intent)
 } catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to request IME wake listening suspend: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "Failed to request IME wake listening suspend: ${e.message}", e)"
 }
 
 }
@@ -390,9 +386,7 @@ e.message
 } catch (e: Exception) {
                 AppLogger.e(
                 TAG,
-                "Failed to request floating fullscreen wake listening suspend: ${
-e.message
-}",                    e                )"
+                "Failed to request floating fullscreen wake listening suspend: ${e.message}",                    e                )"
 }
 
 }
@@ -415,8 +409,7 @@ e.message
 }
 
 }
-
-} catch (e: Exception) {
+        } catch (e: Exception) {
                 AppLogger.w(TAG, "Failed to request microphone foreground", e)
 }
 
@@ -445,8 +438,7 @@ e.message
 } else {
                     appContext.startService(intent)
 }
-
-} catch (e: Exception) {
+        } catch (e: Exception) {
                 AppLogger.e(TAG, "Failed to start action ${action}: ${e.message}", e)
 }
 
@@ -596,9 +588,7 @@ TAG,
         try {
             am.registerAudioRecordingCallback(callback, Handler(Looper.getMainLooper()))
 } catch (e: Exception) {
-            AppLogger.e(TAG, "Failed to register recording callback: ${
-e.message
-}", e)            audioRecordingCallback = null            audioManager = null            return"
+            AppLogger.e(TAG, "Failed to register recording callback: ${e.message}", e)            audioRecordingCallback = null            audioManager = null            return"
 }
         try {
             val configs = am.activeRecordingConfigurations
@@ -638,9 +628,7 @@ if {
             val hasExternal = configs.any(::isExternalConfig)
             updateWakeListeningSuspendedForExternalRecording(hasExternal)
 } catch (e: Exception) {
-            AppLogger.e(TAG, "Failed to read active recording configs: ${
-e.message
-}", e)"
+            AppLogger.e(TAG, "Failed to read active recording configs: ${e.message}", e)"
 }
 
 }
@@ -652,9 +640,7 @@ e.message
             try {
                 am.unregisterAudioRecordingCallback(callback)
 } catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to unregister recording callback: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "Failed to unregister recording callback: ${e.message}", e)"
 }
 
 }
@@ -756,9 +742,7 @@ stopSelfIfIdle(ignoreAppForeground = true)
 return
 }
         if (!ExternalHttpApiPreferences.isValidPort(config.port)) {
-            val message = "Invalid port: ${
-config.port
-}"            AppLogger.w(TAG, message)            stopExternalHttpServer(port"
+            val message = "Invalid port: ${config.port}"            AppLogger.w(TAG, message)            stopExternalHttpServer(port"
 override = config.port, lastError = message)
 stopSelfIfIdle(ignoreAppForeground = true)
 return
@@ -895,11 +879,8 @@ AppLogger.d(TAG, "AI 前台服务已启动")
  hideRuntimeTaskViewEnabled = enabled
  updateRuntimeTaskViewVisibility()
 }
-
-} catch (e: Exception) {
-                AppLogger.e(TAG, "监听运行时任务视图隐藏设置失，${
-e.message
-}", e)"
+        } catch (e: Exception) {
+                AppLogger.e(TAG, "监听运行时任务视图隐藏设置失，${e.message}", e)"
 }
 
 }
@@ -966,8 +947,7 @@ e.message
             runBlocking(Dispatchers.IO) {
  wakePrefs.alwaysListeningEnabledFlow.first()
 }
-
-} catch (_: Exception) {
+        } catch (_: Exception) {
             false
 }
 
@@ -995,9 +975,7 @@ e.message
             )
             true
 } catch (e: SecurityException) {
-            AppLogger.e(TAG, "promote microphone foreground failed: ${
-e.message
-}", e)            false"
+            AppLogger.e(TAG, "promote microphone foreground failed: ${e.message}", e)            false"
 }
 
 }
@@ -1008,23 +986,17 @@ e.message
             try {
                 AIMessageManager.cancelCurrentOperation()
 } catch (e: Exception) {
-                AppLogger.e(TAG, "退出时取消当前AI任务失败: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "退出时取消当前AI任务失败: ${e.message}", e)"
 }
             try {
                 stopService(Intent(this, FloatingChatService::class.java))
 } catch (e: Exception) {
-                AppLogger.e(TAG, "退出时停止 FloatingChatService 失败: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "退出时停止 FloatingChatService 失败: ${e.message}", e)"
 }
             try {
                 stopService(Intent(this, UIDebuggerService::class.java))
 } catch (e: Exception) {
-                AppLogger.e(TAG, "退出时停止 UIDebuggerService 失败: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "退出时停止 UIDebuggerService 失败: ${e.message}", e)"
 }
             stopExternalHttpServer(lastError = null)
             try {
@@ -1037,11 +1009,8 @@ e.message
 }
 
 }
-
-} catch (e: Exception) {
-                AppLogger.e(TAG, "退出时关闭前台界面失败: ${
-e.message
-}", e)"
+        } catch (e: Exception) {
+                AppLogger.e(TAG, "退出时关闭前台界面失败: ${e.message}", e)"
 }
             try {
                 val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -1052,9 +1021,7 @@ e.message
                 activeReplyNotificationTags.clear()
                 manager.cancel(REPLY_NOTIFICATION_ID)
 } catch (e: Exception) {
-                AppLogger.e(TAG, "退出时取消通知失败: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "退出时取消通知失败: ${e.message}", e)"
 }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 @Suppress("DEPRECATION")
@@ -1101,9 +1068,7 @@ return START_NOT_STICKY
                     AppLogger.d(TAG, "切换唤醒监听: ${current}
  -> ${!current}")                    wakePrefs.saveAlwaysListeningEnabled(!current)"
 } catch (e: Exception) {
-                    AppLogger.e(TAG, "切换唤醒监听失败: ${
-e.message
-}", e)"
+                    AppLogger.e(TAG, "切换唤醒监听失败: ${e.message}", e)"
 }
                 val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 manager.notify(NOTIFICATION_ID, createNotification())
@@ -1160,9 +1125,7 @@ e.message
                 // 立即刷新通知状态（真正的状态重置由 EnhancedAIService.cancelConversation/stopAiService 完成，
                updateAiBusyState(false)
 } catch (e: Exception) {
-                AppLogger.e(TAG, "取消当前AI任务失败: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "取消当前AI任务失败: ${e.message}", e)"
 }
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.notify(NOTIFICATION_ID, createNotification())
@@ -1317,9 +1280,7 @@ stopSelfIfIdle(ignoreAppForeground = true)
  val feats = t.features
  if (feats.isEmpty()) null else feats.toFloatArray()
 }
-                        AppLogger.d(TAG, "个人化唤醒模板更，count=${
-personalWakeTemplates.size
-}")                        applyWakeListeningState()"
+                        AppLogger.d(TAG, "个人化唤醒模板更，count=${personalWakeTemplates.size}")                        applyWakeListeningState()"
 }
 
 }
@@ -1427,10 +1388,8 @@ personalWakeTemplates.size
                 ViewCompat.requestApplyInsets(view)
                 AppLogger.d(TAG, "Keep-alive overlay shown")
 } catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to show keep-alive overlay: ${
-e.message
-}", e)                keepAliveOverlayView = null"
-}
+                AppLogger.e(TAG, "Failed to show keep-alive overlay: ${e.message}", e)                keepAliveOverlayView = null
+        }
 
 }
 
@@ -1444,9 +1403,7 @@ e.message
                 wm.removeView(current)
                 AppLogger.d(TAG, "Keep-alive overlay hidden")
 } catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to hide keep-alive overlay: ${
-e.message
-}", e)"
+                AppLogger.e(TAG, "Failed to hide keep-alive overlay: ${e.message}", e)"
 } finally {
                 if (keepAliveOverlayView === view) {
                     keepAliveOverlayView = null
@@ -1540,12 +1497,9 @@ try)")                    wakeListeningMicActiveForRecordingDetection = false   
 }
 
 }
-
-} catch (e: Exception) {
+        } catch (e: Exception) {
             wakeListeningMicActiveForRecordingDetection = false
-            AppLogger.e(TAG, "启动唤醒监听失败: ${
-e.message
-}", e)            return"
+            AppLogger.e(TAG, "启动唤醒监听失败: ${e.message}", e)            return"
 }
         if (wakeListeningJob?.isActive == true) return
         wakeListeningJob =
@@ -1583,11 +1537,8 @@ if (result.isFinal) "final" else "partial"
                             lastSpeechWorkflowCheckAtMs = now
                             workflowRepository.triggerWorkflowsBySpeechEvent(text = text, isFinal = result.isFinal)
 }
-
-} catch (e: Exception) {
-                        AppLogger.e(TAG, "Speech trigger processing failed: ${
-e.message
-}", e)"
+        } catch (e: Exception) {
+                        AppLogger.e(TAG, "Speech trigger processing failed: ${e.message}", e)"
 }
                     if (matchWakePhrase(text, currentWakePhrase, wakePhraseRegexEnabled)) {
                         val now = System.currentTimeMillis()
@@ -1613,9 +1564,7 @@ e.message
     private suspend fun startPersonalWakeListening() {
         if (!wakeListeningEnabled) return
         if (personalWakeJob?.isActive == true) return
-        AppLogger.d(TAG, "startPersonalWakeListening: templates=${
-personalWakeTemplates.size
-}")        if (personalWakeTemplates.isEmpty()) {
+        AppLogger.d(TAG, "startPersonalWakeListening: templates=${personalWakeTemplates.size}")        if (personalWakeTemplates.isEmpty()) {
             AppLogger.w(TAG, "Personal wake listening skipped: no templates")
             return
 }
@@ -1648,9 +1597,7 @@ onTriggered = onTriggered@{ similarity ->
                 try {
                     listener.runLoop()
 } catch (e: Exception) {
-                    AppLogger.e(TAG, "Personal wake loop failed: ${
-e.message
-}", e)"
+                    AppLogger.e(TAG, "Personal wake loop failed: ${e.message}", e)"
 } finally {
                     wakeListeningMicActiveForRecordingDetection = false
 }
@@ -1734,11 +1681,8 @@ e.message
 } else {
                 startService(floatingIntent)
 }
-
-} catch (e: Exception) {
-            AppLogger.e(TAG, "唤醒打开悬浮窗失，${
-e.message
-}", e)"
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "唤醒打开悬浮窗失，${e.message}", e)"
 }
 
 }
