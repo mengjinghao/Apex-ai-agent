@@ -36,7 +36,6 @@ class RageAgentArchitect {
 
     val dynamicAgents = mutableListOf<DynamicAgentInfo>()
     private val _executionHistory = mutableListOf<ExecutionRecord>()
-    val executionHistory: List<ExecutionRecord> get() = _executionHistory
 
     var autoExpand = true
     var gitBranching = true
