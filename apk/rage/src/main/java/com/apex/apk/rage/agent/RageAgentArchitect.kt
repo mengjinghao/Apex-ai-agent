@@ -35,7 +35,8 @@ class RageAgentArchitect {
     )
 
     val dynamicAgents = mutableListOf<DynamicAgentInfo>()
-    val executionHistory = mutableListOf<ExecutionRecord>()
+    private val _executionHistory = mutableListOf<ExecutionRecord>()
+    val executionHistory: List<ExecutionRecord> get() = _executionHistory
 
     var autoExpand = true
     var gitBranching = true
@@ -199,7 +200,7 @@ class RageAgentArchitect {
                 agentInvocations = steps.size, dynamicAgentCount = 0
             )
 
-            executionHistory.add(ExecutionRecord(taskId, taskDescription, startTime, System.currentTimeMillis(), executorSuccess, steps))
+            _executionHistory.add(ExecutionRecord(taskId, taskDescription, startTime, System.currentTimeMillis(), executorSuccess, steps))
             _events.tryEmit(ArchitectEvent.TaskCompleted(taskId, result))
             return result
 
@@ -212,7 +213,7 @@ class RageAgentArchitect {
                 agentInvocations = steps.size, dynamicAgentCount = 0,
                 errorMessage = t.message
             )
-            executionHistory.add(ExecutionRecord(taskId, taskDescription, startTime, System.currentTimeMillis(), false, steps))
+            _executionHistory.add(ExecutionRecord(taskId, taskDescription, startTime, System.currentTimeMillis(), false, steps))
             _events.tryEmit(ArchitectEvent.TaskFailed(taskId, t.message ?: "unknown"))
             return result
         }
@@ -252,9 +253,9 @@ class RageAgentArchitect {
         return coreAgents[agentId]!!.enabled
     }
 
-    fun getExecutionHistory(): List<ExecutionRecord> = executionHistory.toList()
-    fun getTaskDetail(taskId: String): ExecutionRecord? = executionHistory.find { it.taskId == taskId }
-    fun clearHistory(): Int { val n = executionHistory.size; executionHistory.clear(); return n }
+    fun getExecutionHistory(): List<ExecutionRecord> = _executionHistory.toList()
+    fun getTaskDetail(taskId: String): ExecutionRecord? = _executionHistory.find { it.taskId == taskId }
+    fun clearHistory(): Int { val n = _executionHistory.size; _executionHistory.clear(); return n }
     fun getBlackboardSnapshot(): Map<String, String> = blackboard.mapValues { it.value.value }
 
     private fun generateDiff(task: String, version: Int): String {
