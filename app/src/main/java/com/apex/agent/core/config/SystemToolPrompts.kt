@@ -32,7 +32,7 @@ object SystemToolPrompts {
 **附加本地储存仓库**
 - environment（可选）：也可以使用 `environment="repo:<仓库>"` 在附加本地储存仓库中操作。
 - 路径使用绝对路径（例如：`/`、`/work/index.html`）。
-- 当前可用仓库：的${listed}
+- 当前可用仓库：${listed}
 """.trimEnd()
     }
     
@@ -262,7 +262,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "environment",
                         type = "string",
-                        description = "可选，执行环境。取值：\"android\"（默认，Android文件系统）| \"linux\"（本地Ubuntu 24终端环境，通过proot实现；路径用Linux格式，如/home/... 成/etc/hosts）| \"repo:<仓库后\"（附加本地储存仓库）",
+                        description = "可选，执行环境。取值：\"android\"（默认，Android文件系统）| \"linux\"（本地Ubuntu 24终端环境，通过proot实现；路径用Linux格式，如/home/... 成/etc/hosts）| \"repo:<仓库后\"（附加本地储存仓库"),
                         required = false
                     ),
                     ToolParameterSchema(
@@ -324,7 +324,7 @@ object SystemToolPrompts {
     - `new`: `replace` / `create` 必填
 
   - **关键规则**:
-    1. **如果需要重写整个已存在文件**：不要用 apply_file 直接覆盖。请先调用`delete_file`，再使用 `apply_file` 的`type=create`。   2. **如果需要修改已存在文件**：必须用 `type=replace`（或 `type=delete`）并提供 `old/new`（或 `old`）。不要删除整个文件再重写。""
+    1. **如果需要重写整个已存在文件**：不要用 apply_file 直接覆盖。请先调用`delete_file`，再使用 `apply_file` 的`type=create`。   2. **如果需要修改已存在文件**：必须用 `type=replace`（或 `type=delete`）并提供 `old/new`（或 `old`）。不要删除整个文件再重写。"""
             ),
             ToolPrompt(
                 name = "delete_file",
@@ -465,7 +465,7 @@ object SystemToolPrompts {
                         type = "integer",
                         description = "Optional for batch_urls. Number of concurrent requests, default 3",
                         required = false,
-                        default = "3"
+                        default = "3",
                     ),
                     
                     // ==================== Content Extraction ====================
@@ -510,7 +510,7 @@ object SystemToolPrompts {
                         type = "boolean",
                         description = "Enable anti-detection (fingerprint spoofing, random delays, UA rotation)",
                         required = false,
-                        default = "false"
+                        default = "false",
                     ),
                     
                     // ==================== Reliability ====================
@@ -556,7 +556,7 @@ object SystemToolPrompts {
                         type = "boolean",
                         description = "Clear all browser cache for this session",
                         required = false,
-                        default = "true"
+                        default = "true",
                     )
                 ),
                 details = """
@@ -582,7 +582,7 @@ object SystemToolPrompts {
        "message": "人类可读的消息",
        "data": { "text": "...", "links": [], "images": [], ... },
        "debug": { "request_headers": {}, "response_headers": {}, "http_status": 200, "response_time_ms": 1200, "logs": [] },
-       "error_screenshot": "<link type='image'> (如果 error_screenshot=true 且失败）",
+       "error_screenshot": "<link type='image'> (如果 error_screenshot=true 且失败"),
        "request_info": { "url": "...", "final_url": "...", "cached": false }
      }
 
@@ -623,7 +623,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "link_number",
                         type = "integer",
-                        description = "visit_mode=follow_link 时必填。要跳转的链接编号（件开始）",
+                        description = "visit_mode=follow_link 时必填。要跳转的链接编号（件开始"),
                         required = false
                     ),
                     
@@ -639,7 +639,7 @@ object SystemToolPrompts {
                         type = "integer",
                         description = "批量访问可选。并发请求数，默计",
                         required = false,
-                        default = "3"
+                        default = "3",
                     ),
                     
                     // ==================== 内容提取 ====================
@@ -653,7 +653,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(name = "extract_links", type = "boolean", description = "提取页面链接", required = false, default = "true"),
                     ToolParameterSchema(name = "extract_images", type = "boolean", description = "提取图片链接", required = false, default = "false"),
                     ToolParameterSchema(name = "extract_tables", type = "boolean", description = "提取HTML表格为结构化数据", required = false, default = "false"),
-                    ToolParameterSchema(name = "extract_metadata", type = "boolean", description = "提取页面元数据（标题、描述）", required = false, default = "true"),
+                    ToolParameterSchema(name = "extract_metadata", type = "boolean", description = "提取页面元数据（标题、描述"), required = false, default = "true"),
                     ToolParameterSchema(name = "extract_structured_data", type = "boolean", description = "提取JSON-LD/微数据", required = false, default = "false"),
                     
                     // ==================== 页面交互 ====================
@@ -667,8 +667,8 @@ object SystemToolPrompts {
                     
                     // ==================== 等待与超时===================
                     ToolParameterSchema(name = "wait_for_type", type = "string", description = "等待条件类型：element (元素，| text (文本，| timeout (超时，", required = false),
-                    ToolParameterSchema(name = "wait_for_selector", type = "string", description = "CSS选择器（wait_for_type=element时使用）", required = false),
-                    ToolParameterSchema(name = "wait_for_text", type = "string", description = "要等待的文本（wait_for_type=text时使用）", required = false),
+                    ToolParameterSchema(name = "wait_for_selector", type = "string", description = "CSS选择器（wait_for_type=element时使用"), required = false),
+                    ToolParameterSchema(name = "wait_for_text", type = "string", description = "要等待的文本（wait_for_type=text时使用"), required = false),
                     ToolParameterSchema(name = "wait_for_timeout_ms", type = "integer", description = "等待超时时间（毫秒），默计000", required = false, default = "5000"),
                     ToolParameterSchema(name = "timeout_ms", type = "integer", description = "请求超时时间（毫秒），默计0000", required = false, default = "30000"),
                     
@@ -684,7 +684,7 @@ object SystemToolPrompts {
                         type = "boolean",
                         description = "启用反检测（指纹伪装、随机延迟、UA轮换，",
                         required = false,
-                        default = "false"
+                        default = "false",
                     ),
                     
                     // ==================== 可靠态===================
@@ -694,7 +694,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(name = "retry_on_error", type = "string", description = "触发重试的错误类型JSON数组，默认[\"timeout\",\"network_error\"]", required = false, default = "[\"timeout\",\"network_error\"]"),
                     
                     // ==================== 可观测态===================
-                    ToolParameterSchema(name = "debug_mode", type = "boolean", description = "返回完整调试日志（请求响应头、耗时、堆栈）", required = false, default = "false"),
+                    ToolParameterSchema(name = "debug_mode", type = "boolean", description = "返回完整调试日志（请求响应头、耗时、堆栈"), required = false, default = "false"),
                     ToolParameterSchema(name = "error_screenshot", type = "boolean", description = "失败时捕获截回", required = false, default = "false"),
                     ToolParameterSchema(name = "screenshot", type = "string", description = "旧版截图参数：full | visible | JSON {\"selector\":\"...\", \"filename\":\"...\"}", required = false),
                     
@@ -712,7 +712,7 @@ object SystemToolPrompts {
                     // ==================== 输出格式 ====================
                     ToolParameterSchema(name = "response_format", type = "string", description = "响应格式：structured (默认，| plain_text | markdown", required = false, default = "structured"),
                     ToolParameterSchema(name = "include_all_links", type = "boolean", description = "提取所有链接还是仅相关链接", required = false, default = "false"),
-                    ToolParameterSchema(name = "include_image_links", type = "boolean", description = "在结果中包含图片链接（extract_images的别名）", required = false, default = "false")
+                    ToolParameterSchema(name = "include_image_links", type = "boolean", description = "在结果中包含图片链接（extract_images的别名"), required = false, default = "false")
                 )
             ),
             ToolPrompt(
@@ -730,11 +730,11 @@ object SystemToolPrompts {
                         type = "boolean",
                         description = "是否清空该会话全部浏览器缓存",
                         required = false,
-                        default = "true"
+                        default = "true",
                     )
                 ),
-                details = """
-- 专门用于关闭 visit_web 通过 session_id 创建的长期网页会话。 临时会话（未传session_id）会自动释放，无需调用本工具。 销毁后，session_id 立即失效，重复使用会自动新建空白会话。""
+                details = """,
+- 专门用于关闭 visit_web 通过 session_id 创建的长期网页会话。 临时会话（未传session_id）会自动释放，无需调用本工具。 销毁后，session_id 立即失效，重复使用会自动新建空白会话。"""
             )
         )
     )
@@ -776,7 +776,7 @@ object SystemToolPrompts {
                         type = "number",
                         description = "Similarity threshold (0.0-1.0), default 0.92. Higher = stricter matching.",
                         required = false,
-                        default = "0.92"
+                        default = "0.92",
                     )
                 )
             ),
@@ -807,14 +807,14 @@ object SystemToolPrompts {
                         type = "boolean",
                         description = "Preserve all tags from source memories, default true",
                         required = false,
-                        default = "true"
+                        default = "true",
                     ),
                     ToolParameterSchema(
                         name = "keep_links",
                         type = "boolean",
                         description = "Preserve all links from source memories, default true",
                         required = false,
-                        default = "true"
+                        default = "true",
                     )
                 )
             ),
@@ -873,14 +873,14 @@ object SystemToolPrompts {
                         type = "integer",
                         description = "Maximum number of hops to search, default 3",
                         required = false,
-                        default = "3"
+                        default = "3",
                     ),
                     ToolParameterSchema(
                         name = "max_paths",
                         type = "integer",
                         description = "Maximum number of paths to return, default 10",
                         required = false,
-                        default = "10"
+                        default = "10",
                     )
                 )
             ),
@@ -899,14 +899,14 @@ object SystemToolPrompts {
                         type = "integer",
                         description = "Maximum number of hops to search, default 2",
                         required = false,
-                        default = "2"
+                        default = "2",
                     ),
                     ToolParameterSchema(
                         name = "min_weight",
                         type = "number",
                         description = "Minimum edge weight threshold (0.0-1.0), default 0.5",
                         required = false,
-                        default = "0.5"
+                        default = "0.5",
                     )
                 )
             ),
@@ -925,7 +925,7 @@ object SystemToolPrompts {
                         type = "boolean",
                         description = "Include YAML front matter with metadata, default true",
                         required = false,
-                        default = "true"
+                        default = "true",
                     )
                 )
             ),
@@ -956,12 +956,12 @@ object SystemToolPrompts {
                         type = "integer",
                         description = "Maximum number of reasoning steps, default 3",
                         required = false,
-                        default = "3"
+                        default = "3",
                     )
                 )
             )
         ),
-        categoryFooter = "\nNote: The memory library and user personality profile are automatically updated by a separate system after you output the task completion marker. However, if you need to manage memories immediately or update user preferences, use the appropriate tools directly."
+        categoryFooter = "\nNote: The memory library and user personality profile are automatically updated by a separate system after you output the task completion marker. However, if you need to manage memories immediately or update user preferences, use the appropriate tools directly.",
     )
     
     val memoryToolsCn = SystemToolPromptCategory(
@@ -1000,7 +1000,7 @@ object SystemToolPrompts {
                         type = "number",
                         description = "相似度阈值（0.0-1.0），默认0.92，值越高匹配越严格",
                         required = false,
-                        default = "0.92"
+                        default = "0.92",
                     )
                 )
             ),
@@ -1031,14 +1031,14 @@ object SystemToolPrompts {
                         type = "boolean",
                         description = "是否保留源记忆的所有标签，默认true",
                         required = false,
-                        default = "true"
+                        default = "true",
                     ),
                     ToolParameterSchema(
                         name = "keep_links",
                         type = "boolean",
                         description = "是否保留源记忆的所有关联链接，默认true",
                         required = false,
-                        default = "true"
+                        default = "true",
                     )
                 )
             ),
@@ -1097,14 +1097,14 @@ object SystemToolPrompts {
                         type = "integer",
                         description = "最大搜索跳数，默认3",
                         required = false,
-                        default = "3"
+                        default = "3",
                     ),
                     ToolParameterSchema(
                         name = "max_paths",
                         type = "integer",
                         description = "最大返回路径数，默计0",
                         required = false,
-                        default = "10"
+                        default = "10",
                     )
                 )
             ),
@@ -1123,14 +1123,14 @@ object SystemToolPrompts {
                         type = "integer",
                         description = "最大搜索跳数，默认2",
                         required = false,
-                        default = "2"
+                        default = "2",
                     ),
                     ToolParameterSchema(
                         name = "min_weight",
                         type = "number",
                         description = "最小边权重阈值（0.0-1.0），默认0.5",
                         required = false,
-                        default = "0.5"
+                        default = "0.5",
                     )
                 )
             ),
@@ -1149,7 +1149,7 @@ object SystemToolPrompts {
                         type = "boolean",
                         description = "是否包含YAML元数据头，默认true",
                         required = false,
-                        default = "true"
+                        default = "true",
                     )
                 )
             ),
@@ -1180,12 +1180,12 @@ object SystemToolPrompts {
                         type = "integer",
                         description = "最大推理步数，默认3",
                         required = false,
-                        default = "3"
+                        default = "3",
                     )
                 )
             )
         ),
-        categoryFooter = "\n注意：记忆库和用户性格档案会在你输出任务完成标志后由独立的系统自动更新。但是，如果需要立即管理记忆或更新用户偏好，请直接使用相应的工具。"
+        categoryFooter = "\n注意：记忆库和用户性格档案会在你输出任务完成标志后由独立的系统自动更新。但是，如果需要立即管理记忆或更新用户偏好，请直接使用相应的工具。",
     )
 
     private val internalToolCategoriesEn: List<SystemToolPromptCategory> = SystemToolPromptsInternal.internalToolCategoriesEn
@@ -1195,6 +1195,7 @@ object SystemToolPrompts {
      * 获取所有英文工具分类
     * @param hasBackendImageRecognition 是否配置了后端识图服务（IMAGE_RECOGNITION功能，
     * @param chatModelHasDirectImage 当前聊天模型是否自带识图能力（可直接看图片）
+
      */
     fun getAIAllCategoriesEn(
         hasBackendImageRecognition: Boolean = false,
@@ -1270,6 +1271,7 @@ object SystemToolPrompts {
      * 获取所有中文工具分类
     * @param hasBackendImageRecognition 是否配置了后端识图服务（IMAGE_RECOGNITION功能，
     * @param chatModelHasDirectImage 当前聊天模型是否自带识图能力（可直接看图片）
+
      */
     fun getAIAllCategoriesCn(
         hasBackendImageRecognition: Boolean = false,
@@ -1431,6 +1433,7 @@ object SystemToolPrompts {
     
     /**
      * 生成完整的工具提示词文本（英文）
+
      */
     fun generateToolsPromptEn(
         hasBackendImageRecognition: Boolean = false,
@@ -1509,6 +1512,7 @@ object SystemToolPrompts {
     
     /**
      * 生成完整的工具提示词文本（中文）
+
      */
     fun generateToolsPromptCn(
         hasBackendImageRecognition: Boolean = false,

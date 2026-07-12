@@ -76,7 +76,7 @@ Based on user needs, proactively select the most appropriate tool or combination
         } else {
             guidelines.replace(
                 "输出XML（如 <tool>，status>）时，必须在XML前换行，并确保起始标签位于行首，",
-                "输出XML（如 <tool>）时，必须在XML前换行，并确保起始标签位于行首，"
+                "输出XML（如 <tool>）时，必须在XML前换行，并确保起始标签位于行首",
             )
         }
     }
@@ -451,7 +451,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
             }
 
     // Determine the available tools string based on memory query setting and image recognition
-    // 当使用Tool Call API时，不在系统提示词中包含工具描述（工具已通过API的tools字段发送）
+    // 当使用Tool Call API时，不在系统提示词中包含工具描述（工具已通过API的tools字段发送"),
     val availableToolsEn = if (useToolCallApi) "" else (
         if (enableMemoryQuery) {
             getMemoryToolsEn(toolVisibility) +
@@ -511,7 +511,8 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
 
     // Handle tools disable/enable
     if (enableTools) {
-        // 当使用Tool Call API时，使用简化的工具使用指南（保存调用前描述的重要指示），移除XML格式说明和工具列       if (useToolCallApi) {
+        // 当使用Tool Call API时，使用简化的工具使用指南（保存调用前描述的重要指示），移除XML格式说明和工具列
+        if (useToolCallApi) {
             val packageGuidelines =
                 if (useEnglish) {
                     PACKAGE_SYSTEM_GUIDELINES_TOOL_CALL_EN
@@ -599,7 +600,9 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
           """.trimIndent()
       } else {
           """
-          工作区根目录规则文件         - 工作区根目录存在 `${workspaceRuleFileName}`，请将以下内容视为当前项目的工作区专属指令，          <workspace_rule_file name="${workspaceRuleFileName}">
+          工作区根目录规则文件
+          - 工作区根目录存在 `${workspaceRuleFileName}`，请将以下内容视为当前项目的工作区专属指令，
+          <workspace_rule_file name="${workspaceRuleFileName}">
           ${workspaceRuleFileContent}
           </workspace_rule_file>
           """.trimIndent()
@@ -636,7 +639,11 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
               """
               工作区指南：
               - 当前工作区根目录，`${workspacePath}`${if (shouldShowEnv) "（environment=${envLabel}?else ""}             - 所有工作区文件操作都要把这个精确路径当作根路径             - 使用工具读取、写入、搜索、列目录、移动或删除工作区文件时，不要使用相对路径，必须使用了`${workspacePath}` 为根的绝对路径，              ${if (shouldShowEnv) "- 通过工具操作工作区文件时，每次都必须同时传入 `environment=\"${envLabel}\"` 和对应的工作区路径， else ""}
-              - 相对路径只用于文件内容里的项目内部引用，不用于工具参数，              - 终端挂载说明：常见挂载包含`${externalStoragePath} -> /sdcard`、`${externalStoragePath} -> ${externalStoragePath}`，以及应用沙，`${appFilesPath} -> 同路径`             - 若工作区位于已挂载路径中，直接在 Linux 终端环境中执行工作区文件；无需先复制再执行             - **代码修改最佳实：修改任何文件之前，建议组合使用 `grep_code` ，`grep_context` 定位并理解相关代码及其上下文，避免在未理解项目结构时盲改             """.trimIndent()
+              - 相对路径只用于文件内容里的项目内部引用，不用于工具参数，
+              - 终端挂载说明：常见挂载包含`${externalStoragePath} -> /sdcard`、`${externalStoragePath} -> ${externalStoragePath}`，以及应用沙，`${appFilesPath} -> 同路径`
+              - 若工作区位于已挂载路径中，直接在 Linux 终端环境中执行工作区文件；无需先复制再执行
+              - **代码修改最佳实：修改任何文件之前，建议组合使用 `grep_code` ，`grep_context` 定位并理解相关代码及其上下文，避免在未理解项目结构时盲改
+              """.trimIndent()
           }
           val workspaceRuleFileSection = buildWorkspaceRuleFileSection(
               workspaceRuleFileName = workspaceRuleFileName,

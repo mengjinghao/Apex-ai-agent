@@ -22,9 +22,9 @@ data class Task(
     val name: String,
     val description: String = "",
     val priority: TaskPriority = TaskPriority.NORMAL,
-    val dependencies: List&lt;String&gt; = emptyList(),
+    val dependencies: List<String> = emptyList(),
     val timeout: Long? = null,
-    val executor: suspend () -&gt; Any?
+    val executor: suspend () -> Any?
 )
 
 enum class TaskPriority {
@@ -51,24 +51,24 @@ class ParallelTaskEngine(
     private val maxConcurrentTasks: Int = 4,
     private val defaultScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 ) {
-    private val _tasks = MutableStateFlow&lt;Map&lt;String, Task&gt;&gt;(emptyMap())
-    val tasks: StateFlow&lt;Map&lt;String, Task&gt;&gt; = _tasks.asStateFlow()
+    private val _tasks = MutableStateFlow<Map<String, Task>>(emptyMap())
+    val tasks: StateFlow<Map<String, Task>> = _tasks.asStateFlow()
 
-    private val _taskStatus = MutableStateFlow&lt;Map&lt;String, TaskStatus&gt;&gt;(emptyMap())
-    val taskStatus: StateFlow&lt;Map&lt;String, TaskStatus&gt;&gt; = _taskStatus.asStateFlow()
+    private val _taskStatus = MutableStateFlow<Map<String, TaskStatus>>(emptyMap())
+    val taskStatus: StateFlow<Map<String, TaskStatus>> = _taskStatus.asStateFlow()
 
-    private val _taskProgress = MutableStateFlow&lt;Map&lt;String, TaskProgress&gt;&gt;(emptyMap())
-    val taskProgress: StateFlow&lt;Map&lt;String, TaskProgress&gt;&gt; = _taskProgress.asStateFlow()
+    private val _taskProgress = MutableStateFlow<Map<String, TaskProgress>>(emptyMap())
+    val taskProgress: StateFlow<Map<String, TaskProgress>> = _taskProgress.asStateFlow()
 
-    private val _executionResults = MutableStateFlow&lt;List&lt;TaskExecutionResult&gt;&gt;(emptyList())
-    val executionResults: StateFlow&lt;List&lt;TaskExecutionResult&gt;&gt; = _executionResults.asStateFlow()
+    private val _executionResults = MutableStateFlow<List<TaskExecutionResult>>(emptyList())
+    val executionResults: StateFlow<List<TaskExecutionResult>> = _executionResults.asStateFlow()
 
     private val _isEnabled = MutableStateFlow(true)
-    val isEnabled: StateFlow&lt;Boolean&gt; = _isEnabled.asStateFlow()
+    val isEnabled: StateFlow<Boolean> = _isEnabled.asStateFlow()
 
     private val activeTasks = AtomicInteger(0)
-    private val taskJobs = ConcurrentHashMap&lt;String, Job&gt;()
-    private val executionHistory = mutableListOf&lt;TaskExecutionResult&gt;()
+    private val taskJobs = ConcurrentHashMap<String, Job>()
+    private val executionHistory = mutableListOf<TaskExecutionResult>()
 
     fun setEnabled(enabled: Boolean) {
         _isEnabled.value = enabled
@@ -81,7 +81,7 @@ class ParallelTaskEngine(
         return task.id
     }
 
-    fun addTasks(tasks: List&lt;Task&gt;): List&lt;String&gt; {
+    fun addTasks(tasks: List<Task>): List<String> {
         return tasks.map { addTask(it) }
     }
 
@@ -99,19 +99,19 @@ class ParallelTaskEngine(
         _taskProgress.value = emptyMap()
     }
 
-    suspend fun executeAll(): List&lt;TaskExecutionResult&gt; = coroutineScope {
+    suspend fun executeAll(): List<TaskExecutionResult> = coroutineScope {
         if (!_isEnabled.value) {
             AppLogger.w("ParallelTaskEngine", "Task engine is disabled, executing sequentially")
             return@coroutineScope executeSequential()
         }
 
         val tasksToExecute = _tasks.value.values.toList()
-        val results = mutableListOf&lt;TaskExecutionResult&gt;()
+        val results = mutableListOf<TaskExecutionResult>()
 
         val dependencyGraph = buildDependencyGraph(tasksToExecute)
         val executionOrder = topologicalSort(dependencyGraph)
 
-        val sortedTasks = executionOrder.mapNotNull { taskId -&gt;
+        val sortedTasks = executionOrder.mapNotNull { taskId ->
             tasksToExecute.find { it.id == taskId }
         }
 
@@ -125,13 +125,13 @@ class ParallelTaskEngine(
 
         val semaphore = kotlinx.coroutines.sync.Semaphore(maxConcurrentTasks)
 
-        orderedByPriority.map { task -&gt;
+        orderedByPriority.map { task ->
             async {
                 semaphore.withPermit {
                     executeSingleTask(task)
                 }
             }
-        }.awaitAll().forEach { result -&gt;
+        }.awaitAll().forEach { result ->
             results.add(result)
             _executionResults.update { it + result }
         }
@@ -139,9 +139,9 @@ class ParallelTaskEngine(
         return@coroutineScope results
     }
 
-    private suspend fun executeSequential(): List&lt;TaskExecutionResult&gt; = coroutineScope {
+    private suspend fun executeSequential(): List<TaskExecutionResult> = coroutineScope {
         val tasksToExecute = _tasks.value.values.toList()
-        val results = mutableListOf&lt;TaskExecutionResult&gt;()
+        val results = mutableListOf<TaskExecutionResult>()
 
         for (task in tasksToExecute) {
             val result = executeSingleTask(task)
@@ -156,7 +156,7 @@ class ParallelTaskEngine(
         val task = _tasks.value[taskId] ?: return
         val currentStatus = _taskStatus.value[taskId]
 
-        if (currentStatus != TaskStatus.Pending &amp;&amp; currentStatus != TaskStatus.Paused) {
+        if (currentStatus != TaskStatus.Pending && currentStatus != TaskStatus.Paused) {
             return
         }
 
@@ -192,7 +192,7 @@ class ParallelTaskEngine(
         return _taskProgress.value[taskId]
     }
 
-    fun getExecutionHistory(): List&lt;TaskExecutionResult&gt; {
+    fun getExecutionHistory(): List<TaskExecutionResult> {
         return executionHistory.toList()
     }
 
@@ -264,35 +264,35 @@ class ParallelTaskEngine(
         }
     }
 
-    private fun buildDependencyGraph(tasks: List&lt;Task&gt;): Map&lt;String, List&lt;String&gt;&gt; {
-        val graph = mutableMapOf&lt;String, MutableList&lt;String&gt;&gt;()
+    private fun buildDependencyGraph(tasks: List<Task>): Map<String, List<String>> {
+        val graph = mutableMapOf<String, MutableList<String>>()
 
-        tasks.forEach { task -&gt;
+        tasks.forEach { task ->
             graph[task.id] = task.dependencies.toMutableList()
         }
 
         return graph
     }
 
-    private fun topologicalSort(graph: Map&lt;String, List&lt;String&gt;&gt;): List&lt;String&gt; {
-        val inDegree = mutableMapOf&lt;String, Int&gt;()
+    private fun topologicalSort(graph: Map<String, List<String>>): List<String> {
+        val inDegree = mutableMapOf<String, Int>()
         graph.keys.forEach { inDegree[it] = 0 }
 
-        graph.values.forEach { dependencies -&gt;
-            dependencies.forEach { dependency -&gt;
+        graph.values.forEach { dependencies ->
+            dependencies.forEach { dependency ->
                 inDegree[dependency] = (inDegree[dependency] ?: 0) + 1
             }
         }
 
-        val queue = LinkedList&lt;String&gt;()
+        val queue = LinkedList<String>()
         inDegree.filter { it.value == 0 }.keys.forEach { queue.add(it) }
 
-        val result = mutableListOf&lt;String&gt;()
+        val result = mutableListOf<String>()
         while (queue.isNotEmpty()) {
             val node = queue.removeFirst()
             result.add(node)
 
-            graph.forEach { (taskId, dependencies) -&gt;
+            graph.forEach { (taskId, dependencies) ->
                 if (dependencies.contains(node)) {
                     inDegree[taskId] = (inDegree[taskId] ?: 0) - 1
                     if (inDegree[taskId] == 0) {
@@ -320,7 +320,7 @@ class ParallelTaskEngine(
             totalTasks = _tasks.value.size,
             activeTasks = activeTasks.get(),
             completedTasks = completedCount,
-            successRate = if (completedCount &gt; 0) successCount.toFloat() / completedCount else 0f,
+            successRate = if (completedCount > 0) successCount.toFloat() / completedCount else 0f,
             statusCounts = statusCounts,
             isEnabled = _isEnabled.value
         )
@@ -343,6 +343,6 @@ data class EngineStats(
     val activeTasks: Int,
     val completedTasks: Int,
     val successRate: Float,
-    val statusCounts: Map&lt;TaskStatus, Int&gt;,
+    val statusCounts: Map<TaskStatus, Int>,
     val isEnabled: Boolean
 )

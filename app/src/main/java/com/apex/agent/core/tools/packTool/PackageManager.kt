@@ -1077,13 +1077,13 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             logMessageTiming(
                 stage = "toolpkg.getMainScript.readBytes",
                 startTimeMs = readBytesStartTime,
-                details = "container=${runtime.packageName}, sourceType=${runtime.sourceType}, entry=${runtime.mainEntry}, bytes=${bytes.size}"
+                details = "container=${runtime.packageName}, sourceType=${runtime.sourceType}, entry=${runtime.mainEntry}, bytes=${bytes.size}",
             )
             val script = bytes.toString(StandardCharsets.UTF_8)
             logMessageTiming(
                 stage = "toolpkg.getMainScript.total",
                 startTimeMs = totalStartTime,
-                details = "container=${runtime.packageName}, entry=${runtime.mainEntry}, scriptLength=${script.length}"
+                details = "container=${runtime.packageName}, entry=${runtime.mainEntry}, scriptLength=${script.length}",
             )
             script
         } catch (e: Exception) {
@@ -1545,7 +1545,8 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             // 先将元数据解析为 JSONObject 以便修改 tools 数组中的每个元素
             val metadataJson = org.json.JSONObject(JsonValue.readHjson(metadataString).toString())
 
-            // 统一历史键名/值格式，避免 enabledByDefault ，Kotlin 侧被错误解析为默认，            normalizeJsPackageMetadata(metadataJson)
+            // 统一历史键名/值格式，避免 enabledByDefault ，Kotlin 侧被错误解析为默认，
+            normalizeJsPackageMetadata(metadataJson)
 
             // 检查并修复 tools 数组中的元素，确保每个工具都，script 字段
             if (metadataJson.has("tools") && metadataJson.get("tools") is org.json.JSONArray) {
@@ -1625,12 +1626,12 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         normalizeBooleanFieldAlias(
             metadataJson = metadataJson,
             canonicalKey = "enabledByDefault",
-            legacyAlias = "enabled_by_default"
+            legacyAlias = "enabled_by_default",
         )
         normalizeBooleanFieldAlias(
             metadataJson = metadataJson,
             canonicalKey = "isBuiltIn",
-            legacyAlias = "is_built_in"
+            legacyAlias = "is_built_in",
         )
         normalizeCategoryField(metadataJson)
     }
@@ -2331,7 +2332,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 toolName = toolName,
                 success = false,
                 result = StringResultData(""),
-                error = "Missing required parameter: package_name"
+                error = "Missing required parameter: package_name",
             )
         }
 
@@ -2341,7 +2342,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 toolName = toolName,
                 success = false,
                 result = StringResultData(""),
-                error = "ToolPkg container '${normalizedPackageName}' is not a package and cannot be activated."
+                error = "ToolPkg container '${normalizedPackageName}' is not a package and cannot be activated.",
             )
         }
 
@@ -2352,7 +2353,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 toolName = toolName,
                 success = false,
                 result = StringResultData(""),
-                error = "Skill '${normalizedPackageName}' is set to not show to AI"
+                error = "Skill '${normalizedPackageName}' is set to not show to AI",
             )
         }
 

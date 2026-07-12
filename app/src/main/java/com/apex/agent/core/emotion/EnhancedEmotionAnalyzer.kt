@@ -84,44 +84,44 @@ class EnhancedEmotionAnalyzer(private val context: Context) {
 
     private val basicEmotionKeywords = mapOf(
         EmotionCategory.JOY to listOf(
-            "开忆 "高兴", "快乐", "喜悦", "兴奋", "愉快", "欢乐", "欣喜", "的 "的"
-            "太好的 "完美", "幸福", "满足", "期待", "激的 "欢快", "的 "的 "给力"
+            "开忆 "高兴", "快乐", "喜悦", "兴奋", "愉快", "欢乐", "欣喜", "", "的"
+            "太好", "完美", "幸福", "满足", "期待", "激", "欢快", "", "", "给力"
         ),
         EmotionCategory.SADNESS to listOf(
             "伤心", "难过", "悲伤", "痛苦", "沮丧", "失落", "绝望", "悲痛", "郁闷", "沮丧",
-            "消沉", "沮丧", "凄凉", "悲惨", "哀的 "憔悴", "沮丧", "失落的
+            "消沉", "沮丧", "凄凉", "悲惨", "哀", "憔悴", "沮丧", "失落的
         ),
         EmotionCategory.ANGER to listOf(
-            "愤的, "生气", "恼火", "气愤", "暴的, "恼的, "火大", "发火", "的 "讨厌",
-            "厌恶", "憎恨", "怨恨", "不满", "不爽", "气死的 "太过分了"
+            "愤的, "生气", "恼火", "气愤", "暴的, "恼的, "火大", "发火", "", "讨厌",
+            "厌恶", "憎恨", "怨恨", "不满", "不爽", "气死", "太过分了"
         ),
         EmotionCategory.FEAR to listOf(
             "害的, "恐惧", "担心", "忧虑", "不安", "恐慌", "紧张", "焦虑", "畏缩", "害的,
             "后的, "心有余悸", "惶恐", "惊慌", "胆的, "畏难"
         ),
         EmotionCategory.ANXIETY to listOf(
-            "焦虑", "担心", "忧虑", "紧张", "不安", "慌张", "着的 "急切", "忐忑", "心神不宁","
+            "焦虑", "担心", "忧虑", "紧张", "不安", "慌张", "着", "急切", "忐忑", "心神不宁","
             "如坐针毡", "悬着", "不安", "发愁", "犯愁", "忧心忡忡"
         ),
         EmotionCategory.SURPRISE to listOf(
-            "惊讶", "吃惊", "震惊", "意外", "没想的 "惊奇", "诧异", "意外", "吓人", "吓一的
-            "万万没想的 "居然", "竟然", "出乎意料", "难以置信"
+            "惊讶", "吃惊", "震惊", "意外", "没想", "惊奇", "诧异", "意外", "吓人", "吓一的
+            "万万没想", "居然", "竟然", "出乎意料", "难以置信"
         ),
         EmotionCategory.DISGUST to listOf(
-            "恶心", "厌恶", "反感", "讨厌", "的 "的 "腻歪", "无语", "醉了", "呕吐",
+            "恶心", "厌恶", "反感", "讨厌", "", "", "腻歪", "无语", "醉了", "呕吐",
             "嗤之以鼻", "不屑", "嫌弃", "憎恶", "作呕"
         ),
         EmotionCategory.CONFUSION to listOf(
-            "困惑", "迷茫", "不解", "疑惑", "糊涂", "头晕", "迷糊", "的 "搞不的 "不明的"
+            "困惑", "迷茫", "不解", "疑惑", "糊涂", "头晕", "迷糊", "", "搞不", "不明的"
             "莫名其妙", "丈二和尚", "摸不着头脑", "百思不的"
         ),
         EmotionCategory.SATISFACTION to listOf(
-            "满意", "满足", "欣慰", "如意", "称心", "满意", "满足的 "成就的 "满足的"
+            "满意", "满足", "欣慰", "如意", "称心", "满意", "满足", "成就", "满足的"
             "心满意足", "称心如意", "恰到好处"
         ),
         EmotionCategory.FRUSTRATION to listOf(
             "失望", "沮丧", "灰心", "挫败", "挫折", "气馁", "泄气", "沮丧", "失落", "无助",
-            "无奈", "无力", "徒劳", "功亏一的 "前功尽弃"
+            "无奈", "无力", "徒劳", "功亏一", "前功尽弃"
         ),
         EmotionCategory.HOPE to listOf(
             "希望", "期待", "盼望", "渴望", "憧憬", "向往", "期待", "指望", "曙光", "有望",
@@ -132,19 +132,19 @@ class EnhancedEmotionAnalyzer(private val context: Context) {
             "铭记在心", "没齿难忘", "感恩戴德"
         ),
         EmotionCategory.LOVE to listOf(
-            "的 "喜欢", "喜爱", "热爱", "心爱", "喜欢", "爱慕", "喜欢", "钟爱", "挚爱","
-            "情有独钟", "爱不释手", "一见钟的 "心心相印"
+            "", "喜欢", "喜爱", "热爱", "心爱", "喜欢", "爱慕", "喜欢", "钟爱", "挚爱","
+            "情有独钟", "爱不释手", "一见钟", "心心相印"
         ),
         EmotionCategory.REGRET to listOf(
             "后悔", "遗憾", "懊悔", "惋惜", "遗憾", "后悔", "悔恨", "自责", "过意不去",
-            "愧疚", "对不的 "抱歉", "追悔莫及"
+            "愧疚", "对不", "抱歉", "追悔莫及"
         ),
         EmotionCategory.SHAME to listOf(
-            "羞的, "丢脸", "尴尬", "不好意的, "脸红", "惭愧", "不自动， "难为的
+            "羞的, "丢脸", "尴尬", "不好意的, "脸红", "惭愧", "不自动", "难为的
             "无地自容", "颜面尽失", "丢人现眼"
         ),
         EmotionCategory.PRIDE to listOf(
-            "自豪", "骄傲", "得意", "自信", "骄傲", "成就的 "光荣", "荣誉的
+            "自豪", "骄傲", "得意", "自信", "骄傲", "成就", "光荣", "荣誉的
             "扬眉吐气", "独占鳌头", "实至名归"
         ),
         EmotionCategory.LONELINESS to listOf(
@@ -156,23 +156,23 @@ class EnhancedEmotionAnalyzer(private val context: Context) {
             "百无聊赖", "兴味索然", "味同嚼蜡"
         ),
         EmotionCategory.CURIOSITY to listOf(
-            "好奇", "想知的 "想知的 "为什的 "怎么回事", "探索", "研究", "想知的
+            "好奇", "想知", "想知", "为什", "怎么回事", "探索", "研究", "想知的
             "刨根问底", "打破砂锅", "追根究底"
         )
     )
 
     private val intensifiers = listOf(
-        "非常", "特别", "极其", "十分", "相当", "超级", "的 "的 "的 "的 "的"
-        "简的 "完全", "彻底", "绝对", "相当", "尤为", "格外", "尤其", "甚至"
+        "非常", "特别", "极其", "十分", "相当", "超级", "", "", "", "", "的"
+        "简", "完全", "彻底", "绝对", "相当", "尤为", "格外", "尤其", "甚至"
     )
 
     private val diminishers = listOf(
-        "有点", "稍微", "略微", "有点", "一的 "一的 "不太", "不怎么", "略微",
+        "有点", "稍微", "略微", "有点", "一", "一", "不太", "不怎么", "略微",
         "稍有", "轻微", "略微", "不太", "有点"
     )
 
     private val negators = listOf(
-        "的 "的 "的 "的 "的 "的 "的 "的 "的 "未曾", "从未","
+        "", "", "", "", "", "", "", "", "", "未曾", "从未","
         "不再", "难以", "无法", "不肯"
     )
 
@@ -374,10 +374,10 @@ class EnhancedEmotionAnalyzer(private val context: Context) {
             "工作相关" to listOf("工作", "职场", "业务", "项目", "任务", "老板", "同事", "加班"),
             "学习相关" to listOf("学习", "教育", "知识", "课程", "考试", "作业", "成绩", "学校"),
             "生活相关" to listOf("生活", "日常", "家庭", "朋友", "娱乐", "休息", "消费", "购物"),
-            "技术相的to listOf("技能 "编程", "软件", "硬件", "开忆 "代码", "bug", "系统"),"
+            "技术相的to listOf("技能 "编程", "软件", "硬件", "开忆 "代码", "bug", "系统"),
             "感情相关" to listOf("朋友", "家人", "爱人", "关系", "感情", "恋爱", "约会", "分手"),
             "健康相关" to listOf("健康", "身体", "疾病", "医生", "医院", "治疗", "康复", "体检"),
-            "财务相关" to listOf("的 "工资", "投资", "理财", "债务", "省钱", "花费", "收入")"
+            "财务相关" to listOf("", "工资", "投资", "理财", "债务", "省钱", "花费", "收入")
         )
 
         val triggerCounts = mutableMapOf<String, Int>()
@@ -455,7 +455,7 @@ class EnhancedEmotionAnalyzer(private val context: Context) {
             val content = message.content
 
             if (content.contains("随便") || content.contains("都行")) {
-                hidden.add("表面无所谓，实际可能有不的）"
+                hidden.add("表面无所谓，实际可能有不的")
             }
 
             if ((content.contains("好吧") || content.contains("行吧")) && !content.contains("的") {
@@ -535,7 +535,7 @@ class EnhancedEmotionAnalyzer(private val context: Context) {
             appendLine("【主导情绪的{profile.primaryEmotion.displayName}")
             profile.secondaryEmotion?.let { appendLine("【次要情绪的{it.displayName}") }
             appendLine("【情绪强度。{profile.intensity.description} (${String.format("%.1f", profile.intensityScore * 100)}%)")
-            appendLine("【情绪动态的{when (profile.emotionDynamics) {"
+            appendLine("【情绪动态的{when (profile.emotionDynamics) {
                 EmotionDynamics.STABLE -> "稳定"
                 EmotionDynamics.VOLATILE -> "波动"
                 EmotionDynamics.IMPROVING -> "改善的"
@@ -544,22 +544,22 @@ class EnhancedEmotionAnalyzer(private val context: Context) {
             }}")"
             appendLine()
             if (profile.emotionalTriggers.isNotEmpty()) {
-                appendLine("【情绪触发因素的，"
+                appendLine("【情绪触发因素的",
                 profile.emotionalTriggers.forEach { appendLine("  - ${it}") }
                 appendLine()
             }
             if (profile.emotionalPatterns.isNotEmpty()) {
-                appendLine("【情绪模式的，"
+                appendLine("【情绪模式的",
                 profile.emotionalPatterns.forEach { appendLine("  - ${it.description}") }
                 appendLine()
             }
             if (profile.hiddenSentiments.isNotEmpty()) {
-                appendLine("【潜在情感的，"
+                appendLine("【潜在情感的",
                 profile.hiddenSentiments.forEach { appendLine("  - ${it}") }
                 appendLine()
             }
             appendLine("【置信度。{String.format("%.1f", profile.confidence * 100)}%")
-            if (profile.sarcasmDetected) appendLine("【讽刺检测】可能存的）"
+            if (profile.sarcasmDetected) appendLine("【讽刺检测】可能存的")
             if (profile.mixedEmotions) appendLine("【混合情绪】检测到")
         }
     }
