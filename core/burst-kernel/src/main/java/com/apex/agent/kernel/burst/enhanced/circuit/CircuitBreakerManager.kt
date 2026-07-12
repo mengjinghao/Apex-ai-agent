@@ -72,7 +72,7 @@ class CircuitBreakerManager(
      */
     suspend fun execute(key: String, action: suspend () -> Result<*>): Result<*> {
         if (!tryAcquire(key)) {
-            return Result.failure<Nothing>(CircuitOpenException("断路器 $key 开启中"))
+            return Result.failure<Any>(CircuitOpenException("断路器 $key 开启中"))
         }
 
         return try {
@@ -85,7 +85,7 @@ class CircuitBreakerManager(
             result
         } catch (e: Exception) {
             recordFailure(key, e)
-            Result.failure<Nothing>(e)
+            Result.failure<Any>(e)
         }
     }
 

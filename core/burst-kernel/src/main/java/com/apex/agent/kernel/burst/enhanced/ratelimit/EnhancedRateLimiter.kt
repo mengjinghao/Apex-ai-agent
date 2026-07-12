@@ -164,7 +164,7 @@ class EnhancedRateLimiter(
      * 记录成功/失败（用于自适应）
      */
     fun recordResult(key: String, success: Boolean) {
-        val rates = successRates.computeIfAbsent(key) { mutableListOf() }
+        val rates = successRates.computeIfAbsent(key) { mutableListOf<Boolean>() }
         synchronized(rates) {
             rates.add(success)
             while (rates.size > 100) rates.removeAt(0)

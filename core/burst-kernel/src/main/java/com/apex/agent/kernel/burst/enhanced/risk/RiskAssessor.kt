@@ -9,42 +9,42 @@ import java.util.concurrent.ConcurrentHashMap
  * - 基于任务复杂度 + 工具危险级 + 历史失败率 + 资源压力
  * - 高风险时自动降级（关闭推测/降低并发/要求确认）
  */
+data class RiskAssessment(
+    val score: Float,             // 0..1
+    val level: RiskLevel,
+    val factors: List<RiskFactor>,
+    val recommendation: DegradationStrategy
+)
+
+enum class RiskLevel { SAFE, LOW, MEDIUM, HIGH, CRITICAL }
+
+data class RiskFactor(
+    val name: String,
+    val weight: Float,
+    val value: Float,
+    val contribution: Float
+)
+
+enum class DegradationStrategy {
+    NONE,                       // 无需降级
+    REDUCE_CONCURRENCY,         // 降低并发
+    DISABLE_SPECULATIVE,        // 关闭推测执行
+    REQUIRE_HUMAN_CONFIRM,      // 要求人工确认
+    SWITCH_TO_SAFE_PROFILE,     // 切换到安全配置
+    ABORT                       // 中止
+}
+
+data class TaskContext(
+    val taskComplexity: Int,       // 1-5
+    val toolDangerLevel: Int,      // 1-5
+    val historicalFailureRate: Float,
+    val resourcePressure: Float,
+    val isRootRequired: Boolean,
+    val affectsUserData: Boolean,
+    val isReversible: Boolean
+)
+
 class RiskAssessor {
-
-    data class RiskAssessment(
-        val score: Float,             // 0..1
-        val level: RiskLevel,
-        val factors: List<RiskFactor>,
-        val recommendation: DegradationStrategy
-    )
-
-    enum class RiskLevel { SAFE, LOW, MEDIUM, HIGH, CRITICAL }
-
-    data class RiskFactor(
-        val name: String,
-        val weight: Float,
-        val value: Float,
-        val contribution: Float
-    )
-
-    enum class DegradationStrategy {
-        NONE,                       // 无需降级
-        REDUCE_CONCURRENCY,         // 降低并发
-        DISABLE_SPECULATIVE,        // 关闭推测执行
-        REQUIRE_HUMAN_CONFIRM,      // 要求人工确认
-        SWITCH_TO_SAFE_PROFILE,     // 切换到安全配置
-        ABORT                       // 中止
-    }
-
-    data class TaskContext(
-        val taskComplexity: Int,       // 1-5
-        val toolDangerLevel: Int,      // 1-5
-        val historicalFailureRate: Float,
-        val resourcePressure: Float,
-        val isRootRequired: Boolean,
-        val affectsUserData: Boolean,
-        val isReversible: Boolean
-    )
 
     private val assessmentHistory = mutableListOf<RiskAssessment>()
     private val factorWeights = ConcurrentHashMap<String, Float>()

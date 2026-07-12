@@ -15,8 +15,8 @@ import com.apex.agent.kernel.burst.enhanced.risk.RiskAssessor
 import com.apex.agent.kernel.burst.enhanced.strategy.StrategyHotSwapper
 import com.apex.agent.kernel.burst.enhanced.timetravel.TimeTravelDebugger
 import com.apex.agent.kernel.burst.enhanced.universe.ParallelUniverseExplorer
-import com.apex.agent.kernel.burst.enhanced.risk.RiskAssessor.RiskAssessment
-import com.apex.agent.kernel.burst.enhanced.risk.RiskAssessor.TaskContext
+import com.apex.agent.kernel.burst.enhanced.risk.RiskAssessment
+import com.apex.agent.kernel.burst.enhanced.risk.TaskContext
 
 /**
  * 狂暴模式增强编排器

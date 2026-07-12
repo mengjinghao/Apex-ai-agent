@@ -195,10 +195,10 @@ class BurstStateManager(app: Application) : IBurstStateManager {
                 queue.clear()
                 logs.take(MAX_INMEMORY_LOGS_PER_TASK).forEach { queue.add(it) }
                 logs
-            }.onFailure {
+            }.getOrElse {
                 Log.e(TAG, "getLogs failed for $taskId: ${it.message}")
                 emptyList<ExecutionLog>()
-            }.getOrNull() ?: emptyList<ExecutionLog>()
+            }
         }
     }
 

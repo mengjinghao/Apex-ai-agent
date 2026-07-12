@@ -87,7 +87,7 @@ class ResultValidator {
                     issues.add(ValidationIssue(rule.severity, rule.name, rule.errorMessage))
                     if (rule.severity == IssueSeverity.ERROR) score -= 0.2f
                 }
-            } catch (e: Exception) { android.util.Log.w("ResultValidator", "Validation rule failed: ${rule.name}", e) }
+            } catch (e: Exception) { System.err.println("ResultValidator: Validation rule failed: ${rule.name}: ${e.message}") }
         }
 
         val hasErrors = issues.any { it.severity == IssueSeverity.ERROR }

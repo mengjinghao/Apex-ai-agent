@@ -131,7 +131,7 @@ class EnhancedSkillEventBus(
     /**
      * 订阅特定类型
      */
-    inline fun <reified T : BurstEvent> subscribeType(): kotlinx.coroutines.flow.Flow<T> {
+    fun <reified T : BurstEvent> subscribeType(): kotlinx.coroutines.flow.Flow<T> {
         return _events.asSharedFlow().filter { it is T }.map { it as T }
     }
 
@@ -145,7 +145,7 @@ class EnhancedSkillEventBus(
     /**
      * 按类型查询历史
      */
-    inline fun <reified T : BurstEvent> getHistoryByType(limit: Int = 100): List<T> {
+    fun <reified T : BurstEvent> getHistoryByType(limit: Int = 100): List<T> {
         return eventHistory.filterIsInstance<T>().takeLast(limit)
     }
 
