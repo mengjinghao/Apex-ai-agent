@@ -637,7 +637,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "batch_concurrency",
                         type = "integer",
-                        description = "批量访问可选。并发请求数，默计",
+                        description = "批量访问可选。并发请求数，默认",
                         required = false,
                         default = "3",
                     ),
@@ -666,11 +666,11 @@ object SystemToolPrompts {
                     ToolParameterSchema(name = "scroll_to", type = "string", description = "滚动到：top (顶部，| bottom (底部，| element:CSS选择器| JSON {\"x\":0, \"y\":500}", required = false),
                     
                     // ==================== 等待与超时===================
-                    ToolParameterSchema(name = "wait_for_type", type = "string", description = "等待条件类型：element (元素，| text (文本，| timeout (超时，", required = false),
-                    ToolParameterSchema(name = "wait_for_selector", type = "string", description = "CSS选择器（wait_for_type=element时使用"), required = false),
-                    ToolParameterSchema(name = "wait_for_text", type = "string", description = "要等待的文本（wait_for_type=text时使用"), required = false),
-                    ToolParameterSchema(name = "wait_for_timeout_ms", type = "integer", description = "等待超时时间（毫秒），默计000", required = false, default = "5000"),
-                    ToolParameterSchema(name = "timeout_ms", type = "integer", description = "请求超时时间（毫秒），默计0000", required = false, default = "30000"),
+                    ToolParameterSchema(name = "wait_for_type", type = "string", description = "等待条件类型：element|text|timeout", required = false),
+                    ToolParameterSchema(name = "wait_for_selector", type = "string", description = "CSS选择器（wait_for_type=element时使用）"), required = false),
+                    ToolParameterSchema(name = "wait_for_text", type = "string", description = "要等待的文本（wait_for_type=text时使用）"), required = false),
+                    ToolParameterSchema(name = "wait_for_timeout_ms", type = "integer", description = "等待超时时间（毫秒），默认5000", required = false, default = "5000"),
+                    ToolParameterSchema(name = "timeout_ms", type = "integer", description = "请求超时时间（毫秒），默认30000", required = false, default = "30000"),
                     
                     // ==================== 会话管理 ====================
                     ToolParameterSchema(
@@ -689,7 +689,7 @@ object SystemToolPrompts {
                     
                     // ==================== 可靠态===================
                     ToolParameterSchema(name = "retry_count", type = "integer", description = "失败时最大重试次数，默认0", required = false, default = "0"),
-                    ToolParameterSchema(name = "retry_delay_ms", type = "integer", description = "重试间隔（毫秒），默计000", required = false, default = "1000"),
+                    ToolParameterSchema(name = "retry_delay_ms", type = "integer", description = "重试间隔（毫秒），默认000", required = false, default = "1000"),
                     ToolParameterSchema(name = "retry_on_status", type = "string", description = "触发重试的HTTP状态码JSON数组，默认[408,429,500,502,503,504]", required = false, default = "[408,429,500,502,503,504]"),
                     ToolParameterSchema(name = "retry_on_error", type = "string", description = "触发重试的错误类型JSON数组，默认[\"timeout\",\"network_error\"]", required = false, default = "[\"timeout\",\"network_error\"]"),
                     
@@ -988,7 +988,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(name = "chunk_index", type = "integer", description = "可选， 整数, 读取特定编号的分块例如3表示符块", required = false),
                     ToolParameterSchema(name = "chunk_range", type = "string", description = "可选，字符串，读取分块范围，格式为\"起始-结束\"，例如\"3-7\"表示符到第7块", required = false),
                     ToolParameterSchema(name = "query", type = "string", description = "可选，字符串，在文档内部搜索匹配分块。可以传自然语言问题、空格分隔的短语，或使用 `|` 分隔多个关键词，例如 `error log timeout` 成`error|timeout|retry`。在单个关键词内部，`*` 可作为模糊通配占位符，例如 `error*timeout`", required = false),
-                    ToolParameterSchema(name = "limit", type = "integer", description = "可选， int >= 1, 使用 query 时最多返回多少个文档分块，默计0", required = false, default = "20")
+                    ToolParameterSchema(name = "limit", type = "integer", description = "可选， int >= 1, 使用 query 时最多返回多少个文档分块，默认0", required = false, default = "20")
                 )
             ),
             ToolPrompt(
@@ -1102,7 +1102,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "max_paths",
                         type = "integer",
-                        description = "最大返回路径数，默计0",
+                        description = "最大返回路径数，默认0",
                         required = false,
                         default = "10",
                     )

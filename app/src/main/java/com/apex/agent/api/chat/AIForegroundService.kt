@@ -84,7 +84,6 @@ private fun AudioRecordingConfiguration.tryGetClientUid(): Int? {
     }
 }
 
-}
 private fun AudioRecordingConfiguration.tryGetClientPackageName(): String? {
     return try {
         val method = javaClass.methods.firstOrNull {
@@ -95,11 +94,9 @@ private fun AudioRecordingConfiguration.tryGetClientPackageName(): String? {
     } catch (_: Exception) {
         null
     }
-} catch (_: Exception) {
-        null
-    }
+}
 
-}/** 前台服务，用于在AI进行长时间处理时保持应用活跃，防止被系统杀死？该服务不执行实际工作，仅通过显示一个持久通知来提升应用的进程优先级？*/
+/** 前台服务，用于在AI进行长时间处理时保持应用活跃，防止被系统杀死？该服务不执行实际工作，仅通过显示一个持久通知来提升应用的进程优先级？*/
 class AIForegroundService : Service() {
     companion object {
         private const val TAG = "AIForegroundService"
