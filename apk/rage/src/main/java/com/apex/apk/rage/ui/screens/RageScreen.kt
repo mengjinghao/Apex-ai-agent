@@ -336,8 +336,8 @@ private fun StepCard(step: AgentStepRecord) {
 private fun TypingDots() {
     val t = rememberInfiniteTransition("tp")
     val a1 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse), "1")
-    val a2 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse, delayMillis = 150), "2")
-    val a3 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse, delayMillis = 300), "3")
+    val a2 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(500, delayMillis = 150), RepeatMode.Reverse), "2")
+    val a3 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(500, delayMillis = 300), RepeatMode.Reverse), "3")
     Row(Modifier.padding(horizontal = 16.dp)) {
         Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
             Row(Modifier.padding(10.dp, 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -455,8 +455,8 @@ private fun InputBar(
             IconButton(onClick = onToggleAdvanced) { Icon(if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore, "设置") }
             OutlinedTextField(text, onTextChange, Modifier.weight(1f), placeholder = { Text("输入任务，4 Agent 自动拆解执行...") }, shape = RoundedCornerShape(24.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RageColors.DarkPrimary, unfocusedBorderColor = MaterialTheme.colorScheme.outline), maxLines = 4)
             Spacer(Modifier.width(4.dp))
-            if (isExecuting) FilledIconButton(onStop, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = RageColors.Failed)) { Icon(Icons.Default.Stop, "停止") }
-            else FilledIconButton(onExecute, enabled = text.isNotBlank(), shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = RageColors.DarkPrimary)) { Icon(Icons.AutoMirrored.Filled.Send, "执行") }
+            if (isExecuting) FilledIconButton(onStop, shape = RoundedCornerShape(50), colors = IconButtonDefaults.filledIconButtonColors(containerColor = RageColors.Failed)) { Icon(Icons.Default.Stop, "停止") }
+            else FilledIconButton(onExecute, enabled = text.isNotBlank(), shape = RoundedCornerShape(50), colors = IconButtonDefaults.filledIconButtonColors(containerColor = RageColors.DarkPrimary)) { Icon(Icons.AutoMirrored.Filled.Send, "执行") }
         }
     }
 }
