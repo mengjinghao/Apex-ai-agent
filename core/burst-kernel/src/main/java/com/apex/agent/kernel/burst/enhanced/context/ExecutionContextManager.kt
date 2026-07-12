@@ -164,7 +164,7 @@ class ExecutionContextManager {
         val sb = StringBuilder()
         sb.appendLine("═══ 追踪报告: $traceId ═══")
         sb.appendLine("Span 数: ${spans.size}")
-        val totalDuration = spans.maxOfOrNull { it.completedAt ?: 0 } - spans.minOfOrNull { it.startedAt ?: 0 }
+        val totalDuration = (spans.maxOfOrNull { it.completedAt ?: 0 } ?: 0L) - (spans.minOfOrNull { it.startedAt ?: 0 } ?: 0L)
         sb.appendLine("总耗时: ${totalDuration}ms")
         sb.appendLine()
         sb.appendLine("Span 链:")

@@ -1,5 +1,8 @@
 package com.apex.agent.kernel.burst.enhanced.executor
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -95,10 +98,10 @@ class EnhancedToolExecutor {
 
     suspend fun executeParallel(executions: List<Pair<String, Map<String, Any>>>): ParallelResult {
         val start = System.currentTimeMillis()
-        val results = kotlinx.coroutines.coroutineScope {
+        val results = coroutineScope {
             executions.map { (toolId, args) ->
-                kotlinx.coroutines.async { execute(toolId, args) }
-            }.let { kotlinx.coroutines.awaitAll(*it.toTypedArray()) }
+                async { execute(toolId, args) }
+            }.let { awaitAll(*it.toTypedArray()) }
         }
         return ParallelResult(
             results = results,

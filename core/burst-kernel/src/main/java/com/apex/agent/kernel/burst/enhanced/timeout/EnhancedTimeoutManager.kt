@@ -174,7 +174,7 @@ class EnhancedTimeoutManager {
         if (history.size < 5) return baseTimeout
 
         val avg = history.average()
-        val p95 = history.sorted().drop(history.size * 95 / 100).firstOrNull() ?: avg
+        val p95 = history.sorted().drop(history.size * 95 / 100).firstOrNull() ?: avg.toLong()
 
         // 超时 = P95 * 1.5，但不超过 maxTimeout
         val adapted = (p95 * 1.5).toLong()

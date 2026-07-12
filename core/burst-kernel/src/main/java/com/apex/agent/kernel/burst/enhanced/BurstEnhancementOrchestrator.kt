@@ -15,6 +15,8 @@ import com.apex.agent.kernel.burst.enhanced.risk.RiskAssessor
 import com.apex.agent.kernel.burst.enhanced.strategy.StrategyHotSwapper
 import com.apex.agent.kernel.burst.enhanced.timetravel.TimeTravelDebugger
 import com.apex.agent.kernel.burst.enhanced.universe.ParallelUniverseExplorer
+import com.apex.agent.kernel.burst.enhanced.risk.RiskAssessment
+import com.apex.agent.kernel.burst.enhanced.risk.TaskContext
 
 /**
  * 狂暴模式增强编排器
@@ -97,7 +99,7 @@ class BurstEnhancementOrchestrator(
         taskId: String,
         skillId: String,
         input: String,
-        taskContext: risk.TaskContext? = null
+        taskContext: TaskContext? = null
     ): BeforeTaskResult {
         val injections = mutableListOf<String>()
 
@@ -156,7 +158,7 @@ class BurstEnhancementOrchestrator(
         success: Boolean,
         durationMs: Long,
         error: Throwable? = null,
-        startFrame: battle.BattleRecorder.BattleFrame? = null,
+        startFrame: BattleRecorder.BattleFrame? = null,
         complexity: Int = 1,
         quality: Float = 1.0f
     ) {
@@ -176,7 +178,7 @@ class BurstEnhancementOrchestrator(
                 rageMeter?.let { rage ->
                     recorder.recordEnd(
                         frame,
-                        if (success) battle.BattleRecorder.FrameState.SUCCESS else battle.BattleRecorder.FrameState.FAILED,
+                        if (success) BattleRecorder.FrameState.SUCCESS else BattleRecorder.FrameState.FAILED,
                         output, rage.rage.value, rage.state.value.name
                     )
                 }
@@ -272,7 +274,7 @@ class BurstEnhancementOrchestrator(
             sb.appendLine("═══ 断路器 ═══")
             val circuits = it.getAllCircuits()
             sb.appendLine("监控数: ${circuits.size}")
-            val openCount = circuits.count { it.state == circuit.CircuitBreakerManager.CircuitState.OPEN }
+            val openCount = circuits.count { it.state == CircuitBreakerManager.CircuitState.OPEN }
             if (openCount > 0) sb.appendLine("⚠️ 开启中: $openCount")
             sb.appendLine()
         }
@@ -315,9 +317,9 @@ class BurstEnhancementOrchestrator(
     }
 
     data class BeforeTaskResult(
-        val riskAssessment: risk.RiskAssessment?,
+        val riskAssessment: RiskAssessment?,
         val avoidancePrompt: String?,
         val injections: List<String>,
-        val startFrame: battle.BattleRecorder.BattleFrame?
+        val startFrame: BattleRecorder.BattleFrame?
     )
 }

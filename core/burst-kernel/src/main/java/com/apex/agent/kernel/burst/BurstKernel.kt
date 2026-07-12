@@ -5,7 +5,7 @@ import com.apex.agent.core.arvr.ARVRInteractionManager
 import com.apex.agent.data.burstmode.performance.BurstAdaptiveGovernor
 import com.apex.agent.data.burstmode.visualization.BurstSpatialBridge
 import com.apex.agent.domain.model.BurstTask
-import com.apex.agent.domain.model.KernelState
+// KernelState resolved via local typealias in this package (see KernelState.kt)
 import com.apex.agent.kernel.burst.utility.UtilityProcessorImpl
 import com.apex.agent.plugins.burst.base.BurstSkillContext
 import com.apex.agent.plugins.burst.base.BurstSkillManifest

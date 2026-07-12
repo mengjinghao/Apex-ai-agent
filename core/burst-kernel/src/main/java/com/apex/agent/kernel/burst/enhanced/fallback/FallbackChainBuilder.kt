@@ -151,7 +151,7 @@ class FallbackChainBuilder {
         val newStats = if (current == null) {
             SkillReliability(skillId, if (success) 1f else 0f, durationMs, 1,
                 if (!success) System.currentTimeMillis() else null,
-                if (error != null) mapOf(error::class.simpleName ?: "Unknown" to 1) else emptyMap())
+                if (error != null) mapOf((error::class.simpleName ?: "Unknown") to 1) else emptyMap())
         } else {
             val newTotal = current.totalExecutions + 1
             val newSuccessCount = (current.successRate * current.totalExecutions + if (success) 1 else 0)

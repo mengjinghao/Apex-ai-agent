@@ -52,6 +52,9 @@ class BurstAdaptiveGovernor(private val app: Application) {
         private const val THERMAL_LIGHT = 1
         private const val THERMAL_MODERATE = 2
         private const val THERMAL_SEVERE = 3
+
+        // 与 BurstTaskScheduler.DEFAULT_MAX_CONCURRENCY 对齐
+        private const val DEFAULT_MAX_CONCURRENCY = 3
     }
 
     /**
@@ -413,8 +416,4 @@ class BurstAdaptiveGovernor(private val app: Application) {
 
     private enum class DeviceProfile { LOW_END, MID_RANGE, HIGH_END }
 
-    companion object {
-        // 与 BurstTaskScheduler.DEFAULT_MAX_CONCURRENCY 对齐
-        private const val DEFAULT_MAX_CONCURRENCY = 3
-    }
 }

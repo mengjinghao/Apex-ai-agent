@@ -59,7 +59,7 @@ class QuotaManager {
     private val activeLeases = ConcurrentHashMap<String, QuotaLease>()
     private val _usage = MutableStateFlow(QuotaUsage(0, 0, 0, 0, 0, 0))
     val usage: StateFlow<QuotaUsage> = _usage.asStateFlow()
-    private val exceedAction = QuotaExceedAction.THROTTLE
+    private var exceedAction = QuotaExceedAction.THROTTLE
 
     fun setQuota(newQuota: ResourceQuota) { quota = newQuota }
     fun setExceedAction(action: QuotaExceedAction) { exceedAction = action }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
@@ -185,6 +186,3 @@ class EnhancedSkillEventBus(
 
     private fun generateId(): String = "evt_${eventCounter.incrementAndGet()}"
 }
-
-// 导入 map
-import kotlinx.coroutines.flow.map

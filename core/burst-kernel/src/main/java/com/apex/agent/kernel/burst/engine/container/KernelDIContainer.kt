@@ -19,7 +19,7 @@ class KernelDIContainer {
         val scope: ComponentScope,
         val createdAt: Long = System.currentTimeMillis(),
         val instance: Any? = null,
-        val factory: (() -> Any)? = null
+        val factory: (() -> Any?)? = null
     )
 
     enum class ComponentScope { SINGLETON, PROTOTYPE, LAZY }

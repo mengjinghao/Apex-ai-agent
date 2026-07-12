@@ -156,7 +156,7 @@ class ProgressTracker {
         return (totalEstimated - elapsed).toLong().coerceAtLeast(0)
     }
 
-    private suspend fun emitEvent(taskId: String, type: ProgressEventType, progress: Progress) {
-        _events.emit(ProgressEvent(taskId, type, progress))
+    private fun emitEvent(taskId: String, type: ProgressEventType, progress: Progress) {
+        _events.tryEmit(ProgressEvent(taskId, type, progress))
     }
 }

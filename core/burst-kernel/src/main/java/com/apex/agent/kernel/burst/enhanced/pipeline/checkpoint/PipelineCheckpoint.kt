@@ -87,7 +87,7 @@ class PipelineCheckpoint {
     fun markComplete(pipelineId: String) {
         val pipelineCps = checkpoints[pipelineId] ?: return
         val last = pipelineCps.lastEntry()?.value ?: return
-        pipelineCps[last.key] = last.copy(isComplete = true)
+        pipelineCps[last.stepIndex] = last.copy(isComplete = true)
     }
 
     /**

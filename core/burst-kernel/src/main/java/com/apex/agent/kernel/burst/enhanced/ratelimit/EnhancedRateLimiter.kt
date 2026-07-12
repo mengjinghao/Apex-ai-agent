@@ -243,8 +243,8 @@ class EnhancedRateLimiter(
         // 简化：只记录 LIMITED 事件
         if (action == LimitAction.LIMITED) {
             val event = LimitEvent(key, dimension, action, current, limit)
-            val current = _limitEvents.value
-            _limitEvents.value = (current + event).takeLast(100)
+            val existing = _limitEvents.value
+            _limitEvents.value = (existing + event).takeLast(100)
         }
     }
 
