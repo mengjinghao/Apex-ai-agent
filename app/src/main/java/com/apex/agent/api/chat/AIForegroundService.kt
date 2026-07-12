@@ -1494,9 +1494,7 @@ try)")                    wakeListeningMicActiveForRecordingDetection = false   
 
 }
             return
-}
-
-}
+        }
         } catch (e: Exception) {
             wakeListeningMicActiveForRecordingDetection = false
             AppLogger.e(TAG, "启动唤醒监听失败: ${e.message}", e)
