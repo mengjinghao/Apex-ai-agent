@@ -145,7 +145,7 @@ class EnhancedSkillEventBus(
     /**
      * 按类型查询历史
      */
-    fun <reified T : BurstEvent> getHistoryByType(limit: Int = 100): List<T> {
+    inline fun <reified T : BurstEvent> getHistoryByType(limit: Int = 100): List<T> {
         return eventHistory.filterIsInstance<T>().takeLast(limit)
     }
 
