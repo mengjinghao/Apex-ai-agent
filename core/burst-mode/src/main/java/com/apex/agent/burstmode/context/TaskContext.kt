@@ -99,8 +99,9 @@ class TaskContext(
      * @return 类型匹配的值，不匹配返回 null
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T> getOrNull(key: String): T? {
-        val value = variables[key] ?: return parent?.getOrNull<T>(key)
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getOrNull(key: String): T? {
+        val value = variables[key] ?: return parent?.getOrNull(key)
         return if (value is T) value else null
     }
 
@@ -144,10 +145,10 @@ class TaskContext(
     fun increment(key: String, delta: Long = 1): Long {
         var newValue: Long
         do {
-            val current = get<Long>(key) ?: 0L
+            val current = (variables[key] as? Long) ?: 0L
             newValue = current + delta
         } while (!variables.replace(key, current, newValue))
-        notifyListeners(key, get(key) - delta, newValue)
+        notifyListeners(key, ((variables[key] as? Long) ?: 0L) - delta, newValue)
         return newValue
     }
 

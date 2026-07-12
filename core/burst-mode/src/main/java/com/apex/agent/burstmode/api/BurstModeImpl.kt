@@ -542,7 +542,7 @@ internal class BurstModeImpl(
             output = "BurstMode executed task: ${task.description.take(200)}",
             metrics = com.apex.agent.plugins.burst.base.SkillMetrics(
                 executionTimeMs = 0,
-                tokensProcessed = estimateTokens(task.description)
+                tokensProcessed = estimateTokens(task.description).toInt()
             )
         )
     }

@@ -1,6 +1,7 @@
 package com.apex.agent.burstmode.checkpoint
 
 import com.apex.agent.domain.model.BurstTask
+import com.apex.agent.domain.model.BurstInput
 import com.apex.agent.plugins.burst.base.BurstSkillResult
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -172,7 +173,7 @@ class FileCheckpointStore(private val directory: File) : CheckpointStore {
 
         return TaskCheckpoint(
             taskId = taskId,
-            task = BurstTask(id = taskId, description = ""),  // 简化
+            task = BurstTask(id = taskId, name = taskId, description = "", input = BurstInput()),  // 简化
             completedSteps = completedSteps,
             totalSteps = totalSteps,
             intermediateResult = null,
