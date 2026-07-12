@@ -1501,7 +1501,7 @@ try)")                    wakeListeningMicActiveForRecordingDetection = false   
             wakeListeningMicActiveForRecordingDetection = false
             AppLogger.e(TAG, "启动唤醒监听失败: ${e.message}", e)
             return
-}
+        }
         if (wakeListeningJob?.isActive == true) return
         wakeListeningJob =
         serviceScope.launch {
