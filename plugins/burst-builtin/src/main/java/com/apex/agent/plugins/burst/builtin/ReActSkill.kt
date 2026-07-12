@@ -280,8 +280,11 @@ class ReActSkill : IBurstSkill {
             )
             val result = runCatching { kernel.executeSkill(toolSkillId, toolTask) }
                 .getOrNull()
-            if (result != null && result.success && !result.output.isNullOrBlank()) {
-                return result.output
+            if (result != null && result.success) {
+                val output = result.output
+                if (!output.isNullOrBlank()) {
+                    return output
+                }
             }
             // result 失败则降级到下面的 mock（保留 ReAct 闭环可运行性）
         }

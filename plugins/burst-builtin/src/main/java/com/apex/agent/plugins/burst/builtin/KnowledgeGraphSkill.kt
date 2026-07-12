@@ -3,10 +3,8 @@ package com.apex.agent.plugins.burst.builtin
 import com.apex.agent.domain.model.BurstTask
 import com.apex.agent.plugins.burst.base.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync
-import kotlinx.coroutines.Dispatchers.Mutex
-import kotlinx.coroutines.sync
-import kotlinx.coroutines.Dispatchers.withLock
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 

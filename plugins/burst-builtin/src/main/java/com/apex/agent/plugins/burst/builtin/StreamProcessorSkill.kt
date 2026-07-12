@@ -3,10 +3,8 @@ package com.apex.agent.plugins.burst.builtin
 import com.apex.agent.domain.model.BurstTask
 import com.apex.agent.plugins.burst.base.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync
-import kotlinx.coroutines.Dispatchers.Semaphore
-import kotlinx.coroutines.sync
-import kotlinx.coroutines.Dispatchers.withPermit
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 /**
  * 流处理器技能

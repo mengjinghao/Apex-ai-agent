@@ -99,7 +99,7 @@ class TaskContext(
      * @return 类型匹配的值，不匹配返回 null
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T> getOrNull(key: String): T? {
+    fun <reified T> getOrNull(key: String): T? {
         val value = variables[key] ?: return parent?.getOrNull<T>(key)
         return if (value is T) value else null
     }

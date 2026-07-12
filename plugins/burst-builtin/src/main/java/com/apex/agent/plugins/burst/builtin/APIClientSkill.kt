@@ -3,12 +3,9 @@ package com.apex.agent.plugins.burst.builtin
 import com.apex.agent.domain.model.BurstTask
 import com.apex.agent.plugins.burst.base.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow
-import kotlinx.coroutines.Dispatchers.MutableStateFlow
-import kotlinx.coroutines.flow
-import kotlinx.coroutines.Dispatchers.StateFlow
-import kotlinx.coroutines.flow
-import kotlinx.coroutines.Dispatchers.asStateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class APIClientSkill : IBurstSkill {
     override lateinit var manifest: BurstSkillManifest
