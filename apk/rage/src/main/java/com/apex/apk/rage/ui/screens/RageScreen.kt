@@ -455,8 +455,8 @@ private fun InputBar(
             IconButton(onClick = onToggleAdvanced) { Icon(if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore, "设置") }
             OutlinedTextField(text, onTextChange, Modifier.weight(1f), placeholder = { Text("输入任务，4 Agent 自动拆解执行...") }, shape = RoundedCornerShape(24.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RageColors.DarkPrimary, unfocusedBorderColor = MaterialTheme.colorScheme.outline), maxLines = 4)
             Spacer(Modifier.width(4.dp))
-            if (isExecuting) FilledIconButton(onStop, shape = RoundedCornerShape(50), colors = IconButtonDefaults.colors(containerColor = RageColors.Failed)) { Icon(Icons.Default.Stop, "停止") }
-            else FilledIconButton(onExecute, enabled = text.isNotBlank(), shape = RoundedCornerShape(50), colors = IconButtonDefaults.colors(containerColor = RageColors.DarkPrimary)) { Icon(Icons.AutoMirrored.Filled.Send, "执行") }
+            if (isExecuting) FilledIconButton(onStop, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = RageColors.Failed)) { Icon(Icons.Default.Stop, "停止") }
+            else FilledIconButton(onExecute, enabled = text.isNotBlank(), shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = RageColors.DarkPrimary)) { Icon(Icons.AutoMirrored.Filled.Send, "执行") }
         }
     }
 }
