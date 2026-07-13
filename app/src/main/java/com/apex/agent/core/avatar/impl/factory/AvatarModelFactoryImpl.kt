@@ -137,42 +137,24 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
     }
 
     // private fun createDragonBonesModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
-    //
-        return try {
-    //
-        val folderPath = data["folderPath"] as? String ?: return null
-    //
-        val skeletonFile = data["skeletonFile"] as? String ?: return null
-    //
-        val textureJsonFile = data["textureJsonFile"] as? String ?: return null
-    //
-        val textureImageFile = data["textureImageFile"] as? String ?: return null
-    //
-        val isBuiltIn = data["isBuiltIn"] as? Boolean ?: false
-    //
-    //
-        val dataModel = DragonBonesModel(
-    //
-        id = id,
-    //
-        name = name,
-    //
-        folderPath = folderPath,
-    //
-        skeletonFile = skeletonFile,
-    //
-        textureJsonFile = textureJsonFile,
-    //
-        textureImageFile = textureImageFile,
-    //
-        isBuiltIn = isBuiltIn
+    //     return try {
+    //         val folderPath = data["folderPath"] as? String ?: return null
+    //         val skeletonFile = data["skeletonFile"] as? String ?: return null
+    //         val textureJsonFile = data["textureJsonFile"] as? String ?: return null
+    //         val textureImageFile = data["textureImageFile"] as? String ?: return null
+    //         val isBuiltIn = data["isBuiltIn"] as? Boolean ?: false
+    //         val dataModel = DragonBonesModel(
+    //             id = id,
+    //             name = name,
+    //             folderPath = folderPath,
+    //             skeletonFile = skeletonFile,
+    //             textureJsonFile = textureJsonFile,
+    //             textureImageFile = textureImageFile,
+    //             isBuiltIn = isBuiltIn
     //         )
-    //
-    //
-        DragonBonesAvatarModel(dataModel)
+    //         DragonBonesAvatarModel(dataModel)
     //     } catch (e: Exception) {
-    //
-        null
+    //         null
     //     }
     // }
         private fun createWebPModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
