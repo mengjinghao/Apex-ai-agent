@@ -189,7 +189,7 @@ android {
 }
 
 // Room schema 导出目录配置（用于迁移验证）
-ksp {
+kapt {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
