@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.parcelize)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.hilt.android)
     id("io.objectbox")
     // 模块归属校验 — 防止 lib:* 被打包进主 APK
