@@ -1021,4 +1021,60 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         val raw = title.ifBlank { "untitled" }
         return raw
             .replace("/", "_")
-            .replace("\\", "_") .trim() .ifBlank { "untitled" } } private fun encodeFileComponent(value: String): String { val raw = MemoryRepository.normalizeFolderPath(value) ?: throw IllegalArgumentException("Cannot encode blank path") return Base64.encodeToString( raw.toByteArray(StandardCharsets.UTF_8), Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING ) } private fun decodeFileComponent(value: String): String { if (value.isBlank() || value.contains('/')) { throw FileNotFoundException("Invalid encoded directory path") } if (!value.all { it.isLetterOrDigit() || it == '-' || it == '_' }) { throw FileNotFoundException("Invalid encoded directory path") } return try { val paddedValue = when (value.length % 4) { 0 -> value 2 -> "${value}==" 3 -> "${value}=" else -> throw FileNotFoundException("Invalid encoded directory path: ${value}") } val decodedBytes = Base64.decode(paddedValue, Base64.URL_SAFE or Base64.NO_WRAP) String(decodedBytes, StandardCharsets.UTF_8) } catch (_: IllegalArgumentException) { throw FileNotFoundException("Invalid encoded directory path: ${value}") } } private sealed class DocRef { abstract val profileId: String  object Root : DocRef() { override val profileId: String get() = throw IllegalStateException("Root has no profileId") } data class Profile(override val profileId: String) : DocRef() data class Directory( override val profileId: String, val path: String, val displayName: String ) : DocRef() data class Memory( override val profileId: String, val uuid: String ) : DocRef() } }
+            .replace("\\", "_")
+            .trim()
+            .ifBlank { "untitled" }
+    }
+
+    private fun encodeFileComponent(value: String): String {
+        val raw = MemoryRepository.normalizeFolderPath(value)
+            ?: throw IllegalArgumentException("Cannot encode blank path")
+        return Base64.encodeToString(
+            raw.toByteArray(StandardCharsets.UTF_8),
+            Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING
+        )
+    }
+
+    private fun decodeFileComponent(value: String): String {
+        if (value.isBlank() || value.contains('/')) {
+            throw FileNotFoundException("Invalid encoded directory path")
+        }
+        if (!value.all { it.isLetterOrDigit() || it == '-' || it == '_' }) {
+            throw FileNotFoundException("Invalid encoded directory path")
+        }
+        return try {
+            val paddedValue = when (value.length % 4) {
+                0 -> value
+                2 -> "${value}=="
+                3 -> "${value}="
+                else -> throw FileNotFoundException("Invalid encoded directory path: ${value}")
+            }
+            val decodedBytes = Base64.decode(paddedValue, Base64.URL_SAFE or Base64.NO_WRAP)
+            String(decodedBytes, StandardCharsets.UTF_8)
+        } catch (_: IllegalArgumentException) {
+            throw FileNotFoundException("Invalid encoded directory path: ${value}")
+        }
+    }
+
+    private sealed class DocRef {
+        abstract val profileId: String
+
+        object Root : DocRef() {
+            override val profileId: String
+                get() = throw IllegalStateException("Root has no profileId")
+        }
+
+        data class Profile(override val profileId: String) : DocRef()
+
+        data class Directory(
+            override val profileId: String,
+            val path: String,
+            val displayName: String
+        ) : DocRef()
+
+        data class Memory(
+            override val profileId: String,
+            val uuid: String
+        ) : DocRef()
+    }
+}

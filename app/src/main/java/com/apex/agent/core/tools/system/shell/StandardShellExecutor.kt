@@ -171,7 +171,24 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
             // 处理引号
         if (c == '\'' && !escaped && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes
-            } else if (c == '"' && !escaped && !inSingleQuotes) { inDoubleQuotes = !inDoubleQuotes } // 只在不在引号内时检测操作符 else if (!inSingleQuotes && !inDoubleQuotes && !escaped) { // 检测管， if (c == '|') { return true }  // 检  操作 if (c == '&') { return true }  // 检测重定向 if (c == '>' || c == '<') { return true }  // 检测分前 if (c == ';') { return true } } escaped = false i++ } return false } }  /** * 标准，ShellProcess 实现，使，Runtime.exec() */ private class StandardShellProcess(command: String) : ShellProcess { private val process: Process = if (containsShellOperators(command)) { Runtime.getRuntime().exec(arrayOf("sh", "-c", command)) } else { Runtime.getRuntime().exec(command) } override val stdout: Flow<String> = callbackFlow { try { BufferedReader(InputStreamReader(process.inputStream)).use { reader -> var line: String? while (reader.readLine().also { line = it } != null) { trySend(line ?: "") } } } catch (e: Exception) { // Process ended or error occurred } close() awaitClose { } }.flowOn(Dispatchers.IO) override val stderr: Flow<String> = callbackFlow { try { BufferedReader(InputStreamReader(process.errorStream)).use { reader -> var line: String? while (reader.readLine().also { line = it } != null) { trySend(line ?: "") } } } catch (e: Exception) { // Process ended or error occurred } close() awaitClose { } }.flowOn(Dispatchers.IO) override val isAlive: Boolean get() = process.isAlive  override fun destroy() { process.destroy() } override suspend fun waitFor(): Int = withContext(Dispatchers.IO) { process.waitFor() } companion object { /** * 检测命令是否包含需要shell解释的特殊操作符 */ private fun containsShellOperators(command: String): Boolean { // 预处理：标记引号内的内容，避免检测引号内的操作符 var inSingleQuotes = false var inDoubleQuotes = false var escaped = false var i = 0  while (i < command.length) { val c = command[i]  // 处理转义字符 if (c == '\\' && !escaped) { escaped = true i++ continue }  // 处理引号 if (c == '\'' && !escaped && !inDoubleQuotes) { inSingleQuotes = !inSingleQuotes } else if (c == '"' && !escaped && !inSingleQuotes) { inDoubleQuotes = !inDoubleQuotes
+            }
+else if (c == '"' && !escaped && !inSingleQuotes) { inDoubleQuotes = !inDoubleQuotes }
+// 只在不在引号内时检测操作符 else if (!inSingleQuotes && !inDoubleQuotes && !escaped) { // 检测管， if (c == '|') { return true }
+// 检  操作 if (c == '&') { return true }
+// 检测重定向 if (c == '>' || c == '<') { return true }
+// 检测分前 if (c == ';') { return true } }
+escaped = false i++ }
+return false } }  /** * 标准，ShellProcess 实现，使，Runtime.exec() */ private class StandardShellProcess(command: String) : ShellProcess { private val process: Process = if (containsShellOperators(command)) { Runtime.getRuntime().exec(arrayOf("sh", "-c", command)) }
+else { Runtime.getRuntime().exec(command) }
+override val stdout: Flow<String> = callbackFlow { try { BufferedReader(InputStreamReader(process.inputStream)).use { reader -> var line: String? while (reader.readLine().also { line = it } != null) { trySend(line ?: "") } } }
+catch (e: Exception) { // Process ended or error occurred }
+close() awaitClose { } }.flowOn(Dispatchers.IO) override val stderr: Flow<String> = callbackFlow { try { BufferedReader(InputStreamReader(process.errorStream)).use { reader -> var line: String? while (reader.readLine().also { line = it } != null) { trySend(line ?: "") } } }
+catch (e: Exception) { // Process ended or error occurred }
+close() awaitClose { } }.flowOn(Dispatchers.IO) override val isAlive: Boolean get() = process.isAlive  override fun destroy() { process.destroy() }
+override suspend fun waitFor(): Int = withContext(Dispatchers.IO) { process.waitFor() }
+companion object { /** * 检测命令是否包含需要shell解释的特殊操作符 */ private fun containsShellOperators(command: String): Boolean { // 预处理：标记引号内的内容，避免检测引号内的操作符 var inSingleQuotes = false var inDoubleQuotes = false var escaped = false var i = 0  while (i < command.length) { val c = command[i]  // 处理转义字符 if (c == '\\' && !escaped) { escaped = true i++ continue }
+// 处理引号 if (c == '\'' && !escaped && !inDoubleQuotes) { inSingleQuotes = !inSingleQuotes }
+else if (c == '"' && !escaped && !inSingleQuotes) { inDoubleQuotes = !inDoubleQuotes
                 }
                 // 只在不在引号内时检测操作符
         else if (!inSingleQuotes && !inDoubleQuotes && !escaped) {

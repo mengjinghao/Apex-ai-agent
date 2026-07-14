@@ -119,7 +119,9 @@ class AgentTaskScheduler(private val scope: CoroutineScope = CoroutineScope(Disp
         return recent.size / 60f
     }
         fun getStats(): SchedulerStats {
-        return SchedulerStats(pendingByPriority = pendingTasks.groupBy { it.priority }.mapValues { it.value.size }, completedByType = completedTasks.groupBy { it.type }.mapValues { it.value.size }, successRate = if (completedTasks.isNotEmpty()) completedTasks.count { it.status == TaskStatus.COMPLETED }.toFloat() / completedTasks.size else 1f, avgExecutionTimeMs = if (completedTasks.isNotEmpty()) completedTasks.mapNotNull { val start = it.startedAt; val end = it.completedAt; if (start != null && end != null) end - start else null }.average().toFloat() else 0f)
+        return SchedulerStats(pendingByPriority = pendingTasks.groupBy { it.priority }.mapValues { it.value.size }, completedByType = completedTasks.groupBy { it.type }.mapValues { it.value.size }, successRate = if (completedTasks.isNotEmpty()) completedTasks.count { it.status == TaskStatus.COMPLETED }.toFloat() / completedTasks.size else 1f, avgExecutionTimeMs = if (completedTasks.isNotEmpty()) completedTasks.mapNotNull { val start = it.startedAt;
+val end = it.completedAt;
+if (start != null && end != null) end - start else null }.average().toFloat() else 0f)
     }
         data class SchedulerStats(
         val pendingByPriority: Map<Priority, Int> = emptyMap(),
