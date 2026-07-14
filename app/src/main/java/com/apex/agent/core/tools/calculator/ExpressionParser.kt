@@ -332,45 +332,7 @@ class ExpressionParser(private val expression: String) {
         val parts = mutableListOf<Any>()
 
         // æ·»å æ¨¡æ¿èµ·å§é¨å
-        parts.add(currentToken.substring(1)) // å»æå¼å§ç" nextToken()
-        while (currentTokenType == TokenType.TEMPLATE_MIDDLE ||
-                currentTokenType == TokenType.TEMPLATE_END) {
-            if (currentTokenType == TokenType.TEMPLATE_MIDDLE) {
-                val expr = parseExpression()
-        parts.add(expr)
-            } else { // TEMPLATE_END
-        parts.add(currentToken.substring(0, currentToken.length - 1)) // å»æç»æï¼?
-        nextToken()
-        break
-            }
-        }
-        return TemplateStringNode(parts)
-    }
-
-    /** è·åä¸ä¸ä¸ªè¯æ³åï¼?/
-    private fun nextToken() {
-        // è·³è¿ç©ºç½å­ç¬¦
-        while (position < expression.length && Character.isWhitespace(expression[position])) {
-            position++
-        }
-        if (position >= expression.length) {
-            currentToken = ""
-        currentTokenType = TokenType.EOF
-            return
-        }
-        val c = expression[position]
-
-        when {
-            c.isDigit() ||
-                    (c == '.' &&
-                            position + 1 < expression.length &&
-                            expression[position + 1].isDigit()) -> {
-                scanNumber()
-            }
-        c.isLetter() || c == '_' -> {
-                scanIdentifier()
-            }
-        c == '"' || c == '\'' -> { scanString(c)
+        parts.add(currentToken.substring(1)) // å»æå¼å§ç" nextToken() while (currentTokenType == TokenType.TEMPLATE_MIDDLE || currentTokenType == TokenType.TEMPLATE_END) { if (currentTokenType == TokenType.TEMPLATE_MIDDLE) { val expr = parseExpression() parts.add(expr) } else { // TEMPLATE_END parts.add(currentToken.substring(0, currentToken.length - 1)) // å»æç»æï¼? nextToken() break } } return TemplateStringNode(parts) }  /** è·åä¸ä¸ä¸ªè¯æ³åï¼?/ private fun nextToken() { // è·³è¿ç©ºç½å­ç¬¦ while (position < expression.length && Character.isWhitespace(expression[position])) { position++ } if (position >= expression.length) { currentToken = "" currentTokenType = TokenType.EOF return } val c = expression[position]  when { c.isDigit() || (c == '.' && position + 1 < expression.length && expression[position + 1].isDigit()) -> { scanNumber() } c.isLetter() || c == '_' -> { scanIdentifier() } c == '"' || c == '\'' -> { scanString(c)
             }
         c == '`' -> {
                 scanTemplateString()

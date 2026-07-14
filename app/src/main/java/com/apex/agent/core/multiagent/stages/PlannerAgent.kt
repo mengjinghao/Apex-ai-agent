@@ -46,8 +46,7 @@ val sb = StringBuilder()
         sb.appendLine("## 步骤分解")
         sb.appendLine()        // 根据研究阶段结果制定计划
         sb.appendLine("### 步骤 1: 需求确认）        sb.appendLine("- 验证研究阶段收集的信息）        sb.appendLine("- 明确输入输出规范")
-        sb.appendLine("- 确认技术约束）        sb.appendLine() sb.appendLine("### 步骤 2: 架构设计")
-        sb.appendLine("- 设计核心数据结构和接口）        sb.appendLine("- 确定模块划分") sb.appendLine("- 规划集成方案，"
+        sb.appendLine("- 确认技术约束）        sb.appendLine() sb.appendLine("### 步骤 2: 架构设计") sb.appendLine("- 设计核心数据结构和接口）        sb.appendLine("- 确定模块划分") sb.appendLine("- 规划集成方案，"
         sb.appendLine()
         sb.appendLine("### 步骤 3: 代码实现")
         sb.appendLine("- 实现核心逻辑")
@@ -64,9 +63,7 @@ val sb = StringBuilder()
         sb.appendLine("- 步骤 3 依赖步骤 2 完成")
         sb.appendLine("- 步骤 4 依赖步骤 3 完成")
         sb.appendLine()
-        sb.appendLine("## 资源需求）        sb.appendLine("- 开发时间：2-3 小时") sb.appendLine("- 测试时间， 小时")
-        sb.appendLine("- 所需技能Kotlin, Android, Jetpack Compose")
-        return sb.toString()" }
+        sb.appendLine("## 资源需求）        sb.appendLine("- 开发时间：2-3 小时") sb.appendLine("- 测试时间， 小时") sb.appendLine("- 所需技能Kotlin, Android, Jetpack Compose") return sb.toString()" }
         private
     fun countSteps(plan: String): Int {
 return plan.lines().count {

@@ -50,20 +50,7 @@ sb.appendLine("## 迭代信息")
         sb.appendLine("### 1. 核心数据结构，"
         sb.appendLine("```kotlin")
         sb.appendLine("data"
-        class PipelineStage(") sb.appendLine("val name: String,")
-        sb.appendLine("val description: String,")
-        sb.appendLine("val order: Int")
-        sb.appendLine(")")
-        sb.appendLine()
-        sb.appendLine("data class StageResult(")
-        sb.appendLine("val stage: PipelineStage,")
-        sb.appendLine("val output: String,")
-        sb.appendLine("val success: Boolean,")
-        sb.appendLine("val duration: Long")
-        sb.appendLine(")")
-        sb.appendLine("```")
-        sb.appendLine()
-        sb.appendLine("### 2. 管道执行的）        sb.appendLine("```kotlin") sb.appendLine("class StagedAgentPipeline {"
+        class PipelineStage(") sb.appendLine("val name: String,") sb.appendLine("val description: String,") sb.appendLine("val order: Int") sb.appendLine(")") sb.appendLine() sb.appendLine("data class StageResult(") sb.appendLine("val stage: PipelineStage,") sb.appendLine("val output: String,") sb.appendLine("val success: Boolean,") sb.appendLine("val duration: Long") sb.appendLine(")") sb.appendLine("```") sb.appendLine() sb.appendLine("### 2. 管道执行的）        sb.appendLine("```kotlin") sb.appendLine("class StagedAgentPipeline {"
 ") sb.appendLine("fun execute(goal: String): PipelineResult {
 ") sb.appendLine("        // 按阶段顺序执行）
         sb.appendLine("        // 支持循环回退机制")
@@ -71,16 +58,7 @@ sb.appendLine("## 迭代信息")
 }
 ") sb.appendLine("
 }
-") sb.appendLine("```")
-        sb.appendLine()
-        sb.appendLine("### 3. 阶段 Agent")
-        sb.appendLine("- ResearchAgent: 信息收集")
-        sb.appendLine("- PlannerAgent: 任务规划")
-        sb.appendLine("- ImplementerAgent: 代码实现")
-        sb.appendLine("- ReviewerAgent: 代码审查")
-        sb.appendLine("- ValidatorAgent: 验证测试")
-        sb.appendLine()
-        sb.appendLine("### 4. 集成方案， sb.appendLine("- TaskPlanner: 复杂度判断和自动启用")
+") sb.appendLine("```") sb.appendLine() sb.appendLine("### 3. 阶段 Agent") sb.appendLine("- ResearchAgent: 信息收集") sb.appendLine("- PlannerAgent: 任务规划") sb.appendLine("- ImplementerAgent: 代码实现") sb.appendLine("- ReviewerAgent: 代码审查") sb.appendLine("- ValidatorAgent: 验证测试") sb.appendLine() sb.appendLine("### 4. 集成方案， sb.appendLine("- TaskPlanner: 复杂度判断和自动启用")
         sb.appendLine("- CollaborationEngine: 状态协调）        sb.appendLine("- UI ，进度展示") return sb.toString()"
 }
         private

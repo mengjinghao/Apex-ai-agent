@@ -345,20 +345,7 @@ class AIForegroundService : Service() {
         manager.notify(tag, REPLY_NOTIFICATION_ID, notificationBuilder.build())
         AppLogger.d(TAG, "AI回复通知已发，chatId=${chatId}, tag=${tag}")
 } catch (e: Exception) {
-                AppLogger.e(TAG, "发送AI回复通知失败: ${e.message}", e)" }
-
-}
-        fun setWakeListeningSuspendedForIme(context: Context, imeVisible: Boolean) {
-            lastRequestedImeVisible = imeVisible
-            if (!isRunning.get()) return
-            val intent = Intent(context, AIForegroundService::class.java).apply {
-                action = ACTION_SET_WAKE_LISTENING_SUSPENDED_FOR_IME
-                putExtra(EXTRA_IME_VISIBLE, imeVisible)
-}
-        try {
-                context.startService(intent)
-} catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to request IME wake listening suspend: ${e.message}", e)" }
+                AppLogger.e(TAG, "发送AI回复通知失败: ${e.message}", e)" }  } fun setWakeListeningSuspendedForIme(context: Context, imeVisible: Boolean) { lastRequestedImeVisible = imeVisible if (!isRunning.get()) return val intent = Intent(context, AIForegroundService::class.java).apply { action = ACTION_SET_WAKE_LISTENING_SUSPENDED_FOR_IME putExtra(EXTRA_IME_VISIBLE, imeVisible) } try { context.startService(intent) } catch (e: Exception) { AppLogger.e(TAG, "Failed to request IME wake listening suspend: ${e.message}", e)" }
 
 }
         fun setWakeListeningSuspendedForFloatingFullscreen(context: Context, active: Boolean) {
@@ -372,192 +359,7 @@ class AIForegroundService : Service() {
 } catch (e: Exception) {
                 AppLogger.e(
                 TAG,
-                "Failed to request floating fullscreen wake listening suspend: ${e.message}",                    e                )" }
-
-}
-        fun ensureMicrophoneForeground(context: Context, forceStart: Boolean = false) {
-            val appContext = context.applicationContext
-            if (!forceStart && !isRunning.get() && !hasPersistentForegroundResponsibilityConfigured(appContext)) {
-                return
-}
-        val intent = Intent(appContext, AIForegroundService::class.java).apply {
-                action = ACTION_ENSURE_MICROPHONE_FOREGROUND
-}
-        try {
-                if (isRunning.get()) {
-                    appContext.startService(intent)
-} else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        appContext.startForegroundService(intent)
-} else {
-                        appContext.startService(intent)
-}
-
-}
-        } catch (e: Exception) {
-                AppLogger.w(TAG, "Failed to request microphone foreground", e)
-}
-
-}
-        fun ensureRunningForExternalHttp(context: Context) {
-            startServiceForAction(context, ACTION_START_OR_REFRESH_EXTERNAL_HTTP)
-}
-        fun stopExternalHttp(context: Context) {
-            externalHttpStateFlow.value =
-            externalHttpStateFlow.value.copy(isRunning = false, lastError = null)
-        if (!isRunning.get()) {
-                return
-}
-        startServiceForAction(context, ACTION_STOP_EXTERNAL_HTTP)
-}
-        private fun startServiceForAction(context: Context, action: String) {
-            val appContext = context.applicationContext
-        val intent = Intent(appContext, AIForegroundService::class.java).apply {
-                this.action = action
-}
-        try {
-                if (isRunning.get()) {
-                    appContext.startService(intent)
-} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    appContext.startForegroundService(intent)
-} else {
-                    appContext.startService(intent)
-}
-        } catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to start action ${action}: ${e.message}", e)
-}
-
-}
-        private fun hasPersistentForegroundResponsibilityConfigured(context: Context): Boolean {
-            val appContext = context.applicationContext
-        val alwaysListeningEnabled = runCatching {
-                runBlocking(Dispatchers.IO) {
-                    WakeWordPreferences(appContext).alwaysListeningEnabledFlow.first()
-}
-
-}.getOrDefault(false)
-val externalHttpEnabled = runCatching {
-                ExternalHttpApiPreferences.getInstance(appContext).getConfigSync().let { config ->
- config.enabled && ExternalHttpApiPreferences.isValidPort(config.port)
-}
-
-}.getOrDefault(false)
-return alwaysListeningEnabled || externalHttpEnabled
-}
-
-}
-        private fun updateWakeListeningSuspendedForIme(imeVisible: Boolean) {
-        if (wakeListeningSuspendedForIme == imeVisible) return
-        wakeListeningSuspendedForIme = imeVisible
-        AppLogger.d(TAG, "Wake listening suspended by IME: ${wakeListeningSuspendedForIme}")
-        applyWakeListeningState()
-}
-        private fun updateWakeListeningSuspendedForExternalRecording(externalRecording: Boolean) {
-        if (wakeListeningSuspendedForExternalRecording == externalRecording) return
-        wakeListeningSuspendedForExternalRecording = externalRecording
-        AppLogger.d(TAG, "Wake listening suspended by external recording: ${wakeListeningSuspendedForExternalRecording}")
-        applyWakeListeningState()
-}
-        private fun updateWakeListeningSuspendedForFloatingFullscreen(active: Boolean) {
-        if (wakeListeningSuspendedForFloatingFullscreen == active) return
-        wakeListeningSuspendedForFloatingFullscreen = active
-        AppLogger.d(TAG, "Wake listening suspended by floating fullscreen: ${wakeListeningSuspendedForFloatingFullscreen}")
-        applyWakeListeningState()
-}
-        private fun applyWakeListeningState() {
-        wakeStateApplyJob?.cancel()
-        wakeStateApplyJob =
-        serviceScope.launch {
-                wakeStateMutex.withLock {
-                    applyWakeListeningStateLocked()
-}
-
-}
-
-}
-        private suspend fun applyWakeListeningStateLocked() {
-        val shouldListen =
-        wakeListeningEnabled &&
-        !wakeListeningSuspendedForIme &&
-        !wakeListeningSuspendedForExternalRecording &&
-        !wakeListeningSuspendedForFloatingFullscreen
-        if (shouldListen) {
-            startWakeListeningLocked()
-} else {
-            val shouldRelease = !wakeListeningEnabled || wakeListeningSuspendedForFloatingFullscreen
-            stopWakeListeningLocked(releaseProvider = shouldRelease)
-}
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, createNotification())
-}
-        private fun startRecordingStateMonitoring() {
-        if (!wakeListeningEnabled) return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
-        if (audioRecordingCallback != null) return
-        val am = getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
-        audioManager = am
-        val callback =
-        object : AudioManager.AudioRecordingCallback() {
-                override fun onRecordingConfigChanged(configs: List<AudioRecordingConfiguration>) {
-                    val isWakeListeningRunning =
-                    wakeListeningMicActiveForRecordingDetection ||
-                    wakeListeningJob?.isActive == true ||
-                    personalWakeJob?.isActive == true
-                    val myUid = Process.myUid()
-        val myPackageName = packageName
-                    fun isExternalConfig(cfg: AudioRecordingConfiguration): Boolean {
-                        val uid = cfg.tryGetClientUid()
-        if (uid != null && uid > 0) {
-                            if (uid == myUid) return false
-                            if (uid < Process.FIRST_APPLICATION_UID) {
-                                return false
-}
-        val pkg = cfg.tryGetClientPackageName()?.take
-if {
- it.isNotBlank()
-}
-        if (pkg != null) {
-                                return pkg != myPackageName
-}
-        return true
-}
-        val pkg = cfg.tryGetClientPackageName()?.take
-if {
- it.isNotBlank()
-}
-        if (uid == null || uid <= 0) {
-                            if (isWakeListeningRunning) return false
-                            if (pkg != null) return pkg != myPackageName
-                            return true
-}
-        return false
-}
-        val hasExternal = configs.any(::isExternalConfig)
-        if (hasExternal != wakeListeningSuspendedForExternalRecording) {
-                        val summary =
-                        configs.mapIndexed {
- idx, cfg ->
- val uid = cfg.tryGetClientUid()
- val pkg = cfg.tryGetClientPackageName()
- val hasUidMethod = cfg.java
-class.methods.any {
- it.name == "getClientUid" && it.parameterTypes.isEmpty()
-}
-        val hasPkgMethod = cfg.java
-class.methods.any {
- it.name == "getClientPackageName" && it.parameterTypes.isEmpty()
-}
-        val raw = try {
-                                    cfg.toString().replace('\n', ' ').replace('\r', ' ')
-} catch (_: Exception) {
-                                    ""
-}
-        val rawShort = if (raw.length > 220) raw.substring(0, 220) else raw
-                                "#${idx}uid=${uid ?: "?"},pkg=${pkg ?: "?"},mUid=${hasUidMethod},mPkg=${hasPkgMethod}cfg=${rawShort}"
-}.joinToString(" | ")
-AppLogger.d(
-TAG,
-"Recording configs changed: wakeRunning=${isWakeListeningRunning} micFlag=${wakeListeningMicActiveForRecordingDetection}
+                "Failed to request floating fullscreen wake listening suspend: ${e.message}",                    e                )" }  } fun ensureMicrophoneForeground(context: Context, forceStart: Boolean = false) { val appContext = context.applicationContext if (!forceStart && !isRunning.get() && !hasPersistentForegroundResponsibilityConfigured(appContext)) { return } val intent = Intent(appContext, AIForegroundService::class.java).apply { action = ACTION_ENSURE_MICROPHONE_FOREGROUND } try { if (isRunning.get()) { appContext.startService(intent) } else { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { appContext.startForegroundService(intent) } else { appContext.startService(intent) }  } } catch (e: Exception) { AppLogger.w(TAG, "Failed to request microphone foreground", e) }  } fun ensureRunningForExternalHttp(context: Context) { startServiceForAction(context, ACTION_START_OR_REFRESH_EXTERNAL_HTTP) } fun stopExternalHttp(context: Context) { externalHttpStateFlow.value = externalHttpStateFlow.value.copy(isRunning = false, lastError = null) if (!isRunning.get()) { return } startServiceForAction(context, ACTION_STOP_EXTERNAL_HTTP) } private fun startServiceForAction(context: Context, action: String) { val appContext = context.applicationContext val intent = Intent(appContext, AIForegroundService::class.java).apply { this.action = action } try { if (isRunning.get()) { appContext.startService(intent) } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { appContext.startForegroundService(intent) } else { appContext.startService(intent) } } catch (e: Exception) { AppLogger.e(TAG, "Failed to start action ${action}: ${e.message}", e) }  } private fun hasPersistentForegroundResponsibilityConfigured(context: Context): Boolean { val appContext = context.applicationContext val alwaysListeningEnabled = runCatching { runBlocking(Dispatchers.IO) { WakeWordPreferences(appContext).alwaysListeningEnabledFlow.first() }  }.getOrDefault(false) val externalHttpEnabled = runCatching { ExternalHttpApiPreferences.getInstance(appContext).getConfigSync().let { config -> config.enabled && ExternalHttpApiPreferences.isValidPort(config.port) }  }.getOrDefault(false) return alwaysListeningEnabled || externalHttpEnabled }  } private fun updateWakeListeningSuspendedForIme(imeVisible: Boolean) { if (wakeListeningSuspendedForIme == imeVisible) return wakeListeningSuspendedForIme = imeVisible AppLogger.d(TAG, "Wake listening suspended by IME: ${wakeListeningSuspendedForIme}") applyWakeListeningState() } private fun updateWakeListeningSuspendedForExternalRecording(externalRecording: Boolean) { if (wakeListeningSuspendedForExternalRecording == externalRecording) return wakeListeningSuspendedForExternalRecording = externalRecording AppLogger.d(TAG, "Wake listening suspended by external recording: ${wakeListeningSuspendedForExternalRecording}") applyWakeListeningState() } private fun updateWakeListeningSuspendedForFloatingFullscreen(active: Boolean) { if (wakeListeningSuspendedForFloatingFullscreen == active) return wakeListeningSuspendedForFloatingFullscreen = active AppLogger.d(TAG, "Wake listening suspended by floating fullscreen: ${wakeListeningSuspendedForFloatingFullscreen}") applyWakeListeningState() } private fun applyWakeListeningState() { wakeStateApplyJob?.cancel() wakeStateApplyJob = serviceScope.launch { wakeStateMutex.withLock { applyWakeListeningStateLocked() }  }  } private suspend fun applyWakeListeningStateLocked() { val shouldListen = wakeListeningEnabled && !wakeListeningSuspendedForIme && !wakeListeningSuspendedForExternalRecording && !wakeListeningSuspendedForFloatingFullscreen if (shouldListen) { startWakeListeningLocked() } else { val shouldRelease = !wakeListeningEnabled || wakeListeningSuspendedForFloatingFullscreen stopWakeListeningLocked(releaseProvider = shouldRelease) } val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager manager.notify(NOTIFICATION_ID, createNotification()) } private fun startRecordingStateMonitoring() { if (!wakeListeningEnabled) return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return if (audioRecordingCallback != null) return val am = getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return audioManager = am val callback = object : AudioManager.AudioRecordingCallback() { override fun onRecordingConfigChanged(configs: List<AudioRecordingConfiguration>) { val isWakeListeningRunning = wakeListeningMicActiveForRecordingDetection || wakeListeningJob?.isActive == true || personalWakeJob?.isActive == true val myUid = Process.myUid() val myPackageName = packageName fun isExternalConfig(cfg: AudioRecordingConfiguration): Boolean { val uid = cfg.tryGetClientUid() if (uid != null && uid > 0) { if (uid == myUid) return false if (uid < Process.FIRST_APPLICATION_UID) { return false } val pkg = cfg.tryGetClientPackageName()?.take if { it.isNotBlank() } if (pkg != null) { return pkg != myPackageName } return true } val pkg = cfg.tryGetClientPackageName()?.take if { it.isNotBlank() } if (uid == null || uid <= 0) { if (isWakeListeningRunning) return false if (pkg != null) return pkg != myPackageName return true } return false } val hasExternal = configs.any(::isExternalConfig) if (hasExternal != wakeListeningSuspendedForExternalRecording) { val summary = configs.mapIndexed { idx, cfg -> val uid = cfg.tryGetClientUid() val pkg = cfg.tryGetClientPackageName() val hasUidMethod = cfg.java class.methods.any { it.name == "getClientUid" && it.parameterTypes.isEmpty() } val hasPkgMethod = cfg.java class.methods.any { it.name == "getClientPackageName" && it.parameterTypes.isEmpty() } val raw = try { cfg.toString().replace('\n', ' ').replace('\r', ' ') } catch (_: Exception) { "" } val rawShort = if (raw.length > 220) raw.substring(0, 220) else raw "#${idx}uid=${uid ?: "?"},pkg=${pkg ?: "?"},mUid=${hasUidMethod},mPkg=${hasPkgMethod}cfg=${rawShort}" }.joinToString(" | ") AppLogger.d( TAG, "Recording configs changed: wakeRunning=${isWakeListeningRunning} micFlag=${wakeListeningMicActiveForRecordingDetection}
  external=${hasExternal}
  count=${configs.size}
  configs=[${summary}]"                        )"
@@ -611,18 +413,7 @@ if {
         val hasExternal = configs.any(::isExternalConfig)
         updateWakeListeningSuspendedForExternalRecording(hasExternal)
 } catch (e: Exception) {
-            AppLogger.e(TAG, "Failed to read active recording configs: ${e.message}", e)" }
-
-}
-        private fun stopRecordingStateMonitoring() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
-        val am = audioManager
-        val callback = audioRecordingCallback
-        if (am != null && callback != null) {
-            try {
-                am.unregisterAudioRecordingCallback(callback)
-} catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to unregister recording callback: ${e.message}", e)" }
+            AppLogger.e(TAG, "Failed to read active recording configs: ${e.message}", e)" }  } private fun stopRecordingStateMonitoring() { if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return val am = audioManager val callback = audioRecordingCallback if (am != null && callback != null) { try { am.unregisterAudioRecordingCallback(callback) } catch (e: Exception) { AppLogger.e(TAG, "Failed to unregister recording callback: ${e.message}", e)" }
 
 }
         audioRecordingCallback = null
@@ -725,144 +516,7 @@ return
         if (!ExternalHttpApiPreferences.isValidPort(config.port)) {
             val message = "Invalid port: ${config.port}"
         AppLogger.w(TAG, message)
-        stopExternalHttpServer(port" override = config.port, lastError = message)
-stopSelfIfIdle(ignoreAppForeground = true)
-return
-}
-        if (externalHttpServer != null && externalHttpCurrentPort == config.port) {
-            updateExternalHttpState(
-            ExternalChatHttpState(
-            isRunning = true,
-            port = config.port,
-            lastError = null
-            )
-            )
-        return
-}
-        stopExternalHttpServer()
-        try {
-            val newServer = ExternalChatHttpServer(applicationContext, externalHttpPreferences, serviceScope)
-        newServer.startServer()
-        externalHttpServer = newServer
-            externalHttpCurrentPort = config.port
-            updateExternalHttpState(
-            ExternalChatHttpState(
-            isRunning = true,
-            port = config.port,
-            lastError = null
-            )
-            )
-} catch (e: Exception) {
-            AppLogger.e(TAG, "Failed to start external HTTP server", e)
-        stopExternalHttpServer(
-            port
-override = config.port,
-lastError = e.message ?: "Failed to start server"
-)
-stopSelfIfIdle(ignoreAppForeground = true)
-}
-
-}
-        private fun stopExternalHttpServer(port
-override: Int? = null, lastError: String? = null) {
-        runCatching {
-            externalHttpServer?.stopServer()
-}.onFailure { error ->
- AppLogger.e(TAG, "Failed to stop external HTTP server", error)
-}
-        val stoppedPort = port
-override ?: externalHttpCurrentPort ?: externalHttpStateFlow.value.port
-externalHttpServer = null
-externalHttpCurrentPort = null
-updateExternalHttpState(
-ExternalChatHttpState(
-isRunning = false,
-port = stoppedPort,
-lastError = lastError
-)
-)
-}
-        private fun updateExternalHttpState(
-    newState: ExternalChatHttpState,
-    refreshNotification: Boolean = true
-    ) {
-        externalHttpStateFlow.value = newState
-        if (refreshNotification) {
-            refreshServiceNotification()
-}
-
-}
-        private fun refreshServiceNotification() {
-        if (!isRunning.get()) {
-            return
-}
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, createNotification())
-}
-        private fun isExternalHttpEnabledNow(): Boolean {
-        return runCatching {
-            externalHttpPreferences.getConfigSync().let { config ->
- config.enabled && ExternalHttpApiPreferences.isValidPort(config.port)
-}
-
-}.getOrDefault(false)
-}
-        private fun stopSelfIfIdle(ignoreAppForeground: Boolean = false) {
-        val alwaysListeningEnabled = wakeListeningEnabled || isAlwaysListeningEnabledNow()
-        val externalHttpEnabled = externalHttpStateFlow.value.isRunning || isExternalHttpEnabledNow()
-        if (isAiBusy || alwaysListeningEnabled || externalHttpEnabled) {
-            return
-}
-        if (!ignoreAppForeground && ActivityLifecycleManager.getCurrentActivity() != null) {
-            return
-}
-        AppLogger.d(TAG, "No active foreground responsibilities, stopping AIForegroundService")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            @Suppress("DEPRECATION")
-        stopForeground(Service.STOP_FOREGROUND_REMOVE)
-} else {
-            @Suppress("DEPRECATION")
-        stopForeground(true)
-}
-        stopSelf()
-}
-        override fun onCreate() {
-        super.onCreate()
-        isRunning.set(true)
-        wakeListeningSuspendedForIme = lastRequestedImeVisible
-        AppLogger.d(TAG, "AI 前台服务创建",
-       chatRuntimeHolder
-       createNotificationChannel()
-        val notification = createNotification()
-        ForegroundServiceCompat.startForeground(
-       service = this,
-       notificationId = NOTIFICATION_ID,
-       notification = notification,
-       types = ForegroundServiceCompat.buildTypes(
-       dataSync = true,
-       specialUse = runCatching {
- externalHttpPreferences.getEnabled()
-}.getOrDefault(false)
-)
-)
-observeRuntimeTaskViewPreference()
-observeChatRuntimeStats()
-startWakeMonitoring()
-startExternalHttpMonitoring()
-AppLogger.d(TAG, "AI 前台服务已启动")
-}
-        private fun observeRuntimeTaskViewPreference() {
-        serviceScope.launch {
-            try {
-                DisplayPreferencesManager
-                .getInstance(applicationContext)
-                .hideRuntimeTaskView
-                .collectLatest { enabled ->
- hideRuntimeTaskViewEnabled = enabled
- updateRuntimeTaskViewVisibility()
-}
-        } catch (e: Exception) {
-                AppLogger.e(TAG, "监听运行时任务视图隐藏设置失，${e.message}", e)" }
+        stopExternalHttpServer(port" override = config.port, lastError = message) stopSelfIfIdle(ignoreAppForeground = true) return } if (externalHttpServer != null && externalHttpCurrentPort == config.port) { updateExternalHttpState( ExternalChatHttpState( isRunning = true, port = config.port, lastError = null ) ) return } stopExternalHttpServer() try { val newServer = ExternalChatHttpServer(applicationContext, externalHttpPreferences, serviceScope) newServer.startServer() externalHttpServer = newServer externalHttpCurrentPort = config.port updateExternalHttpState( ExternalChatHttpState( isRunning = true, port = config.port, lastError = null ) ) } catch (e: Exception) { AppLogger.e(TAG, "Failed to start external HTTP server", e) stopExternalHttpServer( port override = config.port, lastError = e.message ?: "Failed to start server" ) stopSelfIfIdle(ignoreAppForeground = true) }  } private fun stopExternalHttpServer(port override: Int? = null, lastError: String? = null) { runCatching { externalHttpServer?.stopServer() }.onFailure { error -> AppLogger.e(TAG, "Failed to stop external HTTP server", error) } val stoppedPort = port override ?: externalHttpCurrentPort ?: externalHttpStateFlow.value.port externalHttpServer = null externalHttpCurrentPort = null updateExternalHttpState( ExternalChatHttpState( isRunning = false, port = stoppedPort, lastError = lastError ) ) } private fun updateExternalHttpState( newState: ExternalChatHttpState, refreshNotification: Boolean = true ) { externalHttpStateFlow.value = newState if (refreshNotification) { refreshServiceNotification() }  } private fun refreshServiceNotification() { if (!isRunning.get()) { return } val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager manager.notify(NOTIFICATION_ID, createNotification()) } private fun isExternalHttpEnabledNow(): Boolean { return runCatching { externalHttpPreferences.getConfigSync().let { config -> config.enabled && ExternalHttpApiPreferences.isValidPort(config.port) }  }.getOrDefault(false) } private fun stopSelfIfIdle(ignoreAppForeground: Boolean = false) { val alwaysListeningEnabled = wakeListeningEnabled || isAlwaysListeningEnabledNow() val externalHttpEnabled = externalHttpStateFlow.value.isRunning || isExternalHttpEnabledNow() if (isAiBusy || alwaysListeningEnabled || externalHttpEnabled) { return } if (!ignoreAppForeground && ActivityLifecycleManager.getCurrentActivity() != null) { return } AppLogger.d(TAG, "No active foreground responsibilities, stopping AIForegroundService") if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { @Suppress("DEPRECATION") stopForeground(Service.STOP_FOREGROUND_REMOVE) } else { @Suppress("DEPRECATION") stopForeground(true) } stopSelf() } override fun onCreate() { super.onCreate() isRunning.set(true) wakeListeningSuspendedForIme = lastRequestedImeVisible AppLogger.d(TAG, "AI 前台服务创建", chatRuntimeHolder createNotificationChannel() val notification = createNotification() ForegroundServiceCompat.startForeground( service = this, notificationId = NOTIFICATION_ID, notification = notification, types = ForegroundServiceCompat.buildTypes( dataSync = true, specialUse = runCatching { externalHttpPreferences.getEnabled() }.getOrDefault(false) ) ) observeRuntimeTaskViewPreference() observeChatRuntimeStats() startWakeMonitoring() startExternalHttpMonitoring() AppLogger.d(TAG, "AI 前台服务已启动") } private fun observeRuntimeTaskViewPreference() { serviceScope.launch { try { DisplayPreferencesManager .getInstance(applicationContext) .hideRuntimeTaskView .collectLatest { enabled -> hideRuntimeTaskViewEnabled = enabled updateRuntimeTaskViewVisibility() } } catch (e: Exception) { AppLogger.e(TAG, "监听运行时任务视图隐藏设置失，${e.message}", e)" }
 
 }
 
@@ -956,25 +610,11 @@ AppLogger.d(TAG, "AI 前台服务已启动")
             )
         true
 } catch (e: SecurityException) {
-            AppLogger.e(TAG, "promote microphone foreground failed: ${e.message}", e)false" }
-
-}
-        override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_EXIT_APP) {
-            isRunning.set(false)
-        updateAiBusyState(false)
-        try {
-                AIMessageManager.cancelCurrentOperation()
-} catch (e: Exception) {
-                AppLogger.e(TAG, "退出时取消当前AI任务失败: ${e.message}", e)" }
+            AppLogger.e(TAG, "promote microphone foreground failed: ${e.message}", e)false" }  } override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int { if (intent?.action == ACTION_EXIT_APP) { isRunning.set(false) updateAiBusyState(false) try { AIMessageManager.cancelCurrentOperation() } catch (e: Exception) { AppLogger.e(TAG, "退出时取消当前AI任务失败: ${e.message}", e)" }
         try {
                 stopService(Intent(this, FloatingChatService::class.java))
 } catch (e: Exception) {
-                AppLogger.e(TAG, "退出时停止 FloatingChatService 失败: ${e.message}", e)" }
-        try {
-                stopService(Intent(this, UIDebuggerService::class.java))
-} catch (e: Exception) {
-                AppLogger.e(TAG, "退出时停止 UIDebuggerService 失败: ${e.message}", e)" }
+                AppLogger.e(TAG, "退出时停止 FloatingChatService 失败: ${e.message}", e)" } try { stopService(Intent(this, UIDebuggerService::class.java)) } catch (e: Exception) { AppLogger.e(TAG, "退出时停止 UIDebuggerService 失败: ${e.message}", e)" }
         stopExternalHttpServer(lastError = null)
         try {
                 val activity = ActivityLifecycleManager.getCurrentActivity()
@@ -987,17 +627,7 @@ AppLogger.d(TAG, "AI 前台服务已启动")
 
 }
         } catch (e: Exception) {
-                AppLogger.e(TAG, "退出时关闭前台界面失败: ${e.message}", e)" }
-        try {
-                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                manager.cancel(NOTIFICATION_ID)
-        activeReplyNotificationTags.forEach { tag ->
- manager.cancel(tag, REPLY_NOTIFICATION_ID)
-}
-        activeReplyNotificationTags.clear()
-        manager.cancel(REPLY_NOTIFICATION_ID)
-} catch (e: Exception) {
-                AppLogger.e(TAG, "退出时取消通知失败: ${e.message}", e)" }
+                AppLogger.e(TAG, "退出时关闭前台界面失败: ${e.message}", e)" } try { val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager manager.cancel(NOTIFICATION_ID) activeReplyNotificationTags.forEach { tag -> manager.cancel(tag, REPLY_NOTIFICATION_ID) } activeReplyNotificationTags.clear() manager.cancel(REPLY_NOTIFICATION_ID) } catch (e: Exception) { AppLogger.e(TAG, "退出时取消通知失败: ${e.message}", e)" }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 @Suppress("DEPRECATION")
         stopForeground(Service.STOP_FOREGROUND_REMOVE)
@@ -1040,8 +670,7 @@ return START_NOT_STICKY
         serviceScope.launch {
                 try {
                     val current = wakePrefs.alwaysListeningEnabledFlow.first()
-        AppLogger.d(TAG, "切换唤醒监听: ${current} -> ${!current}")wakePrefs.saveAlwaysListeningEnabled(!current)" } catch (e: Exception) {
-                    AppLogger.e(TAG, "切换唤醒监听失败: ${e.message}", e)" }
+        AppLogger.d(TAG, "切换唤醒监听: ${current} -> ${!current}")wakePrefs.saveAlwaysListeningEnabled(!current)" } catch (e: Exception) { AppLogger.e(TAG, "切换唤醒监听失败: ${e.message}", e)" }
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 manager.notify(NOTIFICATION_ID, createNotification())
 }
@@ -1097,161 +726,7 @@ return START_NOT_STICKY
                 // 立即刷新通知状态（真正的状态重置由 EnhancedAIService.cancelConversation/stopAiService 完成，
         updateAiBusyState(false)
 } catch (e: Exception) {
-                AppLogger.e(TAG, "取消当前AI任务失败: ${e.message}", e)" }
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.notify(NOTIFICATION_ID, createNotification())
-        return START_NOT_STICKY
-}
-        // 从Intent中提取通知信息
-        intent?.let {
-            characterName = it.getStringExtra(EXTRA_CHARACTER_NAME)
-        avatarUri = it.getStringExtra(EXTRA_AVATAR_URI)
-        AppLogger.d(TAG, "收到通知数据 - 角色: ${characterName}, 头像: ${avatarUri}")
-        val state = it.getStringExtra(EXTRA_STATE)
-        if (state != null) {
-                updateAiBusyState(state == STATE_RUNNING)
-        val alwaysListeningEnabled = isAlwaysListeningEnabledNow()
-        val externalHttpEnabled =
-                externalHttpStateFlow.value.isRunning || isExternalHttpEnabledNow()
-        if (!isAiBusy &&
-                !alwaysListeningEnabled &&
-                !externalHttpEnabled
-                ) {
-                    AppLogger.d(TAG, "服务进入空闲且无持久后台职责，停止前台服务并移除通知")
-        stopSelfIfIdle(ignoreAppForeground = true)
-        return START_NOT_STICKY
-}
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                manager.notify(NOTIFICATION_ID, createNotification())
-}
-
-}
-                // ??External HTTP 处于启用状态时，使？START_STICKY 提高后台保活强度，
-       // 其他场景仍由 EnhancedAIService 与前台交互精确控制生命周期？
-        return if (isExternalHttpEnabledNow()) START_STICKY else START_NOT_STICKY
-}
-        override fun onDestroy() {
-        val stoppedPort = externalHttpCurrentPort ?: externalHttpStateFlow.value.port
-        runCatching {
-            externalHttpServer?.stopServer()
-}.onFailure { error ->
- AppLogger.e(TAG, "Failed to stop external HTTP server", error)
-}
-        externalHttpServer = null
-        externalHttpCurrentPort = null
-        updateExternalHttpState(
-        ExternalChatHttpState(
-        isRunning = false,
-        port = stoppedPort,
-        lastError = null
-        ),
-        refreshNotification = false
-        )
-        super.onDestroy()
-        isRunning.set(false)
-        updateAiBusyState(false)
-        hideKeepAliveOverlay()
-        stopWakeMonitoring()
-        AppLogger.d(TAG, "AI 前台服务已销毁")
-}
-        override fun onBind(intent: Intent): IBinder? {
-        // 该服务是启动服务，不提供绑定功能，
-        return null
-}
-        private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelName = getString(R.string.service_Apex_running)
-        val serviceChannel =
-            NotificationChannel(
-            CHANNEL_ID,
-            channelName,
-            NotificationManager.IMPORTANCE_LOW // 低重要性，避免打扰用户
-            )
-            .apply {
-                        description = getString(R.string.service_keep_background)
-}
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(serviceChannel)
-}
-
-}
-        private fun startExternalHttpMonitoring() {
-        if (externalHttpMonitorJob?.isActive == true) return
-        if (isExternalHttpEnabledNow()) {
-            startOrRefreshExternalHttpServer()
-} else {
-            updateExternalHttpState(
-            externalHttpStateFlow.value.copy(
-            isRunning = false,
-            port = runCatching {
- externalHttpPreferences.getPort()
-}.getOrNull(),
-lastError = null
-)
-)
-}
-        externalHttpMonitorJob =
-        serviceScope.launch {
-                combine(
-                externalHttpPreferences.enabledFlow,
-                externalHttpPreferences.portFlow
-                ) {
- enabled, port ->
- enabled to port
-}.collectLatest {
- (enabled, port) ->
- AppLogger.d(TAG, "External HTTP config updated: enabled=${enabled}, port=${port}")
- if (enabled) {
-                        startOrRefreshExternalHttpServer(
-                        config = externalHttpPreferences.getConfigSync()
-                        )
-} else {
-                        stopExternalHttpServer(port
-override = port, lastError = null)
-stopSelfIfIdle(ignoreAppForeground = true)
-}
-
-}
-
-}
-
-}
-        private fun startWakeMonitoring() {
-        if (wakeMonitorJob?.isActive == true) return
-        AppLogger.d(TAG, "startWakeMonitoring")
-        wakeMonitorJob =
-        serviceScope.launch {
-                launch {
-                    wakePrefs.wakePhraseFlow.collectLatest { phrase ->
- currentWakePhrase = phrase.ifBlank {
- WakeWordPreferences.DEFAULT_WAKE_PHRASE
-}
-        AppLogger.d(TAG, "唤醒词更，'${currentWakePhrase}'")
-}
-
-}
-        launch {
-                    wakePrefs.wakePhraseRegexEnabledFlow.collectLatest { enabled ->
- wakePhraseRegexEnabled = enabled
- AppLogger.d(TAG, "唤醒词正则开关更，enabled=${enabled}")
-}
-
-}
-        launch {
-                    wakePrefs.wakeRecognitionModeFlow.collectLatest { mode ->
- wakeRecognitionMode = mode
- AppLogger.d(TAG, "唤醒识别模式更新: ${mode}")
- applyWakeListeningState()
-}
-
-}
-        launch {
-                    wakePrefs.personalWakeTemplatesFlow.collectLatest { templates ->
- personalWakeTemplates = templates.mapNotNull { t ->
- val feats = t.features
- if (feats.isEmpty()) null else feats.toFloatArray()
-}
-        AppLogger.d(TAG, "个人化唤醒模板更，count=${personalWakeTemplates.size}")applyWakeListeningState()" }
+                AppLogger.e(TAG, "取消当前AI任务失败: ${e.message}", e)" } val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager manager.notify(NOTIFICATION_ID, createNotification()) return START_NOT_STICKY } // 从Intent中提取通知信息 intent?.let { characterName = it.getStringExtra(EXTRA_CHARACTER_NAME) avatarUri = it.getStringExtra(EXTRA_AVATAR_URI) AppLogger.d(TAG, "收到通知数据 - 角色: ${characterName}, 头像: ${avatarUri}") val state = it.getStringExtra(EXTRA_STATE) if (state != null) { updateAiBusyState(state == STATE_RUNNING) val alwaysListeningEnabled = isAlwaysListeningEnabledNow() val externalHttpEnabled = externalHttpStateFlow.value.isRunning || isExternalHttpEnabledNow() if (!isAiBusy && !alwaysListeningEnabled && !externalHttpEnabled ) { AppLogger.d(TAG, "服务进入空闲且无持久后台职责，停止前台服务并移除通知") stopSelfIfIdle(ignoreAppForeground = true) return START_NOT_STICKY } val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager manager.notify(NOTIFICATION_ID, createNotification()) }  } // ??External HTTP 处于启用状态时，使？START_STICKY 提高后台保活强度， // 其他场景仍由 EnhancedAIService 与前台交互精确控制生命周期？ return if (isExternalHttpEnabledNow()) START_STICKY else START_NOT_STICKY } override fun onDestroy() { val stoppedPort = externalHttpCurrentPort ?: externalHttpStateFlow.value.port runCatching { externalHttpServer?.stopServer() }.onFailure { error -> AppLogger.e(TAG, "Failed to stop external HTTP server", error) } externalHttpServer = null externalHttpCurrentPort = null updateExternalHttpState( ExternalChatHttpState( isRunning = false, port = stoppedPort, lastError = null ), refreshNotification = false ) super.onDestroy() isRunning.set(false) updateAiBusyState(false) hideKeepAliveOverlay() stopWakeMonitoring() AppLogger.d(TAG, "AI 前台服务已销毁") } override fun onBind(intent: Intent): IBinder? { // 该服务是启动服务，不提供绑定功能， return null } private fun createNotificationChannel() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { val channelName = getString(R.string.service_Apex_running) val serviceChannel = NotificationChannel( CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW // 低重要性，避免打扰用户 ) .apply { description = getString(R.string.service_keep_background) } val manager = getSystemService(NotificationManager::class.java) manager.createNotificationChannel(serviceChannel) }  } private fun startExternalHttpMonitoring() { if (externalHttpMonitorJob?.isActive == true) return if (isExternalHttpEnabledNow()) { startOrRefreshExternalHttpServer() } else { updateExternalHttpState( externalHttpStateFlow.value.copy( isRunning = false, port = runCatching { externalHttpPreferences.getPort() }.getOrNull(), lastError = null ) ) } externalHttpMonitorJob = serviceScope.launch { combine( externalHttpPreferences.enabledFlow, externalHttpPreferences.portFlow ) { enabled, port -> enabled to port }.collectLatest { (enabled, port) -> AppLogger.d(TAG, "External HTTP config updated: enabled=${enabled}, port=${port}") if (enabled) { startOrRefreshExternalHttpServer( config = externalHttpPreferences.getConfigSync() ) } else { stopExternalHttpServer(port override = port, lastError = null) stopSelfIfIdle(ignoreAppForeground = true) }  }  }  } private fun startWakeMonitoring() { if (wakeMonitorJob?.isActive == true) return AppLogger.d(TAG, "startWakeMonitoring") wakeMonitorJob = serviceScope.launch { launch { wakePrefs.wakePhraseFlow.collectLatest { phrase -> currentWakePhrase = phrase.ifBlank { WakeWordPreferences.DEFAULT_WAKE_PHRASE } AppLogger.d(TAG, "唤醒词更，'${currentWakePhrase}'") }  } launch { wakePrefs.wakePhraseRegexEnabledFlow.collectLatest { enabled -> wakePhraseRegexEnabled = enabled AppLogger.d(TAG, "唤醒词正则开关更，enabled=${enabled}") }  } launch { wakePrefs.wakeRecognitionModeFlow.collectLatest { mode -> wakeRecognitionMode = mode AppLogger.d(TAG, "唤醒识别模式更新: ${mode}") applyWakeListeningState() }  } launch { wakePrefs.personalWakeTemplatesFlow.collectLatest { templates -> personalWakeTemplates = templates.mapNotNull { t -> val feats = t.features if (feats.isEmpty()) null else feats.toFloatArray() } AppLogger.d(TAG, "个人化唤醒模板更，count=${personalWakeTemplates.size}")applyWakeListeningState()" }
 
 }
         wakePrefs.alwaysListeningEnabledFlow.collectLatest { enabled ->
@@ -1374,89 +849,7 @@ stopSelfIfIdle(ignoreAppForeground = true)
                 wm.removeView(current)
         AppLogger.d(TAG, "Keep-alive overlay hidden")
 } catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to hide keep-alive overlay: ${e.message}", e)" } finally {
-                if (keepAliveOverlayView === view) {
-                    keepAliveOverlayView = null
-}
-
-}
-
-}
-
-}
-        private suspend fun startWakeListening() {
-        wakeStateMutex.withLock {
-            startWakeListeningLocked()
-}
-
-}
-        private suspend fun startWakeListeningLocked() {
-        if (!wakeListeningEnabled) return
-        if (wakeRecognitionMode == WakeWordPreferences.WakeRecognitionMode.STT) {
-            if (personalWakeJob?.isActive == true) {
-                AppLogger.d(TAG, "Switching wake listener: stopping personal wake before starting STT")
-        stopWakeListeningLocked(releaseProvider = true)
-}
-        if (wakeListeningJob?.isActive == true) return
-} else {
-            if (wakeListeningJob?.isActive == true) {
-                AppLogger.d(TAG, "Switching wake listener: stopping STT wake before starting personal")
-        stopWakeListeningLocked(releaseProvider = true)
-}
-        if (personalWakeJob?.isActive == true) return
-}
-        if (wakeRecognitionMode == WakeWordPreferences.WakeRecognitionMode.PERSONAL_TEMPLATE) {
-            startPersonalWakeListening()
-        return
-}
-        AppLogger.d(TAG, "startWakeListening: phrase='${currentWakePhrase}'")
-        if (wakeHandoffPending && !wakeStopInProgress && FloatingChatService.getInstance() == null) {
-            AppLogger.d(TAG, "Clearing stale wake handoff pending state before starting wake listening")
-        wakeHandoffPending = false
-            wakeStopInProgress = false
-            pendingWakeTriggeredAtMs = 0L
-            SpeechPrerollStore.clearPendingWakePhrase()
-}
-        val micGranted =
-        checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) ==
-        PackageManager.PERMISSION_GRANTED
-        if (!micGranted) {
-            AppLogger.e(TAG, "启动唤醒监听失败: 未授？RECORD_AUDIO（请在系统设置中允许麦克风权限"))
-        wakeListeningEnabled = false
-            try {
-                wakePrefs.saveAlwaysListeningEnabled(false)
-} catch (_: Exception) {
-
-}
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.notify(NOTIFICATION_ID, createNotification())
-        return
-}
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            tryPromoteToMicrophoneForeground()
-}
-        wakeResumeJob?.cancel()
-        wakeResumeJob = null
-        try {
-            val provider = ensureWakeSpeechProvider()
-        val initOk = provider.initialize()
-        AppLogger.d(TAG, "唤醒识别？initialize: ok=${initOk}")
-        wakeListeningMicActiveForRecordingDetection = true
-            val startOk = provider.startRecognition(
-            languageCode = "zh-CN",
-            continuousMode = true,
-            partialResults = true
-            )
-        AppLogger.d(TAG, "唤醒识别？startRecognition: ok=${startOk}")
-        if (!startOk) {
-                val alreadyRunning =
-                provider.isRecognizing ||
-                provider.currentState == SpeechService.RecognitionState.PREPARING ||
-                provider.currentState == SpeechService.RecognitionState.PROCESSING ||
-                provider.currentState == SpeechService.RecognitionState.RECOGNIZING
-                if (!alreadyRunning) {
-                    AppLogger.w(TAG, "唤醒识别？startRecognition failed (will re"
-try)") wakeListeningMicActiveForRecordingDetection = false                    wakeStateRetryJob?.cancel()
+                AppLogger.e(TAG, "Failed to hide keep-alive overlay: ${e.message}", e)" } finally { if (keepAliveOverlayView === view) { keepAliveOverlayView = null }  }  }  } private suspend fun startWakeListening() { wakeStateMutex.withLock { startWakeListeningLocked() }  } private suspend fun startWakeListeningLocked() { if (!wakeListeningEnabled) return if (wakeRecognitionMode == WakeWordPreferences.WakeRecognitionMode.STT) { if (personalWakeJob?.isActive == true) { AppLogger.d(TAG, "Switching wake listener: stopping personal wake before starting STT") stopWakeListeningLocked(releaseProvider = true) } if (wakeListeningJob?.isActive == true) return } else { if (wakeListeningJob?.isActive == true) { AppLogger.d(TAG, "Switching wake listener: stopping STT wake before starting personal") stopWakeListeningLocked(releaseProvider = true) } if (personalWakeJob?.isActive == true) return } if (wakeRecognitionMode == WakeWordPreferences.WakeRecognitionMode.PERSONAL_TEMPLATE) { startPersonalWakeListening() return } AppLogger.d(TAG, "startWakeListening: phrase='${currentWakePhrase}'") if (wakeHandoffPending && !wakeStopInProgress && FloatingChatService.getInstance() == null) { AppLogger.d(TAG, "Clearing stale wake handoff pending state before starting wake listening") wakeHandoffPending = false wakeStopInProgress = false pendingWakeTriggeredAtMs = 0L SpeechPrerollStore.clearPendingWakePhrase() } val micGranted = checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED if (!micGranted) { AppLogger.e(TAG, "启动唤醒监听失败: 未授？RECORD_AUDIO（请在系统设置中允许麦克风权限")) wakeListeningEnabled = false try { wakePrefs.saveAlwaysListeningEnabled(false) } catch (_: Exception) {  } val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager manager.notify(NOTIFICATION_ID, createNotification()) return } if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { tryPromoteToMicrophoneForeground() } wakeResumeJob?.cancel() wakeResumeJob = null try { val provider = ensureWakeSpeechProvider() val initOk = provider.initialize() AppLogger.d(TAG, "唤醒识别？initialize: ok=${initOk}") wakeListeningMicActiveForRecordingDetection = true val startOk = provider.startRecognition( languageCode = "zh-CN", continuousMode = true, partialResults = true ) AppLogger.d(TAG, "唤醒识别？startRecognition: ok=${startOk}") if (!startOk) { val alreadyRunning = provider.isRecognizing || provider.currentState == SpeechService.RecognitionState.PREPARING || provider.currentState == SpeechService.RecognitionState.PROCESSING || provider.currentState == SpeechService.RecognitionState.RECOGNIZING if (!alreadyRunning) { AppLogger.w(TAG, "唤醒识别？startRecognition failed (will re" try)") wakeListeningMicActiveForRecordingDetection = false                    wakeStateRetryJob?.cancel()
         wakeStateRetryJob =                        serviceScope.launch {
                             delay(650)
         wakeStateMutex.withLock {
@@ -1485,8 +878,7 @@ try)") wakeListeningMicActiveForRecordingDetection = false                    wa
  lastIsFinal = result.isFinal
  AppLogger.d(
  TAG,
- "唤醒识别输出(${ if (result.isFinal) "final" else "partial"
-}): '${text}'"                    ) if (wakeHandoffPending) {
+ "唤醒识别输出(${ if (result.isFinal) "final" else "partial" }): '${text}'"                    ) if (wakeHandoffPending) {
                         val floatingAlive = FloatingChatService.getInstance() != null
                         if (!wakeStopInProgress && !floatingAlive) {
                             AppLogger.d(TAG, "Clearing stale wake handoff pending state (no floating instance)")
@@ -1507,66 +899,7 @@ try)") wakeListeningMicActiveForRecordingDetection = false                    wa
                             workflowRepository.triggerWorkflowsBySpeechEvent(text = text, isFinal = result.isFinal)
 }
         } catch (e: Exception) {
-                        AppLogger.e(TAG, "Speech trigger processing failed: ${e.message}", e)" }
-        if (matchWakePhrase(text, currentWakePhrase, wakePhraseRegexEnabled)) {
-                        val now = System.currentTimeMillis()
-        if (now - lastWakeTriggerAtMs < 3000L) return@collectLatest
-                        lastWakeTriggerAtMs = now
-                        pendingWakeTriggeredAtMs = now
-                        wakeHandoffPending = true
-                        wakeStopInProgress = false
-                        AppLogger.d(TAG, "命中唤醒，'${currentWakePhrase}' in '${text}'")
-        SpeechPrerollStore.setPendingWakePhrase(
-                        phrase = currentWakePhrase,
-                        regexEnabled = wakePhraseRegexEnabled,
-                        )
-        triggerWakeLaunch()
-        scheduleWakeResume()
-}
-
-}
-
-}
-
-}
-        private suspend fun startPersonalWakeListening() {
-        if (!wakeListeningEnabled) return
-        if (personalWakeJob?.isActive == true) return
-        AppLogger.d(TAG, "startPersonalWakeListening: templates=${personalWakeTemplates.size}")
-        if (personalWakeTemplates.isEmpty()) {
-            AppLogger.w(TAG, "Personal wake listening skipped: no templates")
-        return
-}
-        wakeListeningMicActiveForRecordingDetection = true
-        val listener =
-        PersonalWakeListener(
-        context = applicationContext,
-        templatesProvider = {
- personalWakeTemplates
-},
-onTriggered = onTriggered@{ similarity ->
- val now = System.currentTimeMillis()
- if (now - lastWakeTriggerAtMs < 3000L) return@onTriggered
- lastWakeTriggerAtMs = now
- pendingWakeTriggeredAtMs = now
- wakeHandoffPending = true
- wakeStopInProgress = false
- AppLogger.d(TAG, "命中个人化唤，similarity=${similarity}")
- SpeechPrerollStore.setPendingWakePhrase(
- phrase = currentWakePhrase,
- regexEnabled = wakePhraseRegexEnabled,
- )
- triggerWakeLaunch()
- scheduleWakeResume()
-}
-            )
-        personalWakeListener = listener
-            personalWakeJob =
-            serviceScope.launch {
-                try {
-                    listener.runLoop()
-} catch (e: Exception) {
-                    AppLogger.e(TAG, "Personal wake loop failed: ${e.message}", e)" } finally {
+                        AppLogger.e(TAG, "Speech trigger processing failed: ${e.message}", e)" } if (matchWakePhrase(text, currentWakePhrase, wakePhraseRegexEnabled)) { val now = System.currentTimeMillis() if (now - lastWakeTriggerAtMs < 3000L) return@collectLatest lastWakeTriggerAtMs = now pendingWakeTriggeredAtMs = now wakeHandoffPending = true wakeStopInProgress = false AppLogger.d(TAG, "命中唤醒，'${currentWakePhrase}' in '${text}'") SpeechPrerollStore.setPendingWakePhrase( phrase = currentWakePhrase, regexEnabled = wakePhraseRegexEnabled, ) triggerWakeLaunch() scheduleWakeResume() }  }  }  } private suspend fun startPersonalWakeListening() { if (!wakeListeningEnabled) return if (personalWakeJob?.isActive == true) return AppLogger.d(TAG, "startPersonalWakeListening: templates=${personalWakeTemplates.size}") if (personalWakeTemplates.isEmpty()) { AppLogger.w(TAG, "Personal wake listening skipped: no templates") return } wakeListeningMicActiveForRecordingDetection = true val listener = PersonalWakeListener( context = applicationContext, templatesProvider = { personalWakeTemplates }, onTriggered = onTriggered@{ similarity -> val now = System.currentTimeMillis() if (now - lastWakeTriggerAtMs < 3000L) return@onTriggered lastWakeTriggerAtMs = now pendingWakeTriggeredAtMs = now wakeHandoffPending = true wakeStopInProgress = false AppLogger.d(TAG, "命中个人化唤，similarity=${similarity}") SpeechPrerollStore.setPendingWakePhrase( phrase = currentWakePhrase, regexEnabled = wakePhraseRegexEnabled, ) triggerWakeLaunch() scheduleWakeResume() } ) personalWakeListener = listener personalWakeJob = serviceScope.launch { try { listener.runLoop() } catch (e: Exception) { AppLogger.e(TAG, "Personal wake loop failed: ${e.message}", e)" } finally {
                     wakeListeningMicActiveForRecordingDetection = false
 }
 
@@ -1650,16 +983,7 @@ onTriggered = onTriggered@{ similarity ->
                 startService(floatingIntent)
 }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "唤醒打开悬浮窗失，${e.message}", e)" }
-
-}
-        private fun matchWakePhrase(recognized: String, phrase: String, regexEnabled: Boolean): Boolean {
-        if (regexEnabled) {
-            if (phrase.isBlank()) return false
-            return try {
-                Regex(phrase).containsMatchIn(recognized)
-} catch (e: Exception) {
-                AppLogger.w(TAG, "Invalid wake phrase regex: '${phrase}' (${e.message})")false" }
+            AppLogger.e(TAG, "唤醒打开悬浮窗失，${e.message}", e)" }  } private fun matchWakePhrase(recognized: String, phrase: String, regexEnabled: Boolean): Boolean { if (regexEnabled) { if (phrase.isBlank()) return false return try { Regex(phrase).containsMatchIn(recognized) } catch (e: Exception) { AppLogger.w(TAG, "Invalid wake phrase regex: '${phrase}' (${e.message})")false" }
 
 }
         val target = normalizeWakeText(phrase)

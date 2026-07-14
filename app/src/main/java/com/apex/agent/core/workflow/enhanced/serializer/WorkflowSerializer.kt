@@ -263,38 +263,4 @@ class WorkflowSerializer {
                             sb.appendLine("$pad$k:")
         sb.append(jsonToYaml(v, indent + 1))
                         }
-        else -> sb.appendLine("$pad$k: ${v.toString().trim('"')}") }
-                }
-            }
-        is kotlinx.serialization.json.JsonArray -> {
-                element.forEach { item ->
-                    sb.appendLine("$pad-")
-        sb.append(jsonToYaml(item, indent + 1))
-                }
-            }
-        is JsonPrimitive -> {
-                sb.appendLine("$pad${element.content}")
-            }
-        else -> {}
-        }
-        return sb.toString()
-    }
-        private fun yamlToJson(yaml: String): JsonElement {
-        // 极简 YAML 解析（仅支持键值对和缩进）
-        val lines = yaml.lines().filter { it.isNotBlank() && !it.startsWith("#") }
-        val root = buildJsonObject {  }
-        return root
-    }
-        companion object {
-        const val CURRENT_SCHEMA_VERSION = "2.0.0"
-
-        @Volatile
-        private var instance: WorkflowSerializer? = null
-
-        fun getInstance(): WorkflowSerializer {
-            return instance ?: synchronized(this) {
-                instance ?: WorkflowSerializer().also { instance = it }
-            }
-        }
-    }
-}
+        else -> sb.appendLine("$pad$k: ${v.toString().trim('"')}") } } } is kotlinx.serialization.json.JsonArray -> { element.forEach { item -> sb.appendLine("$pad-") sb.append(jsonToYaml(item, indent + 1)) } } is JsonPrimitive -> { sb.appendLine("$pad${element.content}") } else -> {} } return sb.toString() } private fun yamlToJson(yaml: String): JsonElement { // 极简 YAML 解析（仅支持键值对和缩进） val lines = yaml.lines().filter { it.isNotBlank() && !it.startsWith("#") } val root = buildJsonObject {  } return root } companion object { const val CURRENT_SCHEMA_VERSION = "2.0.0"  @Volatile private var instance: WorkflowSerializer? = null  fun getInstance(): WorkflowSerializer { return instance ?: synchronized(this) { instance ?: WorkflowSerializer().also { instance = it } } } } }

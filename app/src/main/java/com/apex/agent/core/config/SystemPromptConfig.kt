@@ -28,10 +28,7 @@ BEHAVIOR GUIDELINES:
     private const val BEHAVIOR_GUIDELINES_CORE_CN = """
 行为准则 工具调度：所有工具都可以并行或串行调用。根据任务需要选择即可，工具系统会自行决定并处理执行冲突问题，- 回答应简洁明了，除非用户要求，否则避免冗长的解释 不要重复之前的对话步骤，自然地保持上下文 坦诚承认自己的局限性，如果不知道某事，就直接说明，""
         private const val BEHAVIOR_GUIDELINES_ENDING_CN = """
-- 每次响应都必须以以下三种方式之一结束 1. 工具调用：用于执行操作。工具调用必须是响应的最后一部分，后面不能有任何内容 2. 任务完成：当整个任务完成时，使用 `<status type="complete"></status>` 3. 等待用户：当你需要用户输入或不确定如何继续时，使，`<status type="wait_for_user_need"></status>` 关键规则：以上三种结束方式互斥。如果响应中同时包含工具调用和状态标签，工具调用将被忽略。" private const val BEHAVIOR_GUIDELINES_CN =
-        BEHAVIOR_GUIDELINES_CORE_CN + BEHAVIOR_GUIDELINES_ENDING_CN
-
-    private const val TOOL_USAGE_GUIDELINES_EN = """
+- 每次响应都必须以以下三种方式之一结束 1. 工具调用：用于执行操作。工具调用必须是响应的最后一部分，后面不能有任何内容 2. 任务完成：当整个任务完成时，使用 `<status type="complete"></status>` 3. 等待用户：当你需要用户输入或不确定如何继续时，使，`<status type="wait_for_user_need"></status>` 关键规则：以上三种结束方式互斥。如果响应中同时包含工具调用和状态标签，工具调用将被忽略。" private const val BEHAVIOR_GUIDELINES_CN = BEHAVIOR_GUIDELINES_CORE_CN + BEHAVIOR_GUIDELINES_ENDING_CN  private const val TOOL_USAGE_GUIDELINES_EN = """
 When calling a tool, the user will see your response, and then will automatically send the tool results back to you in a follow-up message.
 
 Before calling a tool, briefly describe what you are about to do.
@@ -91,14 +88,10 @@ PACKAGE SYSTEM
 - 一些额外功能通过包提 要使用包，只需激活它 <tool name="use_package">
   <param name="package_name">package_name_here</param>
   </tool>
-- 这将显示包中的所有工具及其使用方 只有在激活包后，才能直接使用其工。" 
-    // Tool Call API 模式下的工具使用简要说明（保留重要的调用前描述指示
-        private const val TOOL_USAGE_BRIEF_EN = """
+- 这将显示包中的所有工具及其使用方 只有在激活包后，才能直接使用其工。" // Tool Call API 模式下的工具使用简要说明（保留重要的调用前描述指示 private const val TOOL_USAGE_BRIEF_EN = """
 Before calling a tool, briefly describe what you are about to do."""
         private const val TOOL_USAGE_BRIEF_CN = """
-调用工具前，请简要说明你要做什么。" 
-    // Tool Call API 模式下的包系统说明（不使用XML格式
-        private const val PACKAGE_SYSTEM_GUIDELINES_TOOL_CALL_EN = """
+调用工具前，请简要说明你要做什么。" // Tool Call API 模式下的包系统说明（不使用XML格式 private const val PACKAGE_SYSTEM_GUIDELINES_TOOL_CALL_EN = """
 PACKAGE SYSTEM
 - Some additional functionality is available through packages
 - To use a package, call the use_package function with the package_name parameter
@@ -109,65 +102,7 @@ PACKAGE SYSTEM
         private const val PACKAGE_SYSTEM_GUIDELINES_TOOL_CALL_CN = """
 包系统：
 - 一些额外功能通过包提 要使用包，调用use_package 函数并传，package_name 参数
-- 只要本次聊天中该包曾出现，use_package，就视为该包已激 调用包工具请使用 package_proxy - tool_name 填写真实工具名（例如 packageName:toolName - 将目标工具参数放，params（JSON对象。" private fun getAvailableToolsEn(
-        hasImageRecognition: Boolean,
-        chatModelHasDirectImage: Boolean,
-        hasAudioRecognition: Boolean,
-        hasVideoRecognition: Boolean,
-        chatModelHasDirectAudio: Boolean,
-        chatModelHasDirectVideo: Boolean,
-        safBookmarkNames: List<String>,
-        toolVisibility: Map<String, Boolean>,
-        dispatchToolPromptComposeHooks: (PromptHookContext) -> PromptHookContext = PromptHookRegistry::dispatchToolPromptComposeHooks
-    ): String {
-        return SystemToolPrompts.generateToolsPromptEn(
-            hasBackendImageRecognition = hasImageRecognition,
-            includeMemoryTools = false,
-            chatModelHasDirectImage = chatModelHasDirectImage,
-            hasBackendAudioRecognition = hasAudioRecognition,
-            hasBackendVideoRecognition = hasVideoRecognition,
-            chatModelHasDirectAudio = chatModelHasDirectAudio,
-            chatModelHasDirectVideo = chatModelHasDirectVideo,
-            safBookmarkNames = safBookmarkNames,
-            toolVisibility = toolVisibility,
-            dispatchToolPromptComposeHooks = dispatchToolPromptComposeHooks
-        )
-    }
-        private fun getMemoryToolsEn(toolVisibility: Map<String, Boolean>): String {
-        return SystemToolPrompts.generateMemoryToolsPromptEn(toolVisibility)
-    }
-        private fun getAvailableToolsCn(
-        hasImageRecognition: Boolean,
-        chatModelHasDirectImage: Boolean,
-        hasAudioRecognition: Boolean,
-        hasVideoRecognition: Boolean,
-        chatModelHasDirectAudio: Boolean,
-        chatModelHasDirectVideo: Boolean,
-        safBookmarkNames: List<String>,
-        toolVisibility: Map<String, Boolean>,
-        dispatchToolPromptComposeHooks: (PromptHookContext) -> PromptHookContext = PromptHookRegistry::dispatchToolPromptComposeHooks
-    ): String {
-        return SystemToolPrompts.generateToolsPromptCn(
-            hasBackendImageRecognition = hasImageRecognition,
-            includeMemoryTools = false,
-            chatModelHasDirectImage = chatModelHasDirectImage,
-            hasBackendAudioRecognition = hasAudioRecognition,
-            hasBackendVideoRecognition = hasVideoRecognition,
-            chatModelHasDirectAudio = chatModelHasDirectAudio,
-            chatModelHasDirectVideo = chatModelHasDirectVideo,
-            safBookmarkNames = safBookmarkNames,
-            toolVisibility = toolVisibility,
-            dispatchToolPromptComposeHooks = dispatchToolPromptComposeHooks
-        )
-    }
-        private fun getMemoryToolsCn(toolVisibility: Map<String, Boolean>): String {
-        return SystemToolPrompts.generateMemoryToolsPromptCn(toolVisibility)
-    }
-
-
-    /** Base system prompt template used by the enhanced AI service */
-    val SYSTEM_PROMPT_TEMPLATE =
-"""
+- 只要本次聊天中该包曾出现，use_package，就视为该包已激 调用包工具请使用 package_proxy - tool_name 填写真实工具名（例如 packageName:toolName - 将目标工具参数放，params（JSON对象。" private fun getAvailableToolsEn( hasImageRecognition: Boolean, chatModelHasDirectImage: Boolean, hasAudioRecognition: Boolean, hasVideoRecognition: Boolean, chatModelHasDirectAudio: Boolean, chatModelHasDirectVideo: Boolean, safBookmarkNames: List<String>, toolVisibility: Map<String, Boolean>, dispatchToolPromptComposeHooks: (PromptHookContext) -> PromptHookContext = PromptHookRegistry::dispatchToolPromptComposeHooks ): String { return SystemToolPrompts.generateToolsPromptEn( hasBackendImageRecognition = hasImageRecognition, includeMemoryTools = false, chatModelHasDirectImage = chatModelHasDirectImage, hasBackendAudioRecognition = hasAudioRecognition, hasBackendVideoRecognition = hasVideoRecognition, chatModelHasDirectAudio = chatModelHasDirectAudio, chatModelHasDirectVideo = chatModelHasDirectVideo, safBookmarkNames = safBookmarkNames, toolVisibility = toolVisibility, dispatchToolPromptComposeHooks = dispatchToolPromptComposeHooks ) } private fun getMemoryToolsEn(toolVisibility: Map<String, Boolean>): String { return SystemToolPrompts.generateMemoryToolsPromptEn(toolVisibility) } private fun getAvailableToolsCn( hasImageRecognition: Boolean, chatModelHasDirectImage: Boolean, hasAudioRecognition: Boolean, hasVideoRecognition: Boolean, chatModelHasDirectAudio: Boolean, chatModelHasDirectVideo: Boolean, safBookmarkNames: List<String>, toolVisibility: Map<String, Boolean>, dispatchToolPromptComposeHooks: (PromptHookContext) -> PromptHookContext = PromptHookRegistry::dispatchToolPromptComposeHooks ): String { return SystemToolPrompts.generateToolsPromptCn( hasBackendImageRecognition = hasImageRecognition, includeMemoryTools = false, chatModelHasDirectImage = chatModelHasDirectImage, hasBackendAudioRecognition = hasAudioRecognition, hasBackendVideoRecognition = hasVideoRecognition, chatModelHasDirectAudio = chatModelHasDirectAudio, chatModelHasDirectVideo = chatModelHasDirectVideo, safBookmarkNames = safBookmarkNames, toolVisibility = toolVisibility, dispatchToolPromptComposeHooks = dispatchToolPromptComposeHooks ) } private fun getMemoryToolsCn(toolVisibility: Map<String, Boolean>): String { return SystemToolPrompts.generateMemoryToolsPromptCn(toolVisibility) }   /** Base system prompt template used by the enhanced AI service */ val SYSTEM_PROMPT_TEMPLATE = """
 BEGIN_SELF_INTRODUCTION_SECTION
 
 THINKING_GUIDANCE_SECTION

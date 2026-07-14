@@ -91,9 +91,7 @@ class JsonConfigSerializer : ConfigSerializer {
             // 跳过空白和逗号
         while (i < len && (inner[i].isWhitespace() || inner[i] == ',')) i++
             if (i >= len) break
-            if (inner[i] != '"') throw IllegalArgumentException("期望键名以引号开头，位置 $i") i++ // 跳过开头的引号
-        val keyStart = i
-            while (i < len && inner[i] != '"') { if (inner[i] == '\\') i++ // 跳过转义
+            if (inner[i] != '"') throw IllegalArgumentException("期望键名以引号开头，位置 $i") i++ // 跳过开头的引号 val keyStart = i while (i < len && inner[i] != '"') { if (inner[i] == '\\') i++ // 跳过转义
         i++
             }
         if (i >= len) throw IllegalArgumentException("键名未闭合")
@@ -103,9 +101,7 @@ class JsonConfigSerializer : ConfigSerializer {
         while (i < len && (inner[i].isWhitespace() || inner[i] == ':')) i++
             if (i >= len) throw IllegalArgumentException("键 $key 后缺少值")
             // 解析值
-        if (inner[i] == '"') { i++ // 跳过开头的引号
-        val valueStart = i
-                while (i < len && inner[i] != '"') { if (inner[i] == '\\') i++
+        if (inner[i] == '"') { i++ // 跳过开头的引号 val valueStart = i while (i < len && inner[i] != '"') { if (inner[i] == '\\') i++
                     i++
                 }
         val value = inner.substring(valueStart, i)
