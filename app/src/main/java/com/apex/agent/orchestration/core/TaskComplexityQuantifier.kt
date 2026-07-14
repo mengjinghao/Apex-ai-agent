@@ -41,7 +41,7 @@ class TaskComplexityQuantifier @Inject constructor() {
 
     private val categoryPatterns = listOf(
         "coding" to listOf(
-            "code", "program", "开�?, "编程", "implement", "function", "class",
+            "code", "program", "开�", "编程", "implement", "function", "class",
             "algorithm", "api", "endpoint", "database", "sql", "bug", "fix", "refactor"
         ),
         "debugging" to listOf(
@@ -106,15 +106,15 @@ class TaskComplexityQuantifier @Inject constructor() {
 
         val complexityIndicators = listOf(
             3 to listOf("complex", "复杂", "advanced", "difficult", "挑战", "challenging"),
-            2 to listOf("large", "大规�?, "extensive", "multi-step", "multi module"),
-            2 to listOf("distributed", "distributed system", "microservice", "高并�?),
-            2 to listOf("optimize", "optimization", "performance", "高可�?),
+            2 to listOf("large", "大规�", "extensive", "multi-step", "multi module"),
+            2 to listOf("distributed", "distributed system", "microservice", "高并�"),
+            2 to listOf("optimize", "optimization", "performance", "高可�"),
             1 to listOf("integrate", "integration", "multiple", "多个"),
             1 to listOf("concurrent", "parallel", "async", "异步"),
             1 to listOf("security", "encrypt", "authentication"),
-            -1 to listOf("simple", "简�?, "basic", "trivial", "minor", "小幅"),
+            -1 to listOf("simple", "简�", "basic", "trivial", "minor", "小幅"),
             -1 to listOf("typo", "rename", "cosmetic", "format"),
-            -2 to listOf("quick", "快�?, "easy", "straightforward")
+            -2 to listOf("quick", "快�", "easy", "straightforward")
         )
 
         for ((delta, patterns) in complexityIndicators) {
@@ -157,11 +157,11 @@ class TaskComplexityQuantifier @Inject constructor() {
         val lower = description.lowercase()
         var risk = 2
         val riskIndicators = listOf(
-            3 to listOf("high risk", "高风�?, "critical", "production"),
+            3 to listOf("high risk", "高风�", "critical", "production"),
             2 to listOf("security", "secure", "auth", "payment", "finance"),
             2 to listOf("migration", "migrate", "数据迁移", "升级"),
-            1 to listOf("dependency", "第三�?, "external api"),
-            1 to listOf("deadline", "urgent", "紧�?)
+            1 to listOf("dependency", "第三�", "external api"),
+            1 to listOf("deadline", "urgent", "紧�")
         )
         for ((delta, patterns) in riskIndicators) {
             if (patterns.any { lower.contains(it) }) {
@@ -186,26 +186,26 @@ class TaskComplexityQuantifier @Inject constructor() {
         val categorySkills = mapOf(
             "coding" to listOf("编程", "调试", "代码审查"),
             "debugging" to listOf("调试", "问题排查", "日志分析"),
-            "testing" to listOf("测试", "自动化测�?, "质量保证"),
+            "testing" to listOf("测试", "自动化测�", "质量保证"),
             "writing" to listOf("写作", "编辑", "内容规划"),
-            "research" to listOf("研究", "分析", "信息检�?),
+            "research" to listOf("研究", "分析", "信息检�"),
             "analysis" to listOf("数据分析", "逻辑分析", "报告撰写"),
-            "data" to listOf("数据处理", "ETL", "数据�?),
+            "data" to listOf("数据处理", "ETL", "数据�"),
             "design" to listOf("UI设计", "用户体验", "原型设计"),
             "planning" to listOf("项目管理", "规划", "风险评估"),
             "creative" to listOf("创意", "内容创作", "头脑风暴"),
-            "devops" to listOf("DevOps", "CI/CD", "容器�?),
-            "security" to listOf("安全", "渗透测�?, "安全审计")
+            "devops" to listOf("DevOps", "CI/CD", "容器�"),
+            "security" to listOf("安全", "渗透测�", "安全审计")
         )
         skills.addAll(categorySkills[category] ?: emptyList())
         val techPatterns = mapOf(
-            "Python" to listOf("python"), "Java" to listOf("java"), "Kotlin" to listOf("kotlin"),
-            "JavaScript" to listOf("javascript", "js", "node"), "TypeScript" to listOf("typescript", "ts"),
-            "Go" to listOf("golang", "go "), "Rust" to listOf("rust"),
-            "React" to listOf("react"), "Vue" to listOf("vue"), "Angular" to listOf("angular"),
-            "Docker" to listOf("docker"), "Kubernetes" to listOf("kubernetes", "k8s"),
-            "SQL" to listOf("sql", "mysql", "postgresql"), "NoSQL" to listOf("mongodb", "redis"),
-            "AWS" to listOf("aws", "cloud"), "Android" to listOf("android"),
+            "Python" to listOf("python")", "Java" to listOf("java")", "Kotlin" to listOf("kotlin"),
+            "JavaScript" to listOf("javascript", "js", "node")", "TypeScript" to listOf("typescript", "ts"),
+            "Go" to listOf("golang", "go ")", "Rust" to listOf("rust"),
+            "React" to listOf("react")", "Vue" to listOf("vue")", "Angular" to listOf("angular"),
+            "Docker" to listOf("docker")", "Kubernetes" to listOf("kubernetes", "k8s"),
+            "SQL" to listOf("sql", "mysql", "postgresql")", "NoSQL" to listOf("mongodb", "redis"),
+            "AWS" to listOf("aws", "cloud")", "Android" to listOf("android"),
             "iOS" to listOf("ios", "swift")
         )
         for ((tech, patterns) in techPatterns) {
@@ -216,10 +216,10 @@ class TaskComplexityQuantifier @Inject constructor() {
 
     private fun buildReasoning(description: String, category: String, difficulty: Int, score: Float): String {
         val diffLabel = when {
-            difficulty <= 3 -> "简�?
+            difficulty <= 3 -> "简�"
             difficulty <= 6 -> "中等"
             difficulty <= 8 -> "复杂"
-            else -> "极复�?
+            else -> "极复�"
         }
         return "类别: $category, 难度: $diffLabel($difficulty/10), 复杂度分�? ${"%.2f".format(score)}"
     }

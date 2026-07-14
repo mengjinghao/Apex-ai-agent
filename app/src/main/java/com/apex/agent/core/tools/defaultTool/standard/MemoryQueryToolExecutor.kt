@@ -276,7 +276,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid time range: start_time must be <= end_time.")
         }
         
-        // 如果查询"*" 且用户没有显式指？limit，则返回合理数量的结�?       val isWildcardQuery = query.trim() == "*"
+        // 如果查询"*" 且用户没有显式指？limit，则返回合理数量的结�?
+        val isWildcardQuery = query.trim() == "*"
         val defaultLimit = if (isWildcardQuery) {
             MAX_WILDCARD_QUERY_LIMIT
         } else {
@@ -365,11 +366,13 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 )
             }
 
-            // 如果是文档节点且提供了分块参数，则进行特殊处�?           if (memory.isDocumentNode && (chunkIndexParam != null || chunkRangeParam != null || queryParam != null)) {
+            // 如果是文档节点且提供了分块参数，则进行特殊处�?
+            if (memory.isDocumentNode && (chunkIndexParam != null || chunkRangeParam != null || queryParam != null)) {
                 return handleDocumentChunkRetrieval(tool.name, memory, chunkIndexParam, chunkRangeParam, queryParam, chunkLimitParam)
             }
 
-            // 默认行为：返回完整记�?           val formattedResult = buildResultData(listOf(memory), title, 1)
+            // 默认行为：返回完整记�?
+            val formattedResult = buildResultData(listOf(memory), title, 1)
             AppLogger.d(TAG, "Found memory by title '${title}':\n${formattedResult}")
             ToolResult(
                 toolName = tool.name,
@@ -460,7 +463,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 )
             }
 
-            // 格式化返回结�?           val content = "Document: ${memory.title}\n" +
+            // 格式化返回结�?
+            val content = "Document: ${memory.title}\n" +
                 chunks.joinToString("\n---\n") { chunk ->
                     "Chunk ${chunk.chunkIndex + 1}/${totalChunks}:\n${chunk.content}"
                 }
@@ -677,7 +681,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             val occupation = MemoryQueryUtils.getStringParameter(tool, "occupation")
             val aiStyle = MemoryQueryUtils.getStringParameter(tool, "ai_style")
 
-            // 检查是否至少有一个参�?           if (birthDate == null && gender == null && personality == null && 
+            // 检查是否至少有一个参�?
+            if (birthDate == null && gender == null && personality == null && 
                 identity == null && occupation == null && aiStyle == null) {
                 return ToolResult(
                     toolName = tool.name,
@@ -737,7 +742,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         AppLogger.d(TAG, "Linking memories: '${sourceTitle}' -> '${targetTitle}'")
 
         return try {
-            // 提取可选参�?           val linkType = MemoryQueryUtils.getStringParameter(tool, "link_type") ?: "related"
+            // 提取可选参�?
+            val linkType = MemoryQueryUtils.getStringParameter(tool, "link_type") ?: "related"
             val weight = MemoryQueryUtils.getFloatParameter(tool, "weight", MemoryQueryConfig.DEFAULT_LINK_WEIGHT)
             val description = MemoryQueryUtils.getStringParameter(tool, "description") ?: ""
             
@@ -1109,7 +1115,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 val totalChunks = memoryRepository.getTotalChunkCount(memory.id)
 
                 if (matchingChunks.isNotEmpty()) {
-                    // 收集分块索引（使�?based显示�?                   chunkIndices = matchingChunks.map { it.chunkIndex }
+                    // 收集分块索引（使�?based显示�?
+                    chunkIndices = matchingChunks.map { it.chunkIndex }
                     
                     // 生成分块信息摘要
                     chunkInfo = if (matchingChunks.size == 1) {
@@ -1119,9 +1126,11 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     }
                     
                     if (isTruncatedMode) {
-                        // 截断模式：只显示文档标题和分块信�?                       content = "Document: ${memory.title} (${totalChunks} chunks)"
+                        // 截断模式：只显示文档标题和分块信�?
+                        content = "Document: ${memory.title} (${totalChunks} chunks)"
                     } else {
-                        // 将匹配的区块内容拼接起来，每个区块显示编�?                       content = "Document: ${memory.title}\n" +
+                        // 将匹配的区块内容拼接起来，每个区块显示编�?
+                        content = "Document: ${memory.title}\n" +
                             matchingChunks.take(MemoryQueryConfig.MAX_CHUNKS_DISPLAYED) // 最多取5个最相关的区�?                               .joinToString("\n---\n") { chunk -> 
                                     "Chunk ${chunk.chunkIndex + 1}/${totalChunks}:\n${chunk.content}"
                                 }
@@ -1137,16 +1146,19 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     }
                 }
             } else {
-                // 对于普通记�?               chunkInfo = null
+                // 对于普通记�?
+                chunkInfo = null
                 chunkIndices = null
                 if (isTruncatedMode) {
-                    // 截断模式：只返回标题和部分内�?                   content = if (memory.content.length > maxContentLength) {
+                    // 截断模式：只返回标题和部分内�?
+                    content = if (memory.content.length > maxContentLength) {
                         memory.content.take(maxContentLength) + "..."
                     } else {
                         memory.content
                     }
                 } else {
-                    // 完整模式：返回完整内�?                   content = memory.content
+                    // 完整模式：返回完整内�?
+                    content = memory.content
                 }
             }
 
@@ -1993,7 +2005,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
 
 适用场景�?{skill.applicableScenarios.joinToString("\n")}
 
-踩坑案例�?{if (skill.errorCases.isNotEmpty()) skill.errorCases.joinToString("\n") else "??}
+踩坑案例�"{if (skill.errorCases.isNotEmpty()) skill.errorCases.joinToString("\n") else "??}
             """.trimIndent()
             
             MemoryQueryUtils.createSuccessResult(tool.name, StringResultData(skillStr))
@@ -2321,7 +2333,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     appendLine("${index + 1}. ${memory.title} (${memory.createdAt})")
                     appendLine("   内容�?{memory.content.take(100)}...")
                 }
-                appendLine("总计�?{memories.size}条记�?
+                appendLine("总计�?{memories.size}条记�"
             }
             
             ToolResult(
@@ -2357,12 +2369,12 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         return try {
             val memories = memoryRepository.getAgentMemories(agentId, limit)
             val resultStr = buildString {
-                appendLine("Agent ${agentId} 专属记忆列表�?
+                appendLine("Agent ${agentId} 专属记忆列表�"
                 memories.forEachIndexed { index, memory ->
                     appendLine("${index + 1}. ${memory.title} (${memory.createdAt})")
                     appendLine("   内容�?{memory.content.take(100)}...")
                 }
-                appendLine("总计�?{memories.size}条记�?
+                appendLine("总计�?{memories.size}条记�"
             }
             
             ToolResult(
@@ -2388,12 +2400,12 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         return try {
             val memories = memoryRepository.getPublicMemories(limit)
             val resultStr = buildString {
-                appendLine("公共记忆列表�?
+                appendLine("公共记忆列表�"
                 memories.forEachIndexed { index, memory ->
                     appendLine("${index + 1}. ${memory.title} (${memory.createdAt})")
                     appendLine("   内容�?{memory.content.take(100)}...")
                 }
-                appendLine("总计�?{memories.size}条记�?
+                appendLine("总计�?{memories.size}条记�"
             }
             
             ToolResult(
@@ -2449,7 +2461,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     appendLine("${index + 1}. ${memory.title} (${memory.createdAt})")
                     appendLine("   内容�?{memory.content.take(100)}...")
                 }
-                appendLine("总计�?{memories.size}条记�?
+                appendLine("总计�?{memories.size}条记�"
             }
             
             ToolResult(

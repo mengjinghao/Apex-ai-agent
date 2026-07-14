@@ -27,9 +27,8 @@ object SystemToolPrompts {
     private fun buildSafBookmarksSectionCn(safBookmarkNames: List<String>): String {
         val names = safBookmarkNames.map { it.trim() }.filter { it.isNotEmpty() }.distinct().sorted()
         if (names.isEmpty()) return ""
-        val listed = names.joinToString("�?) { "repo:${it}" }
+        val listed = names.joinToString("�") { "repo:${it}" }
         return """
-
 **附加本地储存仓库�?*
 - environment（可选）：也可以使用 `environment="repo:<仓库�?"` 在附加本地储存仓库中操作�?
 - 路径使用绝对路径（例如：`/`、`/work/index.html`）�?
@@ -68,14 +67,14 @@ object SystemToolPrompts {
         tools = listOf(
             ToolPrompt(
                 name = "sleep",
-                description = "演示工具，短暂暂停�?,
+                description = "演示工具，短暂暂停�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "duration_ms", type = "integer", description = "毫秒，默�?1000�?= 0", required = false, default = "1000")
                 )
             ),
             ToolPrompt(
                 name = "use_package",
-                description = "在当前会话中激活包�?,
+                description = "在当前会话中激活包�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "package_name", type = "string", description = "要激活的包名", required = true)
                 )
@@ -249,7 +248,7 @@ object SystemToolPrompts {
         tools = listOf(
             ToolPrompt(
                 name = "list_files",
-                description = "列出目录中的文件�?,
+                description = "列出目录中的文件�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "例如\"/sdcard/Download\"", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false)
@@ -257,7 +256,7 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "read_file",
-                description = "读取文件内容。对于图片文件（jpg, jpeg, png, gif, bmp），自动使用OCR提取文本�?,
+                description = "读取文件内容。对于图片文件（jpg, jpeg, png, gif, bmp），自动使用OCR提取文本�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "文件路径", required = true),
                     ToolParameterSchema(
@@ -269,7 +268,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "intent",
                         type = "string",
-                        description = "可选，用户对媒�?文件的问题（用于后端识别模型�?,
+                        description = "可选，用户对媒�?文件的问题（用于后端识别模型�",
                         required = false
                     ),
                     ToolParameterSchema(
@@ -294,23 +293,23 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "read_file_part",
-                description = "按行号范围读取文件内容�?,
+                description = "按行号范围读取文件内容�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "文件路径", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
-                    ToolParameterSchema(name = "start_line", type = "integer", description = "起始行号，从1开�?, required = false, default = "1"),
-                    ToolParameterSchema(name = "end_line", type = "integer", description = "结束行号，从1开始，包括该行，可�?, required = false, default = "start_line + 99")
+                    ToolParameterSchema(name = "start_line", type = "integer", description = "起始行号，从1开�", required = false, default = "1"),
+                    ToolParameterSchema(name = "end_line", type = "integer", description = "结束行号，从1开始，包括该行，可�", required = false, default = "start_line + 99")
                 )
             ),
             ToolPrompt(
                 name = "apply_file",
-                description = "通过查找并替�?删除匹配的内容块来编辑文件�?,
+                description = "通过查找并替�?删除匹配的内容块来编辑文件�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "文件路径", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
                     ToolParameterSchema(name = "type", type = "string", description = "操作类型：replace | delete | create", required = true),
-                    ToolParameterSchema(name = "old", type = "string", description = "用于匹配/替换/删除的原始内容（replace/delete必填�?, required = false),
-                    ToolParameterSchema(name = "new", type = "string", description = "要插入的新内容（replace/create必填�?, required = false)
+                    ToolParameterSchema(name = "old", type = "string", description = "用于匹配/替换/删除的原始内容（replace/delete必填�", required = false),
+                    ToolParameterSchema(name = "new", type = "string", description = "要插入的新内容（replace/create必填�", required = false)
                 ),
                 details = """
   - **工作原理**:
@@ -329,66 +328,66 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "delete_file",
-                description = "删除文件或目录�?,
+                description = "删除文件或目录�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "目标路径", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
-                    ToolParameterSchema(name = "recursive", type = "boolean", description = "布尔�?, required = false, default = "false")
+                    ToolParameterSchema(name = "recursive", type = "boolean", description = "布尔�", required = false, default = "false")
                 )
             ),
             ToolPrompt(
                 name = "make_directory",
-                description = "创建目录�?,
+                description = "创建目录�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "目录路径", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
-                    ToolParameterSchema(name = "create_parents", type = "boolean", description = "布尔�?, required = false, default = "false")
+                    ToolParameterSchema(name = "create_parents", type = "boolean", description = "布尔�", required = false, default = "false")
                 )
             ),
             ToolPrompt(
                 name = "find_files",
-                description = "搜索匹配模式的文件�?,
+                description = "搜索匹配模式的文件�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "搜索路径，Android �?/sdcard/...，Linux �?/home/... �?/etc/...", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
                     ToolParameterSchema(name = "pattern", type = "string", description = "搜索模式，例如\"*.jpg\"", required = true),
                     ToolParameterSchema(name = "max_depth", type = "integer", description = "可选，控制子目录搜索深度，-1=无限", required = false),
-                    ToolParameterSchema(name = "use_path_pattern", type = "boolean", description = "布尔�?, required = false, default = "false"),
-                    ToolParameterSchema(name = "case_insensitive", type = "boolean", description = "布尔�?, required = false, default = "false")
+                    ToolParameterSchema(name = "use_path_pattern", type = "boolean", description = "布尔�", required = false, default = "false"),
+                    ToolParameterSchema(name = "case_insensitive", type = "boolean", description = "布尔�", required = false, default = "false")
                 )
             ),
             ToolPrompt(
                 name = "grep_code",
-                description = "在文件中搜索匹配正则表达式的代码内容，返回带上下文的匹配结果�?,
+                description = "在文件中搜索匹配正则表达式的代码内容，返回带上下文的匹配结果�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "搜索路径", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
-                    ToolParameterSchema(name = "pattern", type = "string", description = "正则表达式模�?, required = true),
+                    ToolParameterSchema(name = "pattern", type = "string", description = "正则表达式模�", required = true),
                     ToolParameterSchema(name = "file_pattern", type = "string", description = "文件过滤", required = false, default = "\"*\""),
-                    ToolParameterSchema(name = "case_insensitive", type = "boolean", description = "布尔�?, required = false, default = "false"),
-                    ToolParameterSchema(name = "context_lines", type = "integer", description = "匹配行前后的上下文行�?, required = false, default = "3"),
+                    ToolParameterSchema(name = "case_insensitive", type = "boolean", description = "布尔�", required = false, default = "false"),
+                    ToolParameterSchema(name = "context_lines", type = "integer", description = "匹配行前后的上下文行�", required = false, default = "3"),
                     ToolParameterSchema(name = "max_results", type = "integer", description = "最大匹配数", required = false, default = "100")
                 )
             ),
             ToolPrompt(
                 name = "grep_context",
-                description = "基于意图/上下文理解搜索相关内容。支持两种模式：1) 目录模式：当path是目录时，找出最相关的文件�?) 文件模式：当path是文件时，找出该文件内最相关的代码段。使用语义相关性评分�?,
+                description = "基于意图/上下文理解搜索相关内容。支持两种模式：1) 目录模式：当path是目录时，找出最相关的文件�?) 文件模式：当path是文件时，找出该文件内最相关的代码段。使用语义相关性评分�",
                 parametersStructured = listOf(
-                    ToolParameterSchema(name = "path", type = "string", description = "目录或文件路�?, required = true),
+                    ToolParameterSchema(name = "path", type = "string", description = "目录或文件路�", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
-                    ToolParameterSchema(name = "intent", type = "string", description = "意图或上下文描述字符�?, required = true),
+                    ToolParameterSchema(name = "intent", type = "string", description = "意图或上下文描述字符�", required = true),
                     ToolParameterSchema(name = "file_pattern", type = "string", description = "目录模式下的文件过滤", required = false, default = "\"*\""),
-                    ToolParameterSchema(name = "max_results", type = "integer", description = "返回的最大项�?, required = false, default = "10")
+                    ToolParameterSchema(name = "max_results", type = "integer", description = "返回的最大项�", required = false, default = "10")
                 )
             ),
             ToolPrompt(
                 name = "download_file",
-                description = "从互联网下载文件。有两种用法�?）提�?`url` + `destination` 直接下载�?）提�?`visit_key` +（`link_number` �?`image_number`�? `destination`，从上一�?`visit_web` �?Results/Images 编号中按序号下载�?,
+                description = "从互联网下载文件。有两种用法�"）提�"`url` + `destination` 直接下载�"）提�"`visit_key` +（`link_number` �"`image_number`�" `destination`，从上一�"`visit_web` �"Results/Images 编号中按序号下载�",
                 parametersStructured = listOf(
-                    ToolParameterSchema(name = "url", type = "string", description = "可选， 文件URL。不传时可使�?visit_key + link_number/image_number 从上一�?visit_web 结果按编号下载�?, required = false),
+                    ToolParameterSchema(name = "url", type = "string", description = "可选， 文件URL。不传时可使�"visit_key + link_number/image_number 从上一�"visit_web 结果按编号下载�", required = false),
                     ToolParameterSchema(name = "visit_key", type = "string", description = "可选， 上一�?visit_web 返回�?visitKey", required = false),
-                    ToolParameterSchema(name = "link_number", type = "integer", description = "可选， 整数, Results 中的链接编号（从1开始，需要配�?visit_key�?, required = false),
-                    ToolParameterSchema(name = "image_number", type = "integer", description = "可选， 整数, Images 中的图片编号（从1开始，需要配�?visit_key�?, required = false),
+                    ToolParameterSchema(name = "link_number", type = "integer", description = "可选， 整数, Results 中的链接编号（从1开始，需要配�?visit_key�", required = false),
+                    ToolParameterSchema(name = "image_number", type = "integer", description = "可选， 整数, Images 中的图片编号（从1开始，需要配�?visit_key�", required = false),
                     ToolParameterSchema(name = "destination", type = "string", description = "保存路径", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
                     ToolParameterSchema(name = "headers", type = "string", description = "可选：HTTP请求头，JSON对象字符串，例如{\"Referer\":\"...\"}", required = false)
@@ -574,13 +573,13 @@ object SystemToolPrompts {
         tools = listOf(
             ToolPrompt(
                 name = "visit_web",
-                description = "增强版网页交互工具。核心模式：直接访问URL / 从历史结果跳�?/ 批量访问。支持会话持久化、页面交互（点击/填写）、自动重试、调试和缓存�?,
+                description = "增强版网页交互工具。核心模式：直接访问URL / 从历史结果跳�?/ 批量访问。支持会话持久化、页面交互（点击/填写）、自动重试、调试和缓存�",
                 details = """
    - **统一返回结构（始终返回）**:
      {
        "success": true/false,
        "code": "SUCCESS/TIMEOUT/HTTP_ERROR/PAGE_ERROR/INVALID_PARAM",
-       "message": "人类可读的消�?,
+       "message": "人类可读的消�",
        "data": { "text": "...", "links": [], "images": [], ... },
        "debug": { "request_headers": {}, "response_headers": {}, "http_status": 200, "response_time_ms": 1200, "logs": [] },
        "error_screenshot": "<link type='image'> (如果 error_screenshot=true 且失败）",
@@ -602,7 +601,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "visit_mode",
                         type = "string",
-                        description = "访问模式：direct_url (访问新URL) | follow_link (从历史结果跳�?| batch_urls (批量访问�?,
+                        description = "访问模式：direct_url (访问新URL) | follow_link (从历史结果跳�?| batch_urls (批量访问�",
                         required = true
                     ),
                     
@@ -647,7 +646,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "preset",
                         type = "string",
-                        description = "可选预设：article (提取正文�?| search (提取搜索结果�?| screenshot_full (全屏截图�?,
+                        description = "可选预设：article (提取正文�"| search (提取搜索结果�"| screenshot_full (全屏截图�",
                         required = false
                     ),
                     ToolParameterSchema(name = "extract_text", type = "boolean", description = "提取页面文本", required = false, default = "true"),
@@ -655,7 +654,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(name = "extract_images", type = "boolean", description = "提取图片链接", required = false, default = "false"),
                     ToolParameterSchema(name = "extract_tables", type = "boolean", description = "提取HTML表格为结构化数据", required = false, default = "false"),
                     ToolParameterSchema(name = "extract_metadata", type = "boolean", description = "提取页面元数据（标题、描述）", required = false, default = "true"),
-                    ToolParameterSchema(name = "extract_structured_data", type = "boolean", description = "提取JSON-LD/微数�?, required = false, default = "false"),
+                    ToolParameterSchema(name = "extract_structured_data", type = "boolean", description = "提取JSON-LD/微数�", required = false, default = "false"),
                     
                     // ==================== 页面交互 ====================
                     ToolParameterSchema(
@@ -667,7 +666,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(name = "scroll_to", type = "string", description = "滚动到：top (顶部�?| bottom (底部�?| element:CSS选择器| JSON {\"x\":0, \"y\":500}", required = false),
                     
                     // ==================== 等待与超�?===================
-                    ToolParameterSchema(name = "wait_for_type", type = "string", description = "等待条件类型：element (元素�?| text (文本�?| timeout (超时�?, required = false),
+                    ToolParameterSchema(name = "wait_for_type", type = "string", description = "等待条件类型：element (元素�"| text (文本�"| timeout (超时�", required = false),
                     ToolParameterSchema(name = "wait_for_selector", type = "string", description = "CSS选择器（wait_for_type=element时使用）", required = false),
                     ToolParameterSchema(name = "wait_for_text", type = "string", description = "要等待的文本（wait_for_type=text时使用）", required = false),
                     ToolParameterSchema(name = "wait_for_timeout_ms", type = "integer", description = "等待超时时间（毫秒），默�?000", required = false, default = "5000"),
@@ -677,13 +676,13 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "session_id",
                         type = "string",
-                        description = "可选会话ID，用于持久化（Cookie、本地存储）。复用可继续会话；不传则为临时会话�?,
+                        description = "可选会话ID，用于持久化（Cookie、本地存储）。复用可继续会话；不传则为临时会话�",
                         required = false
                     ),
                     ToolParameterSchema(
                         name = "anti_detection",
                         type = "boolean",
-                        description = "启用反检测（指纹伪装、随机延迟、UA轮换�?,
+                        description = "启用反检测（指纹伪装、随机延迟、UA轮换�",
                         required = false,
                         default = "false"
                     ),
@@ -696,19 +695,19 @@ object SystemToolPrompts {
                     
                     // ==================== 可观测�?===================
                     ToolParameterSchema(name = "debug_mode", type = "boolean", description = "返回完整调试日志（请�?响应头、耗时、堆栈）", required = false, default = "false"),
-                    ToolParameterSchema(name = "error_screenshot", type = "boolean", description = "失败时捕获截�?, required = false, default = "false"),
+                    ToolParameterSchema(name = "error_screenshot", type = "boolean", description = "失败时捕获截�", required = false, default = "false"),
                     ToolParameterSchema(name = "screenshot", type = "string", description = "旧版截图参数：full | visible | JSON {\"selector\":\"...\", \"filename\":\"...\"}", required = false),
                     
                     // ==================== 缓存 ====================
-                    ToolParameterSchema(name = "cache_control", type = "string", description = "缓存策略：default (默认�?| no_cache (无缓�?| force_cache (强制缓存�?| refresh_cache (刷新缓存�?, required = false, default = "default"),
-                    ToolParameterSchema(name = "cache_ttl_ms", type = "integer", description = "缓存有效期（毫秒），默认300000�?分钟�?, required = false, default = "300000"),
+                    ToolParameterSchema(name = "cache_control", type = "string", description = "缓存策略：default (默认�?| no_cache (无缓�?| force_cache (强制缓存�?| refresh_cache (刷新缓存�", required = false, default = "default"),
+                    ToolParameterSchema(name = "cache_ttl_ms", type = "integer", description = "缓存有效期（毫秒），默认300000�?分钟�", required = false, default = "300000"),
                     
                     // ==================== 网络配置 ====================
                     ToolParameterSchema(name = "headers", type = "string", description = "可选HTTP请求头，JSON对象，例如{\"Referer\":\"...\"}", required = false),
                     ToolParameterSchema(name = "user_agent_preset", type = "string", description = "快速选择UA：desktop/android/iphone/ipad/mobile/tablet", required = false),
                     ToolParameterSchema(name = "user_agent", type = "string", description = "完整自定义User-Agent", required = false),
                     ToolParameterSchema(name = "proxy", type = "string", description = "代理服务器：http://host:port �?socks5://host:port", required = false),
-                    ToolParameterSchema(name = "cookies", type = "string", description = "旧版：Cookie的JSON对象（推荐使用session_id�?, required = false),
+                    ToolParameterSchema(name = "cookies", type = "string", description = "旧版：Cookie的JSON对象（推荐使用session_id�", required = false),
                     
                     // ==================== 输出格式 ====================
                     ToolParameterSchema(name = "response_format", type = "string", description = "响应格式：structured (默认�?| plain_text | markdown", required = false, default = "structured"),
@@ -718,12 +717,12 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "close_session",
-                description = "销毁持久化网页会话并释放浏览器资源。清空Cookie、本地存储、页面上下文，终止后台浏览器进程�?,
+                description = "销毁持久化网页会话并释放浏览器资源。清空Cookie、本地存储、页面上下文，终止后台浏览器进程�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "session_id",
                         type = "string",
-                        description = "需要销毁的会话ID，与 visit_web 传入�?session_id 保持一致�?,
+                        description = "需要销毁的会话ID，与 visit_web 传入�?session_id 保持一致�",
                         required = true
                     ),
                     ToolParameterSchema(
@@ -970,31 +969,31 @@ object SystemToolPrompts {
         tools = listOf(
             ToolPrompt(
                 name = "query_memory",
-                description = "从记忆库中搜索相关记忆和文档分块�?,
+                description = "从记忆库中搜索相关记忆和文档分块�",
                 parametersStructured = listOf(
-                    ToolParameterSchema(name = "query", type = "string", description = "string, 搜索查询。可以传自然语言问题、空格分隔的短语，或使用 `|` 分隔多个关键词，例如 `network error timeout` �?`network|error|timeout`。在单个关键词内部，`*` 可作为模糊通配占位符，例如 `error*timeout`；仅�?`*` 时返回所有记忆�?, required = true),
-                    ToolParameterSchema(name = "folder_path", type = "string", description = "可选， string, 要搜索的特定文件夹路�?, required = false),
+                    ToolParameterSchema(name = "query", type = "string", description = "string, 搜索查询。可以传自然语言问题、空格分隔的短语，或使用 `|` 分隔多个关键词，例如 `network error timeout` �"`network|error|timeout`。在单个关键词内部，`*` 可作为模糊通配占位符，例如 `error*timeout`；仅�"`*` 时返回所有记忆�", required = true),
+                    ToolParameterSchema(name = "folder_path", type = "string", description = "可选， string, 要搜索的特定文件夹路�", required = false),
                     ToolParameterSchema(name = "start_time", type = "string", description = "可选， 本地时间字符串，格式支持 `YYYY-MM-DD` �?`YYYY-MM-DD HH:mm`。按创建时间过滤 createdAt >= start_time", required = false),
                     ToolParameterSchema(name = "end_time", type = "string", description = "可选， 本地时间字符串，格式支持 `YYYY-MM-DD` �?`YYYY-MM-DD HH:mm`。按创建时间过滤 createdAt <= end_time", required = false),
-                    ToolParameterSchema(name = "snapshot_id", type = "string", description = "可选， 字符串。不传或传空时会自动创建新快照；传入任意非空 snapshot_id 时会直接使用这个 id，不存在则按�?id 创建。后续串行或并发查询复用同一�?snapshot_id 时，会排除该快照里已经返回过的记忆�?, required = false),
+                    ToolParameterSchema(name = "snapshot_id", type = "string", description = "可选， 字符串。不传或传空时会自动创建新快照；传入任意非空 snapshot_id 时会直接使用这个 id，不存在则按�"id 创建。后续串行或并发查询复用同一�"snapshot_id 时，会排除该快照里已经返回过的记忆�", required = false),
                     ToolParameterSchema(name = "threshold", type = "number", description = "可选， number >= 0。返回记忆所需的最小相关度分数。query_memory 默认值为 0", required = false, default = "0"),
                     ToolParameterSchema(name = "limit", type = "integer", description = "可选， int >= 1, 返回结果的最大数量。当 > 20 时，只返回标题和截断内容", required = false, default = "20")
                 )
             ),
             ToolPrompt(
                 name = "get_memory_by_title",
-                description = "通过精确标题检索记忆，可读取完整内容或文档分块�?,
+                description = "通过精确标题检索记忆，可读取完整内容或文档分块�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "title", type = "string", description = "必需，字符串，记忆的精确标题", required = true),
-                    ToolParameterSchema(name = "chunk_index", type = "integer", description = "可选， 整数, 读取特定编号的分�?例如3表示�?�?, required = false),
-                    ToolParameterSchema(name = "chunk_range", type = "string", description = "可选，字符串，读取分块范围，格式为\"起始-结束\"，例如\"3-7\"表示�?到第7�?, required = false),
+                    ToolParameterSchema(name = "chunk_index", type = "integer", description = "可选， 整数, 读取特定编号的分�"例如3表示�"�", required = false),
+                    ToolParameterSchema(name = "chunk_range", type = "string", description = "可选，字符串，读取分块范围，格式为\"起始-结束\"，例如\"3-7\"表示�?到第7�", required = false),
                     ToolParameterSchema(name = "query", type = "string", description = "可选，字符串，在文档内部搜索匹配分块。可以传自然语言问题、空格分隔的短语，或使用 `|` 分隔多个关键词，例如 `error log timeout` �?`error|timeout|retry`。在单个关键词内部，`*` 可作为模糊通配占位符，例如 `error*timeout`", required = false),
                     ToolParameterSchema(name = "limit", type = "integer", description = "可选， int >= 1, 使用 query 时最多返回多少个文档分块，默�?0", required = false, default = "20")
                 )
             ),
             ToolPrompt(
                 name = "find_duplicate_memories",
-                description = "检测记忆库中的重复/相似记忆，返回高度相似的记忆分组�?,
+                description = "检测记忆库中的重复/相似记忆，返回高度相似的记忆分组�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "similarity_threshold",
@@ -1007,7 +1006,7 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "merge_duplicate_memories",
-                description = "将多条重复记忆合并为一条新记忆，默认保留所有标签和关联链接�?,
+                description = "将多条重复记忆合并为一条新记忆，默认保留所有标签和关联链接�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "source_titles",
@@ -1018,13 +1017,13 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "target_title",
                         type = "string",
-                        description = "合并后新记忆的标�?,
+                        description = "合并后新记忆的标�",
                         required = true
                     ),
                     ToolParameterSchema(
                         name = "target_content",
                         type = "string",
-                        description = "合并后新记忆的完整内�?,
+                        description = "合并后新记忆的完整内�",
                         required = true
                     ),
                     ToolParameterSchema(
@@ -1045,7 +1044,7 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "recover_deleted_memory",
-                description = "通过UUID恢复误删的记忆�?,
+                description = "通过UUID恢复误删的记忆�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "memory_uuid",
@@ -1057,7 +1056,7 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "rollback_memory_to_time",
-                description = "将整个记忆库回滚到指定的时间点�?,
+                description = "将整个记忆库回滚到指定的时间点�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "target_time",
@@ -1069,7 +1068,7 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "query_operation_logs",
-                description = "查询记忆操作日志（WAL），查看历史变更记录�?,
+                description = "查询记忆操作日志（WAL），查看历史变更记录�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "operation_type", type = "string", description = "按操作类型过滤：create/update/delete/merge", required = false),
                     ToolParameterSchema(name = "start_time", type = "string", description = "开始时间，格式：YYYY-MM-DD HH:mm", required = false),
@@ -1079,7 +1078,7 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "find_path_between_memories",
-                description = "在知识图谱中查找两个记忆之间的所有连接路径（多跳推理）�?,
+                description = "在知识图谱中查找两个记忆之间的所有连接路径（多跳推理）�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "source_title",
@@ -1090,7 +1089,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "target_title",
                         type = "string",
-                        description = "目标记忆的标�?,
+                        description = "目标记忆的标�",
                         required = true
                     ),
                     ToolParameterSchema(
@@ -1111,12 +1110,12 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "find_graph_related_memories",
-                description = "通过知识图谱连接，找到与查询记忆强相关的其他记忆�?,
+                description = "通过知识图谱连接，找到与查询记忆强相关的其他记忆�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "query_title",
                         type = "string",
-                        description = "查询记忆的标�?,
+                        description = "查询记忆的标�",
                         required = true
                     ),
                     ToolParameterSchema(
@@ -1137,12 +1136,12 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "export_memories_to_markdown",
-                description = "将所有记忆导出为Markdown文件（兼容Obsidian/Notion）�?,
+                description = "将所有记忆导出为Markdown文件（兼容Obsidian/Notion）�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "output_directory",
                         type = "string",
-                        description = "保存Markdown文件的目录路�?,
+                        description = "保存Markdown文件的目录路�",
                         required = true
                     ),
                     ToolParameterSchema(
@@ -1156,19 +1155,19 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "export_graph_to_opml",
-                description = "将知识图谱导出为OPML格式（兼容XMind、MindNode等思维导图软件）�?,
+                description = "将知识图谱导出为OPML格式（兼容XMind、MindNode等思维导图软件）�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "output_file",
                         type = "string",
-                        description = "保存OPML文件的路�?,
+                        description = "保存OPML文件的路�",
                         required = true
                     )
                 )
             ),
             ToolPrompt(
                 name = "chain_of_thought_search",
-                description = "执行思维链（CoT）检索：模拟人类推理过程，分步查找相关记忆。特别适合复杂查询�?,
+                description = "执行思维链（CoT）检索：模拟人类推理过程，分步查找相关记忆。特别适合复杂查询�",
                 parametersStructured = listOf(
                     ToolParameterSchema(
                         name = "query",
@@ -1186,7 +1185,7 @@ object SystemToolPrompts {
                 )
             )
         ),
-        categoryFooter = "\n注意：记忆库和用户性格档案会在你输出任务完成标志后由独立的系统自动更新。但是，如果需要立即管理记忆或更新用户偏好，请直接使用相应的工具�?
+        categoryFooter = "\n注意：记忆库和用户性格档案会在你输出任务完成标志后由独立的系统自动更新。但是，如果需要立即管理记忆或更新用户偏好，请直接使用相应的工具�"
     )
 
     private val internalToolCategoriesEn: List<SystemToolPromptCategory> = SystemToolPromptsInternal.internalToolCategoriesEn
@@ -1298,7 +1297,7 @@ object SystemToolPrompts {
 
                 val adjustedDescription =
                     if (shouldExposeIntent) {
-                        "读取文件内容。对于媒体文件，你也可以提供 intent 参数，使用后端识别模型进行分析�?
+                        "读取文件内容。对于媒体文件，你也可以提供 intent 参数，使用后端识别模型进行分析�"
                     } else {
                         tool.description
                     }

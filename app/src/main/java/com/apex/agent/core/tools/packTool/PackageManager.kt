@@ -1576,18 +1576,22 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 }
             }
 
-            // 使用修改后的 JSON 字符串进行反序列�?           val jsonString = metadataJson.toString()
+            // 使用修改后的 JSON 字符串进行反序列�?
+            val jsonString = metadataJson.toString()
 
             val jsonConfig = Json { ignoreUnknownKeys = true }
             val packageMetadata = jsonConfig.decodeFromString<ToolPackage>(jsonString)
 
-            // 更新所有工具，使用相同的完整脚本内容，但记录每个工具的函数�?           val tools =
+            // 更新所有工具，使用相同的完整脚本内容，但记录每个工具的函数�?
+            val tools =
                 packageMetadata.tools.map { tool ->
-                    // 检查函数是否存在于脚本�?                   if (!tool.advice) {
+                    // 检查函数是否存在于脚本�?
+                    if (!tool.advice) {
                         validateToolFunctionExists(jsContent, tool.name)
                     }
 
-                    // 使用整个脚本，并记录函数名，而不是提取单个函�?                   tool.copy(script = jsContent)
+                    // 使用整个脚本，并记录函数名，而不是提取单个函�?
+                    tool.copy(script = jsContent)
                 }
 
             val states =
@@ -1724,7 +1728,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         return true
     }
 
-    /** 验证JavaScript文件中是否存在指定的函数 这确保了我们可以在运行时调用该函�?/
+    /** 验证JavaScript文件中是否存在指定的函数 这确保了我们可以在运行时调用该函*/
     private fun validateToolFunctionExists(jsContent: String, toolName: String): Boolean {
         // 各种函数声明模式
         val patterns =
@@ -1764,7 +1768,8 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
      * the packages are stored for manual editing
      */
     fun getExternalPackagesPath(): String {
-        // 为了更易读，改成Android/data/包名/files/packages的形�?       return "Android/data/${context.packageName}/files/packages"
+        // 为了更易读，改成Android/data/包名/files/packages的形�?
+        return "Android/data/${context.packageName}/files/packages"
     }
 
     /**
@@ -2360,8 +2365,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     }
 
     /**
-     * 检查是否是已注册的MCP服务�?    *
-     * @param serverName 服务器名�?    * @return 如果是已注册的MCP服务器则返回true
+     * 检查是否是已注册的MCP服务�?
+     *
+     * @param serverName 服务器名�?
+     * @return 如果是已注册的MCP服务器则返回true
      */
     private fun isRegisteredMCPServer(serverName: String): Boolean {
         return mcpManager.isServerRegistered(serverName)
@@ -2370,7 +2377,8 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     /**
      * 获取所有可用的MCP服务器包
      *
-     * @return MCP服务器列�?    */
+     * @return MCP服务器列�?
+     */
     fun getAvailableServerPackages(): Map<String, MCPServerConfig> {
         return mcpManager.getRegisteredServers()
     }
@@ -2557,7 +2565,8 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     }
 
     /**
-     * 清理导入列表中不存在的包�?    * 自动移除那些已经被删除但仍然在导入列表中的包�?    */
+     * 清理导入列表中不存在的包�?
+     * 自动移除那些已经被删除但仍然在导入列表中的包�?    */
     private fun cleanupNonExistentPackages(currentPackages: List<String>): List<String> {
         // Serialize cleanup with package reload to avoid transient map states
         // (e.g. during forceRefresh) causing accidental removal of valid imports.
@@ -2801,19 +2810,24 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     }
 
     /**
-     * 使用MCP服务�?    *
-     * @param serverName 服务器名�?    * @return 成功或失败的消息
+     * 使用MCP服务�?
+     *
+     * @param serverName 服务器名�?
+     * @return 成功或失败的消息
      */
     fun useMCPServer(serverName: String): String {
-        // 检查服务器是否已注�?       if (!mcpManager.isServerRegistered(serverName)) {
+        // 检查服务器是否已注�?
+        if (!mcpManager.isServerRegistered(serverName)) {
             return "MCP server '${serverName}' does not exist or is not registered."
         }
 
-        // 获取服务器配�?       val serverConfig =
+        // 获取服务器配�?
+        val serverConfig =
             mcpManager.getRegisteredServers()[serverName]
                 ?: return "Cannot get MCP server configuration: ${serverName}"
 
-        // 创建MCP�?       val mcpLoadResult = MCPPackage.loadFromServer(context, serverConfig)
+        // 创建MCP�?
+        val mcpLoadResult = MCPPackage.loadFromServer(context, serverConfig)
         val mcpPackage =
             mcpLoadResult.mcpPackage
                 ?: return mcpLoadResult.errorMessage?.let {
@@ -2823,9 +2837,11 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         // 转换为标准工具包
         val toolPackage = mcpPackage.toToolPackage()
 
-        // 获取或创建MCP工具执行�?       val mcpToolExecutor = MCPToolExecutor(context, mcpManager)
+        // 获取或创建MCP工具执行�?
+        val mcpToolExecutor = MCPToolExecutor(context, mcpManager)
 
-        // 注册包中的每个工�? 使用 serverName:toolName 格式
+        // 注册包中的每个工�?
+        使用 serverName:toolName 格式
         toolPackage.tools.forEach { packageTool ->
             val toolName = "${serverName}:${packageTool.name}"
 
@@ -2841,7 +2857,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         return generateMCPSystemPrompt(toolPackage, serverName)
     }
 
-    /** 为MCP服务器生成系统提�?/
+    /** 为MCP服务器生成系统提*/
     private fun generateMCPSystemPrompt(toolPackage: ToolPackage, serverName: String): String {
         val sb = StringBuilder()
 
@@ -2976,7 +2992,8 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
      * ，ToolPackage 转换，PackageToolPromptCategory
      * 用于生成结构化的包工具提示词
      *
-     * @param toolPackage 要转换的工具�?    * @return PackageToolPromptCategory 对象
+     * @param toolPackage 要转换的工具�?
+     * @return PackageToolPromptCategory 对象
      */
     fun toPromptCategory(toolPackage: ToolPackage): PackageToolPromptCategory {
         val toolPrompts = toolPackage.tools.map { packageTool ->
@@ -3005,7 +3022,8 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     }
 
     /**
-     * 获取所有已导入包的提示词分类列�?    *
+     * 获取所有已导入包的提示词分类列�?
+     *
      * @return 已导入包含PackageToolPromptCategory 列表
      */
     fun getImportedPackagesPromptCategories(): List<PackageToolPromptCategory> {
