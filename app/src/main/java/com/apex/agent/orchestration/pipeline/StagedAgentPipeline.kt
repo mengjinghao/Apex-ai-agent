@@ -751,7 +751,7 @@ private class ReviewerAgent : StageAgent {
         return suggestions
     }
         private fun generateSummary(reviewReport: String): String {
-        val issueCount = reviewReport.lines().count { it.trim().startsWith("- ⚙) }"
+        val issueCount = reviewReport.lines().count { it.trim().startsWith("- ⚙") }
         val scoreLine = reviewReport.lines().find { it.contains("综合评分") }
         val score = scoreLine?.substringAfter(":")?.trim() ?: "N/A"
         return "代码审查完成，发现$issueCount 个问题，质量评分: $score。"
