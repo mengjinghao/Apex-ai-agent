@@ -25,13 +25,11 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("apex.android.library")
+            pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
 
             extensions.configure<LibraryExtension> {
                 buildFeatures {
                     compose = true
-                }
-                composeOptions {
-                    kotlinCompilerExtensionVersion = "1.5.14"
                 }
             }
 

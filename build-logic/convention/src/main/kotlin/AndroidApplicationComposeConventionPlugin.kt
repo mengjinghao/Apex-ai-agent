@@ -16,13 +16,11 @@ class AndroidApplicationComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("apex.android.application")
+            pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
 
             extensions.configure<ApplicationExtension> {
                 buildFeatures {
                     compose = true
-                }
-                composeOptions {
-                    kotlinCompilerExtensionVersion = "1.5.14"
                 }
             }
 
