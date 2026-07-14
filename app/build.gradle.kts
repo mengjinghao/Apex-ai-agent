@@ -363,7 +363,7 @@ dependencies {
     // Room 数据库
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+    annotationProcessor(libs.androidx.room.compiler)
 
     // ObjectBox
     // implementation(libs.objectbox.kotlin) // Disabled
