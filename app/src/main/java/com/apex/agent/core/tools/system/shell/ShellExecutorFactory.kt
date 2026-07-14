@@ -5,6 +5,9 @@ import com.apex.util.AppLogger
 import com.apex.agent.core.tools.system.AndroidPermissionLevel
 import com.apex.agent.data.preferences.androidPermissionPreferences
 import com.apex.agent.core.tools.system.shell.PermissionStatus
+import com.apex.agent.core.tools.system.shell.AdminShellExecutor
+import com.apex.agent.core.tools.system.shell.DebuggerShellExecutor
+import com.apex.agent.core.tools.system.shell.StandardShellExecutor
 
 /** Shell执行器工厂类 根据权限级别提供相应的执行器实例 */
 class ShellExecutorFactory {
