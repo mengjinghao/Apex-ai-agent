@@ -238,7 +238,8 @@ class StagedAgentPipeline @Inject constructor() {
         sb.appendLine()
         context.stageResults.forEach { result ->
             sb.appendLine("### ${result.stage.name}")
-        sb.appendLine("- 状态 ${if (result.success) "✓成功" else "✓失败"}")
+        val statusText = if (result.success) "✓成功" else "✓失败"
+        sb.appendLine("- 状态 $statusText")
         sb.appendLine("- 耗时: ${result.duration}ms")
         sb.appendLine("- Token消者 ${result.tokenCost}")
         sb.appendLine()
@@ -800,7 +801,8 @@ private class ValidatorAgent : StageAgent {
             } else {
                 "验证失败，发现${validationResult.failures.size} 个问题，需要回退到实现阶段修复。"
             }
-        AppLogger.i(TAG, "验证阶段完成: ${if (validationResult.passed) "通过" else "失败"}")
+        val resultText = if (validationResult.passed) "通过" else "失败"
+        AppLogger.i(TAG, "验证阶段完成: $resultText")
         StageAgentResult(
                 output = validationResult.report,
                 summary = summary,
@@ -868,7 +870,8 @@ private class ValidatorAgent : StageAgent {
         // 总结
         val passed = failures.isEmpty()
         sb.appendLine("## 验证结果")
-        sb.appendLine("状态 ${if (passed) "✓全部通过" else "✓存在失败"}")
+        val passText = if (passed) "✓全部通过" else "✓存在失败"
+        sb.appendLine("状态 $passText")
         if (failures.isNotEmpty()) {
             sb.appendLine("失败项")
         failures.forEach { sb.appendLine("- $it") }
