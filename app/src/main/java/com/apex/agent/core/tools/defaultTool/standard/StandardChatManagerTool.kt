@@ -8,7 +8,7 @@ import android.os.Build
 import android.os.IBinder
 import com.apex.agent.R
 import com.apex.agent.api.chat.EnhancedAIService
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.util.ChatMarkupRegex
 import com.apex.agent.util.stream.SharedStream
 import com.apex.agent.core.chat.hooks.toPromptTurns

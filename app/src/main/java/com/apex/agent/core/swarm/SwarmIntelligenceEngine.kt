@@ -4,7 +4,7 @@ import android.content.Context
 import com.apex.agent.api.chat.llmprovider.AIService
 import com.apex.core.chat.hooks.PromptTurn
 import com.apex.core.chat.hooks.PromptTurnKind
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collect

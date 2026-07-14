@@ -3,7 +3,7 @@ package com.apex.agent.core.tools.system.action
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import android.view.accessibility.AccessibilityEvent
 import com.apex.agent.core.tools.system.AndroidPermissionLevel
 import com.apex.agent.data.repository.UIHierarchyManager

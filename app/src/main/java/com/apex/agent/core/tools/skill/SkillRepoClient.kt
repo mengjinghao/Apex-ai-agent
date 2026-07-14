@@ -1,6 +1,6 @@
 package com.apex.agent.core.tools.skill
 
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject

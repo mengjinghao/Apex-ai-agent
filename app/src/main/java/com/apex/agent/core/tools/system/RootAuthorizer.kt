@@ -1,7 +1,7 @@
 package com.apex.agent.core.tools.system
 
 import android.content.Context
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.R
 import com.apex.agent.core.tools.system.shell.RootShellExecutor
 import com.apex.agent.core.tools.system.ShellIdentity

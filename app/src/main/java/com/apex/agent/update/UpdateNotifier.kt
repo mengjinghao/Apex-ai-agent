@@ -9,7 +9,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 
 /**
  * 热更新通知器。

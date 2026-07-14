@@ -25,7 +25,7 @@ import com.apex.agent.services.FloatingChatService
 import com.apex.agent.ui.common.displays.UIOperationOverlay
 import com.apex.agent.ui.common.displays.UIAutomationProgressOverlay
 import com.apex.agent.ui.common.displays.VirtualDisplayOverlay
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.util.LocaleUtils
 import com.apex.agent.util.LogistraPaths
 import com.apex.agent.core.tools.agent.ActionHandler

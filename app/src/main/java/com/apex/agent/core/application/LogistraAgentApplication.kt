@@ -8,7 +8,7 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
 import android.system.Os
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.work.Configuration as WorkConfiguration

@@ -9,7 +9,7 @@ import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
 import com.apex.agent.core.application.ActivityLifecycleManager
 import com.apex.agent.core.tools.defaultTool.standard.StandardBrowserSessionTools
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.util.HttpMultiPartDownloader
 import java.io.File
 import java.io.FileOutputStream

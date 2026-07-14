@@ -17,7 +17,7 @@ import com.apex.agent.core.tools.defaultTool.websession.userscript.UserscriptReq
 import com.apex.agent.core.tools.defaultTool.websession.userscript.UserscriptResourceEntry
 import com.apex.agent.core.tools.defaultTool.websession.userscript.UserscriptResourcePayload
 import com.apex.agent.core.tools.defaultTool.websession.userscript.UserscriptRunAt
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.util.LogistraPaths
 import java.io.File
 import java.net.URI

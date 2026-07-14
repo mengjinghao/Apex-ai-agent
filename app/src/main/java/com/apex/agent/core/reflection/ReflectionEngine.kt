@@ -3,7 +3,7 @@ package com.apex.agent.core.reflection
 import android.content.Context
 import com.apex.agent.api.chat.llmprovider.AIService
 import com.apex.agent.data.repository.MemoryRepository
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.apex.core.tools.javascript.not

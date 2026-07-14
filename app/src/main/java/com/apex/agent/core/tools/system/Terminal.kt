@@ -2,7 +2,7 @@ package com.apex.agent.core.tools.system
 
 import android.content.Context
 import android.os.Build
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import androidx.annotation.RequiresApi
 import com.apex.agent.terminal.CommandExecutionEvent
 import com.apex.agent.terminal.SessionDirectoryEvent

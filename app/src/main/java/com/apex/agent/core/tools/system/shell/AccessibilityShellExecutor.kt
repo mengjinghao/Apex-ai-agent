@@ -4,7 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.core.tools.system.AndroidPermissionLevel
 import com.apex.agent.core.tools.system.ShellIdentity
 import kotlinx.coroutines.Dispatchers

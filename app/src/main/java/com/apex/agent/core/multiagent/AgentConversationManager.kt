@@ -15,7 +15,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 
 private val Context.conversationDataStore by preferencesDataStore("agent_conversations")
 

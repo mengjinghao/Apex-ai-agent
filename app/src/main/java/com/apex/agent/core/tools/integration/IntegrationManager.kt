@@ -4,7 +4,7 @@ import android.content.Context
 import com.apex.agent.core.tools.integration.provider.LobeHubIntegration
 import com.apex.agent.core.tools.integration.provider.McpSoIntegration
 import com.apex.agent.core.tools.integration.provider.SkillRepoIntegration
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 
 /**
  * 统一集成管理�?—�?所有市�?集成源的注册和调度中�? */

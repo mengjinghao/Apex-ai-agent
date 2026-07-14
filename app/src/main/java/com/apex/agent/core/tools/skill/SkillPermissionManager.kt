@@ -11,7 +11,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.apex.agent.core.tools.LocalizedText
 import com.apex.agent.core.tools.PackagePermission
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

@@ -1,6 +1,6 @@
 package com.apex.agent.core.tools.skill
 
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors

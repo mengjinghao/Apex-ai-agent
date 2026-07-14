@@ -2,7 +2,7 @@ package com.apex.agent.core.multimodal
 
 import android.content.Context
 import android.util.LruCache
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.*
 import java.security.MessageDigest
 import java.util.concurrent.Executors

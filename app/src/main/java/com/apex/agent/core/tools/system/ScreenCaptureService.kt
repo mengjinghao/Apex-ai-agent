@@ -11,7 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.apex.agent.R
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 
 /**
  * A dedicated foreground service to satisfy Android 14+ MediaProjection requirements.

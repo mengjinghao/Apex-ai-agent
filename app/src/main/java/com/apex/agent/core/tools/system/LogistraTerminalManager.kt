@@ -2,7 +2,7 @@ package com.apex.agent.core.tools.system
 
 import android.content.Context
 import android.content.pm.PackageManager
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.util.GithubReleaseUtil
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers

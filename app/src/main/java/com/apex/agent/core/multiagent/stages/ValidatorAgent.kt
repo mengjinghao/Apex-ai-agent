@@ -3,8 +3,8 @@ package com.apex.agent.core.multiagent.stages
 import com.apex.agent.core.multiagent.PipelineContext
 import com.apex.agent.core.multiagent.StageAgent
 import com.apex.agent.core.multiagent.StageAgentResult
-import com.apex.util.AppLogger/** * 验证阶段 Agent * 负责功能验证、编译检查、测试运�?*/class ValidatorAgent : StageAgent {
-import com.apex.agent.core.multiagent.AppLogger
+import com.apex.util.AppLogger * 验证阶段 Agent * 负责功能验证、编译检查、测试运�?*/class ValidatorAgent : StageAgent {
+import com.apex.util.AppLogger
 companion
     object {
 private const

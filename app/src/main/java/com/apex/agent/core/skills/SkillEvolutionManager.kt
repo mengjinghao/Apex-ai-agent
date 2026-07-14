@@ -2,7 +2,7 @@ package com.apex.agent.core.skills
 
 import android.content.Context
 import com.apex.data.model.ApexAgentSkillSpec
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.util.ApexAgentPaths
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

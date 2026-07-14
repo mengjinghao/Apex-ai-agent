@@ -3,7 +3,7 @@ package com.apex.agent.core.tools.defaultTool.accessbility
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.core.tools.SimplifiedUINode
 import com.apex.agent.core.tools.StringResultData
 import com.apex.agent.core.tools.UIActionResultData

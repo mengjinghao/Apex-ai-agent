@@ -5,7 +5,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import com.apex.agent.R
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.data.repository.UIHierarchyManager
 import kotlin.math.min
 

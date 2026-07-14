@@ -12,7 +12,7 @@ import com.apex.agent.core.thinking.DecisionNode
 import com.apex.agent.core.thinking.ActionNode
 import com.apex.agent.core.thinking.SummaryNode
 import com.apex.agent.core.thinking.ThinkingChain
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

@@ -6,7 +6,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import com.apex.agent.R
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import rikka.shizuku.Shizuku
 import com.apex.core.tools.javascript.not
 

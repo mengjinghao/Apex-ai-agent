@@ -6,7 +6,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import androidx.core.content.FileProvider
 import com.apex.agent.R
 import java.io.File

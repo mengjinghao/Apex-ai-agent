@@ -2,7 +2,7 @@ package com.apex.agent.core.tools.defaultTool.websession.storage
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

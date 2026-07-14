@@ -5,7 +5,7 @@ import com.apex.agent.core.userprofile.UserProfileManager
 import com.apex.data.model.ChatMessage
 import com.apex.data.model.HonzonUserProfile
 import com.apex.agent.data.repository.MemoryRepository
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -5,7 +5,7 @@ import com.apex.agent.R
 import com.apex.agent.api.chat.llmprovider.AIService
 import com.apex.agent.core.quality.AgentThinkingSession
 import com.apex.agent.core.swarm.SwarmIntelligenceEngine
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*

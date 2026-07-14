@@ -5,7 +5,7 @@ import com.apex.agent.R
 import com.apex.agent.data.gepa.SkillDatabase
 import com.apex.agent.data.gepa.SkillVersion
 import com.apex.agent.data.gepa.SkillVersionDao
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

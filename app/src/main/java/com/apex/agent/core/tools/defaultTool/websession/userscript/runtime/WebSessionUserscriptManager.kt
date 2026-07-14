@@ -37,7 +37,7 @@ import com.apex.agent.core.tools.defaultTool.websession.userscript.storage.Users
 import com.apex.agent.core.tools.defaultTool.websession.storage.WebSessionAgentLoginStorage
 import com.apex.agent.core.tools.defaultTool.websession.storage.WebSessionOptimizationStorage
 import com.apex.agent.core.tools.defaultTool.websession.userscript.ui.WebSessionUserscriptUiStateStore
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.UUID

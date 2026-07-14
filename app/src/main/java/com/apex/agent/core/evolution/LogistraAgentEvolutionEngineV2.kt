@@ -6,7 +6,7 @@ import com.apex.data.model.EvolutionNode
 import com.apex.data.model.EvolutionNodeType
 import com.apex.data.model.FitnessRecord
 import com.apex.data.model.LogistraSkillSpecV2
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 
 data class EvolutionResultV2(
     val evolvedSkill: LogistraSkillSpecV2,

@@ -14,7 +14,7 @@ import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import androidx.core.app.NotificationCompat
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.core.tools.AppListData
 import com.apex.agent.core.tools.AppOperationData
 import com.apex.agent.core.tools.AppUsageTimeEntry

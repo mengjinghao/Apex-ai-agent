@@ -12,7 +12,7 @@ import com.apex.agent.core.tools.system.ShellIdentity
 import com.apex.data.model.AITool
 import com.apex.data.model.ToolParameter
 import com.apex.data.model.ToolResult
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

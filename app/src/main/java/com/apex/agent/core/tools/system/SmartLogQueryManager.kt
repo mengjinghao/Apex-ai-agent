@@ -4,7 +4,7 @@ import android.content.Context
 import com.apex.agent.data.burstmode.observability.ExecutionLogger
 import com.apex.agent.data.burstmode.reasoning.logging.ReasoningHistoryLogger
 import com.apex.agent.gepa.GepaLogger
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

@@ -4,7 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.core.tools.system.AndroidPermissionLevel
 import com.apex.agent.core.tools.system.ShellIdentity
 import com.apex.agent.R

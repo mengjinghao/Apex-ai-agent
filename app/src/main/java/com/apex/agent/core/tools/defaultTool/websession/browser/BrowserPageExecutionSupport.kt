@@ -22,7 +22,7 @@ import com.apex.agent.core.tools.StringResultData
 import com.apex.agent.core.tools.defaultTool.standard.StandardBrowserSessionTools
 import com.apex.data.model.AITool
 import com.apex.data.model.ToolResult
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat

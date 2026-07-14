@@ -25,7 +25,7 @@ import com.apex.agent.R
 import com.apex.agent.core.application.ActivityLifecycleManager
 import com.apex.agent.core.tools.defaultTool.standard.StandardBrowserSessionTools
 import com.apex.agent.core.tools.defaultTool.websession.userscript.UserscriptInstallSourceType
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import java.util.LinkedHashSet
 import java.util.Locale
 import java.util.UUID

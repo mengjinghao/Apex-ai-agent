@@ -1,7 +1,7 @@
 package com.apex.agent.core.tools.system.shell
 
 import android.content.Context
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.core.tools.system.AndroidPermissionLevel
 import com.apex.agent.core.tools.system.ShellIdentity
 import java.io.BufferedReader

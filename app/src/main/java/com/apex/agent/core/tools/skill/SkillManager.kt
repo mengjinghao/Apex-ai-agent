@@ -6,7 +6,7 @@ import android.util.Log
 import com.apex.agent.R
 import com.apex.agent.core.tools.LocalizedText
 import com.apex.agent.core.tools.PackagePermission
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream

@@ -1,7 +1,7 @@
 package com.apex.agent.core.tools.config
 
 import android.content.Context
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.InputStreamReader

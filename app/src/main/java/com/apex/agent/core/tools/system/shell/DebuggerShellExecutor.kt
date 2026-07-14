@@ -3,7 +3,7 @@ package com.apex.agent.core.tools.system.shell
 import android.content.Context
 import android.os.ParcelFileDescriptor
 import android.os.RemoteException
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.core.tools.system.AndroidPermissionLevel
 import com.apex.agent.core.tools.system.ShizukuAuthorizer
 import com.apex.agent.core.tools.system.ShellIdentity

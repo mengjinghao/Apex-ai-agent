@@ -3,7 +3,7 @@ package com.apex.agent.core.application
 import android.content.Context
 import android.os.Build
 import android.os.Debug
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

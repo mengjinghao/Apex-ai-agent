@@ -10,7 +10,7 @@ import com.apex.agent.data.skill.config.ConfigValidationError
 import com.apex.agent.data.skill.config.SkillConfig
 import com.apex.agent.data.skill.config.SkillConfigExport
 import com.apex.agent.data.skill.config.SkillConfigPreset
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

@@ -21,7 +21,7 @@ import com.apex.agent.core.tools.ToolProgressBus
 import com.apex.data.model.AITool
 import com.apex.data.model.ToolResult
 import com.apex.agent.data.preferences.ApiPreferences
-import com.apex.agent.util.AppLogger
+import com.apex.util.AppLogger
 import com.apex.agent.util.FileUtils
 import java.io.BufferedReader
 import java.io.BufferedInputStream
