@@ -34,7 +34,7 @@ data class ImageRegistrationOptions(
  * 池中仅保存最终发送用的唯一标准图片 */
 object ImagePoolManager {
     private const val TAG = "ImagePoolManager"
-    private const val DEFAULT_SCALE_PERCENT = 100
+        private const val DEFAULT_SCALE_PERCENT = 100
     private const val DEFAULT_JPEG_QUALITY = 85
     private const val DEFAULT_MAX_LONG_EDGE = 2048
 
@@ -46,16 +46,14 @@ object ImagePoolManager {
             normalizeExif = true,
             maxLongEdge = DEFAULT_MAX_LONG_EDGE
         )
-
-    var maxPoolSize = 20
+        var maxPoolSize = 20
         set(value) {
             if (value > 0) {
                 field = value
                 AppLogger.d(TAG, "池子大小限制已更新为: ${value}")
             }
         }
-
-    private var cacheDir: File? = null
+        private var cacheDir: File? = null
     private var hasResetCacheOnInitialize = false
 
     data class ImageData(
@@ -64,21 +62,18 @@ object ImagePoolManager {
         val width: Int,
         val height: Int
     )
-
-    private data class ResolvedRegistrationOptions(
+        private data class ResolvedRegistrationOptions(
         val scalePercent: Int,
         val outputFormat: ImageOutputFormat,
         val jpegQuality: Int,
         val normalizeExif: Boolean,
         val maxLongEdge: Int?
     )
-
-    private data class NormalizedBase64Input(
+        private data class NormalizedBase64Input(
         val base64: String,
         val mimeType: String
     )
-
-    private val imagePool =
+        private val imagePool =
         object : LinkedHashMap<String, ImageData>(16, 0.75f, true) {
             override fun removeEldestEntry(eldest: Map.Entry<String, ImageData>): Boolean {
                 val shouldRemove = size > maxPoolSize
@@ -86,19 +81,16 @@ object ImagePoolManager {
                     AppLogger.d(TAG, "池子已满，移除最旧的图片: ${eldest.key}")
                     deleteFromDisk(eldest.key)
                 }
-                return shouldRemove
+        return shouldRemove
             }
         }
-
-    fun defaultRegistrationOptions(): ImageRegistrationOptions = DEFAULT_REGISTRATION_OPTIONS.copy()
-
-    fun initialize(cacheDirPath: File, preloadNow: Boolean = true) {
+        fun defaultRegistrationOptions(): ImageRegistrationOptions = DEFAULT_REGISTRATION_OPTIONS.copy()
+        fun initialize(cacheDirPath: File, preloadNow: Boolean = true) {
         val targetDir = ApexPaths.imagePoolDir(cacheDirPath)
         if (!targetDir.exists()) {
             targetDir.mkdirs()
             AppLogger.d(TAG, "创建图片缓存目录: ${targetDir.absolutePath}")
         }
-
         val shouldResetCache =
             !hasResetCacheOnInitialize ||
                 cacheDir?.absolutePath != targetDir.absolutePath
@@ -111,7 +103,6 @@ object ImagePoolManager {
             hasResetCacheOnInitialize = true
             AppLogger.d(TAG, "启动时已清空旧图片池缓存")
         }
-
         if (preloadNow) {
             loadAllFromDisk()
         }
@@ -121,17 +112,15 @@ object ImagePoolManager {
     fun addImage(filePath: String, options: ImageRegistrationOptions? = null): String {
         return try {
             val file = File(filePath)
-            if (!file.exists() || !file.isFile) {
+        if (!file.exists() || !file.isFile) {
                 AppLogger.e(TAG, "文件不存在或不是文件: ${filePath}")
-                return "error"
+        return "error"
             }
-
-            val bitmap = decodeBitmapFromFile(file.absolutePath) ?: run {
+        val bitmap = decodeBitmapFromFile(file.absolutePath) ?: run {
                 AppLogger.e(TAG, "无法将文件解码为位图: ${filePath}")
-                return "error"
+        return "error"
             }
-
-            val sourceMimeType = getMimeTypeFromFile(file) ?: "image/png"
+        val sourceMimeType = getMimeTypeFromFile(file) ?: "image/png"
             registerBitmap(
                 sourceBitmap = bitmap,
                 sourceMimeType = sourceMimeType,
@@ -153,8 +142,8 @@ object ImagePoolManager {
     ): String {
         return try {
             val normalized = normalizeBase64Input(base64, mimeType)
-            val bytes = Base64.decode(normalized.base64, Base64.DEFAULT)
-            val bitmap = decodeBitmapFromBytes(bytes) ?: run {
+        val bytes = Base64.decode(normalized.base64, Base64.DEFAULT)
+        val bitmap = decodeBitmapFromBytes(bytes) ?: run {
                 AppLogger.e(TAG, "无法，base64 解码为位置）
                 return "error"
             }
@@ -194,14 +183,13 @@ object ImagePoolManager {
     fun getImage(id: String): ImageData? {
         imagePool[id]?.let {
             val normalized = normalizeImageDataMimeTypeIfNeeded(id, it)
-            if (normalized !== it) {
+        if (normalized !== it) {
                 imagePool[id] = normalized
                 saveToDisk(id, normalized)
             }
             AppLogger.d(TAG, "从内存缓存获取图�?${id}")
-            return normalized
+        return normalized
         }
-
         val imageData = loadFromDisk(id)
         if (imageData != null) {
             val normalized = normalizeImageDataMimeTypeIfNeeded(id, imageData)
@@ -210,7 +198,7 @@ object ImagePoolManager {
             if (normalized !== imageData) {
                 saveToDisk(id, normalized)
             }
-            return normalized
+        return normalized
         }
 
         AppLogger.w(TAG, "图片不存�?${id}")
@@ -242,8 +230,7 @@ object ImagePoolManager {
     fun preloadFromDisk() {
         loadAllFromDisk()
     }
-
-    private fun registerBitmap(
+        private fun registerBitmap(
         sourceBitmap: Bitmap,
         sourceMimeType: String,
         options: ImageRegistrationOptions?,
@@ -257,7 +244,7 @@ object ImagePoolManager {
         try {
             if (resolvedOptions.normalizeExif && sourcePath != null) {
                 val normalizedBitmap = normalizeBitmapOrientationIfNeeded(workingBitmap, sourcePath)
-                if (normalizedBitmap !== workingBitmap) {
+        if (normalizedBitmap !== workingBitmap) {
                     if (ownsWorkingBitmap) {
                         workingBitmap.recycle()
                     }
@@ -265,31 +252,28 @@ object ImagePoolManager {
                     ownsWorkingBitmap = true
                 }
             }
-
-            val scaledBitmap = scaleBitmapIfNeeded(workingBitmap, resolvedOptions.scalePercent)
-            if (scaledBitmap !== workingBitmap) {
+        val scaledBitmap = scaleBitmapIfNeeded(workingBitmap, resolvedOptions.scalePercent)
+        if (scaledBitmap !== workingBitmap) {
                 if (ownsWorkingBitmap) {
                     workingBitmap.recycle()
                 }
                 workingBitmap = scaledBitmap
                 ownsWorkingBitmap = true
             }
-
-            val longEdgeLimitedBitmap =
+        val longEdgeLimitedBitmap =
                 limitBitmapLongEdgeIfNeeded(workingBitmap, resolvedOptions.maxLongEdge)
-            if (longEdgeLimitedBitmap !== workingBitmap) {
+        if (longEdgeLimitedBitmap !== workingBitmap) {
                 if (ownsWorkingBitmap) {
                     workingBitmap.recycle()
                 }
                 workingBitmap = longEdgeLimitedBitmap
                 ownsWorkingBitmap = true
             }
-
-            val finalFormat = resolveOutputFormat(workingBitmap, resolvedOptions.outputFormat)
-            val outputBitmap =
+        val finalFormat = resolveOutputFormat(workingBitmap, resolvedOptions.outputFormat)
+        val outputBitmap =
                 if (finalFormat == ImageOutputFormat.JPEG && workingBitmap.hasAlpha()) {
                     val flattened = flattenAlphaForJpeg(workingBitmap)
-                    if (flattened !== workingBitmap) {
+        if (flattened !== workingBitmap) {
                         if (ownsWorkingBitmap) {
                             workingBitmap.recycle()
                         }
@@ -300,22 +284,20 @@ object ImagePoolManager {
                 } else {
                     workingBitmap
                 }
-
-            val finalBytes =
+        val finalBytes =
                 encodeBitmap(
                     bitmap = outputBitmap,
                     outputFormat = finalFormat,
                     jpegQuality = resolvedOptions.jpegQuality
                 )
-
-            val declaredFinalMimeType =
+        val declaredFinalMimeType =
                 when (finalFormat) {
                     ImageOutputFormat.PNG -> "image/png"
                     ImageOutputFormat.JPEG -> "image/jpeg"
                     ImageOutputFormat.AUTO -> error("AUTO must be resolved before encoding")
                 }
-            val detectedFinalMimeType = detectImageMimeTypeFromBytes(finalBytes)
-            val finalMimeType = detectedFinalMimeType ?: declaredFinalMimeType
+        val detectedFinalMimeType = detectImageMimeTypeFromBytes(finalBytes)
+        val finalMimeType = detectedFinalMimeType ?: declaredFinalMimeType
             if (detectedFinalMimeType != null &&
                 !detectedFinalMimeType.equals(declaredFinalMimeType, ignoreCase = true)
             ) {
@@ -324,16 +306,14 @@ object ImagePoolManager {
                     "图片编码结果与声明格式不一致，已按真实编码修正: declared=${declaredFinalMimeType}, detected=${detectedFinalMimeType}, sourceMime=${sourceMimeType}"
                 )
             }
-
-            val imageData =
+        val imageData =
                 ImageData(
                     base64 = Base64.encodeToString(finalBytes, Base64.NO_WRAP),
                     mimeType = finalMimeType,
                     width = outputBitmap.width,
                     height = outputBitmap.height
                 )
-
-            val id = UUID.randomUUID().toString()
+        val id = UUID.randomUUID().toString()
             imagePool[id] = imageData
             saveToDisk(id, imageData)
 
@@ -341,10 +321,10 @@ object ImagePoolManager {
                 TAG,
                 "成功添加图片到池�?${id}, mime=${finalMimeType}, size=${imageData.width}x${imageData.height}, sourceMime=${sourceMimeType}"
             )
-            return id
+        return id
         } catch (e: Exception) {
             AppLogger.e(TAG, "处理图片入池失败, sourceMime=${sourceMimeType}", e)
-            return "error"
+        return "error"
         } finally {
             if (ownsWorkingBitmap) {
                 try {
@@ -354,8 +334,7 @@ object ImagePoolManager {
             }
         }
     }
-
-    private fun resolveOptions(options: ImageRegistrationOptions): ResolvedRegistrationOptions {
+        private fun resolveOptions(options: ImageRegistrationOptions): ResolvedRegistrationOptions {
         val merged = options ?: DEFAULT_REGISTRATION_OPTIONS
         return ResolvedRegistrationOptions(
             scalePercent =
@@ -374,15 +353,14 @@ object ImagePoolManager {
                 }
         )
     }
-
-    private fun normalizeBase64Input(base64: String, mimeType: String): NormalizedBase64Input {
+        private fun normalizeBase64Input(base64: String, mimeType: String): NormalizedBase64Input {
         val trimmed = base64.trim()
         if (trimmed.startsWith("data:", ignoreCase = true)) {
             val commaIndex = trimmed.indexOf(',')
-            if (commaIndex > 0) {
+        if (commaIndex > 0) {
                 val header = trimmed.substring(5, commaIndex)
-                val headerMimeType = header.substringBefore(';').trim()
-                return NormalizedBase64Input(
+        val headerMimeType = header.substringBefore(';').trim()
+        return NormalizedBase64Input(
                     base64 = trimmed.substring(commaIndex + 1),
                     mimeType = headerMimeType.ifBlank { mimeType.ifBlank { "image/png" } }
                 )
@@ -393,8 +371,7 @@ object ImagePoolManager {
             mimeType = mimeType.ifBlank { "image/png" }
         )
     }
-
-    private fun decodeBitmapFromFile(filePath: String): Bitmap? {
+        private fun decodeBitmapFromFile(filePath: String): Bitmap? {
         val options =
             BitmapFactory.Options().apply {
                 inPreferredConfig = Bitmap.Config.ARGB_8888
@@ -405,8 +382,7 @@ object ImagePoolManager {
             null
         }
     }
-
-    private fun decodeBitmapFromBytes(bytes: ByteArray): Bitmap? {
+        private fun decodeBitmapFromBytes(bytes: ByteArray): Bitmap? {
         val options =
             BitmapFactory.Options().apply {
                 inPreferredConfig = Bitmap.Config.ARGB_8888
@@ -417,8 +393,7 @@ object ImagePoolManager {
             null
         }
     }
-
-    private fun detectImageMimeTypeFromBytes(bytes: ByteArray): String? {
+        private fun detectImageMimeTypeFromBytes(bytes: ByteArray): String? {
         val options =
             BitmapFactory.Options().apply {
                 inJustDecodeBounds = true
@@ -430,8 +405,7 @@ object ImagePoolManager {
             null
         }
     }
-
-    private fun normalizeImageDataMimeTypeIfNeeded(id: String, imageData: ImageData): ImageData {
+        private fun normalizeImageDataMimeTypeIfNeeded(id: String, imageData: ImageData): ImageData {
         if (!imageData.mimeType.startsWith("image/", ignoreCase = true)) {
             return imageData
         }
@@ -450,8 +424,7 @@ object ImagePoolManager {
         )
         return imageData.copy(mimeType = detectedMimeType)
     }
-
-    private fun normalizeBitmapOrientationIfNeeded(bitmap: Bitmap, filePath: String): Bitmap {
+        private fun normalizeBitmapOrientationIfNeeded(bitmap: Bitmap, filePath: String): Bitmap {
         val orientation =
             try {
                 ExifInterface(filePath).getAttributeInt(
@@ -462,13 +435,11 @@ object ImagePoolManager {
                 AppLogger.w(TAG, "读取 EXIF 方向失败: ${filePath}", e)
                 ExifInterface.ORIENTATION_NORMAL
             }
-
         if (orientation == ExifInterface.ORIENTATION_NORMAL ||
             orientation == ExifInterface.ORIENTATION_UNDEFINED
         ) {
             return bitmap
         }
-
         val matrix = Matrix()
         when (orientation) {
             ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.setScale(-1f, 1f)
@@ -489,43 +460,34 @@ object ImagePoolManager {
             ExifInterface.ORIENTATION_ROTATE_270 -> matrix.setRotate(-90f)
             else -> return bitmap
         }
-
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
-
-    private fun scaleBitmapIfNeeded(bitmap: Bitmap, scalePercent: Int): Bitmap {
+        private fun scaleBitmapIfNeeded(bitmap: Bitmap, scalePercent: Int): Bitmap {
         if (scalePercent >= 100) {
             return bitmap
         }
-
         val newWidth = (bitmap.width * scalePercent / 100f).toInt().coerceAtLeast(1)
         val newHeight = (bitmap.height * scalePercent / 100f).toInt().coerceAtLeast(1)
-
         if (newWidth == bitmap.width && newHeight == bitmap.height) {
             return bitmap
         }
-
         return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
     }
-
-    private fun limitBitmapLongEdgeIfNeeded(bitmap: Bitmap, maxLongEdge: Int): Bitmap {
+        private fun limitBitmapLongEdgeIfNeeded(bitmap: Bitmap, maxLongEdge: Int): Bitmap {
         val targetLongEdge = maxLongEdge?.takeIf { it > 0 } ?: return bitmap
         val currentLongEdge = maxOf(bitmap.width, bitmap.height)
         if (currentLongEdge <= targetLongEdge) {
             return bitmap
         }
-
         val scale = targetLongEdge.toFloat() / currentLongEdge.toFloat()
         val newWidth = (bitmap.width * scale).toInt().coerceAtLeast(1)
         val newHeight = (bitmap.height * scale).toInt().coerceAtLeast(1)
         if (newWidth == bitmap.width && newHeight == bitmap.height) {
             return bitmap
         }
-
         return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
     }
-
-    private fun resolveOutputFormat(
+        private fun resolveOutputFormat(
         bitmap: Bitmap,
         outputFormat: ImageOutputFormat
     ): ImageOutputFormat {
@@ -536,8 +498,7 @@ object ImagePoolManager {
                 if (bitmap.hasAlpha()) ImageOutputFormat.PNG else ImageOutputFormat.JPEG
         }
     }
-
-    private fun flattenAlphaForJpeg(bitmap: Bitmap): Bitmap {
+        private fun flattenAlphaForJpeg(bitmap: Bitmap): Bitmap {
         if (!bitmap.hasAlpha()) {
             return bitmap
         }
@@ -547,8 +508,7 @@ object ImagePoolManager {
         canvas.drawBitmap(bitmap, 0f, 0f, null)
         return flattened
     }
-
-    private fun encodeBitmap(
+        private fun encodeBitmap(
         bitmap: Bitmap,
         outputFormat: ImageOutputFormat,
         jpegQuality: Int
@@ -559,13 +519,11 @@ object ImagePoolManager {
                 ImageOutputFormat.JPEG -> Bitmap.CompressFormat.JPEG
                 ImageOutputFormat.AUTO -> error("AUTO must be resolved before encoding")
             }
-
         val quality =
             when (compressFormat) {
                 Bitmap.CompressFormat.PNG -> 100
                 else -> jpegQuality
             }
-
         return ByteArrayOutputStream().use { output ->
             if (!bitmap.compress(compressFormat, quality, output)) {
                 error("Bitmap compress failed")
@@ -573,8 +531,7 @@ object ImagePoolManager {
             output.toByteArray()
         }
     }
-
-    private fun getMimeTypeFromFile(file: File): String? {
+        private fun getMimeTypeFromFile(file: File): String? {
         val extension = file.extension.lowercase()
         return when (extension) {
             "jpg", "jpeg" -> "image/jpeg"
@@ -595,8 +552,7 @@ object ImagePoolManager {
             }
         }
     }
-
-    private fun saveToDisk(id: String, imageData: ImageData) {
+        private fun saveToDisk(id: String, imageData: ImageData) {
         val dir = cacheDir
         if (dir == null) {
             AppLogger.w(TAG, "缓存目录未初始化，跳过磁盘保存）
@@ -605,9 +561,9 @@ object ImagePoolManager {
 
         try {
             val dataFile = File(dir, "${id}.dat")
-            val metaFile = File(dir, "${id}.meta")
+        val metaFile = File(dir, "${id}.meta")
             FileOutputStream(dataFile).use { it.write(imageData.base64.toByteArray()) }
-            val meta =
+        val meta =
                 JSONObject()
                     .put("mimeType", imageData.mimeType)
                     .put("width", imageData.width)
@@ -618,20 +574,17 @@ object ImagePoolManager {
             AppLogger.e(TAG, "保存图片到磁盘失�?${id}", e)
         }
     }
-
-    private fun loadFromDisk(id: String): ImageData? {
+        private fun loadFromDisk(id: String): ImageData? {
         val dir = cacheDir ?: return null
 
         return try {
             val dataFile = File(dir, "${id}.dat")
-            val metaFile = File(dir, "${id}.meta")
-
-            if (!dataFile.exists() || !metaFile.exists()) {
+        val metaFile = File(dir, "${id}.meta")
+        if (!dataFile.exists() || !metaFile.exists()) {
                 return null
             }
-
-            val base64 = dataFile.readText()
-            val meta = JSONObject(metaFile.readText())
+        val base64 = dataFile.readText()
+        val meta = JSONObject(metaFile.readText())
             ImageData(
                 base64 = base64,
                 mimeType = meta.optString("mimeType", "image/png"),
@@ -663,8 +616,7 @@ object ImagePoolManager {
             AppLogger.e(TAG, "从磁盘加载图片失败：${e.message})
         }
     }
-
-    private fun deleteFromDisk(id: String) {
+        private fun deleteFromDisk(id: String) {
         val dir = cacheDir ?: return
 
         try {
@@ -675,8 +627,7 @@ object ImagePoolManager {
             AppLogger.e(TAG, "从磁盘删除图片失�?${id}", e)
         }
     }
-
-    private fun clearDiskCache() {
+        private fun clearDiskCache() {
         val dir = cacheDir ?: return
         if (!dir.exists()) return
 

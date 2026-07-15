@@ -139,7 +139,7 @@ object QuickSearchEngine {
             // 构建请求
     val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
         val url = "https://cn.bing.com/search?q=${encodedQuery}"
-    val request = Request.Builder()
+        val request = Request.Builder()
                 .url(url)
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                 .header("Accept-Language", "zh-CN,zh;q=0.9")

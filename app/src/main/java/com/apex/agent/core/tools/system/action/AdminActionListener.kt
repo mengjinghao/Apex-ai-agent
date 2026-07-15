@@ -23,11 +23,10 @@ class AdminActionListener(private val context: Context) : ActionListener {
             adminComponentName = componentName
         }
     }
-
-    private val devicePolicyManager =
+        private val devicePolicyManager =
         context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     private val isListening = AtomicBoolean(false)
-    private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
+        private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
 
     override fun getPermissionLevel(): AndroidPermissionLevel = AndroidPermissionLevel.ADMIN
 
@@ -39,7 +38,6 @@ class AdminActionListener(private val context: Context) : ActionListener {
         if (adminComponentName == null) {
             return ActionListener.PermissionStatus.denied(context.getString(R.string.admin_device_admin_component_name_not_set))
         }
-
         return if (isDeviceAdminActive()) {
             ActionListener.PermissionStatus.granted()
         } else {
@@ -54,13 +52,12 @@ class AdminActionListener(private val context: Context) : ActionListener {
     override suspend fun requestPermission(onResult: (Boolean) -> Unit) {
         if (isAvailable()) {
             onResult(true)
-            return
+        return
         }
-
         if (adminComponentName == null) {
             AppLogger.e(TAG, "管理员组件名称未设置")
             onResult(false)
-            return
+        return
         }
 
         // 引导用户激活设备管理员
@@ -84,11 +81,10 @@ class AdminActionListener(private val context: Context) : ActionListener {
         withContext(Dispatchers.IO) {
             try {
                 val permStatus = hasPermission()
-                if (!permStatus.granted) {
+        if (!permStatus.granted) {
                     return@withContext ActionListener.ListeningResult.failure(permStatus.reason)
                 }
-
-                if (isListening.get()) {
+        if (isListening.get()) {
                     return@withContext ActionListener.ListeningResult.failure(context.getString(R.string.admin_already_listening))
                 }
 

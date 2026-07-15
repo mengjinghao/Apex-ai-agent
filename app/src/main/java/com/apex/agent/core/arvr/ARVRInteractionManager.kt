@@ -82,7 +82,7 @@ class ARVRInteractionManager(private val context: Context) {
     ) {
         companion object {
             val zero = Vector3(0f, 0f, 0f)
-            val one = Vector3(1f, 1f, 1f)
+        val one = Vector3(1f, 1f, 1f)
         }
     }
 
@@ -184,25 +184,21 @@ class ARVRInteractionManager(private val context: Context) {
         val entities: Map<String, String>,
         val timestamp: Long
     )
-
-    private val sessionsDir: File
+        private val sessionsDir: File
         get() = File(context.filesDir, "arvr_sessions").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val objectsDir: File
+        private val objectsDir: File
         get() = File(context.filesDir, "arvr_objects").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val anchorsDir: File
+        private val anchorsDir: File
         get() = File(context.filesDir, "arvr_anchors").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val activeSessions = mutableMapOf<String, ARVRSession>()
-    private val sceneObjects = mutableMapOf<String, SceneObject>()
-    private val spatialAnchors = mutableMapOf<String, SpatialAnchor>()
+        private val activeSessions = mutableMapOf<String, ARVRSession>()
+        private val sceneObjects = mutableMapOf<String, SceneObject>()
+        private val spatialAnchors = mutableMapOf<String, SpatialAnchor>()
 
     suspend fun startSession(
         type: SessionType,
@@ -220,25 +216,20 @@ class ARVRInteractionManager(private val context: Context) {
         activeSessions[session.id] = session
         session
     }
-
-    private suspend fun saveSession(session: ARVRSession) = withContext(Dispatchers.IO) {
+        private suspend fun saveSession(session: ARVRSession) = withContext(Dispatchers.IO) {
         val sessionFile = File(sessionsDir, "${session.id}.json")
-
         val objectsJson = JSONArray()
         session.sceneObjects.forEach { obj ->
             objectsJson.put(serializeSceneObject(obj))
         }
-
         val interactionsJson = JSONArray()
         session.interactions.forEach { interaction ->
             interactionsJson.put(serializeInteraction(interaction))
         }
-
         val anchorsJson = JSONArray()
         session.spatialAnchors.forEach { anchor ->
             anchorsJson.put(serializeAnchor(anchor))
         }
-
         val json = JSONObject().apply {
             put("id", session.id)
             put("type", session.type.name)
@@ -253,8 +244,7 @@ class ARVRInteractionManager(private val context: Context) {
 
         sessionFile.writeText(json.toString(2))
     }
-
-    private fun serializeSceneObject(obj: SceneObject): JSONObject {
+        private fun serializeSceneObject(obj: SceneObject): JSONObject {
         val propsJson = JSONObject()
         obj.properties.forEach { (key, value) ->
             when (value) {
@@ -263,7 +253,6 @@ class ARVRInteractionManager(private val context: Context) {
                 is Boolean -> propsJson.put(key, value)
             }
         }
-
         return JSONObject().apply {
             put("id", obj.id)
             put("name", obj.name)
@@ -276,8 +265,7 @@ class ARVRInteractionManager(private val context: Context) {
             put("isInteractive", obj.isInteractive)
         }
     }
-
-    private fun serializeInteraction(interaction: Interaction): JSONObject {
+        private fun serializeInteraction(interaction: Interaction): JSONObject {
         val paramsJson = JSONObject()
         interaction.parameters.forEach { (key, value) ->
             when (value) {
@@ -286,7 +274,6 @@ class ARVRInteractionManager(private val context: Context) {
                 is Boolean -> paramsJson.put(key, value)
             }
         }
-
         return JSONObject().apply {
             put("id", interaction.id)
             put("type", interaction.type.name)
@@ -297,8 +284,7 @@ class ARVRInteractionManager(private val context: Context) {
             put("success", interaction.success)
         }
     }
-
-    private fun serializeAnchor(anchor: SpatialAnchor): JSONObject {
+        private fun serializeAnchor(anchor: SpatialAnchor): JSONObject {
         val geoJson = anchor.worldCoordinates?.let {
             JSONObject().apply {
                 put("latitude", it.latitude)
@@ -320,16 +306,14 @@ class ARVRInteractionManager(private val context: Context) {
             put("lastUpdatedAt", anchor.lastUpdatedAt)
         }
     }
-
-    private fun serializeVector3(vector: Vector3): JSONObject {
+        private fun serializeVector3(vector: Vector3): JSONObject {
         return JSONObject().apply {
             put("x", vector.x.toDouble())
             put("y", vector.y.toDouble())
             put("z", vector.z.toDouble())
         }
     }
-
-    private fun serializeQuaternion(quaternion: Quaternion): JSONObject {
+        private fun serializeQuaternion(quaternion: Quaternion): JSONObject {
         return JSONObject().apply {
             put("x", quaternion.x.toDouble())
             put("y", quaternion.y.toDouble())
@@ -371,7 +355,6 @@ class ARVRInteractionManager(private val context: Context) {
 
         sceneObjects[obj.id] = obj
         saveObject(obj)
-
         val session = activeSessions[sessionId]
         session?.let {
             val updatedSession = it.copy(
@@ -383,8 +366,7 @@ class ARVRInteractionManager(private val context: Context) {
 
         obj
     }
-
-    private suspend fun saveObject(obj: SceneObject) = withContext(Dispatchers.IO) {
+        private suspend fun saveObject(obj: SceneObject) = withContext(Dispatchers.IO) {
         val objFile = File(objectsDir, "${obj.id}.json")
         objFile.writeText(serializeSceneObject(obj).toString(2))
     }
@@ -459,7 +441,6 @@ class ARVRInteractionManager(private val context: Context) {
             parameters = parameters,
             success = success
         )
-
         val session = activeSessions[sessionId]
         session?.let {
             val updatedSession = it.copy(
@@ -493,7 +474,6 @@ class ARVRInteractionManager(private val context: Context) {
 
         spatialAnchors[anchor.id] = anchor
         saveAnchor(anchor)
-
         val session = activeSessions[sessionId]
         session?.let {
             val updatedSession = it.copy(
@@ -505,8 +485,7 @@ class ARVRInteractionManager(private val context: Context) {
 
         anchor
     }
-
-    private suspend fun saveAnchor(anchor: SpatialAnchor) = withContext(Dispatchers.IO) {
+        private suspend fun saveAnchor(anchor: SpatialAnchor) = withContext(Dispatchers.IO) {
         val anchorFile = File(anchorsDir, "${anchor.id}.json")
         anchorFile.writeText(serializeAnchor(anchor).toString(2))
     }
@@ -524,35 +503,29 @@ class ARVRInteractionManager(private val context: Context) {
                     AppLogger.w(TAG, "解析会话配置失败: ${file.name}", e)
                 }
             }
-
         if (activeOnly) {
             sessions.filter { it.isActive }
         } else {
             sessions
         }
     }
-
-    private fun deserializeSession(jsonString: String): ARVRSession {
+        private fun deserializeSession(jsonString: String): ARVRSession {
         val json = JSONObject(jsonString)
-
         val objects = mutableListOf<SceneObject>()
         val objectsJson = json.getJSONArray("sceneObjects")
         for (i in 0 until objectsJson.length()) {
             objects.add(deserializeSceneObject(objectsJson.getJSONObject(i)))
         }
-
         val interactions = mutableListOf<Interaction>()
         val interactionsJson = json.getJSONArray("interactions")
         for (i in 0 until interactionsJson.length()) {
             interactions.add(deserializeInteraction(interactionsJson.getJSONObject(i)))
         }
-
         val anchors = mutableListOf<SpatialAnchor>()
         val anchorsJson = json.getJSONArray("spatialAnchors")
         for (i in 0 until anchorsJson.length()) {
             anchors.add(deserializeAnchor(anchorsJson.getJSONObject(i)))
         }
-
         return ARVRSession(
             id = json.getString("id"),
             type = SessionType.valueOf(json.getString("type")),
@@ -565,19 +538,17 @@ class ARVRInteractionManager(private val context: Context) {
             spatialAnchors = anchors
         )
     }
-
-    private fun deserializeSceneObject(json: JSONObject): SceneObject {
+        private fun deserializeSceneObject(json: JSONObject): SceneObject {
         val props = mutableMapOf<String, Any>()
         val propsJson = json.getJSONObject("properties")
         propsJson.keys().forEach { key ->
             val value = propsJson.get(key)
-            when (value) {
+        when (value) {
                 is String -> props[key] = value
                 is Number -> props[key] = value.toFloat()
                 is Boolean -> props[key] = value
             }
         }
-
         return SceneObject(
             id = json.getString("id"),
             name = json.getString("name"),
@@ -590,19 +561,17 @@ class ARVRInteractionManager(private val context: Context) {
             isInteractive = json.getBoolean("isInteractive")
         )
     }
-
-    private fun deserializeInteraction(json: JSONObject): Interaction {
+        private fun deserializeInteraction(json: JSONObject): Interaction {
         val params = mutableMapOf<String, Any>()
         val paramsJson = json.getJSONObject("parameters")
         paramsJson.keys().forEach { key ->
             val value = paramsJson.get(key)
-            when (value) {
+        when (value) {
                 is String -> params[key] = value
                 is Number -> params[key] = value.toFloat()
                 is Boolean -> params[key] = value
             }
         }
-
         return Interaction(
             id = json.getString("id"),
             type = InteractionType.valueOf(json.getString("type")),
@@ -613,10 +582,8 @@ class ARVRInteractionManager(private val context: Context) {
             success = json.getBoolean("success")
         )
     }
-
-    private fun deserializeAnchor(json: JSONObject): SpatialAnchor {
+        private fun deserializeAnchor(json: JSONObject): SpatialAnchor {
         val geoJson = if (json.isNull("worldCoordinates")) null else json.getJSONObject("worldCoordinates")
-
         return SpatialAnchor(
             id = json.getString("id"),
             name = json.getString("name"),
@@ -636,16 +603,14 @@ class ARVRInteractionManager(private val context: Context) {
             lastUpdatedAt = json.getLong("lastUpdatedAt")
         )
     }
-
-    private fun deserializeVector3(json: JSONObject): Vector3 {
+        private fun deserializeVector3(json: JSONObject): Vector3 {
         return Vector3(
             x = json.getDouble("x").toFloat(),
             y = json.getDouble("y").toFloat(),
             z = json.getDouble("z").toFloat()
         )
     }
-
-    private fun deserializeQuaternion(json: JSONObject): Quaternion {
+        private fun deserializeQuaternion(json: JSONObject): Quaternion {
         return Quaternion(
             x = json.getDouble("x").toFloat(),
             y = json.getDouble("y").toFloat(),
@@ -674,7 +639,7 @@ class ARVRInteractionManager(private val context: Context) {
             appendLine()
 
             appendLine("【交互类型分布�?)
-            val typeCounts = session.interactions.groupingBy { it.type }.eachCount()
+        val typeCounts = session.interactions.groupingBy { it.type }.eachCount()
             typeCounts.forEach { (type, count) ->
                 appendLine("  ${type}: ${count}")
             }
@@ -687,7 +652,7 @@ class ARVRInteractionManager(private val context: Context) {
         sessionsDir.listFiles()?.forEach { file ->
             try {
                 val session = deserializeSession(file.readText())
-                if (session.endTime != null && session.endTime < cutoffTime) {
+        if (session.endTime != null && session.endTime < cutoffTime) {
                     file.delete()
                     activeSessions.remove(session.id)
                     AppLogger.d(TAG, "清理旧会�? ${file.name}")

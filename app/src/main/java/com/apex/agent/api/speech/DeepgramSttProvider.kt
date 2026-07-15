@@ -49,17 +49,15 @@ class DeepgramSttProvider(
         private const val WAV_HEADER_SIZE = 44
         private const val MAX_FILE_BYTES = 25L * 1024L * 1024L
     }
-
-    private val httpClient: OkHttpClient by lazy {
+        private val httpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(DEFAULT_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
             .readTimeout(DEFAULT_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
             .writeTimeout(DEFAULT_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
             .build()
     }
-
-    private val scope = CoroutineScope(Dispatchers.Default)
-    private var recordingJob: Job? = null
+        private val scope = CoroutineScope(Dispatchers.Default)
+        private var recordingJob: Job? = null
 
     private var audioRecord: AudioRecord? = null
     private var outputFile: File? = null
@@ -73,19 +71,15 @@ class DeepgramSttProvider(
         get() = _recognitionState.value
     override val recognitionStateFlow: StateFlow<SpeechService.RecognitionState> =
         _recognitionState.asStateFlow()
-
-    private val _recognitionResult = MutableStateFlow(SpeechService.RecognitionResult(""))
+        private val _recognitionResult = MutableStateFlow(SpeechService.RecognitionResult(""))
     override val recognitionResultFlow: StateFlow<SpeechService.RecognitionResult> =
         _recognitionResult.asStateFlow()
-
-    private val _recognitionError = MutableStateFlow(SpeechService.RecognitionError(0, ""))
+        private val _recognitionError = MutableStateFlow(SpeechService.RecognitionError(0, ""))
     override val recognitionErrorFlow: StateFlow<SpeechService.RecognitionError> =
         _recognitionError.asStateFlow()
-
-    private val _isInitialized = MutableStateFlow(false)
+        private val _isInitialized = MutableStateFlow(false)
     override val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
-
-    private val _volumeLevelFlow = MutableStateFlow(0f)
+        private val _volumeLevelFlow = MutableStateFlow(0f)
     override val volumeLevelFlow: StateFlow<Float> = _volumeLevelFlow.asStateFlow()
 
     override val isRecognizing: Boolean
@@ -102,13 +96,13 @@ class DeepgramSttProvider(
                 if (endpointUrl.isBlank()) {
                     throw IOException(context.getString(R.string.deepgram_stt_url_not_set))
                 }
-                if (!endpointUrl.startsWith("http://") && !endpointUrl.startsWith("https://")) {
-                    throw IOException(context.getString(R.string.deepgram_stt_url_invalid_scheme))
+        if (!endpointUrl.startsWith("http://") && !endpointUrl.startsWith("https://")) {
+    throw IOException(context.getString(R.string.deepgram_stt_url_invalid_scheme))
                 }
-                if (apiKey.isBlank()) {
+        if (apiKey.isBlank()) {
                     throw IOException(context.getString(R.string.deepgram_stt_api_key_not_set))
                 }
-                if (model.isBlank()) {
+        if (model.isBlank()) {
                     throw IOException(context.getString(R.string.deepgram_stt_model_not_set))
                 }
 
@@ -132,9 +126,8 @@ class DeepgramSttProvider(
     ): Boolean {
         if (!isInitialized.value) {
             val ok = initialize()
-            if (!ok) return false
+        if (!ok) return false
         }
-
         if (recordingJob?.isActive == true) return false
 
         lastLanguageCode = languageCode
@@ -146,26 +139,24 @@ class DeepgramSttProvider(
         return try {
             withContext(Dispatchers.IO) {
                 val minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
-                if (minBufferSize == AudioRecord.ERROR || minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
+        if (minBufferSize == AudioRecord.ERROR || minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
                     throw IOException("AudioRecord buffer init failed")
                 }
-
-                val record = AudioRecord(
+        val record = AudioRecord(
                     MediaRecorder.AudioSource.VOICE_COMMUNICATION,
                     SAMPLE_RATE,
                     CHANNEL_CONFIG,
                     AUDIO_FORMAT,
                     minBufferSize * 2,
                 )
-
-                val file = File(context.cacheDir, "deepgram_stt_${UUID.randomUUID()}.wav")
-                val stream = FileOutputStream(file)
+        val file = File(context.cacheDir, "deepgram_stt_${UUID.randomUUID()}.wav")
+        val stream = FileOutputStream(file)
                 stream.write(ByteArray(WAV_HEADER_SIZE))
 
                 pcmBytesWritten = 0
 
                 val pendingPcm = SpeechPrerollStore.consumePending()
-                if (pendingPcm != null && pendingPcm.isNotEmpty()) {
+        if (pendingPcm != null && pendingPcm.isNotEmpty()) {
                     try {
                         writePcm16le(stream, pendingPcm, pendingPcm.size)
                         AppLogger.d(TAG, "Applied preroll: samples=${pendingPcm.size}")
@@ -196,14 +187,13 @@ class DeepgramSttProvider(
                                 AppLogger.w(TAG, "Failed to initialize Silero VAD, falling back to non-VAD mode", e)
                                 null
                             }
-
-                            val vadFrameSize = 512
+        val vadFrameSize = 512
                             val vadFrame = ShortArray(vadFrameSize)
-                            var vadFramePos = 0
+        var vadFramePos = 0
 
                             val preRollSamples = SAMPLE_RATE / 2
                             val preRoll = ShortArray(preRollSamples)
-                            var preRollPos = 0
+        var preRollPos = 0
                             var preRollFilled = 0
 
                             fun appendToPreRoll(frame: ShortArray, size: Int) {
@@ -217,8 +207,7 @@ class DeepgramSttProvider(
                                     idx += toCopy
                                 }
                             }
-
-                            fun flushPreRoll(streamOut: FileOutputStream) {
+        fun flushPreRoll(streamOut: FileOutputStream) {
                                 if (preRollFilled <= 0) return
                                 if (preRollFilled < preRollSamples) {
                                     writePcm16le(streamOut, preRoll, preRollFilled)
@@ -227,24 +216,22 @@ class DeepgramSttProvider(
                                     if (firstLen > 0) {
                                         writePcm16le(streamOut, preRoll, firstLen, offset = preRollPos)
                                     }
-                                    if (preRollPos > 0) {
+        if (preRollPos > 0) {
                                         writePcm16le(streamOut, preRoll, preRollPos, offset = 0)
                                     }
                                 }
                                 preRollFilled = 0
                                 preRollPos = 0
                             }
-
-                            var speechActive = false
+        var speechActive = false
                             var autoStopTriggered = false
 
                             while (isActive && _recognitionState.value == SpeechService.RecognitionState.RECOGNIZING) {
                                 val read = record.read(audioBuffer, 0, audioBuffer.size)
-                                if (read > 0) {
+        if (read > 0) {
                                     SpeechPrerollStore.appendPcm(audioBuffer, read)
                                     updateVolumeLevel(audioBuffer, read)
-
-                                    if (vadInstance == null) {
+        if (vadInstance == null) {
                                         writePcm16le(stream, audioBuffer, read)
                                     } else {
                                         var idx = 0
@@ -256,7 +243,7 @@ class DeepgramSttProvider(
 
                                             if (vadFramePos == vadFrameSize) {
                                                 val isSpeech = vadInstance.isSpeech(vadFrame)
-                                                if (!speechActive) {
+        if (!speechActive) {
                                                     if (isSpeech) {
                                                         speechActive = true
                                                         flushPreRoll(stream)
@@ -273,8 +260,7 @@ class DeepgramSttProvider(
                                                         return@launch
                                                     }
                                                 }
-
-                                                if (pcmBytesWritten > MAX_FILE_BYTES) {
+        if (pcmBytesWritten > MAX_FILE_BYTES) {
                                                     val maxSizeMB = MAX_FILE_BYTES / 1024 / 1024
                                                     throw IOException(context.getString(R.string.deepgram_stt_file_too_large, maxSizeMB))
                                                 }
@@ -314,18 +300,16 @@ class DeepgramSttProvider(
                 ?: run {
                     _recognitionState.value = SpeechService.RecognitionState.ERROR
                     _recognitionError.value = SpeechService.RecognitionError(-1, "No audio recorded")
-                    return false
+        return false
                 }
-
-            if (file.length() > MAX_FILE_BYTES) {
+        if (file.length() > MAX_FILE_BYTES) {
                 file.delete()
-                val maxSizeMB = MAX_FILE_BYTES / 1024 / 1024
+        val maxSizeMB = MAX_FILE_BYTES / 1024 / 1024
                 _recognitionState.value = SpeechService.RecognitionState.ERROR
                 _recognitionError.value = SpeechService.RecognitionError(-1, context.getString(R.string.deepgram_stt_file_too_large, maxSizeMB))
-                return false
+        return false
             }
-
-            val text = withContext(Dispatchers.IO) {
+        val text = withContext(Dispatchers.IO) {
                 transcribeWavFile(file, languageCode = lastLanguageCode)
             }
 
@@ -379,7 +363,7 @@ class DeepgramSttProvider(
     override suspend fun recognize(audioData: FloatArray) {
         if (!isInitialized.value) {
             val ok = initialize()
-            if (!ok) return
+        if (!ok) return
         }
 
         _recognitionError.value = SpeechService.RecognitionError(0, "")
@@ -391,11 +375,11 @@ class DeepgramSttProvider(
                 val out = File(context.cacheDir, "deepgram_stt_${UUID.randomUUID()}.wav")
                 FileOutputStream(out).use { fos ->
                     fos.write(ByteArray(WAV_HEADER_SIZE))
-                    val bytes = ByteArray(audioData.size * 2)
-                    var idx = 0
+        val bytes = ByteArray(audioData.size * 2)
+        var idx = 0
                     for (f in audioData) {
                         val clamped = f.coerceIn(-1f, 1f)
-                        val s = (clamped * 32767f).toInt().toShort()
+        val s = (clamped * 32767f).toInt().toShort()
                         bytes[idx++] = (s.toInt() and 0xff).toByte()
                         bytes[idx++] = ((s.toInt() shr 8) and 0xff).toByte()
                     }
@@ -404,8 +388,7 @@ class DeepgramSttProvider(
                 writeWavHeader(out, pcmDataSize = audioData.size.toLong() * 2L)
                 out
             }
-
-            val text = withContext(Dispatchers.IO) {
+        val text = withContext(Dispatchers.IO) {
                 transcribeWavFile(file, languageCode = lastLanguageCode)
             }
 
@@ -419,8 +402,7 @@ class DeepgramSttProvider(
             _recognitionError.value = SpeechService.RecognitionError(-1, e.message ?: "recognize failed")
         }
     }
-
-    private suspend fun stopRecordingInternal(deleteFile: Boolean): File? {
+        private suspend fun stopRecordingInternal(deleteFile: Boolean): File? {
         val job = recordingJob
         recordingJob = null
         try {
@@ -430,7 +412,6 @@ class DeepgramSttProvider(
             }
         } catch (_: Exception) {
         }
-
         val record = audioRecord
         audioRecord = null
         try {
@@ -441,7 +422,6 @@ class DeepgramSttProvider(
             record?.release()
         } catch (_: Exception) {
         }
-
         val stream = outputStream
         outputStream = null
         try {
@@ -452,26 +432,24 @@ class DeepgramSttProvider(
             stream?.close()
         } catch (_: Exception) {
         }
-
         val file = outputFile
         outputFile = null
 
         if (file != null && file.exists()) {
             if (deleteFile) {
                 file.delete()
-                return null
+        return null
             }
-            if (pcmBytesWritten <= 0L) {
+        if (pcmBytesWritten <= 0L) {
                 file.delete()
-                return null
+        return null
             }
             writeWavHeader(file, pcmDataSize = pcmBytesWritten)
-            return file
+        return file
         }
-
         return null
     }
-    private fun writePcm16le(stream: FileOutputStream, pcm: ShortArray, length: Int, offset: Int = 0) {
+        private fun writePcm16le(stream: FileOutputStream, pcm: ShortArray, length: Int, offset: Int = 0) {
         if (length <= 0) return
         val bytes = ByteArray(length * 2)
         var idx = 0
@@ -483,8 +461,7 @@ class DeepgramSttProvider(
         stream.write(bytes)
         pcmBytesWritten += bytes.size
     }
-
-    private fun writeWavHeader(file: File, pcmDataSize: Long) {
+        private fun writeWavHeader(file: File, pcmDataSize: Long) {
         val totalDataLen = pcmDataSize + 36
         val byteRate = SAMPLE_RATE * 2
 
@@ -529,8 +506,7 @@ class DeepgramSttProvider(
             AppLogger.e(TAG, "Failed to write WAV header", e)
         }
     }
-
-    private fun mapLanguage(languageCode: String): String? {
+        private fun mapLanguage(languageCode: String): String? {
         val code = languageCode?.trim()?.lowercase() ?: return null
         if (code.isBlank()) return null
         return when {
@@ -539,24 +515,21 @@ class DeepgramSttProvider(
             else -> code
         }
     }
-
-    private fun transcribeWavFile(file: File, languageCode: String): String {
+        private fun transcribeWavFile(file: File, languageCode: String): String {
         val url = endpointUrl.toHttpUrl().newBuilder()
             .addQueryParameter("model", model)
             .addQueryParameter("smart_format", "true")
             .addQueryParameter("punctuate", "true")
             .apply {
                 val lang = mapLanguage(languageCode)
-                if (lang != null) addQueryParameter("language", lang)
+        if (lang != null) addQueryParameter("language", lang)
             }
             .build()
-
         val request = Request.Builder()
             .url(url)
             .post(file.asRequestBody("audio/wav".toMediaType()))
             .addHeader("Authorization", "Token ${apiKey}")
             .build()
-
         val response = try {
             httpClient.newCall(request).execute()
         } catch (e: IOException) {
@@ -565,26 +538,25 @@ class DeepgramSttProvider(
 
         response.use { resp ->
             val body = resp.body?.string() ?: ""
-            if (!resp.isSuccessful) {
+        if (!resp.isSuccessful) {
                 throw IOException("Deepgram STT request failed with code ${resp.code}: ${body}")
             }
-            val trimmed = body.trim()
-            if (trimmed.startsWith("{")) {
+        val trimmed = body.trim()
+        if (trimmed.startsWith("{")) {
                 val json = JSONObject(trimmed)
-                val results = json.optJSONObject("results")
-                val channels = results?.optJSONArray("channels")
-                val firstChannel = channels?.optJSONObject(0)
-                val alternatives = firstChannel?.optJSONArray("alternatives")
-                val firstAlt = alternatives?.optJSONObject(0)
-                val transcript = firstAlt?.optString("transcript", null)
-                if (!transcript.isNullOrBlank()) return transcript
+        val results = json.optJSONObject("results")
+        val channels = results?.optJSONArray("channels")
+        val firstChannel = channels?.optJSONObject(0)
+        val alternatives = firstChannel?.optJSONArray("alternatives")
+        val firstAlt = alternatives?.optJSONObject(0)
+        val transcript = firstAlt?.optString("transcript", null)
+        if (!transcript.isNullOrBlank()) return transcript
                 return trimmed
             }
-            return trimmed
+        return trimmed
         }
     }
-
-    private fun updateVolumeLevel(buffer: ShortArray, length: Int) {
+        private fun updateVolumeLevel(buffer: ShortArray, length: Int) {
         if (length <= 0) return
 
         var sum = 0.0

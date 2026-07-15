@@ -26,25 +26,20 @@ class AgentConversationManager(private val context: Context) {
         private val KEY_CONVERSATIONS = stringPreferencesKey("conversations")
         private const val MAX_CONVERSATIONS = 100
     }
-
-    private val gson = Gson()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _conversations = mutableMapOf<String, AgentConversation>()
-
-    val conversations: List<AgentConversation>
+        private val gson = Gson()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val _conversations = mutableMapOf<String, AgentConversation>()
+        val conversations: List<AgentConversation>
         get() = _conversations.values.filter { !it.isArchived }.sortedByDescending { it.lastActivity }
-
-    val starredConversations: List<AgentConversation>
+        val starredConversations: List<AgentConversation>
         get() = conversations.filter { it.isStarred }
-
-    val archivedConversations: List<AgentConversation>
+        val archivedConversations: List<AgentConversation>
         get() = _conversations.values.filter { it.isArchived }.sortedByDescending { it.lastActivity }
 
     init {
         scope.launch { loadFromDataStore() }
     }
-
-    private suspend fun loadFromDataStore() {
+        private suspend fun loadFromDataStore() {
         try {
             val prefs = context.conversationDataStore.data.first()
             prefs[KEY_CONVERSATIONS]?.let { json ->
@@ -55,19 +50,16 @@ class AgentConversationManager(private val context: Context) {
             }
         } catch (e: Exception) { AppLogger.w(TAG, "Failed to load conversations from DataStore", e) }
     }
-
-    private suspend fun saveToDataStore() {
+        private suspend fun saveToDataStore() {
         val sorted = _conversations.values.sortedByDescending { it.lastActivity }.take(MAX_CONVERSATIONS)
         context.conversationDataStore.edit { prefs ->
             prefs[KEY_CONVERSATIONS] = gson.toJson(sorted)
         }
     }
-
-    fun getConversationById(id: String): AgentConversation? = _conversations[id]
+        fun getConversationById(id: String): AgentConversation? = _conversations[id]
     fun getConversationsByAgent(agentId: String): List<AgentConversation> = conversations.filter { it.agentId == agentId }
-    fun getConversationsByTemplate(templateId: String): List<AgentConversation> = conversations.filter { it.templateId == templateId }
-
-    fun searchConversations(query: String): List<AgentConversation> {
+        fun getConversationsByTemplate(templateId: String): List<AgentConversation> = conversations.filter { it.templateId == templateId }
+        fun searchConversations(query: String): List<AgentConversation> {
         val lowerQuery = query.lowercase()
         return conversations.filter { conv ->
             conv.title.lowercase().contains(lowerQuery) ||
@@ -75,8 +67,7 @@ class AgentConversationManager(private val context: Context) {
             conv.messages.any { msg -> msg.content.lowercase().contains(lowerQuery) }
         }
     }
-
-    fun createNewConversation(title: String? = null, agentId: String? = null, templateId: String? = null, tags: Set<String> = emptySet()): AgentConversation {
+        fun createNewConversation(title: String? = null, agentId: String? = null, templateId: String? = null, tags: Set<String> = emptySet()): AgentConversation {
         val conversation = AgentConversation(title = title ?: "新对${conversations.size + 1}", agentId = agentId, templateId = templateId, tags = tags)
         _conversations[conversation.id] = conversation
         scope.launch { saveToDataStore() }
@@ -125,12 +116,10 @@ class AgentConversationManager(private val context: Context) {
         saveToDataStore()
         return true
     }
-
-    fun destroy() {
+        fun destroy() {
         scope.cancel()
     }
-
-    fun getConversationStats(): ConversationStats {
+        fun getConversationStats(): ConversationStats {
         val total = _conversations.size
         val active = conversations.size
         val archived = archivedConversations.size

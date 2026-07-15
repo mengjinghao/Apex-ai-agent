@@ -174,16 +174,15 @@ data class OperationLogEntry(
         val status = if (success) "�?else "�?
         val time = java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.getDefault())
             .format(java.util.Date(timestamp))
-        
         return buildString {
             append("[${time}] ${status} ${toolName}.${action}")
-            if (duration > 0) {
+        if (duration > 0) {
                 append(" (${duration}ms)")
             }
-            if (!success && errorCode != null) {
+        if (!success && errorCode != null) {
                 append(" [${errorCode.code}]")
             }
-            if (details != null) {
+        if (details != null) {
                 append("\n  详情: ${details}")
             }
         }

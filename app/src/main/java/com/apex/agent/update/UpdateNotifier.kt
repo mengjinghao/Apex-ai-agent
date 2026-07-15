@@ -45,16 +45,14 @@ class UpdateNotifier private constructor(private val context: Context) {
             }
         }
     }
-
-    private val notificationManager by lazy {
+        private val notificationManager by lazy {
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
     init {
         createChannels()
     }
-
-    private fun createChannels() {
+        private fun createChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channels = listOf(
             NotificationChannel(
@@ -88,7 +86,7 @@ class UpdateNotifier private constructor(private val context: Context) {
     fun notifyUpdateAvailable(version: String, sizeText: String, htmlUrl: String?) {
         if (!hasNotificationPermission()) {
             AppLogger.w(TAG, "无通知权限，跳过 UpdateAvailable 通知")
-            return
+        return
         }
         val tapIntent = if (htmlUrl != null) {
             Intent(Intent.ACTION_VIEW, Uri.parse(htmlUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -178,14 +176,12 @@ class UpdateNotifier private constructor(private val context: Context) {
     fun cancelProgress() {
         cancel(NOTIF_ID_PROGRESS)
     }
-
-    private fun cancel(id: Int) {
+        private fun cancel(id: Int) {
         try {
             NotificationManagerCompat.from(context).cancel(id)
         } catch (_: Throwable) {}
     }
-
-    private fun hasNotificationPermission(): Boolean {
+        private fun hasNotificationPermission(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
                 android.content.pm.PackageManager.PERMISSION_GRANTED

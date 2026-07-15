@@ -60,17 +60,15 @@ data class ChatMessage(
 class CoreModuleInitializer private constructor() {
 
     private val logger = LoggerFactory.getLogger(CoreModuleInitializer::class.java)
-
-    private var isInitialized = false
+        private var isInitialized = false
     private var appContext: Context? = null
 
     // 使用自定�?CoroutineScope 替代 GlobalScope
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    fun initialize(context: Context) {
+        fun initialize(context: Context) {
         if (isInitialized) {
             logger.info("Core modules already initialized")
-            return
+        return
         }
 
         logger.info("Initializing Hermes Agent core modules...")
@@ -90,11 +88,10 @@ class CoreModuleInitializer private constructor() {
             logger.info("All Hermes Agent core modules initialized successfully")
         } catch (e: Exception) {
             logger.error("Failed to initialize core modules", e)
-            throw e
+        throw e
         }
     }
-
-    private fun initializeProviderProfile() {
+        private fun initializeProviderProfile() {
         logger.info("Initializing ProviderProfile system...")
         val registry = ProviderRegistry.getInstance()
         
@@ -102,8 +99,7 @@ class CoreModuleInitializer private constructor() {
         
         logger.info("ProviderProfile system initialized")
     }
-
-    private fun initializeExtensionMechanism() {
+        private fun initializeExtensionMechanism() {
         logger.info("Initializing Footprint Ladder extension mechanism...")
         val registry = CapabilityRegistry.getInstance()
         
@@ -111,8 +107,7 @@ class CoreModuleInitializer private constructor() {
         
         logger.info("Footprint Ladder extension mechanism initialized")
     }
-
-    private fun initializeStorage(context: Context) {
+        private fun initializeStorage(context: Context) {
         logger.info("Initializing SQLite + FTS5 storage...")
 
         SessionDatabase.getInstance(context)
@@ -122,8 +117,7 @@ class CoreModuleInitializer private constructor() {
 
         logger.info("SQLite + FTS5 storage initialized")
     }
-
-    private fun initializeMCP(context: Context) {
+        private fun initializeMCP(context: Context) {
         logger.info("Initializing MCP Server integration...")
 
         ConversationBridgeTools.getInstance(context)
@@ -131,8 +125,7 @@ class CoreModuleInitializer private constructor() {
 
         logger.info("MCP Server integration initialized")
     }
-
-    private fun initializeTrajectory() {
+        private fun initializeTrajectory() {
         logger.info("Initializing Trajectory Compression system...")
         
         CompressionStrategy.initialize()
@@ -140,8 +133,7 @@ class CoreModuleInitializer private constructor() {
         
         logger.info("Trajectory Compression system initialized")
     }
-
-    private fun initializeBatchProcessing() {
+        private fun initializeBatchProcessing() {
         logger.info("Initializing Batch Runner system...")
         
         DatasetLoader.initialize()
@@ -152,8 +144,7 @@ class CoreModuleInitializer private constructor() {
         
         logger.info("Batch Runner system initialized")
     }
-
-    private fun initializeKanban() {
+        private fun initializeKanban() {
         logger.info("Initializing Kanban Multi-Agent Board...")
         
         WorkerRegistry.initialize()
@@ -162,8 +153,7 @@ class CoreModuleInitializer private constructor() {
         
         logger.info("Kanban Multi-Agent Board initialized")
     }
-
-    private fun initializeScheduler() {
+        private fun initializeScheduler() {
         logger.info("Initializing Cron Scheduler...")
         
         TaskTypeRegistry.registerBuiltinTaskTypes()
@@ -171,18 +161,15 @@ class CoreModuleInitializer private constructor() {
         
         logger.info("Cron Scheduler initialized")
     }
-
-    fun startMCPServer(port: Int = MCPServerBridge.DEFAULT_PORT) {
+        fun startMCPServer(port: Int = MCPServerBridge.DEFAULT_PORT) {
         scope.launch {
             MCPServerBridge.startServer(port)
         }
     }
-
-    fun stopMCPServer() {
+        fun stopMCPServer() {
         MCPServerBridge.stopServer()
     }
-
-    fun getModuleStatus(): Map<String, Boolean> {
+        fun getModuleStatus(): Map<String, Boolean> {
         val ctx = appContext ?: return emptyMap()
         return mapOf(
             ctx.getString(R.string.module_provider_profile) to true,
@@ -205,7 +192,6 @@ class CoreModuleInitializer private constructor() {
                 instance ?: CoreModuleInitializer().also { instance = it }
             }
         }
-
         fun initializeModules(context: Context) {
             getInstance().initialize(context)
         }
@@ -214,47 +200,45 @@ class CoreModuleInitializer private constructor() {
 
 interface ModuleInitializable {
     fun initialize()
-    fun isInitialized(): Boolean
+        fun isInitialized(): Boolean
 }
 
 object HermesIntegration {
 
     private const val PROVIDER_OPENAI = "openai"
-    private const val TASK_TYPE_WORKFLOW_TRIGGER = "workflow.trigger"
-    private const val TASK_TYPE_WORKFLOW_STEP = "workflow.step"
-
-    private val logger = LoggerFactory.getLogger(HermesIntegration::class.java)
+        private const val TASK_TYPE_WORKFLOW_TRIGGER = "workflow.trigger"
+        private const val TASK_TYPE_WORKFLOW_STEP = "workflow.step"
+        private val logger = LoggerFactory.getLogger(HermesIntegration::class.java)
     
     // 使用自定�?CoroutineScope 替代 GlobalScope
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Link state management
     private val _linkState = MutableStateFlow<Map<String, Boolean>>(emptyMap())
-    val linkState: StateFlow<Map<String, Boolean>> = _linkState.asStateFlow()
+        val linkState: StateFlow<Map<String, Boolean>> = _linkState.asStateFlow()
 
     // Link references for coordinated access
     private val linkedProviderProfile = MutableStateFlow<ProviderProfile?>(null)
-    private val linkedModelSelector = MutableStateFlow<ModelSelector?>(null)
-    private val linkedSkillManager = MutableStateFlow<SkillManager?>(null)
-    private val linkedStorage = MutableStateFlow<AgentStorage?>(null)
-    private val linkedChatHistory = MutableStateFlow<ChatHistoryPort?>(null)
-    private val linkedMCP = MutableStateFlow<MCPBridge?>(null)
-    private val linkedToolManager = MutableStateFlow<ToolManager?>(null)
-    private val linkedScheduler = MutableStateFlow<TaskScheduler?>(null)
-    private val linkedWorkflowEngine = MutableStateFlow<WorkflowEngine?>(null)
+        private val linkedModelSelector = MutableStateFlow<ModelSelector?>(null)
+        private val linkedSkillManager = MutableStateFlow<SkillManager?>(null)
+        private val linkedStorage = MutableStateFlow<AgentStorage?>(null)
+        private val linkedChatHistory = MutableStateFlow<ChatHistoryPort?>(null)
+        private val linkedMCP = MutableStateFlow<MCPBridge?>(null)
+        private val linkedToolManager = MutableStateFlow<ToolManager?>(null)
+        private val linkedScheduler = MutableStateFlow<TaskScheduler?>(null)
+        private val linkedWorkflowEngine = MutableStateFlow<WorkflowEngine?>(null)
 
     // Extension registry for capability-based linking
     private val extensionRegistry = ConcurrentHashMap<String, AgentExtension>()
 
     // Scheduler-workflow integration state (keyed by scheduler instance)
-    private val schedulerWorkflowCallbacks = ConcurrentHashMap<TaskScheduler, suspend (String, Map<String, Any>) -> WorkflowEngine.ExecutionResult?>()
-    private val schedulerPriorityMappers = ConcurrentHashMap<TaskScheduler, (String) -> TaskPriority>()
-    private val schedulerTaskStates = ConcurrentHashMap<TaskScheduler, ConcurrentHashMap<String, TaskState>>()
+        private val schedulerWorkflowCallbacks = ConcurrentHashMap<TaskScheduler, suspend (String, Map<String, Any>) -> WorkflowEngine.ExecutionResult?>()
+        private val schedulerPriorityMappers = ConcurrentHashMap<TaskScheduler, (String) -> TaskPriority>()
+        private val schedulerTaskStates = ConcurrentHashMap<TaskScheduler, ConcurrentHashMap<String, TaskState>>()
 
     // Capability change listener references to avoid GC
     private val capabilityChangeListeners = mutableListOf<CapabilityRegistry.CapabilityChangeListener>()
-
-    fun integrateWithExistingSystems(context: Context) {
+        fun integrateWithExistingSystems(context: Context) {
         logger.info("Integrating Hermes modules with existing Apex/Agent systems...")
 
         try {
@@ -287,7 +271,7 @@ object HermesIntegration {
         } catch (e: Exception) {
             logger.error("Failed to integrate Hermes modules", e)
             updateLinkState("all", false)
-            throw e
+        throw e
         }
     }
 
@@ -311,7 +295,7 @@ object HermesIntegration {
         scope.launch {
             try {
                 val apiKey = System.getenv(providerProfile.apiKeyEnvVar)
-                val models = providerProfile.fetchModels(apiKey)
+        val models = providerProfile.fetchModels(apiKey)
 
                 logger.debug("Fetched ${models.size} models from provider ${providerProfile.name}")
 
@@ -324,8 +308,7 @@ object HermesIntegration {
                 // Set default model if available
     val defaultModel = filteredModels.find { it.id == providerProfile.defaultModel }
                     ?: filteredModels.firstOrNull()
-
-                if (defaultModel != null) {
+        if (defaultModel != null) {
                     logger.debug("Default model set: ${defaultModel.id}")
                 }
 
@@ -347,7 +330,6 @@ object HermesIntegration {
      */
     fun linkExtensionWithSkillSystem(context: Context) {
         logger.info("Linking Footprint Ladder extension mechanism with SkillSystem...")
-
         val skillManager = SkillManager.getInstance(context)
         linkedSkillManager.value = skillManager
 
@@ -376,8 +358,7 @@ object HermesIntegration {
             try {
                 // Ensure latest skills are known to SkillManager
                 skillManager.refreshAvailableSkills()
-
-                var registeredCount = 0
+        var registeredCount = 0
                 var preloadedCount = 0
 
                 allCapabilities.forEach { capability ->
@@ -400,10 +381,8 @@ object HermesIntegration {
 
         logger.debug("Extension-SkillSystem link initiated")
     }
-
-    private fun registerCapabilityWithSkillManager(skillManager: SkillManager, capability: Capability): Boolean {
+        private fun registerCapabilityWithSkillManager(skillManager: SkillManager, capability: Capability): Boolean {
         logger.debug("Linking capability '${capability.name}' at level ${capability.level.description}")
-
         val extension = AgentExtension(
             name = capability.name,
             level = capability.level,
@@ -429,7 +408,6 @@ object HermesIntegration {
      */
     fun linkStorageWithChatHistory(context: Context) {
         logger.info("Linking SQLite storage with ChatHistory...")
-
         val chatHistoryPort = createChatHistoryAdapter(context)
         val storage = AgentStorage(context)
 
@@ -486,11 +464,11 @@ object HermesIntegration {
                 return try {
                     // Attempt to use ChatHistoryManager if available via reflection
     val chatHistoryManagerClass = Class.forName("com.apex.data.repository.ChatHistoryManager")
-                    val getInstanceMethod = chatHistoryManagerClass.getMethod("getInstance", Context::class.java)
-                    val manager = getInstanceMethod.invoke(null, context)
-                    val loadMessagesMethod = chatHistoryManagerClass.getMethod("loadChatMessages", String::class.java)
+        val getInstanceMethod = chatHistoryManagerClass.getMethod("getInstance", Context::class.java)
+        val manager = getInstanceMethod.invoke(null, context)
+        val loadMessagesMethod = chatHistoryManagerClass.getMethod("loadChatMessages", String::class.java)
                     @Suppress("UNCHECKED_CAST")
-                    val result = loadMessagesMethod.invoke(manager, chatId) as? List<ChatMessage>
+        val result = loadMessagesMethod.invoke(manager, chatId) as? List<ChatMessage>
                     result ?: emptyList()
                 } catch (e: Exception) {
                     logger.warn("Failed to load messages for chat ${chatId}: ${e.message}")
@@ -502,9 +480,9 @@ object HermesIntegration {
                 return try {
                     // Attempt to use ChatHistoryManager if available via reflection
     val chatHistoryManagerClass = Class.forName("com.apex.data.repository.ChatHistoryManager")
-                    val getInstanceMethod = chatHistoryManagerClass.getMethod("getInstance", Context::class.java)
-                    val manager = getInstanceMethod.invoke(null, context)
-                    val addMessageMethod = chatHistoryManagerClass.getMethod("addMessage", String::class.java, ChatMessage::class.java)
+        val getInstanceMethod = chatHistoryManagerClass.getMethod("getInstance", Context::class.java)
+        val manager = getInstanceMethod.invoke(null, context)
+        val addMessageMethod = chatHistoryManagerClass.getMethod("addMessage", String::class.java, ChatMessage::class.java)
                     addMessageMethod.invoke(manager, chatId, message)
                     true
                 } catch (e: Exception) {
@@ -523,7 +501,6 @@ object HermesIntegration {
      */
     fun linkMCPWithToolManager(context: Context) {
         logger.info("Linking MCP Server with ToolManager...")
-
         val mcpBridge = MCPBridge(context)
         val toolManager = ToolManager(context)
 
@@ -662,18 +639,15 @@ object HermesIntegration {
             }
         }
     }
-
-    private fun updateLinkState(linkName: String, success: Boolean) {
+        private fun updateLinkState(linkName: String, success: Boolean) {
         val currentState = _linkState.value.toMutableMap()
         currentState[linkName] = success
         _linkState.value = currentState
     }
-
-    fun getLinkStatus(): Map<String, Boolean> {
+        fun getLinkStatus(): Map<String, Boolean> {
         return _linkState.value.toMap()
     }
-
-    fun isFullyLinked(): Boolean {
+        fun isFullyLinked(): Boolean {
         return _linkState.value.values.all { it }
     }
 
@@ -691,7 +665,7 @@ object HermesIntegration {
             logger.info("Hermes Agent modules integrated successfully")
         } catch (e: Exception) {
             logger.error("Failed to integrate Hermes modules", e)
-            throw e
+        throw e
         }
     }
 
@@ -725,15 +699,12 @@ object HermesIntegration {
             BatchRunStorage.getInstance(context)
             initialized = true
         }
-
         fun setAutoSaveStrategy(strategy: AutoSaveStrategy) {
             autoSaveStrategy = strategy
         }
-
         fun setHistoryLoader(loader: suspend (String) -> List<ChatMessage>) {
             historyLoader = loader
         }
-
         fun setMessagePersister(persister: suspend (String, ChatMessage) -> Boolean) {
             messagePersister = persister
         }
@@ -807,19 +778,15 @@ object HermesIntegration {
             val tool: MCPBridgeTool,
             val permission: ToolPermission
         )
-
         fun registerTool(tool: MCPBridgeTool, permission: ToolPermission) {
             registeredTools[tool.name] = ToolRegistration(tool, permission)
         }
-
         fun setRouter(router: (String) -> Any) {
             this.router = router
         }
-
         fun getTool(name: String): MCPBridgeTool? {
             return registeredTools[name]?.tool
         }
-
         fun getPermission(name: String): ToolPermission? {
             return registeredTools[name]?.permission
         }
@@ -858,14 +825,12 @@ object HermesIntegration {
     ) {
         schedulerWorkflowCallbacks[this] = callback
     }
-
-    private fun TaskScheduler.setPriorityMapper(
+        private fun TaskScheduler.setPriorityMapper(
         mapper: (String) -> TaskPriority
     ) {
         schedulerPriorityMappers[this] = mapper
     }
-
-    private fun TaskScheduler.updateTaskState(
+        private fun TaskScheduler.updateTaskState(
         executionId: String,
         state: TaskState
     ) {
@@ -890,8 +855,7 @@ object HermesIntegration {
         override suspend fun execute(task: SubTask): SubTaskResult {
             val workflowId = task.inputData["workflowId"] as? String ?: task.taskId
             val workflowContext = (task.inputData["context"] as? Map<String, Any>) ?: emptyMap()
-
-            return try {
+        return try {
                 val result = workflowEngine.executeWorkflow(workflowId, "scheduled", workflowContext)
                 SubTaskResult(
                     taskId = task.taskId,

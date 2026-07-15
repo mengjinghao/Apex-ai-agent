@@ -42,9 +42,8 @@ class NaturalLanguageTaskParser(
                 userInput = trimmed,
                 availableTools = availableTools
             )
-
-            val response = llamaEngine.generate(prompt)
-            val taskData = parseJsonResponse(response, trimmed)
+        val response = llamaEngine.generate(prompt)
+        val taskData = parseJsonResponse(response, trimmed)
 
             BurstTask(
                 taskId = generateTaskId(),
@@ -77,27 +76,22 @@ class NaturalLanguageTaskParser(
      */
     fun validateParsedTask(task: BurstTask): ValidationResult {
         val issues = mutableListOf<String>()
-
         if (task.goal.isBlank()) {
             issues.add("任务目标为空")
         }
-
         val steps = getStepsFromMetadata(task)
         if (steps.isEmpty()) {
             issues.add("未定义执行步骤")
         }
-
         val requiredTools = getRequiredToolsFromMetadata(task)
         requiredTools.forEach { tool ->
             if (!availableTools.contains(tool)) {
                 issues.add("所需工具 '$tool' 不可用")
             }
         }
-
         if (steps.size > 10 && task.complexity == Complexity.LOW) {
             issues.add("步骤数 (${steps.size}) 较多但复杂度标记为 LOW")
         }
-
         return ValidationResult(
             isValid = issues.isEmpty(),
             issues = issues,
@@ -121,15 +115,13 @@ class NaturalLanguageTaskParser(
         }
         return extractTaskDataFromText(trimmed)
     }
-
-    private fun extractJsonBlock(text: String): String? {
+        private fun extractJsonBlock(text: String): String? {
         val start = text.indexOf('{')
         val end = text.lastIndexOf('}')
         if (start == -1 || end == -1 || end <= start) return null
         return text.substring(start, end + 1)
     }
-
-    private fun parseJsonObject(json: String): TaskData {
+        private fun parseJsonObject(json: String): TaskData {
         val obj = JSONObject(json)
         return TaskData(
             goal = obj.optString("goal", "未知任务"),
@@ -146,15 +138,13 @@ class NaturalLanguageTaskParser(
             } ?: emptyList()
         )
     }
-
-    private fun extractTaskDataFromText(text: String): TaskData {
+        private fun extractTaskDataFromText(text: String): TaskData {
         val goal = extractField(text, "goal") ?: "未知任务"
         val steps = extractArray(text, "steps")
         val tools = extractArray(text, "required_tools")
         val complexity = extractField(text, "estimated_complexity") ?: "MEDIUM"
         val timeStr = extractField(text, "estimated_time_minutes") ?: "10"
         val challenges = extractArray(text, "potential_challenges")
-
         return TaskData(
             goal = goal,
             steps = steps,
@@ -164,13 +154,11 @@ class NaturalLanguageTaskParser(
             potentialChallenges = challenges
         )
     }
-
-    private fun extractField(text: String, fieldName: String): String? {
+        private fun extractField(text: String, fieldName: String): String? {
         val pattern = """"$fieldName"\s*:\s*"([^"]*)"""".toRegex()
         return pattern.find(text)?.groupValues?.get(1)
     }
-
-    private fun extractArray(text: String, fieldName: String): List<String> {
+        private fun extractArray(text: String, fieldName: String): List<String> {
         val pattern = """"$fieldName"\s*:\s*\[([^\]]*)\]""".toRegex()
         val match = pattern.find(text) ?: return emptyList()
         return match.groupValues[1]
@@ -178,8 +166,7 @@ class NaturalLanguageTaskParser(
             .map { it.trim().removeSurrounding("\"") }
             .filter { it.isNotBlank() }
     }
-
-    private fun parseComplexity(complexityStr: String): Complexity {
+        private fun parseComplexity(complexityStr: String): Complexity {
         return when (complexityStr.uppercase()) {
             "LOW" -> Complexity.LOW
             "MEDIUM" -> Complexity.MEDIUM
@@ -188,12 +175,10 @@ class NaturalLanguageTaskParser(
             else -> Complexity.MEDIUM
         }
     }
-
-    private fun generateTaskId(): String {
+        private fun generateTaskId(): String {
         return "task_${UUID.randomUUID()}"
     }
-
-    private fun createFallbackTask(input: String, error: Exception): BurstTask {
+        private fun createFallbackTask(input: String, error: Exception): BurstTask {
         return BurstTask(
             taskId = generateTaskId(),
             goal = input,
@@ -208,8 +193,7 @@ class NaturalLanguageTaskParser(
             )
         )
     }
-
-    private fun getStepsFromMetadata(task: BurstTask): List<String> {
+        private fun getStepsFromMetadata(task: BurstTask): List<String> {
         val stepsStr = task.metadata["steps"] ?: return emptyList()
         return if (stepsStr.contains("|||")) {
             stepsStr.split("|||").filter { it.isNotBlank() }
@@ -217,8 +201,7 @@ class NaturalLanguageTaskParser(
             listOf(stepsStr)
         }
     }
-
-    private fun getRequiredToolsFromMetadata(task: BurstTask): List<String> {
+        private fun getRequiredToolsFromMetadata(task: BurstTask): List<String> {
         val toolsStr = task.metadata["required_tools"] ?: return emptyList()
         return if (toolsStr.isNotBlank()) {
             toolsStr.split(",").map { it.trim() }.filter { it.isNotBlank() }
@@ -226,8 +209,7 @@ class NaturalLanguageTaskParser(
             emptyList()
         }
     }
-
-    private fun calculateConfidence(task: BurstTask, issues: List<String>): Float {
+        private fun calculateConfidence(task: BurstTask, issues: List<String>): Float {
         var confidence = 1.0f
         confidence -= issues.size * 0.1f
 

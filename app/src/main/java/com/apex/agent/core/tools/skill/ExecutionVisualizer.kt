@@ -221,27 +221,20 @@ class ExecutionVisualizer private constructor(private val context: Context) {
 
     // ========== 状�?==========
     private val _currentExecution = MutableStateFlow<ExecutionRecord?>(null)
-    val currentExecution: StateFlow<ExecutionRecord?> = _currentExecution.asStateFlow()
-
-    private val _visualizationData = MutableStateFlow<VisualizationData?>(null)
-    val visualizationData: StateFlow<VisualizationData?> = _visualizationData.asStateFlow()
-
-    private val _executionHistory = MutableStateFlow<List<ExecutionRecord>>(emptyList())
-    val executionHistory: StateFlow<List<ExecutionRecord>> = _executionHistory.asStateFlow()
-
-    private val _performanceAnalysis = MutableStateFlow<PerformanceAnalysis?>(null)
-    val performanceAnalysis: StateFlow<PerformanceAnalysis?> = _performanceAnalysis.asStateFlow()
-
-    private val _isLiveMode = MutableStateFlow(false)
-    val isLiveMode: StateFlow<Boolean> = _isLiveMode.asStateFlow()
-
-    private val _liveUpdates = MutableSharedFlow<NodeExecution>(replay = 1)
-    val liveUpdates: SharedFlow<NodeExecution> = _liveUpdates.asSharedFlow()
-
-    private var refreshJob: Job? = null
+        val currentExecution: StateFlow<ExecutionRecord?> = _currentExecution.asStateFlow()
+        private val _visualizationData = MutableStateFlow<VisualizationData?>(null)
+        val visualizationData: StateFlow<VisualizationData?> = _visualizationData.asStateFlow()
+        private val _executionHistory = MutableStateFlow<List<ExecutionRecord>>(emptyList())
+        val executionHistory: StateFlow<List<ExecutionRecord>> = _executionHistory.asStateFlow()
+        private val _performanceAnalysis = MutableStateFlow<PerformanceAnalysis?>(null)
+        val performanceAnalysis: StateFlow<PerformanceAnalysis?> = _performanceAnalysis.asStateFlow()
+        private val _isLiveMode = MutableStateFlow(false)
+        val isLiveMode: StateFlow<Boolean> = _isLiveMode.asStateFlow()
+        private val _liveUpdates = MutableSharedFlow<NodeExecution>(replay = 1)
+        val liveUpdates: SharedFlow<NodeExecution> = _liveUpdates.asSharedFlow()
+        private var refreshJob: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    private val workflowEngine by lazy { WorkflowEngine.getInstance() }
+        private val workflowEngine by lazy { WorkflowEngine.getInstance() }
 
     init {
         initializeHistory()
@@ -284,13 +277,11 @@ class ExecutionVisualizer private constructor(private val context: Context) {
 
         val updatedExecutions = current.nodeExecutions.toMutableList()
         val existingIndex = updatedExecutions.indexOfFirst { it.nodeId == execution.nodeId }
-
         if (existingIndex >= 0) {
             updatedExecutions[existingIndex] = execution
         } else {
             updatedExecutions.add(execution)
         }
-
         val updatedRecord = current.copy(
             nodeExecutions = updatedExecutions,
             endTime = if (execution.status == NodeStatus.SUCCESS || execution.status == NodeStatus.FAILED) {
@@ -371,7 +362,6 @@ class ExecutionVisualizer private constructor(private val context: Context) {
 
         _isLiveMode.value = false
         refreshJob?.cancel()
-
         val durationMs = System.currentTimeMillis() - current.startTime
 
         val finalRecord = current.copy(
@@ -428,12 +418,11 @@ class ExecutionVisualizer private constructor(private val context: Context) {
 
             // 计算当前时间点之前所有节点的状�?
     val currentTime = System.currentTimeMillis()
-            val nodeStates = sortedNodes.map { exec ->
+        val nodeStates = sortedNodes.map { exec ->
                 val isComplete = exec.endTime != null && exec.endTime <= node.endTime
                 val isRunning = exec.startTime <= currentTime &&
                     (exec.endTime == null || exec.endTime > currentTime)
-
-                val state = when {
+        val state = when {
                     exec == node -> NodeStatus.RUNNING
                     isComplete && exec.status == NodeStatus.SUCCESS -> NodeStatus.SUCCESS
                     isComplete && exec.status == NodeStatus.FAILED -> NodeStatus.FAILED
@@ -454,8 +443,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
                     label = if (isComplete) "${exec.durationMs}ms" else ""
                 )
             }.associateBy { it.nodeId }
-
-            val visualization = VisualizationData(
+        val visualization = VisualizationData(
                 record = record,
                 currentNodeId = node.nodeId,
                 elapsedMs = node.endTime ?: node.startTime,
@@ -529,8 +517,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun updateVisualizationData() {
+        private fun updateVisualizationData() {
         val record = _currentExecution.value ?: return
 
         val now = System.currentTimeMillis()
@@ -545,8 +532,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
                 isComplete -> exec.status
                 else -> NodeStatus.PENDING
             }
-
-            val progress = when {
+        val progress = when {
                 isComplete -> 1f
                 isRunning -> {
                     val nodeElapsed = now - exec.startTime
@@ -569,9 +555,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
                 label = if (isComplete) "${exec.durationMs}ms" else if (isRunning) "..." else ""
             )
         }
-
         val connections = buildConnectionVisuals(record, nodeStates)
-
         val completedCount = nodeStates.values.count { it.status in listOf(NodeStatus.SUCCESS, NodeStatus.FAILED, NodeStatus.SKIPPED) }
         val progress = if (nodeStates.isNotEmpty()) {
             completedCount.toFloat() / nodeStates.size
@@ -589,15 +573,13 @@ class ExecutionVisualizer private constructor(private val context: Context) {
 
         _visualizationData.value = visualization
     }
-
-    private fun buildConnectionVisuals(
+        private fun buildConnectionVisuals(
         record: ExecutionRecord,
         nodeStates: Map<String, NodeVisualState>
     ): List<ConnectionVisual> {
         // 从工作流定义获取连接
     val workflow = workflowEngine.getWorkflow(record.workflowId ?: return emptyList())
             ?: return emptyList()
-
         return workflow.connections.map { conn ->
             val fromState = nodeStates[conn.sourceNodeId]
             val toState = nodeStates[conn.targetNodeId]
@@ -626,21 +608,18 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             )
         }
     }
-
-    private fun calculateStatistics(
+        private fun calculateStatistics(
         record: ExecutionRecord,
         nodeStates: Map<String, NodeVisualState>
     ): ExecutionStatistics {
         val completedNodes = record.nodeExecutions.filter { it.isComplete }
         val failedNodes = record.nodeExecutions.filter { it.status == NodeStatus.FAILED }
-
         val avgTime = if (completedNodes.isNotEmpty()) {
             completedNodes.map { it.durationMs }.average().toLong()
         } else 0L
 
         val slowest = completedNodes.maxByOrNull { it.durationMs }
         val fastest = completedNodes.minByOrNull { it.durationMs }
-
         val throughput = if (record.totalDurationMs > 0) {
             record.nodeExecutions.size.toFloat() / (record.totalDurationMs / 1000f)
         } else 0f
@@ -663,8 +642,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             throughput = throughput
         )
     }
-
-    private fun observeWorkflowExecution() {
+        private fun observeWorkflowExecution() {
         scope.launch {
             workflowEngine.executionEvents.collect { event ->
                 when (event) {
@@ -685,13 +663,11 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun generatePerformanceAnalysis(record: ExecutionRecord) {
+        private fun generatePerformanceAnalysis(record: ExecutionRecord) {
         if (record.nodeExecutions.isEmpty()) {
             _performanceAnalysis.value = null
             return
         }
-
         val totalDuration = record.totalDurationMs
 
         // 识别瓶颈
@@ -757,8 +733,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             timeDistribution = timeDistribution
         )
     }
-
-    private fun saveToHistory(record: ExecutionRecord) {
+        private fun saveToHistory(record: ExecutionRecord) {
         val history = _executionHistory.value.toMutableList()
         history.add(0, record)
 
@@ -774,25 +749,22 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             persistRecord(record)
         }
     }
-
-    private suspend fun persistRecord(record: ExecutionRecord) = withContext(Dispatchers.IO) {
+        private suspend fun persistRecord(record: ExecutionRecord) = withContext(Dispatchers.IO) {
         try {
             val dir = File(context.filesDir, HISTORY_DIR)
-            if (!dir.exists()) dir.mkdirs()
-
-            val file = File(dir, "${record.id}.json")
+        if (!dir.exists()) dir.mkdirs()
+        val file = File(dir, "${record.id}.json")
             file.writeText(record.toString())
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to persist record", e)
         }
     }
-
-    private fun initializeHistory() {
+        private fun initializeHistory() {
         try {
             val dir = File(context.filesDir, HISTORY_DIR)
-            if (dir.exists()) {
+        if (dir.exists()) {
                 val files = dir.listFiles()?.filter { it.extension == "json" } ?: emptyList()
-                val records = files.mapNotNull { file ->
+        val records = files.mapNotNull { file ->
                     try {
                         // 简化：实际应该解析 JSON
                         null
@@ -807,8 +779,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             AppLogger.e(TAG, "Failed to initialize history", e)
         }
     }
-
-    private fun exportAsJson(record: ExecutionRecord): ByteArray {
+        private fun exportAsJson(record: ExecutionRecord): ByteArray {
         return """
             {
                 "id": "${record.id}",
@@ -832,8 +803,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             }
         """.trimIndent().toByteArray()
     }
-
-    private fun exportAsCsv(record: ExecutionRecord): ByteArray {
+        private fun exportAsCsv(record: ExecutionRecord): ByteArray {
         val sb = StringBuilder()
         sb.appendLine("Node ID,Node Name,Status,Duration (ms),Start Time,End Time")
         record.nodeExecutions.forEach { node ->
@@ -841,8 +811,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
         }
         return sb.toString().toByteArray()
     }
-
-    private fun exportAsHtml(record: ExecutionRecord): ByteArray {
+        private fun exportAsHtml(record: ExecutionRecord): ByteArray {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         return """
             <!DOCTYPE html>
@@ -907,8 +876,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             </html>
         """.trimIndent().toByteArray()
     }
-
-    private fun generateId(): String = "exec_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
+        private fun generateId(): String = "exec_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
 
     // ========== 工具方法 ==========
     fun formatDuration(ms: Long): String {
@@ -918,8 +886,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             else -> "${ms / 60000}m ${(ms % 60000) / 1000}s"
         }
     }
-
-    fun getProgressPercentage(progress: Float): String {
+        fun getProgressPercentage(progress: Float): String {
         return "${(progress * 100).toInt()}%"
     }
 }

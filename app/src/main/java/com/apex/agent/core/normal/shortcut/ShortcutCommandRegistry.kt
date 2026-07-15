@@ -52,7 +52,7 @@ sealed class CommandTemplate {
         fun resolve(params: Map<String, String>): String {
             var result = template
             params.forEach { (k, v) -> result = result.replace("{$k}", v) }
-            return result
+        return result
         }
     }
 
@@ -123,7 +123,7 @@ data class ConversationTemplate(
 class ShortcutCommandRegistry {
 
     private val commands = ConcurrentHashMap<String, ShortcutCommand>()
-    private val templates = ConcurrentHashMap<String, ConversationTemplate>()
+        private val templates = ConcurrentHashMap<String, ConversationTemplate>()
 
     init {
         registerBuiltinCommands()
@@ -150,10 +150,8 @@ class ShortcutCommandRegistry {
         val parts = trimmed.removePrefix("/").split(Regex("\\s+"), limit = 2)
         val cmdName = parts[0].lowercase()
         val argsStr = if (parts.size > 1) parts[1] else ""
-
         val command = commands[cmdName] ?: return null
         val arguments = parseArguments(argsStr, command.parameters)
-
         return ParsedCommand(command, arguments, input)
     }
 
@@ -189,8 +187,7 @@ class ShortcutCommandRegistry {
             CommandExecutionResult.Error(e.message ?: "执行失败")
         }
     }
-
-    private fun executeStep(template: CommandTemplate, args: Map<String, String>): CommandExecutionResult {
+        private fun executeStep(template: CommandTemplate, args: Map<String, String>): CommandExecutionResult {
         return when (template) {
             is CommandTemplate.Text -> CommandExecutionResult.SendMessage(template.resolve(args))
             is CommandTemplate.Prompt -> CommandExecutionResult.SendMessage(template.userPrompt, template.systemPrompt)
@@ -230,8 +227,7 @@ class ShortcutCommandRegistry {
     fun registerTemplate(template: ConversationTemplate) {
         templates[template.id] = template
     }
-
-    fun getTemplate(id: String): ConversationTemplate? = templates[id]
+        fun getTemplate(id: String): ConversationTemplate? = templates[id]
     fun listTemplates(category: String? = null): List<ConversationTemplate> {
         return templates.values
             .filter { category == null || it.category == category }
@@ -250,7 +246,7 @@ class ShortcutCommandRegistry {
             sb.appendLine("【${category.name}】")
             cmds.sortedBy { it.name }.forEach { cmd ->
                 sb.appendLine("  /${cmd.name} - ${cmd.description}")
-                if (cmd.aliases.isNotEmpty()) {
+        if (cmd.aliases.isNotEmpty()) {
                     sb.appendLine("    别名: ${cmd.aliases.joinToString { "/$it" }}")
                 }
             }
@@ -264,7 +260,6 @@ class ShortcutCommandRegistry {
     private fun parseArguments(argsStr: String, params: List<CommandParameter>): Map<String, String> {
         if (argsStr.isBlank()) return emptyMap()
         if (params.isEmpty()) return mapOf("input" to argsStr)
-
         val result = mutableMapOf<String, String>()
         val tokens = tokenizeArgs(argsStr)
 
@@ -276,8 +271,8 @@ class ShortcutCommandRegistry {
             if (tokens[i].startsWith("--")) {
                 // 命名参数 --name value
     val name = tokens[i].removePrefix("--")
-                val paramDef = params.find { it.name == name }
-                if (paramDef != null && i + 1 < tokens.size) {
+        val paramDef = params.find { it.name == name }
+        if (paramDef != null && i + 1 < tokens.size) {
                     result[name] = tokens[i + 1]
                     i += 2
                 } else {
@@ -297,11 +292,9 @@ class ShortcutCommandRegistry {
                 result[param.name] = param.defaultValue
             }
         }
-
         return result
     }
-
-    private fun tokenizeArgs(argsStr: String): List<String> {
+        private fun tokenizeArgs(argsStr: String): List<String> {
         val tokens = mutableListOf<String>()
         val sb = StringBuilder()
         var inQuote = false
@@ -488,8 +481,7 @@ class ShortcutCommandRegistry {
             )
         ))
     }
-
-    private fun registerBuiltinTemplates() {
+        private fun registerBuiltinTemplates() {
         registerTemplate(ConversationTemplate(
             id = "tpl_code_review",
             name = "代码审查",

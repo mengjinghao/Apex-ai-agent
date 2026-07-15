@@ -84,7 +84,7 @@ data class UserProfile(
 data class LanguageStyle(
     val formality: Formality = Formality.NEUTRAL,
     val preferredLanguage: String = "",  // "中文" / "English" / "中英混合"
-    val tone: Tone = Tone.FRIENDLY,
+        val tone: Tone = Tone.FRIENDLY,
     val verbosity: Verbosity = Verbosity.MODERATE
 )
 
@@ -152,8 +152,8 @@ class UserProfileManager {
     fun learnFromMessage(userId: String, userMessage: String, assistantResponse: String) {
         update(userId) { profile ->
             val newLanguages = detectLanguages(userMessage, profile.techStack.languages)
-            val newFrameworks = detectFrameworks(userMessage, profile.techStack.frameworks)
-            val newTraits = learnTraits(userMessage, profile.learnedTraits)
+        val newFrameworks = detectFrameworks(userMessage, profile.techStack.frameworks)
+        val newTraits = learnTraits(userMessage, profile.learnedTraits)
 
             profile.copy(
                 techStack = profile.techStack.copy(
@@ -229,8 +229,7 @@ class UserProfileManager {
             .map { it.key }
             .filter { it !in known }
     }
-
-    private fun detectFrameworks(message: String, known: List<String>): List<String> {
+        private fun detectFrameworks(message: String, known: List<String>): List<String> {
         val patterns = mapOf(
             "Android" to Regex("\\b(android|jetpack|compose|room|hilt)\\b", RegexOption.IGNORE_CASE),
             "React" to Regex("\\b(react|jsx|hooks|redux)\\b", RegexOption.IGNORE_CASE),
@@ -243,8 +242,7 @@ class UserProfileManager {
             .map { it.key }
             .filter { it !in known }
     }
-
-    private fun learnTraits(message: String, known: Map<String, String>): Map<String, String> {
+        private fun learnTraits(message: String, known: Map<String, String>): Map<String, String> {
         val traits = known.toMutableMap()
         // 检测时间偏好
     if (message.contains("早上|上午|morning", true) && !"morning_person" in traits) {
@@ -256,13 +254,12 @@ class UserProfileManager {
         }
         return traits
     }
-
-    private fun inferLanguageStyle(message: String, current: LanguageStyle): LanguageStyle {
+        private fun inferLanguageStyle(message: String, current: LanguageStyle): LanguageStyle {
         var style = current
         // 推断正式度
     if (current.formality == Formality.NEUTRAL) {
             val casualMarkers = listOf("哈", "呀", "呢", "嘛", "lol", "btw", "haha")
-            val formalMarkers = listOf("请问", "烦请", "敬请", "恳请", "respectfully")
+        val formalMarkers = listOf("请问", "烦请", "敬请", "恳请", "respectfully")
             style = when {
                 casualMarkers.any { message.contains(it, ignoreCase = true) } ->
                     style.copy(formality = Formality.CASUAL)
@@ -274,7 +271,7 @@ class UserProfileManager {
         // 推断偏好语言
     if (current.preferredLanguage.isBlank()) {
             val hasChinese = message.any { it.code in 0x4e00..0x9fff }
-            val hasEnglish = message.any { it in 'a'..'z' || it in 'A'..'Z' }
+        val hasEnglish = message.any { it in 'a'..'z' || it in 'A'..'Z' }
             style = when {
                 hasChinese && hasEnglish -> style.copy(preferredLanguage = "中英混合")
                 hasChinese -> style.copy(preferredLanguage = "中文")

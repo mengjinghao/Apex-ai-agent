@@ -51,41 +51,34 @@ class MultiModelOrchestrator(private val context: Context) {
     companion object {
         private const val TAG = "MultiModelOrchestrator"
     }
-
-    private val configs = mutableMapOf<ModelProvider, ModelConfig>()
-    private val _currentProvider = MutableStateFlow<ModelProvider>(ModelProvider.OPENAI)
-    val currentProvider: StateFlow<ModelProvider> = _currentProvider
+        private val configs = mutableMapOf<ModelProvider, ModelConfig>()
+        private val _currentProvider = MutableStateFlow<ModelProvider>(ModelProvider.OPENAI)
+        val currentProvider: StateFlow<ModelProvider> = _currentProvider
 
     fun configureProvider(config: ModelConfig) {
         configs[config.provider] = config
     }
-
-    fun switchProvider(provider: ModelProvider): Boolean {
+        fun switchProvider(provider: ModelProvider): Boolean {
         return configs[provider]?.isEnabled == true && run {
             _currentProvider.value = provider
             true
         }
     }
-
-    fun selectOptimalProvider(request: ModelRequest): ModelProvider {
+        fun selectOptimalProvider(request: ModelRequest): ModelProvider {
         if (request.preferredProvider != null && configs[request.preferredProvider]?.isEnabled == true) {
             return request.preferredProvider
         }
-
         val taskComplexity = estimateComplexity(request.query)
-
         return when {
             taskComplexity > 0.7f -> findBestModel { it.maxTokens > 4096 }
             request.context.size > 3 -> findBestModel { !it.supportsVision }
             else -> findBestModel { true }
         }
     }
-
-    private fun estimateComplexity(query: String): Float {
+        private fun estimateComplexity(query: String): Float {
         val wordCount = query.split(" ").size
         val hasCode = query.contains(Regex("def |function |class |{ }"))
         val hasMath = query.contains(Regex("[0-9]+[+\\-*/]"))
-
         var complexity = 0.5f
         if (wordCount > 100) complexity += 0.2f
         if (hasCode) complexity += 0.15f
@@ -93,8 +86,7 @@ class MultiModelOrchestrator(private val context: Context) {
 
         return complexity.coerceAtMost(1f)
     }
-
-    private fun findBestModel(predicate: (ModelConfig) -> Boolean): ModelProvider {
+        private fun findBestModel(predicate: (ModelConfig) -> Boolean): ModelProvider {
         return configs.values
             .filter { it.isEnabled }
             .filter { predicate(it) }
@@ -126,14 +118,11 @@ class MultiModelOrchestrator(private val context: Context) {
             )
         }
     }
-
-    private suspend fun callLLM(request: ModelRequest, config: ModelConfig): String {
+        private suspend fun callLLM(request: ModelRequest, config: ModelConfig): String {
         return "模拟响应: ${request.query}"
     }
-
-    fun getAvailableProviders(): List<ModelProvider> {
+        fun getAvailableProviders(): List<ModelProvider> {
         return configs.values.filter { it.isEnabled }.map { it.provider }
     }
-
-    fun getConfig(provider: ModelProvider): ModelConfig? = configs[provider]
+        fun getConfig(provider: ModelProvider): ModelConfig? = configs[provider]
 }

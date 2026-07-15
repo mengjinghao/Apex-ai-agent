@@ -26,22 +26,18 @@ class AgentRoleCardManager(private val context: Context) {
         private const val TAG = "AgentRoleCardManager"
         private val KEY_ROLE_CARDS = stringPreferencesKey("role_cards")
     }
-
-    private val gson = Gson()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _roleCards = mutableMapOf<String, AgentRoleCard>()
-
-    val roleCards: List<AgentRoleCard>
+        private val gson = Gson()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val _roleCards = mutableMapOf<String, AgentRoleCard>()
+        val roleCards: List<AgentRoleCard>
         get() = _roleCards.values.toList()
-
-    val enabledCards: List<AgentRoleCard>
+        val enabledCards: List<AgentRoleCard>
         get() = _roleCards.values.filter { it.isEnabled }
 
     init {
         scope.launch { loadFromDataStore() }
     }
-
-    private suspend fun loadFromDataStore() {
+        private suspend fun loadFromDataStore() {
         try {
             val prefs = context.roleCardDataStore.data.first()
             prefs[KEY_ROLE_CARDS]?.let { json ->
@@ -50,33 +46,28 @@ class AgentRoleCardManager(private val context: Context) {
                 _roleCards.clear()
                 loadedCards.forEach { card -> _roleCards[card.id] = card }
             }
-            if (_roleCards.isEmpty()) createDefaultRoleCards()
+        if (_roleCards.isEmpty()) createDefaultRoleCards()
         } catch (e: Exception) {
             createDefaultRoleCards()
         }
     }
-
-    private suspend fun saveToDataStore() {
+        private suspend fun saveToDataStore() {
         context.roleCardDataStore.edit { prefs ->
             prefs[KEY_ROLE_CARDS] = gson.toJson(_roleCards.values.toList())
         }
     }
-
-    private suspend fun createDefaultRoleCards() {
+        private suspend fun createDefaultRoleCards() {
         val defaultCards = AgentRole.values().map { role -> AgentRoleCard.createDefault(role) }
         _roleCards.clear()
         defaultCards.forEach { card -> _roleCards[card.id] = card }
         saveToDataStore()
     }
-
-    fun getCardById(id: String): AgentRoleCard? = _roleCards[id]
+        fun getCardById(id: String): AgentRoleCard? = _roleCards[id]
     fun getCardByRole(role: AgentRole): AgentRoleCard? = _roleCards.values.find { it.role == role }
-
-    fun getCardsByTags(tags: Set<String>): List<AgentRoleCard> {
+        fun getCardsByTags(tags: Set<String>): List<AgentRoleCard> {
         return _roleCards.values.filter { card -> tags.all { tag -> tag in card.tags } }
     }
-
-    fun searchCards(query: String): List<AgentRoleCard> {
+        fun searchCards(query: String): List<AgentRoleCard> {
         val lowerQuery = query.lowercase()
         return _roleCards.values.filter { card ->
             card.name.lowercase().contains(lowerQuery) ||
@@ -130,16 +121,14 @@ class AgentRoleCardManager(private val context: Context) {
         saveToDataStore()
         return true
     }
-
-    fun getRecommendedCardsForTask(taskType: String): List<AgentRoleCard> {
+        fun getRecommendedCardsForTask(taskType: String): List<AgentRoleCard> {
         return enabledCards.filter { card ->
             card.skills.any { skill ->
                 taskType.lowercase().contains(skill.lowercase()) || skill.lowercase().contains(taskType.lowercase())
             }
         }.sortedByDescending { it.priority }
     }
-
-    fun exportCard(roleCardId: String): String? {
+        fun exportCard(roleCardId: String): String? {
         val card = getCardById(roleCardId) ?: return null
         return card.toJson()
     }
@@ -148,12 +137,10 @@ class AgentRoleCardManager(private val context: Context) {
         val card = AgentRoleCard.fromJson(json) ?: return false
         return if (card.id in _roleCards) updateCard(card) else addCard(card)
     }
-
-    fun destroy() {
+        fun destroy() {
         scope.cancel()
     }
-
-    fun duplicateCard(roleCardId: String, newName: String? = null): AgentRoleCard? {
+        fun duplicateCard(roleCardId: String, newName: String? = null): AgentRoleCard? {
         val card = getCardById(roleCardId) ?: return null
         return card.copy(
             id = java.util.UUID.randomUUID().toString(),

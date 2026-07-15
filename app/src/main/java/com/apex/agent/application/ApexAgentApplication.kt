@@ -208,7 +208,6 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         }
 
         ensureWorkManagerInitialized()
-
         if (isCrashReportRecoveryStartup) {
             AppLogger.w(TAG, "检测到崩溃报告启动，保留上一轮日志供崩溃页面导出")
         }
@@ -340,8 +339,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
 
             // 初始化热更新：加载镜像源并按需后台检查
             initializeHotUpdate()
-
-            val totalBg = System.currentTimeMillis() - bgStart
+        val totalBg = System.currentTimeMillis() - bgStart
             AppLogger.d(TAG, "【后台初始化】全部完成 - 总耗时: ${totalBg}ms")
 
             // [优化1] 健康检查：后台初始化完成
@@ -351,7 +349,6 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
             delay(5000)
             health.reportHealth()
         }
-
         val totalTime = System.currentTimeMillis() - startTime
         health.endCriticalPath()
         AppLogger.d(TAG, "【启动计时】关键路径(Critical Path)完成 - 主线程阻塞 ${totalTime}ms")
@@ -417,7 +414,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
     private fun reportPreviousCrashLog() {
         try {
             val crashFile = java.io.File(filesDir, "crash_log.txt")
-            if (crashFile.exists() && crashFile.length() > 0) {
+        if (crashFile.exists() && crashFile.length() > 0) {
                 AppLogger.w(TAG, "存在未处理的崩溃日志，大小: ${crashFile.length()} bytes")
                 crashFile.renameTo(java.io.File(filesDir, "crash_log_${System.currentTimeMillis()}.txt"))
             }
@@ -453,8 +450,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         ObjectBoxManager.get(this, "default")
         AppLogger.d(TAG, "ObjectBox 默认数据库已预热")
     }
-
-    private fun configureShowerEnvironment() {
+        private fun configureShowerEnvironment() {
         ShowerEnvironment.shellRunner = ApexShowerShellRunner
         ShowerEnvironment.logSink = ShowerLogSink { priority, tag, message, throwable ->
             when (priority) {
@@ -480,8 +476,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         }
         ShowerEnvironment.emitToSystemLog = false
     }
-
-    private fun initGlobalImageLoader() {
+        private fun initGlobalImageLoader() {
         val imageOkHttpClient = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
@@ -530,8 +525,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         get() = WorkConfiguration.Builder()
             .setMinimumLoggingLevel(if (BuildConfig.DEBUG) AppLogger.DEBUG else AppLogger.INFO)
             .build()
-
-    private fun ensureWorkManagerInitialized() {
+        private fun ensureWorkManagerInitialized() {
         try {
             WorkManager.getInstance(applicationContext)
         } catch (_: IllegalStateException) {
@@ -542,8 +536,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
             }
         }
     }
-
-    private fun launchCleanOnExitCleanup() {
+        private fun launchCleanOnExitCleanup() {
         applicationScope.launch {
             val cleanupStartTime = System.currentTimeMillis()
             try {
@@ -559,14 +552,13 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
             }
         }
     }
-
-    private fun cleanDirectory(tempDir: File, preserveRootNoMedia: Boolean): Int {
+        private fun cleanDirectory(tempDir: File, preserveRootNoMedia: Boolean): Int {
         if (!tempDir.exists() || !tempDir.isDirectory) {
             return 0
         }
         if (preserveRootNoMedia) {
             val noMediaFile = File(tempDir, ".nomedia")
-            if (!noMediaFile.exists()) {
+        if (!noMediaFile.exists()) {
                 noMediaFile.createNewFile()
             }
         }
@@ -581,8 +573,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         AppLogger.d(TAG, "已删除 ${totalDeleted}个临时文件 ${tempDir.absolutePath}")
         return totalDeleted
     }
-
-    private fun deleteRecursively(
+        private fun deleteRecursively(
         rootDir: File,
         file: File,
         preserveRootNoMedia: Boolean,
@@ -599,7 +590,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
                     isRoot = false
                 )
             }
-            if (!isRoot && file.exists()) {
+        if (!isRoot && file.exists()) {
                 file.delete()
             }
         } else if (file.isFile) {
@@ -607,25 +598,24 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
                 preserveRootNoMedia &&
                     file.parentFile?.absolutePath == rootDir.absolutePath &&
                     file.name == ".nomedia"
-            if (!isRootNoMedia && file.delete()) {
+        if (!isRootNoMedia && file.delete()) {
                 deletedCount++
             }
         }
         return deletedCount
     }
-
-    private fun startGlobalAIForegroundServiceIfNeeded() {
+        private fun startGlobalAIForegroundServiceIfNeeded() {
         try {
             applicationScope.launch(Dispatchers.IO) {
                 val alwaysListeningEnabled = WakeWordPreferences(applicationContext).alwaysListeningEnabledFlow.first()
-                val externalHttpEnabled = ExternalHttpApiPreferences.getInstance(applicationContext).enabledFlow.first()
-                if ((!alwaysListeningEnabled && !externalHttpEnabled) || AIForegroundService.isRunning.get()) {
+        val externalHttpEnabled = ExternalHttpApiPreferences.getInstance(applicationContext).enabledFlow.first()
+        if ((!alwaysListeningEnabled && !externalHttpEnabled) || AIForegroundService.isRunning.get()) {
                     return@launch
                 }
-                val intent = Intent(this@ApexAgentApplication, AIForegroundService::class.java).apply {
+        val intent = Intent(this@ApexAgentApplication, AIForegroundService::class.java).apply {
                     putExtra(AIForegroundService.EXTRA_STATE, AIForegroundService.STATE_IDLE)
                 }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(intent)
                 } else {
                     startService(intent)
@@ -653,7 +643,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         try {
             if (BurstKernel.getState() == com.apex.agent.domain.model.KernelState.RUNNING) {
                 AppLogger.d(TAG, "BurstKernel 已运行，跳过重复初始化")
-                return
+        return
             }
 
             // 通过 Hilt EntryPoint 取 adapter —— 不需要把整个 Application 改成 @AndroidEntryPoint
@@ -692,7 +682,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
     private fun initializeHotUpdate() {
         try {
             val manager = com.apex.agent.update.HotUpdateManager.getInstance(applicationContext)
-            val registry = com.apex.agent.update.MirrorSourceRegistry.getInstance(applicationContext)
+        val registry = com.apex.agent.update.MirrorSourceRegistry.getInstance(applicationContext)
 
             applicationScope.launch(Dispatchers.IO) {
                 // 1. 加载镜像源
@@ -700,26 +690,26 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
 
                 // 2. 自动检查（受偏好控制）
     val autoCheck = com.apex.agent.update.UpdateSettings.isAutoCheckEnabled(applicationContext)
-                if (!autoCheck) {
+        if (!autoCheck) {
                     AppLogger.d(TAG, "【热更新】用户关闭了自动检查，跳过")
                     return@launch
                 }
-                if (!com.apex.agent.update.UpdateSettings.shouldCheckNow(applicationContext)) {
+        if (!com.apex.agent.update.UpdateSettings.shouldCheckNow(applicationContext)) {
                     AppLogger.d(TAG, "【热更新】距上次检查时间过短，跳过自动检查")
                     return@launch
                 }
 
                 // 首次启动延迟 30 秒，避免与冷启动 IO 抢资源
     val isFirstLaunch = !com.apex.agent.update.UpdateSettings.isFirstLaunchDone(applicationContext)
-                if (isFirstLaunch) {
+        if (isFirstLaunch) {
                     AppLogger.d(TAG, "【热更新】首次启动，延迟 30 秒后检查")
                     kotlinx.coroutines.delay(30_000L)
                     com.apex.agent.update.UpdateSettings.markFirstLaunchDone(applicationContext)
                 }
 
                 AppLogger.d(TAG, "【热更新】开始后台检查...")
-                val result = manager.checkForUpdate(force = true, notifyOnAvailable = true)
-                when (result) {
+        val result = manager.checkForUpdate(force = true, notifyOnAvailable = true)
+        when (result) {
                     is com.apex.agent.update.CheckResult.UpToDate -> {
                         AppLogger.d(TAG, "【热更新】已是最新版本 ${result.latestVersion}")
                     }
@@ -755,7 +745,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
                 try {
                     // 使用更安全的方式检查preferencesManager
     val manager = runCatching { preferencesManager }.getOrNull()
-                    if (manager != null) {
+        if (manager != null) {
                         manager.appLanguage.first()
                     } else {
                         UserPreferencesManager.DEFAULT_LANGUAGE
@@ -772,8 +762,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
     val locale = LocaleUtils.getLocaleForLanguageCode(languageCode, this)
             // 设置默认语言
             Locale.setDefault(locale)
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 // Android 13+ 使用AppCompatDelegate API
     val localeList = LocaleListCompat.create(locale)
                 AppCompatDelegate.setApplicationLocales(localeList)
@@ -781,7 +770,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
             } else {
                 // 较旧版本Android - 此处使用的部分更新将在attachBaseContext中完成更完整更新
     val config = Configuration()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val localeList = LocaleList(locale)
                     LocaleList.setDefault(localeList)
                     config.setLocales(localeList)
@@ -802,8 +791,8 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         // 在基础上下文附加前应用语言设置
     try {
             val code = LocaleUtils.getCurrentLanguage(base)
-            val locale = LocaleUtils.getLocaleForLanguageCode(code, base)
-            val config = Configuration(base.resources.configuration)
+        val locale = LocaleUtils.getLocaleForLanguageCode(code, base)
+        val config = Configuration(base.resources.configuration)
 
             // 设置语言配置
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -856,7 +845,7 @@ class ApexAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         // 在应用终止时关闭LocalWebServer服务
     try {
             val webServer = LocalWebServer.getInstance(applicationContext, LocalWebServer.ServerType.WORKSPACE)
-            if (webServer.isRunning()) {
+        if (webServer.isRunning()) {
                 webServer.stop()
                 AppLogger.d(TAG, "应用终止，已关闭本地Web服务器")
             }

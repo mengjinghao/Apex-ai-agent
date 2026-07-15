@@ -23,7 +23,6 @@ class MultiModalIntegrationService(
         context: String = ""
     ): FusionResult = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "Processing mixed input - text: ${textInput != null}, speech: ${speechInput != null}, image: ${imageBase64 != null}")
-
         val modalities = mutableListOf<ModalData>()
 
         textInput?.takeIf { it.isNotBlank() }?.let {
@@ -52,11 +51,9 @@ class MultiModalIntegrationService(
                 confidence = 0.85f
             ))
         }
-
         if (modalities.isEmpty()) {
             throw IllegalArgumentException("至少需要提供一种输入模�?)
         }
-
         val input = MultiModalInput(
             modalities = modalities,
             context = context
@@ -64,8 +61,7 @@ class MultiModalIntegrationService(
 
         multiModalFusionEngine.processMultiModalInput(input)
     }
-
-    private suspend fun transcribeSpeech(audioData: ByteArray): String? {
+        private suspend fun transcribeSpeech(audioData: ByteArray): String? {
         return null
     }
 
@@ -124,7 +120,6 @@ class MultiModalIntegrationService(
         structuredData?.takeIf { it.isNotBlank() }?.let {
             modalities.add(ModalData(ModalType.STRUCTURED_DATA, it))
         }
-
         val input = MultiModalInput(modalities = modalities)
         multiModalFusionEngine.processMultiModalInput(input)
     }
@@ -134,12 +129,10 @@ class MultiModalIntegrationService(
             if (!service.isInitialized) {
                 service.initialize()
             }
-
-            val responseText = fusionResult.insights
+        val responseText = fusionResult.insights
                 .filter { it.type == InsightType.FACTS || it.type == InsightType.SUMMARY }
                 .joinToString("\n") { it.content }
-
-            return service.speak(responseText)
+        return service.speak(responseText)
         }
         return false
     }
@@ -153,12 +146,10 @@ class MultiModalIntegrationService(
         generateSpokenResponse(result)
         return result
     }
-
-    fun isVoiceAvailable(): Boolean {
+        fun isVoiceAvailable(): Boolean {
         return voiceService?.isInitialized ?: false
     }
-
-    fun getSupportedModalities(): List<ModalType> {
+        fun getSupportedModalities(): List<ModalType> {
         return listOf(
             ModalType.TEXT,
             ModalType.SPEECH,

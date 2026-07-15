@@ -42,17 +42,14 @@ class SkillBatchInstaller private constructor(private val context: Context) {
     enum class InstallPhase {
         QUEUED, DOWNLOADING, VALIDATING, INSTALLING, COMPLETED, FAILED
     }
-
-    private val marketplace = SkillPluginMarketplace.getInstance(context)
-    private val pluginManager = SkillPluginManager.getInstance(context)
-    private val loader = SkillPluginLoader.getInstance(context)
-
-    var onProgress: ((InstallProgress) -> Unit)? = null
+        private val marketplace = SkillPluginMarketplace.getInstance(context)
+        private val pluginManager = SkillPluginManager.getInstance(context)
+        private val loader = SkillPluginLoader.getInstance(context)
+        var onProgress: ((InstallProgress) -> Unit)? = null
 
     suspend fun installPlugins(pluginIds: List<String>): InstallResult = withContext(Dispatchers.IO) {
         val successes = mutableListOf<String>()
         val failures = mutableListOf<FailedInstall>()
-
         for ((index, pluginId) in pluginIds.withIndex()) {
             onProgress?.invoke(
                 InstallProgress(
@@ -66,7 +63,7 @@ class SkillBatchInstaller private constructor(private val context: Context) {
 
             try {
                 AppLogger.d(TAG, "下载插件: ${pluginId}")
-                val downloadedFile = marketplace.downloadPlugin(pluginId)
+        val downloadedFile = marketplace.downloadPlugin(pluginId)
 
                 onProgress?.invoke(
                     InstallProgress(
@@ -77,9 +74,8 @@ class SkillBatchInstaller private constructor(private val context: Context) {
                         message = "正在验证插件: ${pluginId}"
                     )
                 )
-
-                val validation = loader.validatePlugin(downloadedFile)
-                if (!validation.isValid) {
+        val validation = loader.validatePlugin(downloadedFile)
+        if (!validation.isValid) {
                     val errors = validation.errors.joinToString("; ")
                     failures.add(FailedInstall(pluginId, "验证失败: ${errors}"))
                     onProgress?.invoke(
@@ -103,8 +99,7 @@ class SkillBatchInstaller private constructor(private val context: Context) {
                         message = "正在安装插件: ${pluginId}"
                     )
                 )
-
-                val plugin = loader.loadPlugin(downloadedFile)
+        val plugin = loader.loadPlugin(downloadedFile)
                 plugin.onLoad(context)
                 pluginManager.registerPlugin(plugin)
                 pluginManager.enablePlugin(pluginId)
@@ -135,7 +130,6 @@ class SkillBatchInstaller private constructor(private val context: Context) {
                 )
             }
         }
-
         val result = InstallResult(
             successCount = successes.size,
             failureCount = failures.size,
@@ -153,7 +147,7 @@ class SkillBatchInstaller private constructor(private val context: Context) {
     suspend fun installPlugin(pluginId: String): Result<String> = withContext(Dispatchers.IO) {
         try {
             val result = installPlugins(listOf(pluginId))
-            if (result.successCount > 0) {
+        if (result.successCount > 0) {
                 Result.success(pluginId)
             } else {
                 val error = result.failures.firstOrNull()

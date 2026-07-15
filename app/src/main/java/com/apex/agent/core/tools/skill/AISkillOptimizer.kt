@@ -195,26 +195,19 @@ class AISkillOptimizer private constructor(private val context: Context) {
 
     // ========== 数据结构 ==========
     private val _profiles = MutableStateFlow<Map<String, SkillProfile>>(emptyMap())
-    val profiles: StateFlow<Map<String, SkillProfile>> = _profiles.asStateFlow()
-
-    private val _recommendations = MutableStateFlow<List<OptimizationRecommendation>>(emptyList())
-    val recommendations: StateFlow<List<OptimizationRecommendation>> = _recommendations.asStateFlow()
-
-    private val _usagePatterns = MutableStateFlow<Map<String, UsagePattern>>(emptyMap())
-    val usagePatterns: StateFlow<Map<String, UsagePattern>> = _usagePatterns.asStateFlow()
-
-    private val _isOptimizing = MutableStateFlow(false)
-    val isOptimizing: StateFlow<Boolean> = _isOptimizing.asStateFlow()
-
-    private val _lastOptimization = MutableStateFlow<OptimizationResult?>(null)
-    val lastOptimization: StateFlow<OptimizationResult?> = _lastOptimization.asStateFlow()
-
-    private val executionHistory = mutableListOf<ExecutionMetrics>()
-    private val skillCache = mutableMapOf<String, SkillCache>()
-
-    private val skillManager by lazy { SkillManager.getInstance(context) }
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val profiles: StateFlow<Map<String, SkillProfile>> = _profiles.asStateFlow()
+        private val _recommendations = MutableStateFlow<List<OptimizationRecommendation>>(emptyList())
+        val recommendations: StateFlow<List<OptimizationRecommendation>> = _recommendations.asStateFlow()
+        private val _usagePatterns = MutableStateFlow<Map<String, UsagePattern>>(emptyMap())
+        val usagePatterns: StateFlow<Map<String, UsagePattern>> = _usagePatterns.asStateFlow()
+        private val _isOptimizing = MutableStateFlow(false)
+        val isOptimizing: StateFlow<Boolean> = _isOptimizing.asStateFlow()
+        private val _lastOptimization = MutableStateFlow<OptimizationResult?>(null)
+        val lastOptimization: StateFlow<OptimizationResult?> = _lastOptimization.asStateFlow()
+        private val executionHistory = mutableListOf<ExecutionMetrics>()
+        private val skillCache = mutableMapOf<String, SkillCache>()
+        private val skillManager by lazy { SkillManager.getInstance(context) }
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // ========== 公开 API ==========
 
@@ -263,7 +256,6 @@ class AISkillOptimizer private constructor(private val context: Context) {
         if (skillId != null) {
             loadProfileIfNeeded(skillId)
         }
-
         val recommendations = mutableListOf<OptimizationRecommendation>()
 
         // 保持历史大小限制
@@ -305,9 +297,8 @@ class AISkillOptimizer private constructor(private val context: Context) {
                 metrics = MetricsComparison(0, 0, 0f, 0f, 0f, 0f, 0f),
                 nextOptimizationTime = System.currentTimeMillis() + OPTIMIZATION_INTERVAL_MS
             )
-
-            val appliedOptimizations = mutableListOf<AppliedOptimization>()
-            val metricsComparison = MetricsComparison(
+        val appliedOptimizations = mutableListOf<AppliedOptimization>()
+        val metricsComparison = MetricsComparison(
                 executionTimeBefore = profile.averageExecutionTimeMs,
                 executionTimeAfter = profile.averageExecutionTimeMs,
                 improvementPercent = 0f,
@@ -320,12 +311,11 @@ class AISkillOptimizer private constructor(private val context: Context) {
             // 应用优化建议
     for (recommendation in profile.recommendations) {
                 val applied = applyOptimization(skillId, recommendation)
-                if (applied != null) {
+        if (applied != null) {
                     appliedOptimizations.add(applied)
                 }
             }
-
-            val result = OptimizationResult(
+        val result = OptimizationResult(
                 skillId = skillId,
                 timestamp = System.currentTimeMillis(),
                 appliedOptimizations = appliedOptimizations,
@@ -356,18 +346,17 @@ class AISkillOptimizer private constructor(private val context: Context) {
         val likelyToBeUsed = hourFrequency > 5 || dayFrequency > 20
 
         val confidence = min(0.95f, max(0.3f, (hourFrequency + dayFrequency / 7f) / 50f))
-
         val predictedTime = profile?.averageExecutionTimeMs ?: 1000L
 
         val reasoning = buildString {
             append("Based on ")
-            if (hourFrequency > 5) {
+        if (hourFrequency > 5) {
                 append("high usage at hour ${currentHour} (${hourFrequency} executions), ")
             }
-            if (dayFrequency > 20) {
+        if (dayFrequency > 20) {
                 append("frequent usage on day ${currentDayOfWeek} (${dayFrequency} executions), ")
             }
-            if (!likelyToBeUsed) {
+        if (!likelyToBeUsed) {
                 append("low predicted usage, ")
             }
             append("predicted execution time is ${predictedTime}ms")
@@ -398,7 +387,6 @@ class AISkillOptimizer private constructor(private val context: Context) {
      */
     suspend fun getHealthSummary(): HealthSummary = withContext(Dispatchers.IO) {
         val allProfiles = getAllProfiles()
-
         val healthCounts = allProfiles.values.groupBy { it.healthStatus }
         val avgPerformance = if (allProfiles.isNotEmpty()) {
             allProfiles.values.map { it.performanceScore }.average().toFloat()
@@ -440,8 +428,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
             put(skillId, profile)
         }
     }
-
-    private fun buildProfile(skillId: String): SkillProfile {
+        private fun buildProfile(skillId: String): SkillProfile {
         val skillMetrics = executionHistory.filter { it.skillId == skillId }
         val skill = skillManager.getAvailableSkills()[skillId]
 
@@ -465,13 +452,11 @@ class AISkillOptimizer private constructor(private val context: Context) {
                 recommendations = emptyList()
             )
         }
-
         val executionTimes = skillMetrics.map { it.executionTimeMs }.sorted()
         val avgTime = skillMetrics.map { it.executionTimeMs }.average().toLong()
         val medianTime = executionTimes[executionTimes.size / 2]
         val minTime = executionTimes.first()
         val maxTime = executionTimes.last()
-
         val successCount = skillMetrics.count { it.success }
         val successRate = successCount.toFloat() / skillMetrics.size
 
@@ -485,7 +470,6 @@ class AISkillOptimizer private constructor(private val context: Context) {
                 java.time.ZoneId.systemDefault()
             ).hour
         }.mapValues { it.value.size }
-
         val peakHours = hourCounts.entries
             .sortedByDescending { it.value }
             .take(3)
@@ -532,7 +516,6 @@ class AISkillOptimizer private constructor(private val context: Context) {
                 healthStatus = healthStatus
             )
         )
-
         return SkillProfile(
             skillId = skillId,
             skillName = skill?.name ?: skillId,
@@ -552,8 +535,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
             recommendations = recommendations
         )
     }
-
-    private fun calculatePerformanceScore(
+        private fun calculatePerformanceScore(
         successRate: Float,
         avgExecutionTime: Long,
         cacheHitRate: Float,
@@ -575,14 +557,12 @@ class AISkillOptimizer private constructor(private val context: Context) {
 
         // 使用频率评分
     val usageScore = min(100f, executionCount / 10f)
-
         return successScore * successWeight +
                 timeScore * timeWeight +
                 cacheScore * cacheWeight +
                 usageScore * usageWeight
     }
-
-    private fun determineHealthStatus(performanceScore: Float, successRate: Float): HealthStatus {
+        private fun determineHealthStatus(performanceScore: Float, successRate: Float): HealthStatus {
         return when {
             performanceScore >= 90 && successRate >= 0.99 -> HealthStatus.EXCELLENT
             performanceScore >= 75 && successRate >= 0.95 -> HealthStatus.GOOD
@@ -591,8 +571,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
             else -> HealthStatus.CRITICAL
         }
     }
-
-    private fun generateRecommendations(profile: SkillProfile): List<OptimizationRecommendation> {
+        private fun generateRecommendations(profile: SkillProfile): List<OptimizationRecommendation> {
         val recommendations = mutableListOf<OptimizationRecommendation>()
 
         // 缓存优化建议
@@ -650,8 +629,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
                 val diff = (hour - currentHour + 24) % 24
                 diff in 1..3
             }
-
-            if (isPeakApproaching) {
+        if (isPeakApproaching) {
                 recommendations.add(
                     OptimizationRecommendation(
                         id = "preload_${profile.skillId}_1",
@@ -667,11 +645,9 @@ class AISkillOptimizer private constructor(private val context: Context) {
                 )
             }
         }
-
         return recommendations
     }
-
-    private suspend fun applyOptimization(
+        private suspend fun applyOptimization(
         skillId: String,
         recommendation: OptimizationRecommendation
     ): AppliedOptimization? = withContext(Dispatchers.IO) {
@@ -682,7 +658,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
     val skillCache = skillCache.getOrPut(skillId) {
                     SkillCache.getInstance(context)
                 }
-                val currentConfig = skillCache.getConfig()
+        val currentConfig = skillCache.getConfig()
                 skillCache.setConfig(
                     currentConfig.copy(
                         defaultExpiryMs = currentConfig.defaultExpiryMs * 2
@@ -712,8 +688,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
             else -> null
         }
     }
-
-    private fun analyzeUsagePattern(skillId: String): UsagePattern {
+        private fun analyzeUsagePattern(skillId: String): UsagePattern {
         val skillMetrics = executionHistory.filter { it.skillId == skillId }
 
         // 时间模式
@@ -754,7 +729,6 @@ class AISkillOptimizer private constructor(private val context: Context) {
 
         // 季节趋势
     val seasonalTrend = calculateSeasonalTrend(skillId)
-
         val pattern = UsagePattern(
             skillId = skillId,
             timeSlots = hourCounts,
@@ -767,20 +741,15 @@ class AISkillOptimizer private constructor(private val context: Context) {
         _usagePatterns.value = _usagePatterns.value.toMutableMap().apply {
             put(skillId, pattern)
         }
-
         return pattern
     }
-
-    private fun analyzeSequentialPatterns(skillId: String): List<SequentialPattern> {
+        private fun analyzeSequentialPatterns(skillId: String): List<SequentialPattern> {
         val skillMetrics = executionHistory.filter { it.skillId == skillId }
             .sortedBy { it.timestamp }
-
         val sequences = mutableListOf<List<String>>()
-
         for (i in 0 until skillMetrics.size - 1) {
             sequences.add(listOf(skillMetrics[i].skillId, skillMetrics[i + 1].skillId))
         }
-
         return sequences
             .groupBy { it.joinToString("->") }
             .map { (seq, occurrences) ->
@@ -793,8 +762,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
             .sortedByDescending { it.frequency }
             .take(5)
     }
-
-    private fun calculateSeasonalTrend(skillId: String): Float {
+        private fun calculateSeasonalTrend(skillId: String): Float {
         // 保持历史大小限制
     val now = System.currentTimeMillis()
         val weekMs = 7 * 24 * 60 * 60 * 1000L
@@ -805,15 +773,13 @@ class AISkillOptimizer private constructor(private val context: Context) {
         val olderCount = executionHistory.count {
             it.skillId == skillId && it.timestamp in (now - 2 * weekMs)..(now - weekMs)
         }
-
         return if (olderCount > 0) {
             (recentCount - olderCount).toFloat() / olderCount
         } else {
             0f
         }
     }
-
-    private fun updateCachePrediction(skillId: String) {
+        private fun updateCachePrediction(skillId: String) {
         // 简化的缓存预测更新
     val pattern = _usagePatterns.value[skillId]
         if (pattern != null) {
@@ -821,8 +787,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
             AppLogger.d(TAG, "Cache prediction for ${skillId}: likely=${prediction.likelyToBeUsed}, confidence=${prediction.confidence}")
         }
     }
-
-    private fun checkOptimizationNeeded() {
+        private fun checkOptimizationNeeded() {
         val now = System.currentTimeMillis()
         val lastOpt = _lastOptimization.value
 
@@ -834,7 +799,6 @@ class AISkillOptimizer private constructor(private val context: Context) {
     val criticalSkills = _profiles.value.filter { (_, profile) ->
             profile.healthStatus in listOf(HealthStatus.POOR, HealthStatus.CRITICAL)
         }
-
         if (criticalSkills.isNotEmpty()) {
             // 触发优化
             criticalSkills.keys.firstOrNull()?.let { skillId ->
@@ -844,14 +808,12 @@ class AISkillOptimizer private constructor(private val context: Context) {
             }
         }
     }
-
-    private suspend fun saveExecutionMetrics(metrics: ExecutionMetrics) = withContext(Dispatchers.IO) {
+        private suspend fun saveExecutionMetrics(metrics: ExecutionMetrics) = withContext(Dispatchers.IO) {
         try {
             val dir = File(context.filesDir, ANALYTICS_DIR)
-            if (!dir.exists()) dir.mkdirs()
-
-            val file = File(dir, "${metrics.skillId}_metrics.json")
-            val existingMetrics = if (file.exists()) {
+        if (!dir.exists()) dir.mkdirs()
+        val file = File(dir, "${metrics.skillId}_metrics.json")
+        val existingMetrics = if (file.exists()) {
                 try {
                     Json.decodeFromString<List<ExecutionMetrics>>(file.readText()).toMutableList()
                 } catch (e: Exception) {
@@ -873,8 +835,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
             AppLogger.e(TAG, "Failed to save execution metrics", e)
         }
     }
-
-    private fun buildString(block: StringBuilder.() -> Unit): String {
+        private fun buildString(block: StringBuilder.() -> Unit): String {
         return StringBuilder().apply(block).toString()
     }
 
@@ -886,12 +847,10 @@ class AISkillOptimizer private constructor(private val context: Context) {
             else -> "${ms / 60000}m ${(ms % 60000) / 1000}s"
         }
     }
-
-    fun formatPerformanceScore(score: Float): String {
+        fun formatPerformanceScore(score: Float): String {
         return "%.1f".format(score)
     }
-
-    fun getPerformanceGrade(score: Float): String {
+        fun getPerformanceGrade(score: Float): String {
         return when {
             score >= 90 -> "A"
             score >= 80 -> "B"
@@ -900,8 +859,7 @@ class AISkillOptimizer private constructor(private val context: Context) {
             else -> "F"
         }
     }
-
-    fun getHealthStatusColor(status: HealthStatus): Int {
+        fun getHealthStatusColor(status: HealthStatus): Int {
         return when (status) {
             HealthStatus.EXCELLENT -> 0xFF4CAF50.toInt()
             HealthStatus.GOOD -> 0xFF8BC34A.toInt()

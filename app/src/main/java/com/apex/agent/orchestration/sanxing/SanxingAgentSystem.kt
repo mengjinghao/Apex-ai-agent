@@ -53,24 +53,18 @@ class SanxingAgentSystem @Inject constructor(
             yushitai
         )
     }
-
-    fun getRoles(): List<SanxingRole> = allRoles
+        fun getRoles(): List<SanxingRole> = allRoles
 
     fun getAgents(): List<Agent> = allRoles.map { it.getAgent() }
-
-    fun createStandardAgents(): List<SanxingAgent> = allRoles.map { createAgent(it) }
-
-    fun getThreeProvinceAgents(): List<SanxingAgent> = listOf(
+        fun createStandardAgents(): List<SanxingAgent> = allRoles.map { createAgent(it) }
+        fun getThreeProvinceAgents(): List<SanxingAgent> = listOf(
         createAgent(zhongshuSheng),
         createAgent(menxiaSheng),
         createAgent(shangshuSheng)
     )
-
-    fun findRole(roleId: String): SanxingRole? = allRoles.find { it.roleId == roleId }
-
-    fun findAgent(roleId: String): Agent? = findRole(roleId)?.getAgent()
-
-    fun createAgent(role: SanxingRole): SanxingAgent {
+        fun findRole(roleId: String): SanxingRole? = allRoles.find { it.roleId == roleId }
+        fun findAgent(roleId: String): Agent? = findRole(roleId)?.getAgent()
+        fun createAgent(role: SanxingRole): SanxingAgent {
         val agent = role.getAgent()
         return SanxingAgent(
             agent = agent,
@@ -84,8 +78,7 @@ class SanxingAgentSystem @Inject constructor(
             )
         )
     }
-
-    fun createAgentWithGlobalConfig(
+        fun createAgentWithGlobalConfig(
         role: SanxingRole,
         useGlobalConfig: Boolean = true,
         configId: String? = null
@@ -103,12 +96,10 @@ class SanxingAgentSystem @Inject constructor(
             )
         )
     }
-
-    fun getAvailableProviders(): List<com.apex.data.model.ApiProviderType> {
+        fun getAvailableProviders(): List<com.apex.data.model.ApiProviderType> {
         return com.apex.data.model.ApiProviderType.values().toList()
     }
-
-    fun getAvailableConfigs(): List<com.apex.core.config.ModelConfigService.ModelConfigTemplate> {
+        fun getAvailableConfigs(): List<com.apex.core.config.ModelConfigService.ModelConfigTemplate> {
         return com.apex.core.config.ModelConfigService.getInstance(context).getConfigTemplates()
     }
 
@@ -128,8 +119,7 @@ class SanxingAgentSystem @Inject constructor(
             else -> Result.Success("三星制系统已激�?)
         }
     }
-
-    fun createAgentForUser(
+        fun createAgentForUser(
         role: SanxingRole,
         userId: Long,
         rbacManager: RbacManager
@@ -153,14 +143,13 @@ class SanxingAgentSystem @Inject constructor(
         val result = mutableMapOf<String, List<String>>()
         for (role in allRoles) {
             val missing = SanxingRbacBridge.getMissingPermissions(rbacManager, userId, role)
-            if (missing.isNotEmpty()) {
+        if (missing.isNotEmpty()) {
                 result[role.roleId] = missing
             }
         }
         return result
     }
-
-    private fun getEndpointForRole(role: SanxingRole): String {
+        private fun getEndpointForRole(role: SanxingRole): String {
         return when (role.roleId) {
             "sanxing_menxia" -> "https://api.anthropic.com/v1/messages"
             "sanxing_xingbu" -> "https://api.anthropic.com/v1/messages"

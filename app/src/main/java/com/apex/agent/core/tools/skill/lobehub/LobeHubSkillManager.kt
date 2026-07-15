@@ -31,19 +31,17 @@ class LobeHubSkillManager private constructor(private val context: Context) {
             }
         }
     }
-
-    private val marketplaceClient = LobeHubMarketplaceClient.getInstance()
-    private val parser = LobeHubSkillParser()
-
-    private val lobeHubSkillsDir: File
+        private val marketplaceClient = LobeHubMarketplaceClient.getInstance()
+        private val parser = LobeHubSkillParser()
+        private val lobeHubSkillsDir: File
         get() {
             val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val apexDir = File(downloadsDir, "Apex")
-            val lobeHubDir = File(apexDir, "skills/${LOBEHUB_SKILLS_DIR}")
-            if (!lobeHubDir.exists()) {
+        val apexDir = File(downloadsDir, "Apex")
+        val lobeHubDir = File(apexDir, "skills/${LOBEHUB_SKILLS_DIR}")
+        if (!lobeHubDir.exists()) {
                 lobeHubDir.mkdirs()
             }
-            return lobeHubDir
+        return lobeHubDir
         }
 
     /**
@@ -98,7 +96,6 @@ class LobeHubSkillManager private constructor(private val context: Context) {
      */
     suspend fun installSkill(skillId: String): Result<File> = withContext(Dispatchers.IO) {
         AppLogger.i(TAG, "Installing LobeHub skill: ${skillId}")
-        
         val result = marketplaceClient.downloadSkill(skillId, lobeHubSkillsDir)
         
         result.onSuccess { dir ->
@@ -136,7 +133,7 @@ class LobeHubSkillManager private constructor(private val context: Context) {
         lobeHubSkillsDir.listFiles()?.forEach { dir ->
             if (dir.isDirectory) {
                 val skillFile = File(dir, "SKILL.md")
-                if (skillFile.exists()) {
+        if (skillFile.exists()) {
                     skills.add(dir)
                 }
             }
@@ -162,7 +159,7 @@ class LobeHubSkillManager private constructor(private val context: Context) {
     suspend fun deleteInstalledSkill(skillId: String): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
             val skillDir = File(lobeHubSkillsDir, skillId)
-            if (skillDir.exists()) {
+        if (skillDir.exists()) {
                 val deleted = skillDir.deleteRecursively()
                 Result.success(deleted)
             } else {

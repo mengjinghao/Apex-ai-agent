@@ -41,20 +41,18 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
         repeat(maxRetries) { attempt ->
             try {
                 val result = operation()
-                if (attempt > 0) {
+        if (attempt > 0) {
                     AppLogger.d(TAG, "重试成功，尝试次�?${attempt + 1}")
                 }
-                return result
+        return result
             } catch (e: Exception) {
                 lastException = e
                 AppLogger.w(TAG, "${{attempt + 1} 次尝试失�?${e.message}")
-                
-                if (attempt < maxRetries - 1) {
+        if (attempt < maxRetries - 1) {
                     delay(delayMs)
                 }
             }
         }
-        
         throw lastException ?: IllegalStateException("未知错误")
     }
     
@@ -79,7 +77,6 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
         } else {
             logger.logError(toolName, action, com.apex.agent.core.tools.result.UIToolsErrorCode.OPERATION_FAILED, duration, details)
         }
-        
         if (UIToolsConfig.ENABLE_DETAILED_LOGS) {
             AppLogger.d(TAG, "[${toolName}] ${action}: ${if (success) "成功" else "失败"}${details?.let { " - ${it}" } ?: ""}")
         }
@@ -96,14 +93,12 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
         val missingParams = requiredParams.filter { paramName ->
             tool.parameters.find { it.name == paramName }?.value.isNullOrBlank()
         }
-        
         if (missingParams.isNotEmpty()) {
             return UIToolsResult.error(
                 errorCode = com.apex.agent.core.tools.result.UIToolsErrorCode.INVALID_PARAMETERS,
                 details = "缺少必需参数: ${missingParams.joinToString(", ")}"
             )
         }
-        
         return null
     }
     
@@ -207,7 +202,6 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
         if (filePath == null) {
             return Pair(null, dimensions)
         }
-        
         val bitmap = android.graphics.BitmapFactory.decodeFile(filePath)
         val resolvedDimensions = dimensions ?: Pair(bitmap?.width ?: 0, bitmap?.height ?: 0)
         return Pair(bitmap, resolvedDimensions)

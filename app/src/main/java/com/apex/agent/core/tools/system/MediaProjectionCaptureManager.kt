@@ -25,12 +25,11 @@ class MediaProjectionCaptureManager(private val context: Context, private val me
     companion object {
         private const val TAG = "MediaProjectionCapture"
     }
-
-    private var virtualDisplay: VirtualDisplay? = null
+        private var virtualDisplay: VirtualDisplay? = null
     private var imageReader: ImageReader? = null
 
     private val callbackHandler = Handler(Looper.getMainLooper())
-    private var projectionCallback: MediaProjection.Callback? = null
+        private var projectionCallback: MediaProjection.Callback? = null
     
     /**
      * Set up the virtual display using the MediaProjection token.
@@ -40,13 +39,11 @@ class MediaProjectionCaptureManager(private val context: Context, private val me
         
         try {
             ensureProjectionCallbackRegistered()
-
-            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val metrics = DisplayMetrics()
             @Suppress("DEPRECATION")
             windowManager.defaultDisplay.getRealMetrics(metrics)
-
-            val width = metrics.widthPixels
+        val width = metrics.widthPixels
             val height = metrics.heightPixels
             val densityDpi = metrics.densityDpi
 
@@ -77,8 +74,7 @@ class MediaProjectionCaptureManager(private val context: Context, private val me
             AppLogger.e(TAG, "Failed to create MediaProjection virtual display", e)
         }
     }
-
-    private fun ensureProjectionCallbackRegistered() {
+        private fun ensureProjectionCallbackRegistered() {
         if (projectionCallback != null) return
 
         val callback = object : MediaProjection.Callback() {
@@ -110,18 +106,16 @@ class MediaProjectionCaptureManager(private val context: Context, private val me
         return try {
             // Try to get the latest image
             image = reader.acquireLatestImage()
-            if (image == null) {
+        if (image == null) {
                  // Sometimes it takes a moment for the first frame to arrive
     return null
             }
-
-            val width = image.width
+        val width = image.width
             val height = image.height
             if (width <= 0 || height <= 0) {
                 return null
             }
-            
-            val plane = image.planes[0]
+        val plane = image.planes[0]
             val buffer = plane.buffer
             val pixelStride = plane.pixelStride
             val rowStride = plane.rowStride
@@ -133,8 +127,7 @@ class MediaProjectionCaptureManager(private val context: Context, private val me
                 Bitmap.Config.ARGB_8888
             )
             bitmap.copyPixelsFromBuffer(buffer)
-
-            val cropped = Bitmap.createBitmap(bitmap, 0, 0, width, height)
+        val cropped = Bitmap.createBitmap(bitmap, 0, 0, width, height)
             bitmap.recycle()
 
             cropped
@@ -165,8 +158,7 @@ class MediaProjectionCaptureManager(private val context: Context, private val me
             bitmap.recycle()
         }
     }
-
-    fun release() {
+        fun release() {
         try {
             virtualDisplay?.release()
             imageReader?.close()

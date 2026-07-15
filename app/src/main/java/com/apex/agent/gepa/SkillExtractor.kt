@@ -20,7 +20,7 @@ class SkillExtractor(
 ) {
 
     private val subtaskListType = Types.newParameterizedType(List::class.java, Map::class.java)
-    private val subtaskAdapter = moshi.adapter<List<Map<String, Any>>>(subtaskListType)
+        private val subtaskAdapter = moshi.adapter<List<Map<String, Any>>>(subtaskListType)
 
     suspend fun extractAndSaveSkill(
         mainTask: MainTask,
@@ -33,16 +33,13 @@ class SkillExtractor(
             } else {
                 0f
             }
-
-            val avgExecutionTime = if (taskResult.subtaskResults.isNotEmpty()) {
+        val avgExecutionTime = if (taskResult.subtaskResults.isNotEmpty()) {
                 taskResult.totalExecutionTime / taskResult.subtaskResults.size
             } else {
                 0L
             }
-
-            val subtaskJson = serializeSubtasks(subtasks)
-
-            val skill = SkillTemplate(
+        val subtaskJson = serializeSubtasks(subtasks)
+        val skill = SkillTemplate(
                 taskType = mainTask.taskType,
                 taskDescription = mainTask.description,
                 subtaskStructure = subtaskJson,
@@ -52,8 +49,7 @@ class SkillExtractor(
                 successfulExecutions = if (taskResult.success) 1 else 0,
                 tags = generateTags(mainTask.taskType, subtasks)
             )
-
-            val id = skillDao.insertSkill(skill)
+        val id = skillDao.insertSkill(skill)
 
             SkillExtractionResult(
                 success = true,
@@ -81,8 +77,7 @@ class SkillExtractor(
                     successRate = 0f,
                     message = "Skill not found: ${skillId}"
                 )
-
-            val newTotalExecutions = existingSkill.totalExecutions + 1
+        val newTotalExecutions = existingSkill.totalExecutions + 1
             val newSuccessfulExecutions = existingSkill.successfulExecutions + if (taskResult.success) 1 else 0
             val newSuccessRate = newSuccessfulExecutions.toFloat() / newTotalExecutions
 
@@ -115,8 +110,7 @@ class SkillExtractor(
     ): SkillExtractionResult = withContext(Dispatchers.IO) {
         try {
             val existingSkills = skillDao.getBestSkillsForType(mainTask.taskType).first()
-
-            if (existingSkills.isNotEmpty()) {
+        if (existingSkills.isNotEmpty()) {
                 val bestSkill = existingSkills.first()
                 return@withContext updateExistingSkill(bestSkill.id, taskResult)
             } else {
@@ -130,8 +124,7 @@ class SkillExtractor(
             )
         }
     }
-
-    private fun serializeSubtasks(subtasks: List<SubTask>): String {
+        private fun serializeSubtasks(subtasks: List<SubTask>): String {
         val subtaskMaps = subtasks.map { subtask ->
             mapOf(
                 "taskId" to subtask.taskId,
@@ -143,30 +136,25 @@ class SkillExtractor(
                 "estimatedTime" to subtask.estimatedTime
             )
         }
-
         return try {
             subtaskAdapter.toJson(subtaskMaps)
         } catch (e: Exception) {
             "[]"
         }
     }
-
-    private fun generateTags(taskType: String, subtasks: List<SubTask>): String {
+        private fun generateTags(taskType: String, subtasks: List<SubTask>): String {
         val tags = mutableSetOf<String>()
         tags.add(taskType)
 
         subtasks.forEach { subtask ->
             tags.add(subtask.taskType)
         }
-
         if (subtasks.size > 3) {
             tags.add("complex")
         }
-
         if (taskResult?.success == true) {
             tags.add("verified")
         }
-
         return tags.joinToString(",")
     }
 

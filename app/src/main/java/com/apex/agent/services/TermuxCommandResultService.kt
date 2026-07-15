@@ -40,8 +40,7 @@ class TermuxCommandResultService : IntentService("TermuxCommandResultService") {
             AppLogger.d(TAG, "已移除回调，ID: ${executionId}, 当前回调�?${callbackMap.size}")
         }
     }
-    
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+        private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     
     override fun onHandleIntent(intent: Intent) {
         if (intent == null) return
@@ -49,16 +48,16 @@ class TermuxCommandResultService : IntentService("TermuxCommandResultService") {
         // 获取执行ID
     val executionId = intent.getIntExtra(EXTRA_EXECUTION_ID, -1)
         // AppLogger.d(TAG, "收到命令结果，执行ID: ${executionId}")
-    if (executionId == -1) {
+        if (executionId == -1) {
             AppLogger.e(TAG, "无效的执行ID")
-            return
+        return
         }
         
         // 获取结果Bundle
     val resultBundle = intent.getBundleExtra("result")
         if (resultBundle == null) {
             AppLogger.e(TAG, "结果Bundle为空")
-            return
+        return
         }
         
         // 解析结果

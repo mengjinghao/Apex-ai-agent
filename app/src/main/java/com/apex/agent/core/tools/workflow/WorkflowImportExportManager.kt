@@ -22,26 +22,22 @@ class WorkflowImportExportManager {
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
-
-    private val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+        private val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
 
     suspend fun exportWorkflow(workflow: Workflow, exportDir: File): Result<File> = withContext(Dispatchers.IO) {
         try {
             if (!exportDir.exists()) {
                 exportDir.mkdirs()
             }
-
-            val fileName = generateExportFileName(workflow.name, isTemplate = false)
-            val exportFile = File(exportDir, fileName)
-
-            val exportInfo = WorkflowExportInfo(
+        val fileName = generateExportFileName(workflow.name, isTemplate = false)
+        val exportFile = File(exportDir, fileName)
+        val exportInfo = WorkflowExportInfo(
                 version = "1.0",
                 type = "workflow",
                 exportedAt = System.currentTimeMillis(),
                 workflow = workflow
             )
-
-            val jsonContent = json.encodeToString(exportInfo)
+        val jsonContent = json.encodeToString(exportInfo)
             exportFile.writeText(jsonContent)
 
             Result.success(exportFile)
@@ -55,18 +51,15 @@ class WorkflowImportExportManager {
             if (!exportDir.exists()) {
                 exportDir.mkdirs()
             }
-
-            val fileName = generateExportFileName(template.name, isTemplate = true)
-            val exportFile = File(exportDir, fileName)
-
-            val exportInfo = TemplateExportInfo(
+        val fileName = generateExportFileName(template.name, isTemplate = true)
+        val exportFile = File(exportDir, fileName)
+        val exportInfo = TemplateExportInfo(
                 version = "1.0",
                 type = "template",
                 exportedAt = System.currentTimeMillis(),
                 template = template
             )
-
-            val jsonContent = json.encodeToString(exportInfo)
+        val jsonContent = json.encodeToString(exportInfo)
             exportFile.writeText(jsonContent)
 
             Result.success(exportFile)
@@ -80,10 +73,8 @@ class WorkflowImportExportManager {
             if (!importFile.exists()) {
                 return@withContext Result.failure(Exception("Import file not found"))
             }
-
-            val content = importFile.readText()
-
-            val workflowImportResult = parseAndValidateImport(content, isTemplate = false)
+        val content = importFile.readText()
+        val workflowImportResult = parseAndValidateImport(content, isTemplate = false)
             Result.success(workflowImportResult)
         } catch (e: Exception) {
             Result.failure(e)
@@ -95,10 +86,8 @@ class WorkflowImportExportManager {
             if (!importFile.exists()) {
                 return@withContext Result.failure(Exception("Import file not found"))
             }
-
-            val content = importFile.readText()
-
-            val templateImportResult = parseAndValidateImport(content, isTemplate = true)
+        val content = importFile.readText()
+        val templateImportResult = parseAndValidateImport(content, isTemplate = true)
             Result.success(templateImportResult)
         } catch (e: Exception) {
             Result.failure(e)
@@ -128,18 +117,15 @@ class WorkflowImportExportManager {
             updatedAt = System.currentTimeMillis()
         )
     }
-
-    private fun parseAndValidateImport(content: String, isTemplate: Boolean): WorkflowImportResult {
+        private fun parseAndValidateImport(content: String, isTemplate: Boolean): WorkflowImportResult {
         return try {
             val warnings = mutableListOf<String>()
-
-            val exportInfo = try {
+        val exportInfo = try {
                 json.decodeFromString<WorkflowExportInfo>(content)
             } catch (e: Exception) {
                 null
             }
-
-            val templateExportInfo = if (exportInfo == null) {
+        val templateExportInfo = if (exportInfo == null) {
                 try {
                     json.decodeFromString<TemplateExportInfo>(content)
                 } catch (e: Exception) {
@@ -148,14 +134,12 @@ class WorkflowImportExportManager {
             } else {
                 null
             }
-
-            when {
+        when {
                 exportInfo != null && exportInfo.type == "workflow" -> {
                     if (exportInfo.version != "1.0") {
                         warnings.add("Unsupported export version: ${exportInfo.version}")
                     }
-
-                    val newWorkflow = exportInfo.workflow.copy(
+        val newWorkflow = exportInfo.workflow.copy(
                         id = java.util.UUID.randomUUID().toString(),
                         createdAt = System.currentTimeMillis(),
                         updatedAt = System.currentTimeMillis()
@@ -172,8 +156,7 @@ class WorkflowImportExportManager {
                     if (templateExportInfo.version != "1.0") {
                         warnings.add("Unsupported export version: ${templateExportInfo.version}")
                     }
-
-                    val newTemplate = templateExportInfo.template.copy(
+        val newTemplate = templateExportInfo.template.copy(
                         id = java.util.UUID.randomUUID().toString(),
                         workflow = templateExportInfo.template.workflow.copy(
                             id = java.util.UUID.randomUUID().toString(),
@@ -197,8 +180,7 @@ class WorkflowImportExportManager {
                     } catch (e: Exception) {
                         null
                     }
-
-                    if (directWorkflow != null) {
+        if (directWorkflow != null) {
                         val newWorkflow = directWorkflow.copy(
                             id = java.util.UUID.randomUUID().toString(),
                             createdAt = System.currentTimeMillis(),
@@ -225,8 +207,7 @@ class WorkflowImportExportManager {
             )
         }
     }
-
-    private fun generateExportFileName(name: String, isTemplate: Boolean): String {
+        private fun generateExportFileName(name: String, isTemplate: Boolean): String {
         val timestamp = dateFormat.format(Date())
         val sanitizedName = name.replace(Regex("[^a-zA-Z0-9_\\-]"), "_").take(50)
         val extension = if (isTemplate) "_template.json" else ".json"

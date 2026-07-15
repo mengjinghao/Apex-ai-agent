@@ -121,16 +121,13 @@ class DependencyManager private constructor(private val context: Context) {
 
     // ========== 数据结构 ==========
     private val _dependencyGraph = MutableStateFlow<DependencyGraph?>(null)
-    val dependencyGraph: StateFlow<DependencyGraph?> = _dependencyGraph.asStateFlow()
-
-    private val _installProgress = MutableStateFlow<Map<String, Float>>(emptyMap())
-    val installProgress: StateFlow<Map<String, Float>> = _installProgress.asStateFlow()
-
-    private val _isResolving = MutableStateFlow(false)
-    val isResolving: StateFlow<Boolean> = _isResolving.asStateFlow()
-
-    private val skillManager by lazy { SkillManager.getInstance(context) }
-    private val skillRepoClient by lazy { SkillRepoClient.getInstance() }
+        val dependencyGraph: StateFlow<DependencyGraph?> = _dependencyGraph.asStateFlow()
+        private val _installProgress = MutableStateFlow<Map<String, Float>>(emptyMap())
+        val installProgress: StateFlow<Map<String, Float>> = _installProgress.asStateFlow()
+        private val _isResolving = MutableStateFlow(false)
+        val isResolving: StateFlow<Boolean> = _isResolving.asStateFlow()
+        private val skillManager by lazy { SkillManager.getInstance(context) }
+        private val skillRepoClient by lazy { SkillRepoClient.getInstance() }
 
     // 内置 Skill（不可卸载）
     private val builtInSkills = setOf(
@@ -139,7 +136,7 @@ class DependencyManager private constructor(private val context: Context) {
 
     // 依赖缓存
     private val dependencyCache = mutableMapOf<String, List<SkillDependency>>()
-    private val installStatusCache = mutableMapOf<String, Boolean>()
+        private val installStatusCache = mutableMapOf<String, Boolean>()
 
     // ========== 公开 API ==========
 
@@ -151,7 +148,7 @@ class DependencyManager private constructor(private val context: Context) {
 
         try {
             val availableSkills = skillManager.getAvailableSkills()
-            val targetSkill = availableSkills[skillId]
+        val targetSkill = availableSkills[skillId]
 
             if (targetSkill == null) {
                 return@withContext DependencyResolution(
@@ -163,19 +160,17 @@ class DependencyManager private constructor(private val context: Context) {
                     resolutionSteps = listOf("Skill not found: ${skillId}")
                 )
             }
-
-            val resolved = mutableListOf<SkillDependency>()
-            val missing = mutableListOf<SkillDependency>()
-            val conflicts = mutableListOf<DependencyConflict>()
-            val circularDeps = mutableListOf<List<String>>()
-            val visited = mutableSetOf<String>()
-            val path = mutableListOf<String>()
+        val resolved = mutableListOf<SkillDependency>()
+        val missing = mutableListOf<SkillDependency>()
+        val conflicts = mutableListOf<DependencyConflict>()
+        val circularDeps = mutableListOf<List<String>>()
+        val visited = mutableSetOf<String>()
+        val path = mutableListOf<String>()
 
             // 解析直接依赖
     val directDeps = parseDependencies(targetSkill.dependencies, targetSkill.name)
-            val allDeps = mutableMapOf<String, SkillDependency>()
-
-            for (dep in directDeps) {
+        val allDeps = mutableMapOf<String, SkillDependency>()
+        for (dep in directDeps) {
                 resolveDependencyRecursive(
                     dep = dep,
                     availableSkills = availableSkills,
@@ -192,8 +187,7 @@ class DependencyManager private constructor(private val context: Context) {
 
             // 解析直接依赖
             buildDependencyGraph(skillId, allDeps.values.toList())
-
-            val success = missing.isEmpty() && conflicts.isEmpty() && circularDeps.isEmpty()
+        val success = missing.isEmpty() && conflicts.isEmpty() && circularDeps.isEmpty()
 
             DependencyResolution(
                 success = success,
@@ -207,8 +201,7 @@ class DependencyManager private constructor(private val context: Context) {
             _isResolving.value = false
         }
     }
-
-    private fun resolveDependencyRecursive(
+        private fun resolveDependencyRecursive(
         dep: SkillDependency,
         availableSkills: Map<String, SkillPackage>,
         resolved: MutableMap<String, SkillDependency>,
@@ -222,11 +215,10 @@ class DependencyManager private constructor(private val context: Context) {
         // 检测循环依赖
     if (path.contains(skillId)) {
             val cycleStart = path.indexOf(skillId)
-            val cycle = path.subList(cycleStart, path.size) + skillId
+        val cycle = path.subList(cycleStart, path.size) + skillId
             circularDeps.add(cycle)
-            return
+        return
         }
-
         if (visited.contains(skillId)) {
             return
         }
@@ -236,7 +228,6 @@ class DependencyManager private constructor(private val context: Context) {
 
         // 检查是否已安装
     val isInstalled = availableSkills.containsKey(skillId) || builtInSkills.contains(skillId)
-
         val resolvedDep = if (isInstalled) {
             val skill = availableSkills[skillId]
             dep.copy(
@@ -258,8 +249,7 @@ class DependencyManager private constructor(private val context: Context) {
     if (isInstalled) {
             val skill = availableSkills[skillId] ?: return
             val transitiveDeps = parseDependencies(skill.dependencies, skill.name)
-
-            for (transitiveDep in transitiveDeps) {
+        for (transitiveDep in transitiveDeps) {
                 if (!resolved.containsKey(transitiveDep.skillId)) {
                     resolveDependencyRecursive(
                         dep = transitiveDep,
@@ -276,16 +266,14 @@ class DependencyManager private constructor(private val context: Context) {
 
         path.removeAt(path.size - 1)
     }
-
-    private fun parseDependencies(dependencies: List<String>, skillName: String): List<SkillDependency> {
+        private fun parseDependencies(dependencies: List<String>, skillName: String): List<SkillDependency> {
         return dependencies.mapNotNull { depStr ->
             try {
                 // 支持格式： "skill_id", "skill_id@1.0.0", "skill_id>=1.0.0"
-    val parts = depStr.trim().split("@")
-                val id = parts[0].trim()
-                val version = if (parts.size > 1) parts[1].trim() else "*"
-
-                val versionRange = when {
+        val parts = depStr.trim().split("@")
+        val id = parts[0].trim()
+        val version = if (parts.size > 1) parts[1].trim() else "*"
+        val versionRange = when {
                     version.startsWith(">=") -> version
                     version.startsWith("<=") -> version
                     version.startsWith(">") -> version
@@ -295,8 +283,7 @@ class DependencyManager private constructor(private val context: Context) {
                     version == "*" -> null
                     else -> null
                 }
-
-                val resolvedVersion = version.replace(Regex("^[\\^~>=<]+"), "")
+        val resolvedVersion = version.replace(Regex("^[\\^~>=<]+"), "")
 
                 SkillDependency(
                     skillId = id,
@@ -311,18 +298,16 @@ class DependencyManager private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun checkVersionConflicts(
+        private fun checkVersionConflicts(
         dependencies: List<SkillDependency>,
         conflicts: MutableList<DependencyConflict>
     ) {
         // 按 skillId 分组，检查是否有版本冲突
     val bySkillId = dependencies.groupBy { it.skillId }
-
         for ((skillId, deps) in bySkillId) {
             if (deps.size > 1) {
                 val versions = deps.map { it.version }.distinct()
-                if (versions.size > 1) {
+        if (versions.size > 1) {
                     // 发现版本冲突
     for (i in 0 until deps.size - 1) {
                         for (j in i + 1 until deps.size) {
@@ -371,7 +356,6 @@ class DependencyManager private constructor(private val context: Context) {
         // 添加依赖节点和边
     val visited = mutableSetOf<String>()
         val path = mutableListOf<String>()
-
         fun buildGraph(skillId: String, parentId: String) {
             if (visited.contains(skillId)) {
                 if (path.contains(skillId)) {
@@ -379,13 +363,12 @@ class DependencyManager private constructor(private val context: Context) {
                     val cycleStart = path.indexOf(skillId)
                     circularPath = path.subList(cycleStart, path.size) + skillId
                 }
-                return
+        return
             }
 
             visited.add(skillId)
             path.add(skillId)
-
-            val skill = availableSkills[skillId]
+        val skill = availableSkills[skillId]
             val dep = dependencies.find { it.skillId == skillId }
 
             nodes.add(
@@ -398,8 +381,7 @@ class DependencyManager private constructor(private val context: Context) {
                     missingReason = if (skill == null && !builtInSkills.contains(skillId)) "Not installed" else null
                 )
             )
-
-            if (parentId != null) {
+        if (parentId != null) {
                 edges.add(
                     DependencyEdge(
                         from = parentId,
@@ -412,7 +394,7 @@ class DependencyManager private constructor(private val context: Context) {
             // 解析直接依赖
             skill?.dependencies?.forEach { depStr ->
                 val depId = depStr.split("@").first().trim()
-                if (depId != skillId) { // 避免自循环
+        if (depId != skillId) { // 避免自循环
                     buildGraph(depId, skillId)
                 }
             }
@@ -437,9 +419,7 @@ class DependencyManager private constructor(private val context: Context) {
      */
     suspend fun installDependencies(skillId: String): List<DependencyInstallResult> = withContext(Dispatchers.IO) {
         val results = mutableListOf<DependencyInstallResult>()
-
         val resolution = resolveDependencies(skillId)
-
         for (missingDep in resolution.missingDependencies) {
             var retryCount = 0
             var success = false
@@ -450,8 +430,7 @@ class DependencyManager private constructor(private val context: Context) {
                 _installProgress.value = _installProgress.value.toMutableMap().apply {
                     put(missingDep.skillId, 0f)
                 }
-
-                val result = downloadAndInstallDependency(missingDep) { progress ->
+        val result = downloadAndInstallDependency(missingDep) { progress ->
                     _installProgress.value = _installProgress.value.toMutableMap().apply {
                         put(missingDep.skillId, progress)
                     }
@@ -485,8 +464,7 @@ class DependencyManager private constructor(private val context: Context) {
 
         results
     }
-
-    private suspend fun downloadAndInstallDependency(
+        private suspend fun downloadAndInstallDependency(
         dependency: SkillDependency,
         progressCallback: (Float) -> Unit
     ): DependencyInstallResult = withContext(Dispatchers.IO) {
@@ -495,16 +473,14 @@ class DependencyManager private constructor(private val context: Context) {
 
             // 从 Marketplace 获取下载信息
     val detailResult = skillRepoClient.getSkillDetail(dependency.skillId)
-
-            if (detailResult.isFailure) {
+        if (detailResult.isFailure) {
                 return@withContext DependencyInstallResult(
                     success = false,
                     skillId = dependency.skillId,
                     errorMessage = "Failed to get skill info: ${detailResult.exceptionOrNull()?.message}"
                 )
             }
-
-            val detail = detailResult.getOrNull() ?: return@withContext DependencyInstallResult(
+        val detail = detailResult.getOrNull() ?: return@withContext DependencyInstallResult(
                 success = false,
                 skillId = dependency.skillId,
                 errorMessage = "Failed to get skill detail"
@@ -514,11 +490,9 @@ class DependencyManager private constructor(private val context: Context) {
 
             // 下载
     val cacheDir = File(context.cacheDir, DEPENDENCIES_CACHE_DIR)
-            if (!cacheDir.exists()) cacheDir.mkdirs()
-
-            val downloadFile = File(cacheDir, "${dependency.skillId}_${detail.version}.zip")
-
-            val downloadResult = skillRepoClient.downloadSkill(
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+        val downloadFile = File(cacheDir, "${dependency.skillId}_${detail.version}.zip")
+        val downloadResult = skillRepoClient.downloadSkill(
                 skillId = dependency.skillId,
                 version = detail.version,
                 outputFile = downloadFile
@@ -527,8 +501,7 @@ class DependencyManager private constructor(private val context: Context) {
                     progressCallback(0.3f + 0.5f * (downloaded.toFloat() / total))
                 }
             }
-
-            if (downloadResult.isFailure) {
+        if (downloadResult.isFailure) {
                 return@withContext DependencyInstallResult(
                     success = false,
                     skillId = dependency.skillId,
@@ -545,8 +518,7 @@ class DependencyManager private constructor(private val context: Context) {
             downloadFile.delete()
 
             progressCallback(1.0f)
-
-            if (importResult.contains("imported") || importResult.contains("成功")) {
+        if (importResult.contains("imported") || importResult.contains("成功")) {
                 val installedPath = skillManager.getAvailableSkills()[dependency.skillId]?.directory?.absolutePath
                 DependencyInstallResult(
                     success = true,
@@ -575,7 +547,6 @@ class DependencyManager private constructor(private val context: Context) {
      */
     suspend fun validateDependencies(skillId: String): ValidationResult = withContext(Dispatchers.IO) {
         val resolution = resolveDependencies(skillId)
-
         val missingRequired = resolution.missingDependencies.filter { it.isRequired }
         val hasConflicts = resolution.conflictingDependencies.isNotEmpty()
         val hasCircular = resolution.circularDependencies.isNotEmpty()
@@ -590,8 +561,7 @@ class DependencyManager private constructor(private val context: Context) {
             message = buildValidationMessage(missingRequired, hasConflicts, hasCircular)
         )
     }
-
-    private fun buildValidationMessage(
+        private fun buildValidationMessage(
         missing: List<SkillDependency>,
         hasConflicts: Boolean,
         hasCircular: Boolean
@@ -603,8 +573,7 @@ class DependencyManager private constructor(private val context: Context) {
             else -> "All dependencies are satisfied"
         }
     }
-
-    private fun buildResolutionSteps(
+        private fun buildResolutionSteps(
         success: Boolean,
         resolvedCount: Int,
         missingCount: Int,
@@ -633,15 +602,13 @@ class DependencyManager private constructor(private val context: Context) {
     suspend fun getDependencyTree(skillId: String): String = withContext(Dispatchers.IO) {
         val resolution = resolveDependencies(skillId)
         val sb = StringBuilder()
-
         fun buildTree(deps: List<SkillDependency>, indent: Int, prefix: String, isLast: Boolean): String {
             val sb = StringBuilder()
             deps.forEachIndexed { index, dep ->
                 val isLastItem = index == deps.size - 1
                 val currentPrefix = if (indent == 0) "" else if (isLastItem) "└── " else "├── "
-                val newPrefix = if (indent == 0) "" else if (isLastItem) "    " else "│   "
-
-                val status = when {
+        val newPrefix = if (indent == 0) "" else if (isLastItem) "    " else "│   "
+        val status = when {
                     !dep.isInstalled && dep.isRequired -> " [MISSING]"
                     !dep.isInstalled -> " [OPTIONAL]"
                     dep.isBuiltIn -> " [BUILT-IN]"
@@ -653,24 +620,22 @@ class DependencyManager private constructor(private val context: Context) {
                 // 递归显示传递依赖（限制深度）
     if (indent < 3) {
                     val transitiveDeps = dependencyCache[dep.skillId] ?: emptyList()
-                    if (transitiveDeps.isNotEmpty()) {
+        if (transitiveDeps.isNotEmpty()) {
                         sb.append(buildTree(transitiveDeps, indent + 1, "${prefix}${newPrefix}", isLastItem))
                     }
                 }
             }
-            return sb.toString()
+        return sb.toString()
         }
 
         sb.appendLine("Dependency Tree for: ${skillId}")
         sb.appendLine("=".repeat(40))
         sb.appendLine()
-
         if (resolution.resolvedDependencies.isEmpty()) {
             sb.appendLine("No dependencies")
         } else {
             sb.append(buildTree(resolution.resolvedDependencies, 0, "", true))
         }
-
         if (resolution.missingDependencies.isNotEmpty()) {
             sb.appendLine()
             sb.appendLine("Missing Dependencies:")
@@ -678,7 +643,6 @@ class DependencyManager private constructor(private val context: Context) {
                 sb.appendLine("  - ${dep.skillName}: ${dep.missingReason ?: 'Version mismatch'}")
             }
         }
-
         if (resolution.conflictingDependencies.isNotEmpty()) {
             sb.appendLine()
             sb.appendLine("Conflicts:")
@@ -686,7 +650,6 @@ class DependencyManager private constructor(private val context: Context) {
                 sb.appendLine("  - ${conflict.skillName1} vs ${conflict.skillName2}: ${conflict.reason}")
             }
         }
-
         if (resolution.circularDependencies.isNotEmpty()) {
             sb.appendLine()
             sb.appendLine("Circular Dependencies:")
@@ -703,11 +666,9 @@ class DependencyManager private constructor(private val context: Context) {
      */
     suspend fun uninstallOptionalDependency(skillId: String, dependencyId: String): Boolean = withContext(Dispatchers.IO) {
         val dep = dependencyCache[skillId]?.find { it.skillId == dependencyId }
-
         if (dep == null) {
             return@withContext false
         }
-
         if (dep.isRequired) {
             AppLogger.w(TAG, "Cannot uninstall required dependency: ${dependencyId}")
             return@withContext false
@@ -718,7 +679,6 @@ class DependencyManager private constructor(private val context: Context) {
         val dependents = availableSkills.filter { (id, skill) ->
             id != skillId && skill.dependencies.any { it.startsWith(dependencyId) }
         }
-
         if (dependents.isNotEmpty()) {
             AppLogger.w(TAG, "Cannot uninstall: ${dependents.keys} depend on ${dependencyId}")
             return@withContext false
@@ -733,7 +693,6 @@ class DependencyManager private constructor(private val context: Context) {
     suspend fun checkDependencyUpdates(skillId: String): List<UpdateInfo> = withContext(Dispatchers.IO) {
         val updates = mutableListOf<UpdateInfo>()
         val resolution = resolveDependencies(skillId)
-
         for (dep in resolution.resolvedDependencies) {
             if (!dep.isInstalled || dep.isBuiltIn) continue
 
@@ -797,7 +756,7 @@ class DependencyManager private constructor(private val context: Context) {
                 node.isInstalled -> "green"
                 else -> "gray"
             }
-            val label = "${node.skillName}\\n(${node.version})"
+        val label = "${node.skillName}\\n(${node.version})"
             sb.appendLine("    \"${node.skillId}\" [label=\"${label}\", color=${color}];")
         }
 
@@ -813,7 +772,7 @@ class DependencyManager private constructor(private val context: Context) {
             sb.appendLine()
             sb.append("    subgraph cluster_cycle {")
             sb.appendLine(" label=\"Circular Dependency\"; style=dashed; color=red;")
-            val cyclePath = graph.circularDependencyPath
+        val cyclePath = graph.circularDependencyPath
             for (i in 0 until cyclePath.size - 1) {
                 sb.appendLine("    \"${cyclePath[i]}\" -> \"${cyclePath[i + 1]}\";")
             }
@@ -821,7 +780,6 @@ class DependencyManager private constructor(private val context: Context) {
         }
 
         sb.appendLine("}")
-
         return sb.toString()
     }
 }

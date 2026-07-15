@@ -51,7 +51,6 @@ class EmotionResponseManager(private val context: Context, private val emotionAn
             intensity > 3 -> listOf("很好�? "不错误， "挺好的！", "很高兴！")
             else -> listOf("好的�? "好的�? "了解了，", "知道了的�?
         }
-        
         val prefix = prefixes.random()
         return "${prefix} ${response}"
     }
@@ -64,14 +63,12 @@ class EmotionResponseManager(private val context: Context, private val emotionAn
             intensity > 3 -> listOf("我理解你的心�?.", "这一定不容易...", "我在这里支持�?.", "希望情况会好起来...")
             else -> listOf("我理�?.", "希望一切会好起�?.", "如果需要帮助，告诉�?.", "我在这里...")
         }
-        
         val suffixes = listOf(
             "如果你需要倾诉，我在这里，,
             "希望我的回答能给你一些安慰，,
             "一切都会过去的�?
             "我会一直支持你的，
         )
-        
         val prefix = prefixes.random()
         val suffix = suffixes.random()
         return "${prefix} ${response} ${suffix}"
@@ -86,14 +83,12 @@ class EmotionResponseManager(private val context: Context, private val emotionAn
             intensity > 3 -> listOf("我理解你的心�?.", "这确实让人恼�?.", "我明白你的感�?.", "我理解你的不�?.")
             else -> listOf("我理�?.", "我明�?.", "我知�?.", "我理解你的感�?.")
         }
-        
         val suffixes = listOf(
             "让我们一起解决这个问题，,
             "希望我能帮你找到解决方案�?
             "我们一起想办法则，
             "我会尽力帮助你，
         )
-        
         val prefix = prefixes.random()
         val suffix = suffixes.random()
         return "${prefix} ${response} ${suffix}"
@@ -107,14 +102,12 @@ class EmotionResponseManager(private val context: Context, private val emotionAn
             intensity > 3 -> listOf("别担�?.", "放松一�?.", "慢慢�?.", "我们一步一步来...")
             else -> listOf("别担�?.", "放松...", "慢慢�?.", "我们一起想办法...")
         }
-        
         val suffixes = listOf(
             "我们一起想办法解决�?
             "一切都会过去的�?
             "我会一直支持你�?
             "相信事情会好起来的，
         )
-        
         val prefix = prefixes.random()
         val suffix = suffixes.random()
         return "${prefix} ${response} ${suffix}"
@@ -128,14 +121,12 @@ class EmotionResponseManager(private val context: Context, private val emotionAn
             intensity > 3 -> listOf("我理解你的疑�?.", "让我解释一�?.", "别着着..", "我们一步一步来...")
             else -> listOf("让我解释一�?.", "我来帮你理解...", "别着着..", "慢慢�?.")
         }
-        
         val suffixes = listOf(
             "还有什么不明白的地方吗�?
             "希望我解释清楚了�?
             "如果还有疑问，随时告诉我�?
             "我会耐心为你解答�?
         )
-        
         val prefix = prefixes.random()
         val suffix = suffixes.random()
         return "${prefix} ${response} ${suffix}"
@@ -149,14 +140,12 @@ class EmotionResponseManager(private val context: Context, private val emotionAn
             intensity > 3 -> listOf("我理解你的心�?.", "别灰�?.", "这只是暂时的...", "我能理解...")
             else -> listOf("别灰�?.", "这只是暂时的...", "我理�?.", "希望情况会好起来...")
         }
-        
         val suffixes = listOf(
             "让我们一起寻找更好的解决方案�?
             "相信会有更好的结果，,
             "我会一直支持你�?
             "希望事情会好转，
         )
-        
         val prefix = prefixes.random()
         val suffix = suffixes.random()
         return "${prefix} ${response} ${suffix}"
@@ -170,7 +159,6 @@ class EmotionResponseManager(private val context: Context, private val emotionAn
             intensity > 3 -> listOf("哦，真的吗？", "惊讶�? "真的吗？", "这很意外观）
             else -> listOf("哦，", "真的吗？", "哦，这样�? "了解了的�?
         }
-        
         val prefix = prefixes.random()
         return "${prefix} ${response}"
     }
@@ -180,7 +168,6 @@ class EmotionResponseManager(private val context: Context, private val emotionAn
      */
     suspend fun generateEmotionalSupport(messages: List<ChatMessage>): String = withContext(Dispatchers.IO) {
         val emotionProfile = emotionAnalyzer.analyzeEmotion(messages)
-        
         when (emotionProfile.dominantEmotion) {
             "伤心" -> generateSadSupport(emotionProfile.avgEmotionIntensity)
             "愤�?-> generateAngrySupport(emotionProfile.avgEmotionIntensity)

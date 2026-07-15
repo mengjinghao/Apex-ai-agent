@@ -23,27 +23,23 @@ class FederatedLearningManager(private val context: Context) {
         private const val KNOWLEDGE_DISTILLATION_TEMP = 3.0f
         private const val DRIFT_THRESHOLD = 0.15f
     }
-
-    private val gson = Gson()
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    private val localModels = ConcurrentHashMap<String, LocalAgentModel>()
-    private val sharedKnowledgeBase = ConcurrentHashMap<String, SharedKnowledge>()
-    private val agentContributions = ConcurrentHashMap<String, MutableList<ModelContribution>>()
-    private val adaptationHistories = ConcurrentHashMap<String, MutableList<AdaptationRecord>>()
-
-    private val _globalModelVersion = MutableStateFlow(0)
-    val globalModelVersion: StateFlow<Int> = _globalModelVersion
+        private val gson = Gson()
+        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        private val localModels = ConcurrentHashMap<String, LocalAgentModel>()
+        private val sharedKnowledgeBase = ConcurrentHashMap<String, SharedKnowledge>()
+        private val agentContributions = ConcurrentHashMap<String, MutableList<ModelContribution>>()
+        private val adaptationHistories = ConcurrentHashMap<String, MutableList<AdaptationRecord>>()
+        private val _globalModelVersion = MutableStateFlow(0)
+        val globalModelVersion: StateFlow<Int> = _globalModelVersion
 
     private val _trainingProgress = MutableStateFlow<Map<String, Float>>(emptyMap())
-    val trainingProgress: StateFlow<Map<String, Float>> = _trainingProgress
+        val trainingProgress: StateFlow<Map<String, Float>> = _trainingProgress
 
     private val _knowledgeTransferStats = MutableStateFlow(KnowledgeTransferStats())
-    val knowledgeTransferStats: StateFlow<KnowledgeTransferStats> = _knowledgeTransferStats
+        val knowledgeTransferStats: StateFlow<KnowledgeTransferStats> = _knowledgeTransferStats
 
     private val prefs = context.getSharedPreferences(MODEL_STORE_NAME, Context.MODE_PRIVATE)
-
-    private var aggregationJob: Job? = null
+        private var aggregationJob: Job? = null
 
     init {
         loadFromDisk()
@@ -114,8 +110,7 @@ class FederatedLearningManager(private val context: Context) {
         val basedOnSamples: Int,
         val recommendedAdjustment: Float
     )
-
-    fun registerAgent(agentId: String, initialCapabilities: Map<String, Float>) {
+        fun registerAgent(agentId: String, initialCapabilities: Map<String, Float>) {
         val model = LocalAgentModel(
             agentId = agentId,
             capabilityWeights = initialCapabilities.toMutableMap(),
@@ -127,8 +122,7 @@ class FederatedLearningManager(private val context: Context) {
         agentContributions[agentId] = mutableListOf()
         saveToDisk()
     }
-
-    fun recordTaskOutcome(
+        fun recordTaskOutcome(
         agentId: String,
         taskType: String,
         success: Boolean,
@@ -141,7 +135,7 @@ class FederatedLearningManager(private val context: Context) {
 
             val performance = if (success) minOf(quality, 1.0f) else maxOf(quality - 0.3f, 0.0f)
             model.performanceHistory.add(performance)
-            if (model.performanceHistory.size > 100) {
+        if (model.performanceHistory.size > 100) {
                 model.performanceHistory.removeAt(0)
             }
 
@@ -163,8 +157,7 @@ class FederatedLearningManager(private val context: Context) {
                 taskType = taskType
             )
             agentContributions[agentId]?.add(contribution)
-
-            if (shouldTriggerAdaptation(model)) {
+        if (shouldTriggerAdaptation(model)) {
                 triggerAdaptation(agentId, AdaptationRecord.AdaptationTrigger.POOR_PERFORMANCE, emptyMap())
             }
 
@@ -172,27 +165,23 @@ class FederatedLearningManager(private val context: Context) {
             saveToDisk()
         }
     }
-
-    private fun calculateAdjustment(performance: Float, capability: Float, success: Boolean): Float {
+        private fun calculateAdjustment(performance: Float, capability: Float, success: Boolean): Float {
         val baseAdjustment = (performance - 0.5f) * 0.1f
         val capabilityBonus = if (success && capability > 0.8f) 0.05f else 0f
         val failurePenalty = if (!success) -0.1f else 0f
         return baseAdjustment + capabilityBonus + failurePenalty
     }
-
-    private fun shouldTriggerAdaptation(model: LocalAgentModel): Boolean {
+        private fun shouldTriggerAdaptation(model: LocalAgentModel): Boolean {
         if (model.performanceHistory.size < 5) return false
 
         val recentPerformance = model.performanceHistory.takeLast(5).average().toFloat()
         val olderPerformance = model.performanceHistory.take(maxOf(0, model.performanceHistory.size - 10)).average().toFloat()
-
         val drift = kotlin.math.abs(recentPerformance - olderPerformance)
         model.driftDetected = drift > DRIFT_THRESHOLD
 
         return drift > DRIFT_THRESHOLD || recentPerformance < 0.3f
     }
-
-    fun distributeKnowledge(sourceAgentId: String, targetAgentId: String, knowledge: SharedKnowledge): Boolean {
+        fun distributeKnowledge(sourceAgentId: String, targetAgentId: String, knowledge: SharedKnowledge): Boolean {
         scope.launch {
             try {
                 val sourceModel = localModels[sourceAgentId] ?: return@launch
@@ -213,8 +202,7 @@ class FederatedLearningManager(private val context: Context) {
                     sourceAgents = knowledge.sourceAgents + sourceAgentId,
                     validationCount = knowledge.validationCount + 1
                 )
-
-                val stats = _knowledgeTransferStats.value
+        val stats = _knowledgeTransferStats.value
                 _knowledgeTransferStats.value = stats.copy(
                     totalTransfers = stats.totalTransfers + 1,
                     successfulTransfers = stats.successfulTransfers + 1,
@@ -228,17 +216,13 @@ class FederatedLearningManager(private val context: Context) {
         }
         return true
     }
-
-    fun distillKnowledge(agentId: String): SharedKnowledge {
+        fun distillKnowledge(agentId: String): SharedKnowledge {
         val model = localModels[agentId] ?: throw IllegalArgumentException("Agent not found")
-
         val topCapabilities = model.capabilityWeights.entries
             .sortedByDescending { it.value }
             .take(5)
             .associate { it.key to it.value }
-
         val avgPerformance = model.performanceHistory.average().toFloat()
-
         return SharedKnowledge(
             knowledgeId = UUID.randomUUID().toString(),
             sourceAgents = setOf(agentId),
@@ -249,11 +233,9 @@ class FederatedLearningManager(private val context: Context) {
             timestamp = System.currentTimeMillis()
         )
     }
-
-    fun predictCapability(agentId: String, capability: String): PredictionResult {
+        fun predictCapability(agentId: String, capability: String): PredictionResult {
         val model = localModels[agentId]
         val history = agentContributions[agentId] ?: emptyList()
-
         if (history.isEmpty()) {
             return PredictionResult(
                 predictedCapability = model?.capabilityWeights[capability] ?: 1.0f,
@@ -262,10 +244,8 @@ class FederatedLearningManager(private val context: Context) {
                 recommendedAdjustment = 0f
             )
         }
-
         val recentUpdates = history.takeLast(10)
         val capabilityUpdates = recentUpdates.mapNotNull { it.capabilityUpdates[capability] }
-
         if (capabilityUpdates.isEmpty()) {
             return PredictionResult(
                 predictedCapability = model?.capabilityWeights[capability] ?: 1.0f,
@@ -274,7 +254,6 @@ class FederatedLearningManager(private val context: Context) {
                 recommendedAdjustment = 0f
             )
         }
-
         val predictedCapability = capabilityUpdates.average().toFloat()
         val trend = if (capabilityUpdates.size > 1) {
             capabilityUpdates.last() - capabilityUpdates.first()
@@ -290,8 +269,7 @@ class FederatedLearningManager(private val context: Context) {
             recommendedAdjustment = recommendedAdjustment
         )
     }
-
-    fun aggregateModels(): GlobalAggregatedModel? {
+        fun aggregateModels(): GlobalAggregatedModel? {
         if (localModels.size < MIN_CONTRIBUTION_THRESHOLD) return null
 
         val aggregatedCapabilities = mutableMapOf<String, MutableList<Float>>()
@@ -301,12 +279,10 @@ class FederatedLearningManager(private val context: Context) {
                 aggregatedCapabilities.getOrPut(cap) { mutableListOf() }.add(weight)
             }
         }
-
         val finalCapabilities = aggregatedCapabilities.mapValues { (_, weights) ->
             val filteredWeights = filterOutliers(weights)
             filteredWeights.average().toFloat()
         }
-
         val globalModel = GlobalAggregatedModel(
             capabilities = finalCapabilities,
             participatingAgents = localModels.keys.toSet(),
@@ -327,8 +303,7 @@ class FederatedLearningManager(private val context: Context) {
         saveToDisk()
         return globalModel
     }
-
-    private fun filterOutliers(values: List<Float>): List<Float> {
+        private fun filterOutliers(values: List<Float>): List<Float> {
         if (values.size < 3) return values
 
         val sorted = values.sorted()
@@ -340,8 +315,7 @@ class FederatedLearningManager(private val context: Context) {
 
         return values.filter { it in lowerBound..upperBound }
     }
-
-    fun triggerAdaptation(agentId: String, trigger: AdaptationRecord.AdaptationTrigger, context: Map<String, Any>) {
+        fun triggerAdaptation(agentId: String, trigger: AdaptationRecord.AdaptationTrigger, context: Map<String, Any>) {
         scope.launch {
             val record = AdaptationRecord(
                 trigger = trigger,
@@ -352,8 +326,7 @@ class FederatedLearningManager(private val context: Context) {
             )
 
             adaptationHistories.getOrPut(agentId) { mutableListOf() }.add(record)
-
-            when (record.action) {
+        when (record.action) {
                 AdaptationRecord.AdaptationAction.WEIGHT_ADJUSTMENT -> {
                     performWeightAdjustment(agentId, context)
                 }
@@ -374,8 +347,7 @@ class FederatedLearningManager(private val context: Context) {
             saveToDisk()
         }
     }
-
-    private fun determineAdaptationAction(trigger: AdaptationRecord.AdaptationTrigger, context: Map<String, Any>): AdaptationRecord.AdaptationAction {
+        private fun determineAdaptationAction(trigger: AdaptationRecord.AdaptationTrigger, context: Map<String, Any>): AdaptationRecord.AdaptationAction {
         return when (trigger) {
             AdaptationRecord.AdaptationTrigger.POOR_PERFORMANCE -> AdaptationRecord.AdaptationAction.WEIGHT_ADJUSTMENT
             AdaptationRecord.AdaptationTrigger.NEW_TASK_TYPE -> AdaptationRecord.AdaptationAction.PATTERN_INJECTION
@@ -384,8 +356,7 @@ class FederatedLearningManager(private val context: Context) {
             AdaptationRecord.AdaptationTrigger.PERIODIC_REVIEW -> AdaptationRecord.AdaptationAction.WEIGHT_ADJUSTMENT
         }
     }
-
-    private fun performWeightAdjustment(agentId: String, context: Map<String, Any>) {
+        private fun performWeightAdjustment(agentId: String, context: Map<String, Any>) {
         val model = localModels[agentId] ?: return
         val targetCapability = context["capability"] as? String ?: return
 
@@ -395,8 +366,7 @@ class FederatedLearningManager(private val context: Context) {
         model.capabilityWeights[targetCapability] = (currentWeight + adjustment).coerceIn(0.1f, 2.0f)
         model.version++
     }
-
-    private fun injectLearnedPattern(agentId: String, context: Map<String, Any>) {
+        private fun injectLearnedPattern(agentId: String, context: Map<String, Any>) {
         val pattern = context["pattern"] as? String ?: return
         sharedKnowledgeBase[pattern]?.let { knowledge ->
             val targetAgents = context["targetAgents"] as? List<String> ?: listOf(agentId)
@@ -405,13 +375,11 @@ class FederatedLearningManager(private val context: Context) {
             }
         }
     }
-
-    private fun performModelMerge(agentId: String, context: Map<String, Any>) {
+        private fun performModelMerge(agentId: String, context: Map<String, Any>) {
         val sourceAgents = context["sourceAgents"] as? List<String> ?: return
 
         val targetModel = localModels[agentId] ?: return
         val sourceModels = sourceAgents.mapNotNull { localModels[it] }
-
         if (sourceModels.isEmpty()) return
 
         sourceModels.forEach { sourceModel ->
@@ -422,19 +390,16 @@ class FederatedLearningManager(private val context: Context) {
         }
         targetModel.version++
     }
-
-    private fun switchStrategy(agentId: String, context: Map<String, Any>) {
+        private fun switchStrategy(agentId: String, context: Map<String, Any>) {
         val newStrategy = context["strategy"] as? String ?: return
         localModels[agentId]?.let { model ->
             model.driftDetected = false
         }
     }
-
-    private fun reassignRole(agentId: String, context: Map<String, Any>) {
+        private fun reassignRole(agentId: String, context: Map<String, Any>) {
         val newRole = context["role"] as? String ?: return
     }
-
-    private fun startAggregationLoop() {
+        private fun startAggregationLoop() {
         aggregationJob = scope.launch {
             while (isActive) {
                 delay(AGGREGATION_INTERVAL)
@@ -442,30 +407,25 @@ class FederatedLearningManager(private val context: Context) {
             }
         }
     }
-
-    private fun updateProgress(agentId: String, performance: Float) {
+        private fun updateProgress(agentId: String, performance: Float) {
         val currentProgress = _trainingProgress.value.toMutableMap()
         currentProgress[agentId] = performance
         _trainingProgress.value = currentProgress
     }
-
-    fun getAgentCapabilities(agentId: String): Map<String, Float>? {
+        fun getAgentCapabilities(agentId: String): Map<String, Float>? {
         return localModels[agentId]?.capabilityWeights
     }
-
-    fun getAdaptationHistory(agentId: String): List<AdaptationRecord> {
+        fun getAdaptationHistory(agentId: String): List<AdaptationRecord> {
         return adaptationHistories[agentId]?.toList() ?: emptyList()
     }
-
-    fun getSharedKnowledge(): List<SharedKnowledge> {
+        fun getSharedKnowledge(): List<SharedKnowledge> {
         return sharedKnowledgeBase.values.toList()
     }
-
-    private fun saveToDisk() {
+        private fun saveToDisk() {
         try {
             val modelJson = gson.toJson(localModels.mapKeys { it.key })
-            val knowledgeJson = gson.toJson(sharedKnowledgeBase)
-            val contributionJson = gson.toJson(agentContributions.mapValues { it.value.toList() })
+        val knowledgeJson = gson.toJson(sharedKnowledgeBase)
+        val contributionJson = gson.toJson(agentContributions.mapValues { it.value.toList() })
 
             prefs.edit()
                 .putString("models", Base64.encodeToString(modelJson.toByteArray(), Base64.DEFAULT))
@@ -476,30 +436,29 @@ class FederatedLearningManager(private val context: Context) {
             AppLogger.e(TAG, "saveToDisk failed", e)
         }
     }
-
-    private fun loadFromDisk() {
+        private fun loadFromDisk() {
         try {
             val modelJson = prefs.getString("models", null)
-            val knowledgeJson = prefs.getString("knowledge", null)
-            val contributionJson = prefs.getString("contributions", null)
+        val knowledgeJson = prefs.getString("knowledge", null)
+        val contributionJson = prefs.getString("contributions", null)
 
             modelJson?.let {
                 val json = String(Base64.decode(it, Base64.DEFAULT))
-                val type = object : TypeToken<Map<String, LocalAgentModel>>() {}.type
+        val type = object : TypeToken<Map<String, LocalAgentModel>>() {}.type
                 val models: Map<String, LocalAgentModel> = gson.fromJson(json, type)
                 models.forEach { (k, v) -> localModels[k] = v }
             }
 
             knowledgeJson?.let {
                 val json = String(Base64.decode(it, Base64.DEFAULT))
-                val type = object : TypeToken<Map<String, SharedKnowledge>>() {}.type
+        val type = object : TypeToken<Map<String, SharedKnowledge>>() {}.type
                 val knowledge: Map<String, SharedKnowledge> = gson.fromJson(json, type)
                 knowledge.forEach { (k, v) -> sharedKnowledgeBase[k] = v }
             }
 
             contributionJson?.let {
                 val json = String(Base64.decode(it, Base64.DEFAULT))
-                val type = object : TypeToken<Map<String, List<ModelContribution>>>() {}.type
+        val type = object : TypeToken<Map<String, List<ModelContribution>>>() {}.type
                 val contributions: Map<String, List<ModelContribution>> = gson.fromJson(json, type)
                 contributions.forEach { (k, v) -> agentContributions[k] = v.toMutableList() }
             }
@@ -507,8 +466,7 @@ class FederatedLearningManager(private val context: Context) {
             AppLogger.e(TAG, "loadFromDisk failed", e)
         }
     }
-
-    fun shutdown() {
+        fun shutdown() {
         aggregationJob?.cancel()
         scope.cancel()
     }
@@ -524,27 +482,24 @@ data class GlobalAggregatedModel(
 class IncrementalLearningEngine {
 
     private val learningRates = ConcurrentHashMap<String, Float>()
-    private val momentumBuffer = ConcurrentHashMap<String, Float>()
-    private val gradientHistory = ConcurrentHashMap<String, MutableList<Float>>()
+        private val momentumBuffer = ConcurrentHashMap<String, Float>()
+        private val gradientHistory = ConcurrentHashMap<String, MutableList<Float>>()
 
     companion object {
         private const val DEFAULT_LEARNING_RATE = 0.01f
         private const val MOMENTUM_FACTOR = 0.9f
         private const val GRADIENT_HISTORY_SIZE = 10
     }
-
-    fun computeGradient(currentValue: Float, targetValue: Float, error: Float): Float {
+        fun computeGradient(currentValue: Float, targetValue: Float, error: Float): Float {
         return (targetValue - currentValue) * error
     }
-
-    fun updateWithMomentum(
+        fun updateWithMomentum(
         agentId: String,
         capability: String,
         gradient: Float,
         learningRate: Float = learningRates[capability] ?: DEFAULT_LEARNING_RATE
     ): Float {
         val key = "${agentId}:${capability}"
-
         val momentum = momentumBuffer[key] ?: 0f
         val newMomentum = MOMENTUM_FACTOR * momentum + (1 - MOMENTUM_FACTOR) * gradient
 
@@ -555,21 +510,18 @@ class IncrementalLearningEngine {
         if (gradientHist.size > GRADIENT_HISTORY_SIZE) {
             gradientHist.removeAt(0)
         }
-
         val adaptiveLR = adaptLearningRate(key, gradient)
         learningRates[capability] = adaptiveLR
 
         return newMomentum * adaptiveLR
     }
-
-    private fun adaptLearningRate(key: String, gradient: Float): Float {
+        private fun adaptLearningRate(key: String, gradient: Float): Float {
         val history = gradientHistory[key] ?: return DEFAULT_LEARNING_RATE
 
         if (history.size < 3) return DEFAULT_LEARNING_RATE
 
         val recentGradients = history.takeLast(3)
         val variance = calculateVariance(recentGradients)
-
         val baseLR = learningRates[key.split(":").getOrNull(1) ?: ""] ?: DEFAULT_LEARNING_RATE
 
         return when {
@@ -578,14 +530,12 @@ class IncrementalLearningEngine {
             else -> baseLR
         }.coerceIn(0.001f, 0.1f)
     }
-
-    private fun calculateVariance(values: List<Float>): Float {
+        private fun calculateVariance(values: List<Float>): Float {
         if (values.isEmpty()) return 0f
         val mean = values.average().toFloat()
         return values.map { (it - mean) * (it - mean) }.average().toFloat()
     }
-
-    fun resetForAgent(agentId: String) {
+        fun resetForAgent(agentId: String) {
         momentumBuffer.keys.removeAll { it.startsWith("${agentId}:") }
         gradientHistory.keys.removeAll { it.startsWith("${agentId}:") }
     }

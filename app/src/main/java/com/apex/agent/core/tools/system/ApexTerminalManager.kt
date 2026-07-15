@@ -13,17 +13,16 @@ import java.io.IOException
 
 object ApexTerminalManager {
     const val PACKAGE_NAME = "com.apex.terminal"
-    private const val REPO_OWNER = "AAswordman"
-    private const val REPO_NAME = "ApexTerminal"
-    private const val TAG = "ApexTerminalManager"
+        private const val REPO_OWNER = "AAswordman"
+        private const val REPO_NAME = "ApexTerminal"
+        private const val TAG = "ApexTerminalManager"
 
     data class ReleaseInfo(
         val version: String,
         val downloadUrl: String,
         val releaseNotes: String
     )
-
-    fun isInstalled(context: Context): Boolean {
+        fun isInstalled(context: Context): Boolean {
         return try {
             context.packageManager.getPackageInfo(PACKAGE_NAME, 0)
             true
@@ -31,8 +30,7 @@ object ApexTerminalManager {
             false
         }
     }
-
-    fun getInstalledVersion(context: Context): String? {
+        fun getInstalledVersion(context: Context): String? {
         return try {
             val packageInfo = context.packageManager.getPackageInfo(PACKAGE_NAME, 0)
             packageInfo.versionName

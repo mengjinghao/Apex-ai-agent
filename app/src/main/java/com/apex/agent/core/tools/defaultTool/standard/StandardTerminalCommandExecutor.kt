@@ -36,12 +36,11 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_missing_session_name)
                     )
                 }
-
-                val terminal = Terminal.getInstance(context)
+        val terminal = Terminal.getInstance(context)
 
                 // 修正：直接检查Terminal 单例中是否已存在同名会话，而不是依赖本地缓�?
     val existingSession = terminal.terminalState.value.sessions.find { it.title == sessionName }
-                if (existingSession != null) {
+        if (existingSession != null) {
                     // 如果存在，更新本地缓存并返回该会�?                  sessionNameToIdMap[sessionName] = existingSession.id
                     return@runBlocking ToolResult(
                         toolName = tool.name,
@@ -84,7 +83,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
         return runBlocking {
             try {
                 val command = tool.parameters.find { param -> param.name == "command" }?.value ?: ""
-                val sessionId = tool.parameters.find { param -> param.name == "session_id" }?.value
+        val sessionId = tool.parameters.find { param -> param.name == "session_id" }?.value
 
                 if (sessionId.isNullOrBlank()) {
                     return@runBlocking ToolResult(
@@ -94,8 +93,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_missing_session_id)
                     )
                 }
-
-                val timeout =
+        val timeout =
                         tool.parameters
                                 .find { param -> param.name == "timeout_ms" }
                                 ?.value
@@ -114,12 +112,10 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_session_not_exist, sessionId)
                     )
                 }
-
-                val outputFlow = terminal.executeCommandFlow(sessionId, command)
-
-                if (outputFlow != null) {
+        val outputFlow = terminal.executeCommandFlow(sessionId, command)
+        if (outputFlow != null) {
                     val events = mutableListOf<String>()
-                    var completionOutput: String? = null
+        var completionOutput: String? = null
                     var exitCode = 0
                     var hasCompleted = false
                     var didTimeout = false
@@ -132,7 +128,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                                 } else if (event.outputChunk.isNotEmpty()) {
                                     events.add(event.outputChunk)
                                 }
-                                if (event.isCompleted) {
+        if (event.isCompleted) {
                                     exitCode = 0
                                     hasCompleted = true
                                 }
@@ -144,10 +140,9 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         exitCode = -1
                         didTimeout = true
                     }
-
-                    val fullOutput = completionOutput?.takeIf { it.isNotEmpty() } ?: events.joinToString("")
+        val fullOutput = completionOutput?.takeIf { it.isNotEmpty() } ?: events.joinToString("")
                     AppLogger.d(TAG, "Command output collected: '${fullOutput}', exitCode: ${exitCode}")
-                    val errorMessage =
+        val errorMessage =
                             when {
                                 didTimeout ->
                                         context.getString(
@@ -195,7 +190,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
         return runBlocking {
             try {
                 val command = tool.parameters.find { it.name == "command" }?.value ?: ""
-                if (command.isBlank()) {
+        if (command.isBlank()) {
                     return@runBlocking ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -203,15 +198,14 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_missing_command)
                     )
                 }
-
-                val executorKey =
+        val executorKey =
                     tool.parameters
                         .find { it.name == "executor_key" }
                         ?.value
                         ?.trim()
                         ?.ifEmpty { "default" }
                         ?: "default"
-                val timeoutMs =
+        val timeoutMs =
                     tool.parameters
                         .find { it.name == "timeout_ms" }
                         ?.value
@@ -219,14 +213,14 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         ?: 120000L
 
                 val terminal = Terminal.getInstance(context)
-                val hiddenResult =
+        val hiddenResult =
                     terminal.executeHiddenCommand(
                         command = command,
                         executorKey = executorKey,
                         timeoutMs = timeoutMs
                     )
-                val output = extractHiddenExecOutput(hiddenResult)
-                val didTimeout = hiddenResult.state == HiddenExecResult.State.TIMEOUT
+        val output = extractHiddenExecOutput(hiddenResult)
+        val didTimeout = hiddenResult.state == HiddenExecResult.State.TIMEOUT
                 val errorMessage =
                     when {
                         didTimeout ->
@@ -284,13 +278,11 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_missing_session_id)
                     )
                 }
-
-                val inputParam = tool.parameters.find { it.name == "input" }
-                val hasInput = inputParam != null
+        val inputParam = tool.parameters.find { it.name == "input" }
+        val hasInput = inputParam != null
                 val input = inputParam?.value ?: ""
-                val control = normalizeControl(tool.parameters.find { it.name == "control" }?.value)
-
-                if (!hasInput && control == null) {
+        val control = normalizeControl(tool.parameters.find { it.name == "control" }?.value)
+        if (!hasInput && control == null) {
                     return@runBlocking ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -298,8 +290,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_missing_input_or_control)
                     )
                 }
-
-                val terminal = Terminal.getInstance(context)
+        val terminal = Terminal.getInstance(context)
 
                 // 检查会话是否存�?
     if (terminal.terminalState.value.sessions.none { it.id == sessionId }) {
@@ -311,8 +302,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_session_not_exist, sessionId)
                     )
                 }
-
-                val acceptedChars = applyTerminalInput(
+        val acceptedChars = applyTerminalInput(
                     terminal = terminal,
                     sessionId = sessionId,
                     hasInput = hasInput,
@@ -363,8 +353,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_missing_session_id)
                     )
                 }
-
-                val terminal = Terminal.getInstance(context)
+        val terminal = Terminal.getInstance(context)
                 terminal.closeSession(sessionId)
 
                 // 从名称映射中移除
@@ -404,10 +393,9 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_missing_session_id)
                     )
                 }
-
-                val terminal = Terminal.getInstance(context)
-                val session = terminal.terminalState.value.sessions.find { it.id == sessionId }
-                if (session == null) {
+        val terminal = Terminal.getInstance(context)
+        val session = terminal.terminalState.value.sessions.find { it.id == sessionId }
+        if (session == null) {
                     sessionNameToIdMap.entries.removeIf { it.value == sessionId }
                     return@runBlocking ToolResult(
                         toolName = tool.name,
@@ -416,10 +404,9 @@ class StandardTerminalCommandExecutor(private val context: Context) {
                         error = context.getString(R.string.terminal_error_session_not_exist, sessionId)
                     )
                 }
-
-                val screen = session.ansiParser.getScreenContent()
-                val content = renderSingleScreen(screen)
-                val rows = screen.size
+        val screen = session.ansiParser.getScreenContent()
+        val content = renderSingleScreen(screen)
+        val rows = screen.size
                 val cols = if (rows > 0) screen[0].size else 0
                 val commandRunning = session.currentExecutingCommand?.isExecuting == true
 
@@ -445,8 +432,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
             }
         }
     }
-
-    private fun renderSingleScreen(screen: Array<Array<TerminalChar>>): String {
+        private fun renderSingleScreen(screen: Array<Array<TerminalChar>>): String {
         val lines = screen.map { row ->
             buildString {
                 row.forEach { cell -> append(cell.char) }
@@ -456,21 +442,18 @@ class StandardTerminalCommandExecutor(private val context: Context) {
         while (lines.isNotEmpty() && lines.last().isEmpty()) {
             lines.removeAt(lines.lastIndex)
         }
-
         return lines.joinToString("\n")
     }
-
-    private fun extractHiddenExecOutput(result: HiddenExecResult): String {
+        private fun extractHiddenExecOutput(result: HiddenExecResult): String {
         return result.output.ifBlank { result.rawOutputPreview }
     }
-
-    private fun buildHiddenExecFailureDetail(result: HiddenExecResult): String {
+        private fun buildHiddenExecFailureDetail(result: HiddenExecResult): String {
         val summary =
             buildString {
                 append("state=")
                 append(result.state.name)
-                val error = result.error.trim()
-                if (error.isNotEmpty()) {
+        val error = result.error.trim()
+        if (error.isNotEmpty()) {
                     append(", error=")
                     append(error)
                 }
@@ -482,8 +465,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
             summary
         }
     }
-
-    private fun normalizeControl(rawControl: String): String? {
+        private fun normalizeControl(rawControl: String): String? {
         val value = rawControl?.trim()?.lowercase()
         if (value.isNullOrEmpty()) return null
         return when (value) {
@@ -499,8 +481,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
             else -> value
         }
     }
-
-    private fun applyTerminalInput(
+        private fun applyTerminalInput(
         terminal: Terminal,
         sessionId: String,
         hasInput: Boolean,
@@ -511,28 +492,23 @@ class StandardTerminalCommandExecutor(private val context: Context) {
             if (hasInput && input.isNotEmpty()) {
                 terminal.sendInput(sessionId, input)
             }
-            return if (hasInput) input.length else 0
+        return if (hasInput) input.length else 0
         }
-
         if (isModifierControl(control)) {
             return applyModifierControl(terminal, sessionId, control, hasInput, input)
         }
-
         val controlSequence = controlToSequence(control)
             ?: throw IllegalArgumentException(context.getString(R.string.terminal_error_unsupported_control, control))
-
         if (hasInput && input.isNotEmpty()) {
             terminal.sendInput(sessionId, input)
         }
         terminal.sendInput(sessionId, controlSequence)
         return (if (hasInput) input.length else 0) + controlSequence.length
     }
-
-    private fun isModifierControl(control: String): Boolean {
+        private fun isModifierControl(control: String): Boolean {
         return control == "ctrl" || control == "control" || control == "alt" || control == "shift" || control == "meta" || control == "cmd"
     }
-
-    private fun applyModifierControl(
+        private fun applyModifierControl(
         terminal: Terminal,
         sessionId: String,
         control: String,
@@ -542,7 +518,6 @@ class StandardTerminalCommandExecutor(private val context: Context) {
         if (!hasInput) {
             throw IllegalArgumentException(context.getString(R.string.terminal_error_control_requires_input, control))
         }
-
         return when (control) {
             "ctrl", "control" -> applyCtrlCombination(terminal, sessionId, input)
             "alt", "meta", "cmd" -> {
@@ -558,18 +533,15 @@ class StandardTerminalCommandExecutor(private val context: Context) {
             else -> throw IllegalArgumentException(context.getString(R.string.terminal_error_unsupported_control, control))
         }
     }
-
-    private fun applyCtrlCombination(terminal: Terminal, sessionId: String, input: String): Int {
+        private fun applyCtrlCombination(terminal: Terminal, sessionId: String, input: String): Int {
         if (input.length != 1) {
             throw IllegalArgumentException(context.getString(R.string.terminal_error_ctrl_input_single_char))
         }
-
         val value = input[0]
         if (value.equals('c', ignoreCase = true)) {
             terminal.sendInterruptSignal(sessionId)
-            return 1
+        return 1
         }
-
         val code =
             when (val upper = value.uppercaseChar()) {
                 in 'A'..'Z' -> upper.code - 'A'.code + 1
@@ -592,8 +564,7 @@ class StandardTerminalCommandExecutor(private val context: Context) {
         terminal.sendInput(sessionId, code.toChar().toString())
         return 1
     }
-
-    private fun controlToSequence(control: String): String? {
+        private fun controlToSequence(control: String): String? {
         return when (control) {
             "enter" -> "\r"
             "tab" -> "\t"

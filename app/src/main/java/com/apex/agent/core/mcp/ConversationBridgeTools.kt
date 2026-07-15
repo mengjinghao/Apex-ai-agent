@@ -38,8 +38,7 @@ class ConversationBridgeTools(private val context: Context) {
             }
         }
     }
-    
-    private val sessionDatabase: SessionDatabase by lazy {
+        private val sessionDatabase: SessionDatabase by lazy {
         SessionDatabase.getInstance(context)
     }
     
@@ -48,8 +47,7 @@ class ConversationBridgeTools(private val context: Context) {
     
     /** 待批准权限队�?*/
     private val pendingPermissions = mutableListOf<MCPCPermission>()
-
-    private val rbacManager: RbacManager? by lazy {
+        private val rbacManager: RbacManager? by lazy {
         try { RbacManager.getInstance(context) } catch (e: Exception) { null }
     }
     
@@ -62,9 +60,8 @@ class ConversationBridgeTools(private val context: Context) {
         return withContext(Dispatchers.IO) {
             try {
                 val sessionsFlow = sessionDatabase.sessionDao().getAllSessions()
-                val sessions = sessionsFlow.first()
-                
-                val conversations = sessions
+        val sessions = sessionsFlow.first()
+        val conversations = sessions
                     .drop(offset)
                     .take(limit)
                     .map { session ->
@@ -108,10 +105,8 @@ class ConversationBridgeTools(private val context: Context) {
                         error = "conversation_id is required"
                     )
                 }
-                
-                val session = sessionDatabase.sessionDao().getSessionById(conversationId)
-                
-                if (session == null) {
+        val session = sessionDatabase.sessionDao().getSessionById(conversationId)
+        if (session == null) {
                     return@withContext ConversationResult(
                         success = false,
                         error = "Conversation not found"
@@ -158,12 +153,11 @@ class ConversationBridgeTools(private val context: Context) {
                         error = "conversation_id is required"
                     )
                 }
-                
-                val messages = if (beforeId != null) {
+        val messages = if (beforeId != null) {
                     // 获取指定消息之前的消�?
     val allMessages = sessionDatabase.messageDao().getMessagesBySessionIdSync(conversationId)
-                    val beforeIndex = allMessages.indexOfFirst { it.id == beforeId }
-                    if (beforeIndex > 0) {
+        val beforeIndex = allMessages.indexOfFirst { it.id == beforeId }
+        if (beforeIndex > 0) {
                         allMessages.subList(0, minOf(beforeIndex, limit))
                     } else {
                         allMessages.take(limit)
@@ -171,8 +165,7 @@ class ConversationBridgeTools(private val context: Context) {
                 } else {
                     sessionDatabase.messageDao().getRecentMessages(conversationId, limit).reversed()
                 }
-                
-                val messageList = messages.map { message ->
+        val messageList = messages.map { message ->
                     MessageInfo(
                         id = message.id,
                         role = message.role,
@@ -217,17 +210,15 @@ class ConversationBridgeTools(private val context: Context) {
                 
                 // 检查对话是否存�?
     val session = sessionDatabase.sessionDao().getSessionById(conversationId)
-                if (session == null) {
+        if (session == null) {
                     return@withContext MessageSendResult(
                         success = false,
                         error = "Conversation not found"
                     )
                 }
-                
-                val messageId = UUID.randomUUID().toString()
-                val timestamp = System.currentTimeMillis()
-                
-                val message = MessageEntity(
+        val messageId = UUID.randomUUID().toString()
+        val timestamp = System.currentTimeMillis()
+        val message = MessageEntity(
                     id = messageId,
                     sessionId = conversationId,
                     role = role,
@@ -308,7 +299,7 @@ class ConversationBridgeTools(private val context: Context) {
         return withContext(Dispatchers.IO) {
             try {
                 val startTime = System.currentTimeMillis()
-                val deadline = startTime + timeout
+        val deadline = startTime + timeout
                 
                 while (System.currentTimeMillis() < deadline) {
                     val events = synchronized(eventQueue) {
@@ -319,8 +310,7 @@ class ConversationBridgeTools(private val context: Context) {
                         }
                         null
                     }
-                    
-                    if (events != null) {
+        if (events != null) {
                         return@withContext EventsResult(
                             success = true,
                             events = events
@@ -385,17 +375,15 @@ class ConversationBridgeTools(private val context: Context) {
                         error = "permission_id is required"
                     )
                 }
-                
-                val permission = synchronized(pendingPermissions) {
+        val permission = synchronized(pendingPermissions) {
                     val index = pendingPermissions.indexOfFirst { it.id == permissionId }
-                    if (index >= 0) {
+        if (index >= 0) {
                         pendingPermissions.removeAt(index)
                     } else {
                         null
                     }
                 }
-                
-                if (permission == null) {
+        if (permission == null) {
                     return@withContext PermissionRespondResult(
                         success = false,
                         error = "Permission not found"
@@ -407,9 +395,9 @@ class ConversationBridgeTools(private val context: Context) {
                     rbacManager?.let { rbac ->
                         try {
                             val rbacPermName = "mcp:${permission.type}"
-                            val existingPerm = rbac.getRepository()
+        val existingPerm = rbac.getRepository()
                                 .getPermissionByName(rbacPermName)
-                            if (existingPerm == null) {
+        if (existingPerm == null) {
                                 rbac.getRepository().insertPermission(
                                     com.apex.agent.database.entity.Permission(
                                         name = rbacPermName,

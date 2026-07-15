@@ -86,7 +86,7 @@ class PersonaRegistry {
 
     private val personas = ConcurrentHashMap<String, Persona>()
         private val activePersonas = ConcurrentHashMap<String, String>()  // chatId -> personaId
-        init {
+    init {
         registerBuiltinPersonas()
     }
 

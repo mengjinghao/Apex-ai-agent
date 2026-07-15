@@ -11,7 +11,7 @@ data class TrajectoryData(
 ) {
     fun getTurnCount(): Int = turns.size
     fun getToolCallCount(): Int = turns.count { it.toolCall != null }
-    fun getTokenCount(): Int = turns.sumOf { it.estimateTokenCount() }
+        fun getTokenCount(): Int = turns.sumOf { it.estimateTokenCount() }
 }
 
 data class TrajectoryTurn(
@@ -112,63 +112,48 @@ data class CompressionQualityReport(
 object CompressionStrategy {
 
     private val logger = LoggerFactory.getLogger(CompressionStrategy::class.java)
-
-    fun initialize() {
+        fun initialize() {
         logger.info("CompressionStrategy initialized")
     }
-
-    fun partitionTrajectory(trajectory: TrajectoryData): TrajectoryPartition {
+        fun partitionTrajectory(trajectory: TrajectoryData): TrajectoryPartition {
         val turns = trajectory.turns
         
         if (turns.size <= 3) {
             return TrajectoryPartition(turns, emptyList(), emptyList())
         }
-
         val head = extractHead(turns)
         val tail = extractTail(turns.subList(head.size, turns.size))
         val middle = turns.subList(head.size, turns.size - tail.size)
-
         return TrajectoryPartition(head, middle, tail)
     }
-
-    private fun extractHead(turns: List<TrajectoryTurn>): List<TrajectoryTurn> {
+        private fun extractHead(turns: List<TrajectoryTurn>): List<TrajectoryTurn> {
         val head = mutableListOf<TrajectoryTurn>()
-        
         for (turn in turns) {
             head.add(turn)
-            
-            if (head.size >= 2 && 
+        if (head.size >= 2 && 
                 head.any { it.role == "system" } && 
                 head.any { it.role == "user" }) {
                 if (turn.toolCall != null) {
                     break
                 }
             }
-            
-            if (head.size >= 5) break
+        if (head.size >= 5) break
         }
-        
         return head
     }
-
-    private fun extractTail(turns: List<TrajectoryTurn>): List<TrajectoryTurn> {
+        private fun extractTail(turns: List<TrajectoryTurn>): List<TrajectoryTurn> {
         val tail = mutableListOf<TrajectoryTurn>()
         val reversed = turns.reversed()
-        
         for (turn in reversed) {
             tail.add(turn)
-            
-            if (turn.role == "assistant" && turn.toolCall == null) {
+        if (turn.role == "assistant" && turn.toolCall == null) {
                 break
             }
-            
-            if (tail.size >= 5) break
+        if (tail.size >= 5) break
         }
-        
         return tail.reversed()
     }
-
-    fun calculateCompressionNeeded(
+        fun calculateCompressionNeeded(
         trajectory: TrajectoryData,
         budget: TokenBudget
     ): Int {
@@ -193,18 +178,16 @@ object MiddleCompression {
         if (middleTurns.isEmpty() || targetTokenReduction <= 0) {
             return middleTurns to null
         }
-
         val totalTokens = middleTurns.sumOf { it.estimateTokenCount() }
         val targetTokens = maxOf(0, totalTokens - targetTokenReduction)
-
         if (targetTokens <= 0) {
             val summary = generateSummary(middleTurns)
-            val compressedTurn = TrajectoryTurn(
+        val compressedTurn = TrajectoryTurn(
                 role = "user",
                 content = summary,
                 timestamp = middleTurns.first().timestamp
             )
-            return listOf(compressedTurn) to CompressedRegion(
+        return listOf(compressedTurn) to CompressedRegion(
                 startIndex = 0,
                 endIndex = middleTurns.size - 1,
                 summary = summary,
@@ -212,11 +195,9 @@ object MiddleCompression {
                 compressedTokenCount = summary.length / 4
             )
         }
-
         return middleTurns to null
     }
-
-    private fun generateSummary(turns: List<TrajectoryTurn>): String {
+        private fun generateSummary(turns: List<TrajectoryTurn>): String {
         val content = turns.joinToString(" ") { it.content.take(200) }
         return "[Compressed Summary]: ${content.take(500)}"
     }
@@ -245,25 +226,21 @@ object ToolPairPreserver {
             }
             i++
         }
-        
         return pairs
     }
-
-    fun preserveToolPairs(
+        fun preserveToolPairs(
         turns: List<TrajectoryTurn>,
         pairs: List<Pair<Int, Int>>,
         startIndex: Int,
         endIndex: Int
     ): List<TrajectoryTurn> {
         val preservedIndices = mutableSetOf<Int>()
-        
         for (pair in pairs) {
             if (pair.first >= startIndex && pair.second <= endIndex) {
                 preservedIndices.add(pair.first)
                 preservedIndices.add(pair.second)
             }
         }
-        
         return turns.filterIndexed { index, _ -> preservedIndices.contains(index) }
     }
 }
@@ -271,8 +248,7 @@ object ToolPairPreserver {
 object TrajectoryCompressor {
 
     private val logger = LoggerFactory.getLogger(TrajectoryCompressor::class.java)
-
-    fun initialize() {
+        fun initialize() {
         logger.info("TrajectoryCompressor initialized")
     }
 
@@ -287,24 +263,21 @@ object TrajectoryCompressor {
                 tailProtection = 1024,
                 minimumMiddle = 512
             )
-
-            val partition = CompressionStrategy.partitionTrajectory(trajectory)
-            val compressionNeeded = CompressionStrategy.calculateCompressionNeeded(trajectory, budget)
-
-            var compressedMiddle = partition.middle
+        val partition = CompressionStrategy.partitionTrajectory(trajectory)
+        val compressionNeeded = CompressionStrategy.calculateCompressionNeeded(trajectory, budget)
+        var compressedMiddle = partition.middle
             var compressedRegion: CompressedRegion? = null
 
             if (compressionNeeded > 0) {
                 val toolPairs = ToolPairPreserver.findToolPairs(partition.middle)
-                val (middle, region) = MiddleCompression.compressMiddle(
+        val (middle, region) = MiddleCompression.compressMiddle(
                     partition.middle,
                     compressionNeeded
                 )
                 compressedMiddle = middle
                 compressedRegion = region
             }
-
-            val compressedTurns = partition.head + compressedMiddle + partition.tail
+        val compressedTurns = partition.head + compressedMiddle + partition.tail
             val compressedTrajectory = TrajectoryData(
                 id = trajectory.id,
                 turns = compressedTurns,
@@ -313,8 +286,7 @@ object TrajectoryCompressor {
                     "originalTurns" to trajectory.turns.size
                 )
             )
-
-            val qualityReport = generateQualityReport(
+        val qualityReport = generateQualityReport(
                 trajectory,
                 compressedTrajectory,
                 partition
@@ -330,15 +302,13 @@ object TrajectoryCompressor {
             )
         }
     }
-
-    private fun generateQualityReport(
+        private fun generateQualityReport(
         original: TrajectoryData,
         compressed: TrajectoryData,
         partition: TrajectoryPartition
     ): CompressionQualityReport {
         val originalToolCalls = original.getToolCallCount()
         val compressedToolCalls = compressed.getToolCallCount()
-        
         return CompressionQualityReport(
             preservedToolCalls = compressedToolCalls,
             totalToolCalls = originalToolCalls,
@@ -352,8 +322,7 @@ object TrajectoryCompressor {
             }
         )
     }
-
-    fun calculateStats(trajectory: TrajectoryData): TrajectoryStats {
+        fun calculateStats(trajectory: TrajectoryData): TrajectoryStats {
         val tokens = trajectory.turns.map { it.estimateTokenCount() }
         return TrajectoryStats(
             totalTurns = trajectory.turns.size,

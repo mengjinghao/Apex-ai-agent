@@ -120,7 +120,7 @@ data class CombinedOperationResultData(
 data class ComputerPageInfoNode(
     val interactionId: Int?,
     val type: String, // e.g., "container", "button", "link", "text", "input"
-    val description: String,
+        val description: String,
     val children: List<ComputerPageInfoNode>
 ) {
     fun toTreeString(level: Int = 0): String {

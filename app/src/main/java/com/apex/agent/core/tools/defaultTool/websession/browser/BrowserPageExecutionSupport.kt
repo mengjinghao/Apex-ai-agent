@@ -175,13 +175,13 @@ internal fun StandardBrowserSessionTools.injectDownloadHelper(webView: WebView) 
             function guessName(anchor) {
                 if (!anchor) return "";
                 const raw = String(anchor.getAttribute("download") || "").trim();
-                if (raw) return raw;
+        if (raw) return raw;
                 try {
                     const url = String(anchor.href || "");
-                    if (!url) return "";
+        if (!url) return "";
                     const pathname = new URL(url, location.href).pathname || "";
                     const last = pathname.split("/").filter(Boolean).pop() || "";
-                    return decodeURIComponent(last || "");
+        return decodeURIComponent(last || "");
                 } catch (_) {
                     return "";
                 }
@@ -210,15 +210,15 @@ internal fun StandardBrowserSessionTools.injectDownloadHelper(webView: WebView) 
 
             document.addEventListener("click", function(event) {
                 const anchor = event.target && event.target.closest ? event.target.closest("a[href]") : null;
-                if (!anchor) {
+        if (!anchor) {
                     return;
                 }
                 const href = String(anchor.href || "");
-                if (!href) {
+        if (!href) {
                     return;
                 }
                 const fileName = guessName(anchor);
-                if (href.startsWith("blob:")) {
+        if (href.startsWith("blob:")) {
                     event.preventDefault();
                     downloadBlob(href, fileName);
                 } else if (href.startsWith("data:")) {
@@ -341,7 +341,7 @@ internal fun StandardBrowserSessionTools.guessMimeTypeFromDataUrl(dataUrl: Strin
     if (!dataUrl.startsWith("data:")) {
         return "application/octet-stream"
     }
-    return dataUrl.substringAfter("data:", "")
+        return dataUrl.substringAfter("data:", "")
         .substringBefore(';', "application/octet-stream")
         .ifBlank { "application/octet-stream" }
 }
@@ -351,17 +351,17 @@ internal fun StandardBrowserSessionTools.resolveInlineDownloadFileName(
     mimeType: String
 ): String {
     val trimmed = fileName.trim()
-    if (trimmed.isNotBlank()) {
+        if (trimmed.isNotBlank()) {
         return sanitizeFileName(trimmed)
     }
-    return sanitizeFileName(
+        return sanitizeFileName(
         "download_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}${determineExtensionFromMimeType(mimeType)}"
     )
 }
 
 private fun determineExtensionFromMimeType(mimeType: String): String {
     val lowerMimeType = mimeType.lowercase(Locale.ROOT)
-    return when {
+        return when {
         lowerMimeType.startsWith("image/") -> ".${lowerMimeType.substringAfter('/')}"
         lowerMimeType.startsWith("audio/") -> ".${lowerMimeType.substringAfter('/')}"
         lowerMimeType.startsWith("video/") -> ".${lowerMimeType.substringAfter('/')}"
@@ -379,7 +379,7 @@ private fun determineExtensionFromMimeType(mimeType: String): String {
 
 internal fun StandardBrowserSessionTools.sanitizeFileName(fileName: String): String {
     val sanitized = fileName.replace("[\\\\/:*?\"<>|]".toRegex(), "_").trim()
-    return if (sanitized.isBlank()) {
+        return if (sanitized.isBlank()) {
         "download_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}"
     } else {
         sanitized
@@ -390,8 +390,7 @@ internal fun StandardBrowserSessionTools.getSession(sessionId: String): BrowserT
     if (!sessionId.isNullOrBlank()) {
         return sessionById(sessionId)
     }
-
-    return buildPageRegistry().activeSessionId?.let(::sessionById)
+        return buildPageRegistry().activeSessionId?.let(::sessionById)
 }
 
 internal fun StandardBrowserSessionTools.sessionById(sessionId: String): BrowserToolSession? =
@@ -429,7 +428,7 @@ internal fun StandardBrowserSessionTools.evaluateJavascriptSync(
     timeoutMs: Long
 ): String {
     val latch = CountDownLatch(1)
-    var result: String? = null
+        var result: String? = null
 
     StandardBrowserSessionTools.mainHandler.post {
         try {
@@ -447,28 +446,24 @@ internal fun StandardBrowserSessionTools.evaluateJavascriptSync(
             latch.countDown()
         }
     }
-
-    if (!latch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+        if (!latch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
         throw RuntimeException("JavaScript execution timeout (${timeoutMs}ms)")
     }
-
-    return result ?: "null"
+        return result ?: "null"
 }
 
 internal fun StandardBrowserSessionTools.decodeJsResult(raw: String): String {
     if (raw.isNullOrBlank() || raw == "null") {
         return ""
     }
-
-    if (raw.startsWith("\"") && raw.endsWith("\"")) {
+        if (raw.startsWith("\"") && raw.endsWith("\"")) {
         return try {
             JSONObject("{\"v\":${raw}}").getString("v")
         } catch (_: Exception) {
             raw.substring(1, raw.length - 1)
         }
     }
-
-    return raw
+        return raw
 }
 
 private fun quoteJs(value: String): String = JSONObject.quote(value)
@@ -487,7 +482,7 @@ internal fun StandardBrowserSessionTools.quoteJsCode(value: String): String {
                 }
             }
         }
-    return "'${escaped}'"
+        return "'${escaped}'"
 }
 
 internal fun StandardBrowserSessionTools.renderJsArrayCode(values: Collection<String>): String =
@@ -505,37 +500,37 @@ private fun playwrightLikeInputRuntimeJs(): String =
 
         function retarget(node, behavior) {
             let element = node && node.nodeType === Node.ELEMENT_NODE ? node : node && node.parentElement;
-            if (!element) {
+        if (!element) {
                 return null;
             }
-            if (behavior === "none" || behavior === "no-follow-label") {
+        if (behavior === "none" || behavior === "no-follow-label") {
                 return element;
             }
-            if (!element.matches("input, textarea, select") && !element.isContentEditable) {
+        if (!element.matches("input, textarea, select") && !element.isContentEditable) {
                 if (behavior === "button-link") {
                     element = element.closest("button, [role=button], a, [role=link]") || element;
                 } else {
                     element = element.closest("button, [role=button], [role=checkbox], [role=radio]") || element;
                 }
             }
-            if (behavior === "follow-label") {
+        if (behavior === "follow-label") {
                 if (!element.matches("a, input, textarea, button, select, [role=link], [role=button], [role=checkbox], [role=radio]") && !element.isContentEditable) {
                     const enclosingLabel = element.closest("label");
-                    if (enclosingLabel && enclosingLabel.control) {
+        if (enclosingLabel && enclosingLabel.control) {
                         element = enclosingLabel.control;
                     }
                 }
             }
-            return element;
+        return element;
         }
 
         function isVisible(element) {
             const style = element.ownerDocument.defaultView.getComputedStyle(element);
-            if (!style || style.visibility === "hidden" || style.visibility === "collapse" || style.display === "none") {
+        if (!style || style.visibility === "hidden" || style.visibility === "collapse" || style.display === "none") {
                 return false;
             }
             const rect = element.getBoundingClientRect();
-            return !!(rect.width || rect.height || element.getClientRects().length);
+        return !!(rect.width || rect.height || element.getClientRects().length);
         }
 
         const ariaCheckedRoles = new Set(["checkbox", "menuitemcheckbox", "option", "radio", "switch", "menuitemradio", "treeitem"]);
@@ -544,10 +539,10 @@ private fun playwrightLikeInputRuntimeJs(): String =
 
         function elementTagName(element) {
             const tagName = element && element.tagName;
-            if (typeof tagName === "string") {
+        if (typeof tagName === "string") {
                 return tagName.toUpperCase();
             }
-            return String(tagName || "").toUpperCase();
+        return String(tagName || "").toUpperCase();
         }
 
         function ariaRole(element) {
@@ -558,11 +553,11 @@ private fun playwrightLikeInputRuntimeJs(): String =
             if (!element) {
                 return null;
             }
-            if (element.parentElement) {
+        if (element.parentElement) {
                 return element.parentElement;
             }
             const parentNode = element.parentNode;
-            return parentNode && parentNode.host ? parentNode.host : null;
+        return parentNode && parentNode.host ? parentNode.host : null;
         }
 
         function belongsToDisabledOptGroup(element) {
@@ -571,33 +566,33 @@ private fun playwrightLikeInputRuntimeJs(): String =
 
         function belongsToDisabledFieldSet(element) {
             const fieldSetElement = element && element.closest ? element.closest("FIELDSET[DISABLED]") : null;
-            if (!fieldSetElement) {
+        if (!fieldSetElement) {
                 return false;
             }
             const legendElement = fieldSetElement.querySelector(":scope > LEGEND");
-            return !legendElement || !legendElement.contains(element);
+        return !legendElement || !legendElement.contains(element);
         }
 
         function isNativelyDisabled(element) {
             const isNativeFormControl = ["BUTTON", "INPUT", "SELECT", "TEXTAREA", "OPTION", "OPTGROUP"].includes(elementTagName(element));
-            return isNativeFormControl && (element.hasAttribute("disabled") || belongsToDisabledOptGroup(element) || belongsToDisabledFieldSet(element));
+        return isNativeFormControl && (element.hasAttribute("disabled") || belongsToDisabledOptGroup(element) || belongsToDisabledFieldSet(element));
         }
 
         function hasExplicitAriaDisabled(element, isAncestor) {
             if (!element) {
                 return false;
             }
-            if (isAncestor || ariaDisabledRoles.has(ariaRole(element))) {
+        if (isAncestor || ariaDisabledRoles.has(ariaRole(element))) {
                 const attribute = String((element.getAttribute("aria-disabled") || "")).toLowerCase();
-                if (attribute === "true") {
+        if (attribute === "true") {
                     return true;
                 }
-                if (attribute === "false") {
+        if (attribute === "false") {
                     return false;
                 }
-                return hasExplicitAriaDisabled(parentElementOrShadowHost(element), true);
+        return hasExplicitAriaDisabled(parentElementOrShadowHost(element), true);
             }
-            return false;
+        return false;
         }
 
         function getAriaDisabled(element) {
@@ -606,23 +601,23 @@ private fun playwrightLikeInputRuntimeJs(): String =
 
         function getChecked(element, allowMixed) {
             const tagName = elementTagName(element);
-            if (allowMixed && tagName === "INPUT" && element.indeterminate) {
+        if (allowMixed && tagName === "INPUT" && element.indeterminate) {
                 return "mixed";
             }
-            if (tagName === "INPUT" && ["checkbox", "radio"].includes(String(element.type || "").toLowerCase())) {
+        if (tagName === "INPUT" && ["checkbox", "radio"].includes(String(element.type || "").toLowerCase())) {
                 return !!element.checked;
             }
-            if (ariaCheckedRoles.has(ariaRole(element))) {
+        if (ariaCheckedRoles.has(ariaRole(element))) {
                 const checked = element.getAttribute("aria-checked");
-                if (checked === "true") {
+        if (checked === "true") {
                     return true;
                 }
-                if (allowMixed && checked === "mixed") {
+        if (allowMixed && checked === "mixed") {
                     return "mixed";
                 }
-                return false;
+        return false;
             }
-            return "error";
+        return "error";
         }
 
         function getCheckedAllowMixed(element) {
@@ -635,68 +630,68 @@ private fun playwrightLikeInputRuntimeJs(): String =
 
         function getReadonly(element) {
             const tagName = elementTagName(element);
-            if (["INPUT", "TEXTAREA", "SELECT"].includes(tagName)) {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(tagName)) {
                 return element.hasAttribute("readonly");
             }
-            if (ariaReadonlyRoles.has(ariaRole(element))) {
+        if (ariaReadonlyRoles.has(ariaRole(element))) {
                 return element.getAttribute("aria-readonly") === "true";
             }
-            if (element.isContentEditable) {
+        if (element.isContentEditable) {
                 return false;
             }
-            return "error";
+        return "error";
         }
 
         function elementState(node, state) {
             const element = retarget(node, state === "visible" || state === "hidden" ? "none" : "follow-label");
-            if (!element || !element.isConnected) {
+        if (!element || !element.isConnected) {
                 if (state === "hidden") {
                     return { matches: true, received: "hidden" };
                 }
-                return { matches: false, received: "error:notconnected" };
+        return { matches: false, received: "error:notconnected" };
             }
-            if (state === "visible" || state === "hidden") {
+        if (state === "visible" || state === "hidden") {
                 const visible = isVisible(element);
-                return {
+        return {
                     matches: state === "visible" ? visible : !visible,
                     received: visible ? "visible" : "hidden"
                 };
             }
-            if (state === "enabled" || state === "disabled") {
+        if (state === "enabled" || state === "disabled") {
                 const disabled = getAriaDisabled(element);
-                return {
+        return {
                     matches: state === "disabled" ? disabled : !disabled,
                     received: disabled ? "disabled" : "enabled"
                 };
             }
-            if (state === "editable") {
+        if (state === "editable") {
                 const disabled = getAriaDisabled(element);
                 const readonly = getReadonly(element);
-                if (readonly === "error") {
+        if (readonly === "error") {
                     createError("Element is not an <input>, <textarea>, <select> or [contenteditable] element");
                 }
-                return {
+        return {
                     matches: !disabled && !readonly,
                     received: disabled ? "disabled" : readonly ? "readOnly" : "editable"
                 };
             }
-            if (state === "checked" || state === "unchecked") {
+        if (state === "checked" || state === "unchecked") {
                 const checked = getCheckedWithoutMixed(element);
-                if (checked === "error") {
+        if (checked === "error") {
                     createError("Not a checkbox or radio button");
                 }
-                return {
+        return {
                     matches: state === "checked" ? checked : !checked,
                     received: checked ? "checked" : "unchecked",
                     isRadio: elementTagName(element) === "INPUT" && String(element.type || "").toLowerCase() === "radio"
                 };
             }
-            if (state === "indeterminate") {
+        if (state === "indeterminate") {
                 const checked = getCheckedAllowMixed(element);
-                if (checked === "error") {
+        if (checked === "error") {
                     createError("Not a checkbox or radio button");
                 }
-                return {
+        return {
                     matches: checked === "mixed",
                     received: checked === true ? "checked" : checked === false ? "unchecked" : "mixed"
                 };
@@ -707,85 +702,85 @@ private fun playwrightLikeInputRuntimeJs(): String =
         function checkElementStates(node, states) {
             for (const state of states) {
                 const result = elementState(node, state);
-                if (result.received === "error:notconnected") {
+        if (result.received === "error:notconnected") {
                     return "error:notconnected";
                 }
-                if (!result.matches) {
+        if (!result.matches) {
                     return { missingState: state };
                 }
             }
-            return null;
+        return null;
         }
 
         function ensureStatesOrThrow(node, states) {
             const result = checkElementStates(node, states);
-            if (result === "error:notconnected") {
+        if (result === "error:notconnected") {
                 createError("Element is not connected");
             }
-            if (result) {
+        if (result) {
                 createError("Element is not " + result.missingState);
             }
         }
 
         function selectText(node) {
             const element = retarget(node, "follow-label");
-            if (!element) {
+        if (!element) {
                 return "error:notconnected";
             }
-            if (element.nodeName.toLowerCase() === "input") {
+        if (element.nodeName.toLowerCase() === "input") {
                 element.select();
                 element.focus();
-                return "done";
+        return "done";
             }
-            if (element.nodeName.toLowerCase() === "textarea") {
+        if (element.nodeName.toLowerCase() === "textarea") {
                 element.selectionStart = 0;
                 element.selectionEnd = element.value.length;
                 element.focus();
-                return "done";
+        return "done";
             }
             element.focus();
             const range = element.ownerDocument.createRange();
             range.selectNodeContents(element);
             const selection = element.ownerDocument.defaultView.getSelection();
-            if (selection) {
+        if (selection) {
                 selection.removeAllRanges();
                 selection.addRange(range);
             }
-            return "done";
+        return "done";
         }
 
         function activelyFocused(node) {
             const activeElement = node.getRootNode().activeElement;
             const isFocused = activeElement === node && !!node.ownerDocument && node.ownerDocument.hasFocus();
-            return { activeElement, isFocused };
+        return { activeElement, isFocused };
         }
 
         function focusNode(node, resetSelectionIfNotFocused) {
             if (!node.isConnected) {
                 return "error:notconnected";
             }
-            if (node.nodeType !== Node.ELEMENT_NODE) {
+        if (node.nodeType !== Node.ELEMENT_NODE) {
                 createError("Node is not an element");
             }
             const state = activelyFocused(node);
-            if (node.isContentEditable && !state.isFocused && state.activeElement && state.activeElement.blur) {
+        if (node.isContentEditable && !state.isFocused && state.activeElement && state.activeElement.blur) {
                 state.activeElement.blur();
             }
             node.focus();
             node.focus();
-            if (resetSelectionIfNotFocused && !state.isFocused && node.nodeName.toLowerCase() === "input") {
+        if (resetSelectionIfNotFocused && !state.isFocused && node.nodeName.toLowerCase() === "input") {
                 try {
                     node.setSelectionRange(0, 0);
                 } catch (_) {
                 }
             }
-            return "done";
+        return "done";
         }
 
         function setControlValue(element, value) {
             const prototype = element.nodeName.toLowerCase() === "textarea" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
             const descriptor = Object.getOwnPropertyDescriptor(prototype, "value");
-            if (!descriptor || !descriptor.set) {
+        if (!descriptor || !descriptor.set) {
                 createError("Cannot access value setter");
             }
             descriptor.set.call(element, value);
@@ -825,7 +820,7 @@ private fun playwrightLikeInputRuntimeJs(): String =
                 const end = typeof element.selectionEnd === "number" ? element.selectionEnd : currentValue.length;
                 const nextValue = currentValue.slice(0, start) + text + currentValue.slice(end);
                 setControlValue(element, nextValue);
-                if (typeof element.setSelectionRange === "function") {
+        if (typeof element.setSelectionRange === "function") {
                     const caret = start + text.length;
                     try {
                         element.setSelectionRange(caret, caret);
@@ -835,10 +830,10 @@ private fun playwrightLikeInputRuntimeJs(): String =
                 return;
             }
             const selection = element.ownerDocument.defaultView.getSelection();
-            if (!selection) {
+        if (!selection) {
                 createError("Selection is not available");
             }
-            if (!selection.rangeCount || !element.contains(selection.anchorNode)) {
+        if (!selection.rangeCount || !element.contains(selection.anchorNode)) {
                 const resetRange = element.ownerDocument.createRange();
                 resetRange.selectNodeContents(element);
                 resetRange.collapse(false);
@@ -847,7 +842,7 @@ private fun playwrightLikeInputRuntimeJs(): String =
             }
             const range = selection.getRangeAt(0);
             range.deleteContents();
-            if (text) {
+        if (text) {
                 const textNode = element.ownerDocument.createTextNode(text);
                 range.insertNode(textNode);
                 range.setStartAfter(textNode);
@@ -859,12 +854,12 @@ private fun playwrightLikeInputRuntimeJs(): String =
 
         function insertTextWithoutKeyboard(element, text) {
             const stringValue = text == null ? "" : String(text);
-            if (!dispatchBeforeInput(element, "insertText", stringValue)) {
+        if (!dispatchBeforeInput(element, "insertText", stringValue)) {
                 return "done";
             }
             replaceSelectionWithText(element, stringValue);
             dispatchInput(element, "insertText", stringValue);
-            return "done";
+        return "done";
         }
 
         function deleteSelectionOrCharacter(element, direction) {
@@ -874,16 +869,16 @@ private fun playwrightLikeInputRuntimeJs(): String =
                 const end = typeof element.selectionEnd === "number" ? element.selectionEnd : start;
                 let from = start;
                 let to = end;
-                if (from === to) {
+        if (from === to) {
                     if (direction === "backward" && from > 0) {
                         from -= 1;
                     }
-                    if (direction === "forward" && to < currentValue.length) {
+        if (direction === "forward" && to < currentValue.length) {
                         to += 1;
                     }
                 }
                 setControlValue(element, currentValue.slice(0, from) + currentValue.slice(to));
-                if (typeof element.setSelectionRange === "function") {
+        if (typeof element.setSelectionRange === "function") {
                     try {
                         element.setSelectionRange(from, from);
                     } catch (_) {
@@ -892,10 +887,10 @@ private fun playwrightLikeInputRuntimeJs(): String =
                 return;
             }
             const selection = element.ownerDocument.defaultView.getSelection();
-            if (!selection) {
+        if (!selection) {
                 createError("Selection is not available");
             }
-            if (!selection.rangeCount || !element.contains(selection.anchorNode)) {
+        if (!selection.rangeCount || !element.contains(selection.anchorNode)) {
                 const range = element.ownerDocument.createRange();
                 range.selectNodeContents(element);
                 range.collapse(false);
@@ -903,12 +898,12 @@ private fun playwrightLikeInputRuntimeJs(): String =
                 selection.addRange(range);
             }
             const range = selection.getRangeAt(0);
-            if (range.collapsed) {
+        if (range.collapsed) {
                 const container = range.startContainer;
                 const offset = range.startOffset;
-                if (container.nodeType === Node.TEXT_NODE) {
+        if (container.nodeType === Node.TEXT_NODE) {
                     const length = String(container.textContent || "").length;
-                    if (direction === "backward" && offset > 0) {
+        if (direction === "backward" && offset > 0) {
                         range.setStart(container, offset - 1);
                     } else if (direction === "forward" && offset < length) {
                         range.setEnd(container, offset + 1);
@@ -918,12 +913,12 @@ private fun playwrightLikeInputRuntimeJs(): String =
                 } else {
                     const childNodes = container.childNodes || [];
                     const targetNode = direction === "backward" ? childNodes[offset - 1] : childNodes[offset];
-                    if (!targetNode) {
+        if (!targetNode) {
                         return;
                     }
-                    if (targetNode.nodeType === Node.TEXT_NODE) {
+        if (targetNode.nodeType === Node.TEXT_NODE) {
                         const textLength = String(targetNode.textContent || "").length;
-                        if (direction === "backward") {
+        if (direction === "backward") {
                             range.setStart(targetNode, Math.max(0, textLength - 1));
                             range.setEnd(targetNode, textLength);
                         } else {
@@ -943,12 +938,12 @@ private fun playwrightLikeInputRuntimeJs(): String =
 
         function deleteTextWithoutKeyboard(element, direction) {
             const inputType = direction === "forward" ? "deleteContentForward" : "deleteContentBackward";
-            if (!dispatchBeforeInput(element, inputType, null)) {
+        if (!dispatchBeforeInput(element, inputType, null)) {
                 return "done";
             }
             deleteSelectionOrCharacter(element, direction);
             dispatchInput(element, inputType, null);
-            return "done";
+        return "done";
         }
 
         function dispatchKeyEvent(element, type, key) {
@@ -962,138 +957,138 @@ private fun playwrightLikeInputRuntimeJs(): String =
 
         function fillElement(node, value) {
             const element = retarget(node, "follow-label");
-            if (!element) {
+        if (!element) {
                 return "error:notconnected";
             }
             ensureStatesOrThrow(element, ["visible", "enabled", "editable"]);
-            if (element.nodeName.toLowerCase() === "input") {
+        if (element.nodeName.toLowerCase() === "input") {
                 const input = element;
                 const type = String(input.type || "").toLowerCase();
-                if (!typeIntoInputTypes.has(type) && !setValueInputTypes.has(type)) {
+        if (!typeIntoInputTypes.has(type) && !setValueInputTypes.has(type)) {
                     createError('Input of type "' + type + '" cannot be filled');
                 }
                 let normalizedValue = String(value);
-                if (type === "number") {
+        if (type === "number") {
                     normalizedValue = normalizedValue.trim();
-                    if (isNaN(Number(normalizedValue))) {
+        if (isNaN(Number(normalizedValue))) {
                         createError("Cannot type text into input[type=number]");
                     }
                 }
-                if (type === "color") {
+        if (type === "color") {
                     normalizedValue = normalizedValue.toLowerCase();
                 }
-                if (setValueInputTypes.has(type)) {
+        if (setValueInputTypes.has(type)) {
                     normalizedValue = normalizedValue.trim();
                     input.focus();
                     setControlValue(input, normalizedValue);
-                    if (input.value !== normalizedValue) {
+        if (input.value !== normalizedValue) {
                         createError("Malformed value");
                     }
                     dispatchSimpleInput(input);
                     dispatchChange(input);
-                    return "done";
+        return "done";
                 }
                 selectText(input);
-                return "needsinput";
+        return "needsinput";
             }
-            if (element.nodeName.toLowerCase() === "textarea") {
+        if (element.nodeName.toLowerCase() === "textarea") {
                 selectText(element);
-                return "needsinput";
+        return "needsinput";
             }
-            if (!element.isContentEditable) {
+        if (!element.isContentEditable) {
                 createError("Element is not an <input>, <textarea> or [contenteditable] element");
             }
             selectText(element);
-            return "needsinput";
+        return "needsinput";
         }
 
         function completeFill(node, value) {
             const stringValue = value == null ? "" : String(value);
             const result = fillElement(node, stringValue);
-            if (result === "needsinput") {
+        if (result === "needsinput") {
                 return stringValue ? insertTextWithoutKeyboard(retarget(node, "follow-label"), stringValue) : deleteTextWithoutKeyboard(retarget(node, "follow-label"), "forward");
             }
-            return result;
+        return result;
         }
 
         async function typeCharacter(element, ch) {
             const isPrintableAscii = /^[\u0020-\u007e]$/.test(ch);
-            if (isPrintableAscii) {
+        if (isPrintableAscii) {
                 return pressKey(element, ch);
             }
-            return insertTextWithoutKeyboard(element, ch);
+        return insertTextWithoutKeyboard(element, ch);
         }
 
         async function typeElement(node, text, delayMs) {
             const element = retarget(node, "follow-label");
-            if (!element) {
+        if (!element) {
                 return "error:notconnected";
             }
             const focusResult = focusNode(element, true);
-            if (focusResult !== "done") {
+        if (focusResult !== "done") {
                 return focusResult;
             }
-            for (const rawCh of String(text)) {
+        for (const rawCh of String(text)) {
                 if (rawCh === "\r") {
                     continue;
                 }
-                if (rawCh === "\n") {
+        if (rawCh === "\n") {
                     const enterResult = pressEnter(element);
-                    if (enterResult !== "done") {
+        if (enterResult !== "done") {
                         return enterResult;
                     }
                 } else {
                     const typeResult = await typeCharacter(element, rawCh);
-                    if (typeResult !== "done") {
+        if (typeResult !== "done") {
                         return typeResult;
                     }
                 }
-                if (delayMs > 0) {
+        if (delayMs > 0) {
                     await new Promise((resolve) => setTimeout(resolve, delayMs));
                 }
             }
-            return "done";
+        return "done";
         }
 
         function pressEnter(node) {
             const element = retarget(node, "follow-label");
-            if (!element) {
+        if (!element) {
                 return "error:notconnected";
             }
             const keydownAccepted = dispatchKeyEvent(element, "keydown", "Enter");
-            if (keydownAccepted) {
+        if (keydownAccepted) {
                 dispatchKeyEvent(element, "keypress", "Enter");
-                if (element.nodeName.toLowerCase() === "textarea" || element.isContentEditable) {
+        if (element.nodeName.toLowerCase() === "textarea" || element.isContentEditable) {
                     if (dispatchBeforeInput(element, "insertLineBreak", "\n")) {
                         replaceSelectionWithText(element, "\n");
                         dispatchInput(element, "insertLineBreak", "\n");
                     }
                 } else {
                     const form = element.form || (element.closest && element.closest("form"));
-                    if (form && typeof form.requestSubmit === "function") {
+        if (form && typeof form.requestSubmit === "function") {
                         form.requestSubmit();
                     }
                 }
             }
             dispatchKeyEvent(element, "keyup", "Enter");
-            return "done";
+        return "done";
         }
 
         function pressKey(node, key) {
             const element = retarget(node, "follow-label");
-            if (!element) {
+        if (!element) {
                 return "error:notconnected";
             }
             const keyValue = String(key);
             const editable = element.matches("input, textarea") || element.isContentEditable;
-            if (keyValue === "Enter") {
+        if (keyValue === "Enter") {
                 return pressEnter(element);
             }
             const keydownAccepted = dispatchKeyEvent(element, "keydown", keyValue);
-            if (keydownAccepted) {
+        if (keydownAccepted) {
                 if (keyValue.length === 1) {
                     const keypressAccepted = dispatchKeyEvent(element, "keypress", keyValue);
-                    if (keypressAccepted && editable) {
+        if (keypressAccepted && editable) {
                         insertTextWithoutKeyboard(element, keyValue);
                     }
                 } else if (keyValue === "Backspace" && editable) {
@@ -1103,88 +1098,88 @@ private fun playwrightLikeInputRuntimeJs(): String =
                 }
             }
             dispatchKeyEvent(element, "keyup", keyValue);
-            return "done";
+        return "done";
         }
 
         function setChecked(node, desiredState) {
             const element = retarget(node, "follow-label");
-            if (!element) {
+        if (!element) {
                 return "error:notconnected";
             }
             ensureStatesOrThrow(element, ["visible", "enabled"]);
             const currentState = elementState(element, "checked");
-            if (currentState.received === "error:notconnected") {
+        if (currentState.received === "error:notconnected") {
                 return "error:notconnected";
             }
-            if (currentState.matches === desiredState) {
+        if (currentState.matches === desiredState) {
                 return "done";
             }
-            if (!desiredState && currentState.isRadio) {
+        if (!desiredState && currentState.isRadio) {
                 createError("Cannot uncheck radio button. Radio buttons can only be unchecked by selecting another radio button in the same group.");
             }
-            if (typeof element.click !== "function") {
+        if (typeof element.click !== "function") {
                 createError("Element is not clickable");
             }
             element.click();
             const finalState = elementState(element, "checked");
-            if (finalState.received === "error:notconnected") {
+        if (finalState.received === "error:notconnected") {
                 return "error:notconnected";
             }
-            if (finalState.matches !== desiredState) {
+        if (finalState.matches !== desiredState) {
                 createError("Clicking the checkbox did not change its state");
             }
-            return "done";
+        return "done";
         }
 
         function selectOptions(node, optionsToSelect) {
             const element = retarget(node, "follow-label");
-            if (!element) {
+        if (!element) {
                 return "error:notconnected";
             }
             ensureStatesOrThrow(element, ["visible", "enabled"]);
-            if (element.nodeName.toLowerCase() !== "select") {
+        if (element.nodeName.toLowerCase() !== "select") {
                 createError("Element is not a <select> element");
             }
             const select = element;
             const options = Array.from(select.options || []);
             const selectedOptions = [];
             let remaining = optionsToSelect.slice();
-            for (let index = 0; index < options.length; index += 1) {
+        for (let index = 0; index < options.length; index += 1) {
                 const option = options[index];
                 const filter = (optionToSelect) => {
                     if (optionToSelect instanceof Node) {
                         return option === optionToSelect;
                     }
                     let matches = true;
-                    if (optionToSelect.valueOrLabel !== undefined) {
+        if (optionToSelect.valueOrLabel !== undefined) {
                         matches = matches && (String(optionToSelect.valueOrLabel) === String(option.value) || String(optionToSelect.valueOrLabel) === String(option.label));
                     }
-                    if (optionToSelect.value !== undefined) {
+        if (optionToSelect.value !== undefined) {
                         matches = matches && String(optionToSelect.value) === String(option.value);
                     }
-                    if (optionToSelect.label !== undefined) {
+        if (optionToSelect.label !== undefined) {
                         matches = matches && String(optionToSelect.label) === String(option.label);
                     }
-                    if (optionToSelect.index !== undefined) {
+        if (optionToSelect.index !== undefined) {
                         matches = matches && Number(optionToSelect.index) === index;
                     }
-                    return matches;
+        return matches;
                 };
-                if (!remaining.some(filter)) {
+        if (!remaining.some(filter)) {
                     continue;
                 }
-                if (!elementState(option, "enabled").matches) {
+        if (!elementState(option, "enabled").matches) {
                     return "error:optionnotenabled";
                 }
                 selectedOptions.push(option);
-                if (select.multiple) {
+        if (select.multiple) {
                     remaining = remaining.filter((candidate) => !filter(candidate));
                 } else {
                     remaining = [];
                     break;
                 }
             }
-            if (remaining.length) {
+        if (remaining.length) {
                 return "error:optionsnotfound";
             }
             select.value = void 0;
@@ -1193,9 +1188,8 @@ private fun playwrightLikeInputRuntimeJs(): String =
             });
             dispatchSimpleInput(select);
             dispatchChange(select);
-            return selectedOptions.map((option) => String(option.value));
+        return selectedOptions.map((option) => String(option.value));
         }
-
         return {
             fillElement: fillElement,
             completeFill: completeFill,
@@ -1219,10 +1213,10 @@ internal fun StandardBrowserSessionTools.ensureOverlayPermission(toolName: Strin
 
 internal fun StandardBrowserSessionTools.buildPageRegistry(): BrowserPageRegistry {
     val orderedIds = orderedSessionIdsFromState()
-    val activeId =
+        val activeId =
         StandardBrowserSessionTools.activeSessionId?.takeIf { sessionById(it) != null }
             ?: orderedIds.firstOrNull()
-    return BrowserPageRegistry(
+        return BrowserPageRegistry(
         orderedSessionIds = orderedIds,
         activeSessionId = activeId,
         overlayExpanded = StandardBrowserSessionTools.browserHost?.isExpanded() == true,
@@ -1238,7 +1232,7 @@ private fun StandardBrowserSessionTools.orderedSessionIdsFromState(): List<Strin
     StandardBrowserSessionTools.sessions.values
         .sortedWith(compareBy<BrowserToolSession> { it.createdAt }.thenBy { it.id })
         .mapTo(orderedIds) { it.id }
-    return orderedIds.toList()
+        return orderedIds.toList()
 }
 
 internal fun StandardBrowserSessionTools.orderedSessionIds(): List<String> =
@@ -1267,7 +1261,7 @@ internal fun StandardBrowserSessionTools.pageError(
         } else {
             buildBrowserResponse(error = message)
         }
-    return ToolResult(
+        return ToolResult(
         toolName = toolName,
         success = false,
         result = StringResultData(rendered),
@@ -1302,10 +1296,10 @@ internal fun StandardBrowserSessionTools.renderOpenTabs(
 ): String {
     val activeId = registry.activeSessionId
     val ordered = registry.orderedSessionIds.mapNotNull(::sessionById)
-    if (ordered.isEmpty()) {
+        if (ordered.isEmpty()) {
         return "No open tabs."
     }
-    return ordered.mapIndexed { index, session ->
+        return ordered.mapIndexed { index, session ->
         val active = if (session.id == activeId) " [active]" else ""
         val title = sessionDisplayTitle(session).ifBlank { "about:blank" }
         "- [${index}] ${title}${active}\n  ${session.currentUrl.ifBlank { "about:blank" }}"
@@ -1319,7 +1313,7 @@ internal fun StandardBrowserSessionTools.renderPageState(session: BrowserToolSes
                 (session.viewportWidthPx ?: session.webView.width).coerceAtLeast(0),
                 (session.viewportHeightPx ?: session.webView.height).coerceAtLeast(0)
             )
-    return buildString {
+        return buildString {
         appendLine("- Title: ${session.pageTitle.ifBlank { "about:blank" }}")
         appendLine("- URL: ${session.currentUrl.ifBlank { "about:blank" }}")
         appendLine("- Loading: ${if (session.isLoading) "yes" else "no"}")
@@ -1341,7 +1335,7 @@ internal fun StandardBrowserSessionTools.evaluateJavascriptAsync(
     timeoutMs: Long
 ): String {
     val callId = UUID.randomUUID().toString()
-    val pending = PendingAsyncJsCall()
+        val pending = PendingAsyncJsCall()
     StandardBrowserSessionTools.pendingAsyncJsCalls[callId] = pending
     StandardBrowserSessionTools.mainHandler.post {
         try {
@@ -1351,7 +1345,7 @@ internal fun StandardBrowserSessionTools.evaluateJavascriptAsync(
                 pending.latch.countDown()
                 return@post
             }
-            val wrapped =
+        val wrapped =
                 """
                 (function() {
                     try {
@@ -1379,7 +1373,7 @@ internal fun StandardBrowserSessionTools.evaluateJavascriptAsync(
                             String(error && (error.stack || error.message || error) || "Async execution failed")
                         );
                     }
-                    return true;
+        return true;
                 })();
                 """.trimIndent()
             webView.evaluateJavascript(wrapped, null)
@@ -1389,18 +1383,18 @@ internal fun StandardBrowserSessionTools.evaluateJavascriptAsync(
             pending.latch.countDown()
         }
     }
-    if (!pending.latch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+        if (!pending.latch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
         StandardBrowserSessionTools.pendingAsyncJsCalls.remove(callId)
         throw RuntimeException("JavaScript execution timeout (${timeoutMs}ms)")
     }
     pending.error?.let { throw RuntimeException(it) }
-    return pending.result ?: "{\"ok\":true,\"value\":null}"
+        return pending.result ?: "{\"ok\":true,\"value\":null}"
 }
 
 private fun extractAsyncJsValue(payload: String): String {
     val json = JSONObject(payload)
-    val value = json.opt("value")
-    return when (value) {
+        val value = json.opt("value")
+        return when (value) {
         null, JSONObject.NULL -> ""
         is String -> value
         else -> value.toString()
@@ -1422,17 +1416,17 @@ internal fun StandardBrowserSessionTools.evaluatePageFunction(
                 refValue
                     ? (__apex-agentResolveRef(refValue) || {}).element
                     : undefined;
-            if (refValue && !target) {
+        if (refValue && !target) {
                 throw new Error("ref_not_found");
             }
             const fn = (${functionSource});
-            if (typeof fn !== "function") {
+        if (typeof fn !== "function") {
                 throw new Error("function must evaluate to a callable value");
             }
-            return refValue ? await fn(target) : await fn();
+        return refValue ? await fn(target) : await fn();
         })()
         """.trimIndent()
-    return extractAsyncJsValue(evaluateJavascriptAsync(webView, expression, timeoutMs))
+        return extractAsyncJsValue(evaluateJavascriptAsync(webView, expression, timeoutMs))
 }
 
 internal fun StandardBrowserSessionTools.parseFormFields(rawFields: String): List<JSONObject>? {
@@ -1461,20 +1455,20 @@ internal fun StandardBrowserSessionTools.fillFormFields(
             const results = [];
             const findByRef = (refValue) => {
                 const resolved = __apex-agentResolveRef(String(refValue || ''));
-                return resolved ? resolved.element : null;
+        return resolved ? resolved.element : null;
             };
             fields.forEach((field, index) => {
                 const target =
                     field.ref ? findByRef(field.ref) :
                     field.selector ? document.querySelector(String(field.selector)) :
                     null;
-                if (!target) {
+        if (!target) {
                     throw new Error("field_not_found:" + (field.name || index));
                 }
                 const type = String(field.type || target.type || target.tagName || "").toLowerCase();
                 const value = String(field.value ?? "");
                 let result = "done";
-                if (type === "textbox" || type === "slider") {
+        if (type === "textbox" || type === "slider") {
                     result = __apex-agentPw.completeFill(target, value);
                 } else if (type === "checkbox" || type === "radio") {
                     result = __apex-agentPw.setChecked(target, value.toLowerCase() === "true");
@@ -1483,15 +1477,15 @@ internal fun StandardBrowserSessionTools.fillFormFields(
                 } else {
                     result = __apex-agentPw.completeFill(target, value);
                 }
-                if (result !== "done" && !Array.isArray(result)) {
+        if (result !== "done" && !Array.isArray(result)) {
                     throw new Error(String(result));
                 }
                 results.push(String(field.name || ("field_" + (index + 1))) + " => " + type);
             });
-            return results.join("\n");
+        return results.join("\n");
         })()
         """.trimIndent()
-    return extractAsyncJsValue(
+        return extractAsyncJsValue(
         evaluateJavascriptAsync(
             webView,
             expression,
@@ -1510,17 +1504,17 @@ internal fun StandardBrowserSessionTools.pressKeyOnPage(
             ${playwrightLikeInputRuntimeJs()}
             const keyValue = ${quoteJs(key)};
             const target = document.activeElement || document.body || document.documentElement;
-            if (!target) {
+        if (!target) {
                 throw new Error("No focus target available.");
             }
             const result = __apex-agentPw.pressKey(target, keyValue);
-            if (result !== "done") {
+        if (result !== "done") {
                 throw new Error(String(result));
             }
-            return "Pressed " + keyValue;
+        return "Pressed " + keyValue;
         })()
         """.trimIndent()
-    return extractAsyncJsValue(
+        return extractAsyncJsValue(
         evaluateJavascriptAsync(
             webView,
             expression,
@@ -1542,18 +1536,18 @@ internal fun StandardBrowserSessionTools.selectOptionsByRef(
             const refValue = ${quoteJs(ref)};
             const resolved = __apex-agentResolveRef(refValue);
             const target = resolved ? resolved.element : null;
-            if (!target) {
+        if (!target) {
                 throw new Error("ref_not_found");
             }
             const values = ${JSONArray(values).toString()}.map((value) => ({ valueOrLabel: value }));
             const result = __apex-agentPw.selectOptions(target, values);
-            if (!Array.isArray(result)) {
+        if (!Array.isArray(result)) {
                 throw new Error(String(result));
             }
-            return "Selected " + result.join(", ");
+        return "Selected " + result.join(", ");
         })()
         """.trimIndent()
-    return extractAsyncJsValue(
+        return extractAsyncJsValue(
         evaluateJavascriptAsync(
             webView,
             expression,
@@ -1577,33 +1571,33 @@ internal fun StandardBrowserSessionTools.typeIntoElementByRef(
             const refValue = ${quoteJs(ref)};
             const resolved = __apex-agentResolveRef(refValue);
             const target = resolved ? resolved.element : null;
-            if (!target) {
+        if (!target) {
                 throw new Error("ref_not_found");
             }
             const textValue = ${quoteJs(text)};
             const submitValue = ${if (submit) "true" else "false"};
             const slowValue = ${if (slowly) "true" else "false"};
-            if (slowValue) {
+        if (slowValue) {
                 const typeResult = await __apex-agentPw.typeElement(target, textValue, 35);
-                if (typeResult !== "done") {
+        if (typeResult !== "done") {
                     throw new Error(String(typeResult));
                 }
             } else {
                 const fillResult = __apex-agentPw.completeFill(target, textValue);
-                if (fillResult !== "done") {
+        if (fillResult !== "done") {
                     throw new Error(String(fillResult));
                 }
             }
-            if (submitValue) {
+        if (submitValue) {
                 const submitResult = __apex-agentPw.pressEnter(target);
-                if (submitResult !== "done") {
+        if (submitResult !== "done") {
                     throw new Error(String(submitResult));
                 }
             }
-            return "Typed " + textValue.length + " character(s).";
+        return "Typed " + textValue.length + " character(s).";
         })()
         """.trimIndent()
-    return extractAsyncJsValue(
+        return extractAsyncJsValue(
         evaluateJavascriptAsync(
             webView,
             expression,
@@ -1621,7 +1615,7 @@ internal fun StandardBrowserSessionTools.writeBrowserTextOutput(
     val resolved = resolveBrowserOutputFile(filename, defaultPrefix, extension)
     resolved.parentFile?.mkdirs()
     resolved.writeText(content)
-    return resolved.absolutePath
+        return resolved.absolutePath
 }
 
 internal fun StandardBrowserSessionTools.resolveBrowserOutputFile(
@@ -1630,7 +1624,7 @@ internal fun StandardBrowserSessionTools.resolveBrowserOutputFile(
     extension: String
 ): File {
     val baseDir = File(context.cacheDir, "browser-output").apply { mkdirs() }
-    if (!filename.isNullOrBlank()) {
+        if (!filename.isNullOrBlank()) {
         val candidate = File(filename)
         return if (candidate.isAbsolute) {
             candidate
@@ -1638,8 +1632,8 @@ internal fun StandardBrowserSessionTools.resolveBrowserOutputFile(
             File(baseDir, filename)
         }
     }
-    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-    return File(baseDir, "${defaultPrefix}_${timestamp}.${extension}")
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        return File(baseDir, "${defaultPrefix}_${timestamp}.${extension}")
 }
 
 internal fun StandardBrowserSessionTools.takeScreenshot(
@@ -1674,21 +1668,21 @@ internal fun StandardBrowserSessionTools.takeScreenshot(
 
 internal fun StandardBrowserSessionTools.captureViewportBitmap(webView: WebView): Bitmap {
     val width = webView.width.coerceAtLeast(1)
-    val height = webView.height.coerceAtLeast(1)
-    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
+        val height = webView.height.coerceAtLeast(1)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
     webView.draw(canvas)
-    return bitmap
+        return bitmap
 }
 
 internal fun StandardBrowserSessionTools.captureFullPageBitmap(webView: WebView): Bitmap {
     val (width, height) = resolveFullPageBitmapSize(webView)
-    val originalWidth = webView.width.coerceAtLeast(1)
-    val originalHeight = webView.height.coerceAtLeast(1)
-    val originalScrollX = webView.scrollX
+        val originalWidth = webView.width.coerceAtLeast(1)
+        val originalHeight = webView.height.coerceAtLeast(1)
+        val originalScrollX = webView.scrollX
     val originalScrollY = webView.scrollY
     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
+        val canvas = Canvas(bitmap)
     webView.measure(
         View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
         View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY)
@@ -1702,7 +1696,7 @@ internal fun StandardBrowserSessionTools.captureFullPageBitmap(webView: WebView)
     )
     webView.layout(0, 0, originalWidth, originalHeight)
     webView.scrollTo(originalScrollX, originalScrollY)
-    return bitmap
+        return bitmap
 }
 
 internal fun StandardBrowserSessionTools.resolveFullPageBitmapSize(
@@ -1730,19 +1724,18 @@ internal fun StandardBrowserSessionTools.resolveFullPageBitmapSize(
                     body ? (body.scrollHeight || 0) : 0,
                     body ? (body.offsetHeight || 0) : 0
                 );
-                return JSON.stringify({ ok: true, width, height });
+        return JSON.stringify({ ok: true, width, height });
             })();
             """.trimIndent(),
             "page_size_error"
         )
-
-    val width =
+        val width =
         (((pageSize?.optDouble("width", 0.0) ?: 0.0) * scale).toInt())
             .coerceAtLeast(webView.width.coerceAtLeast(1))
-    val height =
+        val height =
         (((pageSize?.optDouble("height", 0.0) ?: 0.0) * scale).toInt())
             .coerceAtLeast(webView.height.coerceAtLeast(1))
-    return width to height
+        return width to height
 }
 
 internal fun StandardBrowserSessionTools.captureElementBitmap(
@@ -1750,12 +1743,12 @@ internal fun StandardBrowserSessionTools.captureElementBitmap(
     ref: String
 ): Bitmap {
     val rect = resolveElementRect(webView, ref) ?: throw RuntimeException("ref_not_found")
-    val bitmap = captureViewportBitmap(webView)
-    val left = rect.left.coerceIn(0, bitmap.width - 1)
-    val top = rect.top.coerceIn(0, bitmap.height - 1)
-    val width = rect.width().coerceAtLeast(1).coerceAtMost(bitmap.width - left)
-    val height = rect.height().coerceAtLeast(1).coerceAtMost(bitmap.height - top)
-    return Bitmap.createBitmap(bitmap, left, top, width, height)
+        val bitmap = captureViewportBitmap(webView)
+        val left = rect.left.coerceIn(0, bitmap.width - 1)
+        val top = rect.top.coerceIn(0, bitmap.height - 1)
+        val width = rect.width().coerceAtLeast(1).coerceAtMost(bitmap.width - left)
+        val height = rect.height().coerceAtLeast(1).coerceAtMost(bitmap.height - top)
+        return Bitmap.createBitmap(bitmap, left, top, width, height)
 }
 
 internal fun StandardBrowserSessionTools.resolveElementRect(
@@ -1770,7 +1763,7 @@ internal fun StandardBrowserSessionTools.resolveElementRect(
             const resolved = __apex-agentResolveRef(refValue);
             const target = resolved ? resolved.element : null;
             const targetWindow = resolved ? (resolved.window || window) : window;
-            if (!target) {
+        if (!target) {
                 return JSON.stringify({ ok: false, error: "ref_not_found" });
             }
             try { target.scrollIntoView({ block: "center", inline: "center" }); } catch (_) {}
@@ -1783,7 +1776,7 @@ internal fun StandardBrowserSessionTools.resolveElementRect(
                 } catch (_) {
                     frameElement = null;
                 }
-                if (!frameElement) {
+        if (!frameElement) {
                     break;
                 }
                 const frameRect = frameElement.getBoundingClientRect();
@@ -1799,7 +1792,7 @@ internal fun StandardBrowserSessionTools.resolveElementRect(
                     break;
                 }
             }
-            return JSON.stringify({
+        return JSON.stringify({
                 ok: true,
                 left: Math.max(0, Math.floor(rect.left)),
                 top: Math.max(0, Math.floor(rect.top)),
@@ -1808,11 +1801,11 @@ internal fun StandardBrowserSessionTools.resolveElementRect(
             });
         })();
         """.trimIndent()
-    val json = runJsonScript(webView, script, "element_rect_error") ?: return null
+        val json = runJsonScript(webView, script, "element_rect_error") ?: return null
     if (!json.optBoolean("ok", false)) {
         return null
     }
-    return Rect(
+        return Rect(
         json.optInt("left"),
         json.optInt("top"),
         json.optInt("right"),
@@ -1830,26 +1823,26 @@ internal fun StandardBrowserSessionTools.runPlaywrightLikeCode(
             const isVisible = (el) => {
                 if (!el || el.nodeType !== 1) return false;
                 const style = window.getComputedStyle(el);
-                if (!style || style.visibility === "hidden" || style.display === "none") return false;
+        if (!style || style.visibility === "hidden" || style.display === "none") return false;
                 const rect = el.getBoundingClientRect();
-                return rect.width > 0 || rect.height > 0;
+        return rect.width > 0 || rect.height > 0;
             };
             const roleFor = (el) => {
                 const explicit = String(el.getAttribute("role") || "").trim();
-                if (explicit) return explicit;
+        if (explicit) return explicit;
                 const tag = String(el.tagName || "").toLowerCase();
-                if (tag === "a") return "link";
-                if (tag === "button") return "button";
-                if (tag === "select") return "combobox";
-                if (tag === "textarea") return "textbox";
-                if (tag === "input") {
+        if (tag === "a") return "link";
+        if (tag === "button") return "button";
+        if (tag === "select") return "combobox";
+        if (tag === "textarea") return "textbox";
+        if (tag === "input") {
                     const type = String(el.getAttribute("type") || "").toLowerCase();
-                    if (type === "checkbox") return "checkbox";
-                    if (type === "radio") return "radio";
-                    if (type === "submit" || type === "button" || type === "reset") return "button";
-                    return "textbox";
+        if (type === "checkbox") return "checkbox";
+        if (type === "radio") return "radio";
+        if (type === "submit" || type === "button" || type === "reset") return "button";
+        return "textbox";
                 }
-                return "generic";
+        return "generic";
             };
             const nameFor = (el) => String(
                 el.getAttribute("aria-label") ||
@@ -1867,16 +1860,16 @@ internal fun StandardBrowserSessionTools.runPlaywrightLikeCode(
             const makeLocator = (resolver, description) => ({
                 async click() {
                     const el = resolver();
-                    if (!el) throw new Error(description + " not found");
+        if (!el) throw new Error(description + " not found");
                     try { el.scrollIntoView({ block: "center", inline: "center" }); } catch (_) {}
                     try { el.focus({ preventScroll: true }); } catch (_) {}
                     setTimeout(() => { try { el.click(); } catch (_) {} }, 0);
                     await new Promise((resolve) => setTimeout(resolve, 60));
-                    return null;
+        return null;
                 },
                 async hover() {
                     const el = resolver();
-                    if (!el) throw new Error(description + " not found");
+        if (!el) throw new Error(description + " not found");
                     const rect = el.getBoundingClientRect();
                     ["pointerover", "mouseover", "mouseenter", "mousemove"].forEach((type) => {
                         el.dispatchEvent(new MouseEvent(type, {
@@ -1886,31 +1879,31 @@ internal fun StandardBrowserSessionTools.runPlaywrightLikeCode(
                             clientY: rect.top + rect.height / 2
                         }));
                     });
-                    return null;
+        return null;
                 },
                 async fill(value) {
                     const el = resolver();
-                    if (!el) throw new Error(description + " not found");
+        if (!el) throw new Error(description + " not found");
                     el.value = String(value ?? "");
                     el.dispatchEvent(new Event("input", { bubbles: true }));
                     el.dispatchEvent(new Event("change", { bubbles: true }));
-                    return null;
+        return null;
                 },
                 async selectOption(values) {
                     const el = resolver();
-                    if (!el || !el.options) throw new Error(description + " is not a select element");
+        if (!el || !el.options) throw new Error(description + " is not a select element");
                     const wanted = Array.isArray(values) ? values.map((item) => String(item)) : [String(values)];
                     Array.from(el.options).forEach((option) => {
                         option.selected = wanted.includes(String(option.value)) || wanted.includes(String(option.text));
                     });
                     el.dispatchEvent(new Event("input", { bubbles: true }));
                     el.dispatchEvent(new Event("change", { bubbles: true }));
-                    return null;
+        return null;
                 },
                 async textContent() {
                     const el = resolver();
-                    if (!el) throw new Error(description + " not found");
-                    return String(el.textContent || "");
+        if (!el) throw new Error(description + " not found");
+        return String(el.textContent || "");
                 }
             });
             const page = {
@@ -1918,26 +1911,26 @@ internal fun StandardBrowserSessionTools.runPlaywrightLikeCode(
                 async url() { return String(location.href || ""); },
                 async evaluate(fn) {
                     if (typeof fn !== "function") throw new Error("page.evaluate expects a function");
-                    return await fn();
+        return await fn();
                 },
                 async waitForTimeout(ms) {
                     await new Promise((resolve) => setTimeout(resolve, Number(ms) || 0));
-                    return null;
+        return null;
                 },
                 locator(selector) {
                     return makeLocator(() => document.querySelector(String(selector)), "locator(" + selector + ")");
                 },
                 getByRole(role, options) {
                     const name = options && Object.prototype.hasOwnProperty.call(options, "name") ? options.name : null;
-                    return makeLocator(() => findByRole(role, name), "getByRole(" + role + ")");
+        return makeLocator(() => findByRole(role, name), "getByRole(" + role + ")");
                 },
                 keyboard: {
                     async press(key) {
                         const target = document.activeElement || document.body || document.documentElement;
-                        if (!target) throw new Error("No active element");
+        if (!target) throw new Error("No active element");
                         target.dispatchEvent(new KeyboardEvent("keydown", { key: String(key), bubbles: true, cancelable: true }));
                         target.dispatchEvent(new KeyboardEvent("keyup", { key: String(key), bubbles: true, cancelable: true }));
-                        return null;
+        return null;
                     }
                 },
                 async goto() {
@@ -1956,22 +1949,22 @@ internal fun StandardBrowserSessionTools.runPlaywrightLikeCode(
             let fn = null;
             try {
                 const maybeFn = (0, eval)("(" + codeSource + ")");
-                if (typeof maybeFn === "function") {
+        if (typeof maybeFn === "function") {
                     fn = maybeFn;
                 }
             } catch (_) {}
 
             let value;
-            if (fn) {
+        if (fn) {
                 value = await fn(page);
             } else {
                 const runner = new AsyncFunction("page", "console", codeSource);
                 value = await runner(page, console);
             }
-            return value == null ? "" : value;
+        return value == null ? "" : value;
         })()
         """.trimIndent()
-    return extractAsyncJsValue(
+        return extractAsyncJsValue(
         evaluateJavascriptAsync(
             session.webView,
             expression,
@@ -1984,8 +1977,7 @@ internal fun StandardBrowserSessionTools.parseHeaders(raw: String): Map<String, 
     if (raw.isNullOrBlank()) {
         return emptyMap()
     }
-
-    return try {
+        return try {
         val json = JSONObject(raw)
         val keys = json.keys()
         val out = mutableMapOf<String, String>()
@@ -2004,13 +1996,12 @@ internal fun StandardBrowserSessionTools.parseStringArrayParam(raw: String): Lis
     if (raw.isNullOrBlank()) {
         return emptyList()
     }
-
-    return try {
+        return try {
         val array = JSONArray(raw)
         val out = mutableListOf<String>()
         for (i in 0 until array.length()) {
             val value = array.opt(i)
-            if (value == null || value == JSONObject.NULL) {
+        if (value == null || value == JSONObject.NULL) {
                 continue
             }
             out.add(value.toString())
@@ -2059,7 +2050,7 @@ internal fun StandardBrowserSessionTools.ok(toolName: String, payload: String): 
 
 internal fun StandardBrowserSessionTools.error(toolName: String, message: String): ToolResult {
     val rendered = buildBrowserResponse(error = message)
-    return ToolResult(
+        return ToolResult(
         toolName = toolName,
         success = false,
         result = StringResultData(rendered),

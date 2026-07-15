@@ -58,17 +58,17 @@ internal fun toolPkgPackageManager(): PackageManager {
 
 internal fun decodeToolPkgHookResult(raw: Any): Any? {
     val text = raw?.toString().orEmpty()
-    if (text.isEmpty()) {
+        if (text.isEmpty()) {
         return null
     }
-    val normalized = text.trim()
-    if (normalized.isEmpty()) {
+        val normalized = text.trim()
+        if (normalized.isEmpty()) {
         return text
     }
-    if (normalized.startsWith("Error:", ignoreCase = true)) {
+        if (normalized.startsWith("Error:", ignoreCase = true)) {
         throw IllegalStateException(normalized.substringAfter(":", normalized).trim().ifEmpty { normalized })
     }
-    return try {
+        return try {
         JSONTokener(normalized).nextValue()
     } catch (_: Exception) {
         text
@@ -77,20 +77,20 @@ internal fun decodeToolPkgHookResult(raw: Any): Any? {
 
 internal fun jsonObjectToMap(jsonObject: JSONObject): Map<String, Any?> {
     val result = linkedMapOf<String, Any?>()
-    val keys = jsonObject.keys()
+        val keys = jsonObject.keys()
     while (keys.hasNext()) {
         val key = keys.next()
         result[key] = jsonValueToKotlin(jsonObject.opt(key))
     }
-    return result
+        return result
 }
 
 internal fun jsonArrayToList(jsonArray: JSONArray): List<Any?> {
     val result = mutableListOf<Any?>()
-    for (index in 0 until jsonArray.length()) {
+        for (index in 0 until jsonArray.length()) {
         result.add(jsonValueToKotlin(jsonArray.opt(index)))
     }
-    return result
+        return result
 }
 
 internal fun jsonValueToKotlin(value: Any): Any? {

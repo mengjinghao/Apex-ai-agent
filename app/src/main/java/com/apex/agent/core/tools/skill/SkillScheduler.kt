@@ -100,34 +100,25 @@ class SkillScheduler private constructor() {
         data class TaskExecutionCompleted(val taskId: String, val executionId: String, val success: Boolean) : SchedulerEvent()
         data class TaskExecutionFailed(val taskId: String, val executionId: String, val error: String) : SchedulerEvent()
     }
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val mutex = Mutex()
-
-    private val tasks = ConcurrentHashMap<String, ScheduledTask>()
-    private val runningTasks = ConcurrentHashMap<String, Job>()
-    private val taskExecutionHistory = ConcurrentHashMap<String, MutableList<TaskExecution>>()
-
-    private val _tasksFlow = MutableStateFlow<List<ScheduledTask>>(emptyList())
-    val tasksFlow: StateFlow<List<ScheduledTask>> = _tasksFlow.asStateFlow()
-
-    private val _schedulerEvents = MutableSharedFlow<SchedulerEvent>()
-    val schedulerEvents: SharedFlow<SchedulerEvent> = _schedulerEvents.asSharedFlow()
-
-    private val _runningTasksCount = MutableStateFlow(0)
-    val runningTasksCount: StateFlow<Int> = _runningTasksCount.asStateFlow()
-
-    private val eventBus = SkillEventBus.getInstance()
-    private val workflowEngine = WorkflowEngine.getInstance()
-
-    private val json = Json { encodeDefaults = true }
-
-    private val statsTotalScheduled = AtomicLong(0)
-    private val statsTotalExecuted = AtomicLong(0)
-    private val statsTotalSuccess = AtomicLong(0)
-    private val statsTotalFailure = AtomicLong(0)
-
-    fun scheduleTask(
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val mutex = Mutex()
+        private val tasks = ConcurrentHashMap<String, ScheduledTask>()
+        private val runningTasks = ConcurrentHashMap<String, Job>()
+        private val taskExecutionHistory = ConcurrentHashMap<String, MutableList<TaskExecution>>()
+        private val _tasksFlow = MutableStateFlow<List<ScheduledTask>>(emptyList())
+        val tasksFlow: StateFlow<List<ScheduledTask>> = _tasksFlow.asStateFlow()
+        private val _schedulerEvents = MutableSharedFlow<SchedulerEvent>()
+        val schedulerEvents: SharedFlow<SchedulerEvent> = _schedulerEvents.asSharedFlow()
+        private val _runningTasksCount = MutableStateFlow(0)
+        val runningTasksCount: StateFlow<Int> = _runningTasksCount.asStateFlow()
+        private val eventBus = SkillEventBus.getInstance()
+        private val workflowEngine = WorkflowEngine.getInstance()
+        private val json = Json { encodeDefaults = true }
+        private val statsTotalScheduled = AtomicLong(0)
+        private val statsTotalExecuted = AtomicLong(0)
+        private val statsTotalSuccess = AtomicLong(0)
+        private val statsTotalFailure = AtomicLong(0)
+        fun scheduleTask(
         name: String,
         description: String = "",
         targetWorkflowId: String? = null,
@@ -138,9 +129,8 @@ class SkillScheduler private constructor() {
     ): ScheduledTask? {
         if (tasks.size >= MAX_CONCURRENT_TASKS) {
             AppLogger.w(TAG, "Max scheduled tasks limit reached")
-            return null
+        return null
         }
-
         val task = ScheduledTask(
             name = name,
             description = description,
@@ -154,7 +144,6 @@ class SkillScheduler private constructor() {
 
         tasks[task.id] = task
         statsTotalScheduled.incrementAndGet()
-
         if (task.enabled) {
             startTaskExecution(task)
         }
@@ -175,8 +164,7 @@ class SkillScheduler private constructor() {
         AppLogger.i(TAG, "Task scheduled: ${task.name} [${task.id}], next execution: ${task.nextExecutionTime}")
         return task
     }
-
-    fun scheduleIntervalTask(
+        fun scheduleIntervalTask(
         name: String,
         intervalMs: Long,
         repeat: Boolean = true,
@@ -193,8 +181,7 @@ class SkillScheduler private constructor() {
             targetAction = targetAction
         )
     }
-
-    fun scheduleCronTask(
+        fun scheduleCronTask(
         name: String,
         cronExpression: String,
         repeat: Boolean = true,
@@ -211,8 +198,7 @@ class SkillScheduler private constructor() {
             targetAction = targetAction
         )
     }
-
-    fun scheduleOneTimeTask(
+        fun scheduleOneTimeTask(
         name: String,
         specificTime: String,
         targetWorkflowId: String? = null,
@@ -228,8 +214,7 @@ class SkillScheduler private constructor() {
             targetAction = targetAction
         )
     }
-
-    fun unscheduleTask(taskId: String): Boolean {
+        fun unscheduleTask(taskId: String): Boolean {
         val task = tasks.remove(taskId) ?: return false
 
         runningTasks[taskId]?.cancel()
@@ -244,8 +229,7 @@ class SkillScheduler private constructor() {
         AppLogger.i(TAG, "Task unscheduled: ${task.name} [${taskId}]")
         return true
     }
-
-    fun updateTask(taskId: String, updates: (TaskScheduleConfig) -> TaskScheduleConfig): ScheduledTask? {
+        fun updateTask(taskId: String, updates: (TaskScheduleConfig) -> TaskScheduleConfig): ScheduledTask? {
         val task = tasks[taskId] ?: return null
 
         val updatedConfig = updates(task.scheduleConfig)
@@ -268,8 +252,7 @@ class SkillScheduler private constructor() {
         AppLogger.d(TAG, "Task updated: ${updatedTask.name} [${updatedTask.id}]")
         return updatedTask
     }
-
-    fun enableTask(taskId: String): Boolean {
+        fun enableTask(taskId: String): Boolean {
         val task = tasks[taskId] ?: return false
         if (task.enabled) return true
 
@@ -289,8 +272,7 @@ class SkillScheduler private constructor() {
         AppLogger.i(TAG, "Task enabled: ${task.name} [${taskId}]")
         return true
     }
-
-    fun disableTask(taskId: String): Boolean {
+        fun disableTask(taskId: String): Boolean {
         val task = tasks[taskId] ?: return false
         if (!task.enabled) return true
 
@@ -309,33 +291,26 @@ class SkillScheduler private constructor() {
         AppLogger.i(TAG, "Task disabled: ${task.name} [${taskId}]")
         return true
     }
-
-    fun getTask(taskId: String): ScheduledTask? = tasks[taskId]
+        fun getTask(taskId: String): ScheduledTask? = tasks[taskId]
 
     fun getAllTasks(): List<ScheduledTask> = tasks.values.toList()
-
-    fun getEnabledTasks(): List<ScheduledTask> = tasks.values.filter { it.enabled }
-
-    fun getTaskExecutionHistory(taskId: String): List<TaskExecution> =
+        fun getEnabledTasks(): List<ScheduledTask> = tasks.values.filter { it.enabled }
+        fun getTaskExecutionHistory(taskId: String): List<TaskExecution> =
         taskExecutionHistory[taskId]?.toList() ?: emptyList()
-
-    private fun startTaskExecution(task: ScheduledTask) {
+        private fun startTaskExecution(task: ScheduledTask) {
         if (runningTasks.containsKey(task.id)) return
 
         val job = scope.launch {
             while (isActive && task.enabled) {
                 val now = System.currentTimeMillis()
-
-                if (now >= task.nextExecutionTime) {
+        if (now >= task.nextExecutionTime) {
                     executeTask(task)
                 }
-
-                if (!task.scheduleConfig.repeat) {
+        if (!task.scheduleConfig.repeat) {
                     break
                 }
-
-                val delayTime = calculateDelayUntilNextExecution(task)
-                if (delayTime > 0) {
+        val delayTime = calculateDelayUntilNextExecution(task)
+        if (delayTime > 0) {
                     delay(delayTime)
                 } else {
                     delay(1000)
@@ -346,8 +321,7 @@ class SkillScheduler private constructor() {
         runningTasks[task.id] = job
         _runningTasksCount.value = runningTasks.size
     }
-
-    private suspend fun executeTask(task: ScheduledTask) {
+        private suspend fun executeTask(task: ScheduledTask) {
         val executionId = "task_exec_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
         val startTime = System.currentTimeMillis()
 
@@ -359,7 +333,6 @@ class SkillScheduler private constructor() {
             success = true,
             executionTimeMs = 0
         ))
-
         var success = false
         var result: Any? = null
         var error: String? = null
@@ -377,9 +350,8 @@ class SkillScheduler private constructor() {
                     }
                     task.targetSkillName != null -> {
                         val skillLoader = SkillLoader.getInstance(android.app.Application())
-                        val loadedSkill = skillLoader.loadSkill(task.targetSkillName, SkillManager.getInstance())
-
-                        if (loadedSkill != null) {
+        val loadedSkill = skillLoader.loadSkill(task.targetSkillName, SkillManager.getInstance())
+        if (loadedSkill != null) {
                             success = true
                             "Skill executed: ${task.targetSkillName}"
                         } else {
@@ -398,7 +370,6 @@ class SkillScheduler private constructor() {
             success = false
             AppLogger.e(TAG, "Task execution failed: ${task.id}", e)
         }
-
         val endTime = System.currentTimeMillis()
         val executionTime = endTime - startTime
 
@@ -412,13 +383,11 @@ class SkillScheduler private constructor() {
             result = result,
             error = error
         )
-
         val history = taskExecutionHistory.getOrPut(task.id) { mutableListOf() }
         history.add(execution)
         if (history.size > MAX_TASK_HISTORY) {
             history.removeAt(0)
         }
-
         val updatedTask = task.copy(
             lastExecutionTime = endTime,
             nextExecutionTime = calculateNextExecutionTime(task.scheduleType, task.scheduleConfig),
@@ -450,7 +419,6 @@ class SkillScheduler private constructor() {
             success = success,
             executionTimeMs = executionTime
         ))
-
         if (!task.scheduleConfig.repeat || task.scheduleConfig.maxExecutions?.let { updatedTask.executionCount >= it } == true) {
             unscheduleTask(task.id)
         }
@@ -459,10 +427,8 @@ class SkillScheduler private constructor() {
 
         AppLogger.d(TAG, "Task executed: ${task.name} [${task.id}], success: ${success}, time: ${executionTime}ms")
     }
-
-    private fun calculateNextExecutionTime(scheduleType: ScheduleType, config: TaskScheduleConfig): Long {
+        private fun calculateNextExecutionTime(scheduleType: ScheduleType, config: TaskScheduleConfig): Long {
         val now = System.currentTimeMillis()
-
         return when (scheduleType) {
             ScheduleType.INTERVAL -> {
                 now + (config.intervalMs ?: 60000L)
@@ -480,8 +446,7 @@ class SkillScheduler private constructor() {
             }
         }
     }
-
-    private fun calculateDelayUntilNextExecution(task: ScheduledTask): Long {
+        private fun calculateDelayUntilNextExecution(task: ScheduledTask): Long {
         val now = System.currentTimeMillis()
         val nextTime = task.nextExecutionTime
 
@@ -491,26 +456,24 @@ class SkillScheduler private constructor() {
             0
         }
     }
-
-    private fun parseSpecificTime(timeStr: String): Date? {
+        private fun parseSpecificTime(timeStr: String): Date? {
         if (timeStr == null) return null
 
         return try {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            val dateTime = LocalDateTime.parse(timeStr, formatter)
+        val dateTime = LocalDateTime.parse(timeStr, formatter)
             Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant())
         } catch (e: Exception) {
             try {
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-                val dateTime = LocalDateTime.parse(timeStr, formatter)
+        val dateTime = LocalDateTime.parse(timeStr, formatter)
                 Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant())
             } catch (e2: Exception) {
                 null
             }
         }
     }
-
-    private fun parseCronExpression(cron: String): Long? {
+        private fun parseCronExpression(cron: String): Long? {
         if (cron == null) return null
 
         val parts = cron.trim().split("\\s+".toRegex())
@@ -518,9 +481,8 @@ class SkillScheduler private constructor() {
 
         return try {
             val now = LocalDateTime.now()
-            var next = now.plusMinutes(1).withSecond(CRON_SECOND).withNano(0)
-
-            for (i in 0..59) {
+        var next = now.plusMinutes(1).withSecond(CRON_SECOND).withNano(0)
+        for (i in 0..59) {
                 if (matchesCron(next, parts)) {
                     return Date.from(next.atZone(ZoneId.systemDefault()).toInstant()).time
                 }
@@ -532,8 +494,7 @@ class SkillScheduler private constructor() {
             null
         }
     }
-
-    private fun matchesCron(dateTime: LocalDateTime, parts: List<String>): Boolean {
+        private fun matchesCron(dateTime: LocalDateTime, parts: List<String>): Boolean {
         if (parts.size < 5) return false
 
         val minute = parts[0]
@@ -548,8 +509,7 @@ class SkillScheduler private constructor() {
                 matchesCronField(dateTime.monthValue, month) &&
                 matchesCronField(dateTime.dayOfWeek.value, dayOfWeek)
     }
-
-    private fun matchesCronField(value: Int, field: String): Boolean {
+        private fun matchesCronField(value: Int, field: String): Boolean {
         return when {
             field == "*" -> true
             field.contains(",") -> {
@@ -557,17 +517,17 @@ class SkillScheduler private constructor() {
             }
             field.contains("-") -> {
                 val range = field.split("-")
-                if (range.size == 2) {
+        if (range.size == 2) {
                     val start = range[0].toInt()
-                    val end = range[1].toInt()
+        val end = range[1].toInt()
                     value in start..end
                 } else false
             }
             field.contains("/") -> {
                 val stepParts = field.split("/")
-                if (stepParts.size == 2) {
+        if (stepParts.size == 2) {
                     val start = if (stepParts[0] == "*") 0 else stepParts[0].toInt()
-                    val step = stepParts[1].toInt()
+        val step = stepParts[1].toInt()
                     (value - start) % step == 0
                 } else false
             }
@@ -580,23 +540,19 @@ class SkillScheduler private constructor() {
             }
         }
     }
-
-    private fun calculateNextCronTime(cron: String): Long {
+        private fun calculateNextCronTime(cron: String): Long {
         return parseCronExpression(cron) ?: (System.currentTimeMillis() + 60000L)
     }
-
-    private fun updateTasksFlow() {
+        private fun updateTasksFlow() {
         _tasksFlow.value = tasks.values.toList()
     }
-
-    fun cancelAllTasks() {
+        fun cancelAllTasks() {
         runningTasks.values.forEach { it.cancel() }
         runningTasks.clear()
         _runningTasksCount.value = 0
         AppLogger.i(TAG, "All tasks cancelled")
     }
-
-    fun getStats(): SchedulerStats {
+        fun getStats(): SchedulerStats {
         return SchedulerStats(
             totalScheduledTasks = tasks.size.toLong(),
             runningTasks = runningTasks.size,
@@ -615,8 +571,6 @@ class SkillScheduler private constructor() {
         val totalFailure: Long,
         val totalTasksCreated: Long
     )
-
-    private fun generateTaskId(): String = "task_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
-
-    private class Date(val time: Long)
+        private fun generateTaskId(): String = "task_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
+        private class Date(val time: Long)
 }

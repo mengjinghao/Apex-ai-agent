@@ -136,7 +136,7 @@ enum class InspirationType {
 class CreativeWritingWorkshop {
 
     private val projects = ConcurrentHashMap<String, WritingProject>()
-    private val inspirationBank = mutableListOf<InspirationCard>()
+        private val inspirationBank = mutableListOf<InspirationCard>()
 
     init {
         loadBuiltinInspirations()
@@ -269,7 +269,6 @@ class CreativeWritingWorkshop {
             sb.appendLine("当前草稿 (v${draft.version}, ${draft.wordCount}字):")
             sb.appendLine(draft.content.take(500) + if (draft.content.length > 500) "..." else "")
         }
-
         return sb.toString()
     }
 
@@ -341,7 +340,6 @@ class CreativeWritingWorkshop {
     val metaphors = Regex("(像|如同|仿佛|宛如|好似).+").findAll(content).count()
         val dialogues = content.count { it == '"' || it == '"' || it == '「' }
         val descriptions = Regex("(色|香|味|声|光|影)").findAll(content).count()
-
         return WritingEvaluation(
             wordCount = wordCount,
             sentenceCount = sentenceCount,
@@ -385,8 +383,7 @@ class CreativeWritingWorkshop {
             WritingGenre.FANFIC -> WritingStyle(WritingTone.LYRICAL, WritingMood.ROMANTIC, Perspective.THIRD_PERSON_LIMITED, Tense.PAST, LanguageStyle.LITERARY, 5000)
         }
     }
-
-    private fun genreName(genre: WritingGenre): String = when (genre) {
+        private fun genreName(genre: WritingGenre): String = when (genre) {
         WritingGenre.ANCIENT_POEM -> "古体诗"
         WritingGenre.MODERN_POEM -> "现代诗"
         WritingGenre.HAIKU -> "俳句"
@@ -403,8 +400,7 @@ class CreativeWritingWorkshop {
         WritingGenre.REVIEW -> "评论"
         WritingGenre.FANFIC -> "同人"
     }
-
-    private fun genreRequirements(genre: WritingGenre): String = when (genre) {
+        private fun genreRequirements(genre: WritingGenre): String = when (genre) {
         WritingGenre.ANCIENT_POEM -> "五言或七言，押韵，意境深远"
         WritingGenre.MODERN_POEM -> "自由体，注重意象与节奏"
         WritingGenre.HAIKU -> "5-7-5 音节，含季节词"
@@ -421,18 +417,15 @@ class CreativeWritingWorkshop {
         WritingGenre.REVIEW -> "观点+论据+结论"
         WritingGenre.FANFIC -> "尊重原作设定"
     }
-
-    private fun moodWord(): String = listOf("宁静", "喧闹", "阴郁", "明媚", "神秘", "温暖").random()
-
-    private fun countWords(text: String): Int {
+        private fun moodWord(): String = listOf("宁静", "喧闹", "阴郁", "明媚", "神秘", "温暖").random()
+        private fun countWords(text: String): Int {
         val chinese = text.count { it.code in 0x4e00..0x9fff }
         val english = text.split(Regex("[\\s\\p{Punct}]+"))
             .filter { it.isNotEmpty() && it.all { c -> c.code !in 0x4e00..0x9fff } }
             .size
         return chinese + english
     }
-
-    private fun computeReadability(avgLen: Int): Int {
+        private fun computeReadability(avgLen: Int): Int {
         return when {
             avgLen < 10 -> 95
             avgLen < 20 -> 85
@@ -441,8 +434,7 @@ class CreativeWritingWorkshop {
             else -> 40
         }
     }
-
-    private fun generateWritingSuggestions(content: String, words: Int, metaphors: Int, dialogues: Int): List<String> {
+        private fun generateWritingSuggestions(content: String, words: Int, metaphors: Int, dialogues: Int): List<String> {
         val suggestions = mutableListOf<String>()
         if (words < 100) suggestions.add("内容较短，可适当展开")
         if (metaphors == 0) suggestions.add("缺少比喻，可增加文学性")
@@ -453,8 +445,7 @@ class CreativeWritingWorkshop {
         }
         return suggestions
     }
-
-    private fun loadBuiltinInspirations() {
+        private fun loadBuiltinInspirations() {
         inspirationBank.addAll(listOf(
             InspirationCard("i1", InspirationType.OPENING_LINE, "「时间是一列没有返程的火车」", "用这个开头写一段"),
             InspirationCard("i2", InspirationType.OPENING_LINE, "「她数到三，世界就变了」", "用这个开头写一段"),

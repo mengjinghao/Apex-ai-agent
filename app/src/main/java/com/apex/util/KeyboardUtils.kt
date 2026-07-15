@@ -107,12 +107,11 @@ object KeyboardUtils {
 
         rootView.viewTreeObserver.addOnGlobalLayoutListener {
             val currentVisible = isKeyboardVisible(activity)
-            if (currentVisible != lastVisible) {
+        if (currentVisible != lastVisible) {
                 lastVisible = currentVisible
                 onVisibilityChanged(currentVisible)
             }
         }
-
         if (activity is AppCompatActivity) {
             activity.lifecycle.addObserver(LifecycleEventObserver { source: LifecycleOwner, event: Lifecycle.Event ->
                 if (event == Lifecycle.Event.ON_DESTROY) {

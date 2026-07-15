@@ -18,7 +18,7 @@ class LogcatManager(private val context: Context) {
 
     // 日志格式解析
     private val logPattern = "^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+([VDIWEAF])/(.*): (.*)".toRegex()
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+        private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
 
 
     /**
@@ -60,13 +60,12 @@ class LogcatManager(private val context: Context) {
                 "A" -> LogLevel.FATAL // Assert as Fatal
                 else -> LogLevel.UNKNOWN
             }
-            val timestamp = try {
+        val timestamp = try {
                 dateFormat.parse(timestampStr)?.time ?: System.currentTimeMillis()
             } catch (e: Exception) {
                 System.currentTimeMillis()
             }
-
-            return LogRecord(
+        return LogRecord(
                 timestamp = timestamp,
                 level = level,
                 tag = tag.trim(),

@@ -28,16 +28,12 @@ data class EventBusStats(
 interface EventBus {
 
     fun <T : Any> publish(event: T)
-
-    fun <T : Any> subscribe(eventClass: Class<T>): SharedFlow<T>
+        fun <T : Any> subscribe(eventClass: Class<T>): SharedFlow<T>
 
     fun <T : Any> stickyEvent(event: T)
-
-    fun <T : Any> clearSticky(eventClass: Class<T>)
-
-    fun clearAllSticky()
-
-    fun stats(): EventBusStats
+        fun <T : Any> clearSticky(eventClass: Class<T>)
+        fun clearAllSticky()
+        fun stats(): EventBusStats
 
     fun close()
 
@@ -74,7 +70,7 @@ interface EventBus {
             scope.launch {
                 bus.filterIsInstance(eventClass).collect { flow.tryEmit(it) }
             }
-            return flow as SharedFlow<T>
+        return flow as SharedFlow<T>
         }
 
         override fun <T : Any> stickyEvent(event: T) {

@@ -23,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap
 class MCPServerBridge {
 
     private val logger = LoggerFactory.getLogger(MCPServerBridge::class.java)
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var serverSocket: ServerSocket? = null
+        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        private var serverSocket: ServerSocket? = null
     private var isRunning = false
     private val clients = ConcurrentHashMap<String, ClientHandler>()
 
@@ -45,28 +45,23 @@ class MCPServerBridge {
                 }
             }
         }
-
         fun getInstance(): MCPServerBridge {
             return instance ?: throw IllegalStateException("MCPServerBridge not initialized")
         }
-
         fun startServer(port: Int = DEFAULT_PORT) {
             getInstance().start(port)
         }
-
         fun stopServer() {
             getInstance().stop()
         }
-
         fun isInitialized(): Boolean {
             return instance != null
         }
     }
-
-    fun start(port: Int) {
+        fun start(port: Int) {
         if (isRunning) {
             logger.warn("MCP Server is already running")
-            return
+        return
         }
 
         isRunning = true
@@ -90,8 +85,7 @@ class MCPServerBridge {
             }
         }
     }
-
-    fun stop() {
+        fun stop() {
         isRunning = false
         serverSocket?.close()
         clients.values.forEach { it.stop() }
@@ -99,8 +93,7 @@ class MCPServerBridge {
         scope.cancel()
         logger.info("MCP Server stopped")
     }
-
-    private inner class ClientHandler(private val socket: Socket) : Thread() {
+        private inner class ClientHandler(private val socket: Socket) : Thread() {
         private val input = BufferedReader(InputStreamReader(socket.getInputStream()))
         private val output = OutputStreamWriter(socket.getOutputStream())
         private val json = Json { ignoreUnknownKeys = true }
@@ -118,11 +111,10 @@ class MCPServerBridge {
                 cleanup()
             }
         }
-
         private fun handleRequest(jsonStr: String) {
             try {
                 val request = json.decodeFromString<MCPRequest>(jsonStr)
-                val response = when (request.method) {
+        val response = when (request.method) {
                     "initialize" -> handleInitialize(request)
                     "tools/list" -> handleToolsList(request)
                     "tools/call" -> handleToolsCall(request)
@@ -133,7 +125,6 @@ class MCPServerBridge {
                 sendResponse(MCPResponse.error(e.message ?: "Unknown error"))
             }
         }
-
         private fun handleInitialize(request: MCPRequest): MCPResponse {
             return MCPResponse.success(
                 mapOf(
@@ -143,7 +134,6 @@ class MCPServerBridge {
                 )
             )
         }
-
         private fun handleToolsList(request: MCPRequest): MCPResponse {
             val tools = listOf(
                 mapOf(
@@ -193,20 +183,17 @@ class MCPServerBridge {
                     )
                 )
             )
-            return MCPResponse.success(mapOf("tools" to tools))
+        return MCPResponse.success(mapOf("tools" to tools))
         }
-
         private fun handleToolsCall(request: MCPRequest): MCPResponse {
             val params = request.params as? Map<String, Any> ?: return MCPResponse.error("Invalid params")
-            val toolName = params["name"] as? String ?: return MCPResponse.error("Tool name required")
-
-            val context = appContext ?: return MCPResponse.error("MCPServerBridge not initialized with context")
-            val tools = ConversationBridgeTools.getInstance(context)
-
-            return when (toolName) {
+        val toolName = params["name"] as? String ?: return MCPResponse.error("Tool name required")
+        val context = appContext ?: return MCPResponse.error("MCPServerBridge not initialized with context")
+        val tools = ConversationBridgeTools.getInstance(context)
+        return when (toolName) {
                 "conversations_list" -> runBlocking(Dispatchers.IO) {
                     val result = tools.conversationsList()
-                    if (result.success) {
+        if (result.success) {
                         MCPResponse.success(mapOf(
                             "conversations" to result.conversations.map {
                                 mapOf(
@@ -228,7 +215,7 @@ class MCPServerBridge {
                     val id = params["id"] as? String ?: return MCPResponse.error("ID required")
                     runBlocking(Dispatchers.IO) {
                         val result = tools.conversationGet(id)
-                        if (result.success && result.conversation != null) {
+        if (result.success && result.conversation != null) {
                             val conversation = result.conversation
                             MCPResponse.success(mapOf(
                                 "id" to conversation.id,
@@ -248,10 +235,10 @@ class MCPServerBridge {
                 }
                 "messages_read" -> {
                     val conversationId = params["conversation_id"] as? String ?: return MCPResponse.error("Conversation ID required")
-                    val limit = (params["limit"] as? Number)?.toInt() ?: 50
+        val limit = (params["limit"] as? Number)?.toInt() ?: 50
                     runBlocking(Dispatchers.IO) {
                         val result = tools.messagesRead(conversationId, limit)
-                        if (result.success) {
+        if (result.success) {
                             MCPResponse.success(mapOf(
                                 "messages" to result.messages.map {
                                     mapOf(
@@ -272,11 +259,11 @@ class MCPServerBridge {
                 }
                 "messages_send" -> {
                     val conversationId = params["conversation_id"] as? String ?: return MCPResponse.error("Conversation ID required")
-                    val content = params["content"] as? String ?: return MCPResponse.error("Content required")
-                    val role = params["role"] as? String ?: "user"
+        val content = params["content"] as? String ?: return MCPResponse.error("Content required")
+        val role = params["role"] as? String ?: "user"
                     runBlocking(Dispatchers.IO) {
                         val result = tools.messagesSend(conversationId, content, role)
-                        if (result.success) {
+        if (result.success) {
                             MCPResponse.success(mapOf(
                                 "message_id" to result.messageId,
                                 "created_at" to result.createdAt
@@ -290,7 +277,7 @@ class MCPServerBridge {
                     val timeout = (params["timeout"] as? Number)?.toInt() ?: 1000
                     runBlocking(Dispatchers.IO) {
                         val result = tools.eventsPoll(timeout)
-                        if (result.success) {
+        if (result.success) {
                             MCPResponse.success(mapOf("events" to result.events.map {
                                 mapOf(
                                     "type" to it.type,
@@ -307,7 +294,7 @@ class MCPServerBridge {
                 }
                 "permissions_list_open" -> runBlocking(Dispatchers.IO) {
                     val result = tools.permissionsListOpen()
-                    if (result.success) {
+        if (result.success) {
                         MCPResponse.success(mapOf("permissions" to result.permissions.map {
                             mapOf(
                                 "id" to it.id,
@@ -323,10 +310,10 @@ class MCPServerBridge {
                 }
                 "permissions_respond" -> {
                     val id = params["id"] as? String ?: return MCPResponse.error("ID required")
-                    val approved = params["approved"] as? Boolean ?: return MCPResponse.error("Approved required")
+        val approved = params["approved"] as? Boolean ?: return MCPResponse.error("Approved required")
                     runBlocking(Dispatchers.IO) {
                         val result = tools.permissionsRespond(id, approved)
-                        if (result.success) {
+        if (result.success) {
                             MCPResponse.success(mapOf(
                                 "permission_id" to result.permissionId,
                                 "approved" to result.approved
@@ -339,7 +326,6 @@ class MCPServerBridge {
                 else -> MCPResponse.error("Unknown tool: ${toolName}")
             }
         }
-
         private fun sendResponse(response: MCPResponse) {
             try {
                 val jsonStr = json.encodeToString(response)
@@ -349,11 +335,9 @@ class MCPServerBridge {
                 logger.warn("Failed to send response", e)
             }
         }
-
         fun stop() {
             isHandling = false
         }
-
         private fun cleanup() {
             clients.remove(socket.remoteSocketAddress.toString())
             try {
@@ -391,8 +375,7 @@ class MCPServerBridge {
             fun success(result: Any): MCPResponse {
                 return MCPResponse(result = result)
             }
-
-            fun error(message: String): MCPResponse {
+        fun error(message: String): MCPResponse {
                 return MCPResponse(error = message)
             }
         }
@@ -402,8 +385,8 @@ class MCPServerBridge {
 object MCPCatalog {
 
     private val logger = LoggerFactory.getLogger(MCPCatalog::class.java)
-    private val catalog = mutableListOf<MCPEntry>()
-    private var isLoaded = false
+        private val catalog = mutableListOf<MCPEntry>()
+        private var isLoaded = false
 
     fun loadCatalog() {
         if (isLoaded) return
@@ -466,27 +449,22 @@ object MCPCatalog {
         isLoaded = true
         logger.info("MCP catalog loaded: ${catalog.size} entries")
     }
-
-    fun search(query: String): List<MCPEntry> {
+        fun search(query: String): List<MCPEntry> {
         return catalog.filter {
             it.name.contains(query, ignoreCase = true) ||
             it.description.contains(query, ignoreCase = true)
         }
     }
-
-    fun getByCategory(category: String): List<MCPEntry> {
+        fun getByCategory(category: String): List<MCPEntry> {
         return catalog.filter { it.category == category }
     }
-
-    fun getRecommended(): List<MCPEntry> {
+        fun getRecommended(): List<MCPEntry> {
         return catalog.filter { it.recommended }
     }
-
-    fun getAll(): List<MCPEntry> {
+        fun getAll(): List<MCPEntry> {
         return catalog
     }
-
-    fun getCategories(): List<String> {
+        fun getCategories(): List<String> {
         return catalog.map { it.category }.distinct()
     }
 

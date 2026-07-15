@@ -51,7 +51,6 @@ class TaskDispatcher(
             val depTask = board.getTask(depId)
             depTask?.status != KanbanTaskStatus.COMPLETED
         }
-
         if (blockedBy.isNotEmpty()) {
             AppLogger.d(TAG, "Task ${task.id} is blocked by ${blockedBy}")
             return@withContext DispatchResult.Blocked(task, blockedBy)
@@ -88,10 +87,10 @@ class TaskDispatcher(
                 agentAssigned = tryAssignAgent(task, worker)
             }
 
-            // 移动任务�?进行�?列（如果配置了自动流转）
+            // 移动任务�进行�列（如果配置了自动流转）
     if (column?.autoProcessEnabled == true) {
                 val nextColumn = findNextColumn(column)
-                if (nextColumn != null) {
+        if (nextColumn != null) {
                     board.moveTask(task.id, nextColumn.id)
                 }
             }
@@ -159,7 +158,6 @@ class TaskDispatcher(
             "analysis" to "需�?,
             "research" to "需�?
         )
-
         val typeKey = typeColumnMap.entries.find { (key, _) ->
             task.taskType.contains(key, ignoreCase = true) ||
                     task.tags.any { it.contains(key, ignoreCase = true) }
@@ -183,9 +181,8 @@ class TaskDispatcher(
             task.assignedAgentId = agent.id
             task.assignedAgentName = agent.name
             collaborationFramework.assignTask(task.id, agent.id)
-            return true
+        return true
         }
-
         return false
     }
 
@@ -208,8 +205,7 @@ class TaskDispatcher(
                 val depTask = board.getTask(depId)
                 depTask?.status != KanbanTaskStatus.COMPLETED
             }
-
-            if (stillBlocked.isEmpty()) {
+        if (stillBlocked.isEmpty()) {
                 task.unblock()
                 AppLogger.d(TAG, "Task ${task.id} is now unblocked")
             }
@@ -226,7 +222,6 @@ class TaskDispatcher(
         val completed = allTasks.count { it.status == KanbanTaskStatus.COMPLETED }
         val failed = allTasks.count { it.status == KanbanTaskStatus.FAILED }
         val blocked = allTasks.count { it.status == KanbanTaskStatus.BLOCKED }
-
         return DispatchStatistics(
             totalTasks = allTasks.size,
             pending = pending,

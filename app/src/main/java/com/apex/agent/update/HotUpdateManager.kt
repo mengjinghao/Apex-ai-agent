@@ -51,7 +51,7 @@ class HotUpdateManager private constructor(
     companion object {
         private const val TAG = "HotUpdateManager"
         private const val GITHUB_API_BASE = "https://api.github.com"
-    private const val USER_AGENT = "Apex-AI-Agent-HotUpdate/1.0"
+        private const val USER_AGENT = "Apex-AI-Agent-HotUpdate/1.0"
         private const val CONNECT_TIMEOUT_S = 15L
         private const val READ_TIMEOUT_S = 60L
         private const val MIRROR_PROBE_TIMEOUT_S = 8L
@@ -72,15 +72,14 @@ class HotUpdateManager private constructor(
             }
         }
     }
-
-    private val registry = MirrorSourceRegistry.getInstance(context)
+        private val registry = MirrorSourceRegistry.getInstance(context)
 
     /** 管理器内部协程作用域，用于后台下载，支持取消。 */
     private val downloadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** 当前检查/下载状态，UI 可订阅。 */
     private val _state = MutableStateFlow(UpdateState.Idle)
-    val state: StateFlow<UpdateState> = _state.asStateFlow()
+        val state: StateFlow<UpdateState> = _state.asStateFlow()
 
     /** 当前正在下载的作业，用于支持取消。 */
     private val currentDownloadJob = AtomicReference<Job?>(null)
@@ -128,11 +127,10 @@ class HotUpdateManager private constructor(
         _state.value = UpdateState.Checking
         try {
             val owner = UpdateSettings.getRepoOwner(context)
-            val name = UpdateSettings.getRepoName(context)
-            val includePre = UpdateSettings.isIncludePrerelease(context)
-            val current = currentVersionName()
-
-            val release = try {
+        val name = UpdateSettings.getRepoName(context)
+        val includePre = UpdateSettings.isIncludePrerelease(context)
+        val current = currentVersionName()
+        val release = try {
                 fetchLatestRelease(owner, name, includePre)
             } catch (t: Throwable) {
                 _state.value = UpdateState.Idle
@@ -144,13 +142,11 @@ class HotUpdateManager private constructor(
             }
 
             UpdateSettings.setLastCheckTimestamp(context, System.currentTimeMillis())
-
-            val apkAsset = pickApkAsset(release)
+        val apkAsset = pickApkAsset(release)
                 ?: return@withContext UpdateError.NoRelease(
                     "Release ${release.tagName} 未包含可识别的 APK 资源"
                 ).toCheckFailed().also { _state.value = UpdateState.Idle }
-
-            val latestTag = release.tagName
+        val latestTag = release.tagName
             if (!VersionComparator.isNewer(latestTag, current)) {
                 _state.value = UpdateState.Idle
                 return@withContext CheckResult.UpToDate(current, latestTag)
@@ -158,13 +154,12 @@ class HotUpdateManager private constructor(
 
             // 被忽略的版本直接当作无更新
     val ignored = UpdateSettings.getLastIgnoredVersion(context)
-            if (ignored == latestTag) {
+        if (ignored == latestTag) {
                 _state.value = UpdateState.Idle
                 return@withContext CheckResult.UpToDate(current, latestTag)
             }
-
-            val sha = extractSha256(release, apkAsset)
-            if (sha != null) {
+        val sha = extractSha256(release, apkAsset)
+        if (sha != null) {
                 AppLogger.i(TAG, "推断到 SHA-256: $sha")
             }
 
@@ -249,7 +244,6 @@ class HotUpdateManager private constructor(
             UpdateNotifier.getInstance(context).notifyDownloadFailed(err.message)
             return@withContext Result.failure(IllegalStateException(err.message))
         }
-
         val registry = MirrorSourceRegistry.getInstance(context)
         var mirrors = registry.enabledMirrors().ifEmpty { MirrorSourceRegistry.BUILTIN_MIRRORS }
         // 把上次成功的镜像前置，加快下一次下载
@@ -259,14 +253,13 @@ class HotUpdateManager private constructor(
         }
         val targetDir = File(context.cacheDir, "hotupdate").apply { mkdirs() }
         val targetFile = File(targetDir, "apex-${release.tagName}-${asset.name}")
-
         val notifier = UpdateNotifier.getInstance(context)
         var lastError: Throwable? = null
         for ((index, mirror) in mirrors.withIndex()) {
             try {
                 AppLogger.i(TAG, "尝试镜像[${index + 1}/${mirrors.size}]：${mirror.name} (${mirror.id})")
-                val url = wrapUrlWithMirror(mirror, asset.browserDownloadUrl)
-                val downloaded = downloadFile(
+        val url = wrapUrlWithMirror(mirror, asset.browserDownloadUrl)
+        val downloaded = downloadFile(
                     url = url,
                     target = targetFile,
                     expectedSize = if (asset.size > 0) asset.size else -1L,
@@ -278,10 +271,10 @@ class HotUpdateManager private constructor(
                 // SHA-256 校验（仅当 expectedSha256 非空）
     if (expectedSha256 != null) {
                     val actual = sha256OfFile(downloaded)
-                    if (!actual.equals(expectedSha256, ignoreCase = true)) {
+        if (!actual.equals(expectedSha256, ignoreCase = true)) {
                         AppLogger.e(TAG, "SHA-256 校验失败：expected=$expectedSha256 actual=$actual")
                         downloaded.delete()
-                        val errMsg = "SHA-256 校验失败（期望 $expectedSha256，实际 $actual）"
+        val errMsg = "SHA-256 校验失败（期望 $expectedSha256，实际 $actual）"
                         _state.value = UpdateState.Failed(errMsg)
                         UpdateNotifier.getInstance(context).notifyDownloadFailed(errMsg)
                         return@withContext Result.failure(java.io.IOException(errMsg))
@@ -298,14 +291,13 @@ class HotUpdateManager private constructor(
                 return@withContext Result.success(downloaded)
             } catch (ce: CancellationException) {
                 notifier.cancelProgress()
-                throw ce
+        throw ce
             } catch (t: Throwable) {
                 AppLogger.w(TAG, "镜像 ${mirror.name} 失败：${t.message}")
                 lastError = t
                 // 继续尝试下一个镜像
             }
         }
-
         val triedCount = mirrors.size
         val finalErr = UpdateError.AllMirrorsFailed(triedCount)
         _state.value = UpdateState.Failed(finalErr.message)
@@ -339,7 +331,7 @@ class HotUpdateManager private constructor(
         val s = _state.value
         if (s !is UpdateState.UpdateAvailable || s.release == null || s.asset == null) {
             _state.value = UpdateState.Failed("当前无可下载的更新")
-            return
+        return
         }
         // 取消任何已在进行的下载，并把新 job 原子写入（避免竞态）
     val job = downloadScope.launch {
@@ -350,7 +342,7 @@ class HotUpdateManager private constructor(
                     expectedSha256 = s.expectedSha256,
                     onProgress = onProgress
                 )
-                if (result.isFailure) {
+        if (result.isFailure) {
                     _state.value = UpdateState.Failed(result.exceptionOrNull()?.message ?: "下载失败")
                 }
             } catch (ce: CancellationException) {
@@ -390,7 +382,7 @@ class HotUpdateManager private constructor(
             .readTimeout(MIRROR_PROBE_TIMEOUT_S, TimeUnit.SECONDS)
             .build()
         val probeUrl = wrapUrlWithMirror(mirror, "https://github.com/mengjinghao/Apex-ai-agent")
-    val start = System.currentTimeMillis()
+        val start = System.currentTimeMillis()
         try {
             val req = Request.Builder()
                 .url(probeUrl)
@@ -441,18 +433,18 @@ class HotUpdateManager private constructor(
         httpClient.newCall(req).execute().use { resp ->
             if (!resp.isSuccessful) {
                 AppLogger.w(TAG, "GitHub API 返回 ${resp.code}: ${resp.message}")
-                if (resp.code == 404) return@withContext null
+        if (resp.code == 404) return@withContext null
                 if (resp.code == 403) {
                     // Rate limit
     val remaining = resp.header("X-RateLimit-Remaining")
-                    val reset = resp.header("X-RateLimit-Reset")
+        val reset = resp.header("X-RateLimit-Reset")
                     AppLogger.w(TAG, "GitHub API 限流：remaining=$remaining, reset=$reset")
                 }
-                throw IllegalStateException("GitHub API ${resp.code} ${resp.message}")
+        throw IllegalStateException("GitHub API ${resp.code} ${resp.message}")
             }
-            val body = resp.body?.string()
+        val body = resp.body?.string()
                 ?: throw IllegalStateException("GitHub API 响应体为空")
-            if (includePrerelease) {
+        if (includePrerelease) {
                 val list = updateJson.decodeFromString(
                     kotlinx.serialization.builtins.ListSerializer(UpdateRelease.serializer()),
                     body
@@ -506,7 +498,6 @@ class HotUpdateManager private constructor(
         if (!canResume && target.exists()) {
             target.delete()
         }
-
         val reqBuilder = Request.Builder()
             .url(url)
             .header("User-Agent", USER_AGENT)
@@ -527,30 +518,29 @@ class HotUpdateManager private constructor(
             if (!supportsResume && target.exists()) {
                 target.delete()
             }
-
-            val contentLen = resp.header("Content-Length")?.toLongOrNull() ?: -1L
+        val contentLen = resp.header("Content-Length")?.toLongOrNull() ?: -1L
             val total = when {
                 expectedSize > 0 -> expectedSize
                 supportsResume && contentLen > 0 -> actualResumeFrom + contentLen
                 contentLen > 0 -> contentLen
                 else -> -1L
             }
-            val body = resp.body ?: throw IllegalStateException("响应体为空")
-            val input = body.byteStream()
-            val output = java.io.FileOutputStream(target, supportsResume)
-            val buffer = ByteArray(8 * 1024)
-            var bytesRead = actualResumeFrom
+        val body = resp.body ?: throw IllegalStateException("响应体为空")
+        val input = body.byteStream()
+        val output = java.io.FileOutputStream(target, supportsResume)
+        val buffer = ByteArray(8 * 1024)
+        var bytesRead = actualResumeFrom
             var lastEmit = 0L
             val startTs = System.currentTimeMillis()
-            val notifier = UpdateNotifier.getInstance(context)
+        val notifier = UpdateNotifier.getInstance(context)
             try {
                 while (true) {
                     val n = input.read(buffer)
-                    if (n <= 0) break
+        if (n <= 0) break
                     output.write(buffer, 0, n)
                     bytesRead += n
                     val now = System.currentTimeMillis()
-                    if (now - lastEmit >= 200L) {
+        if (now - lastEmit >= 200L) {
                         val elapsedSec = (now - startTs).coerceAtLeast(1L) / 1000.0
                         val speed = if (elapsedSec > 0) ((bytesRead - actualResumeFrom) / elapsedSec).toLong() else 0L
                         val percent = if (total > 0) ((bytesRead * 100) / total).toInt() else -1
@@ -587,7 +577,7 @@ class HotUpdateManager private constructor(
             val buf = ByteArray(64 * 1024)
             while (true) {
                 val n = fis.read(buf)
-                if (n <= 0) break
+        if (n <= 0) break
                 md.update(buf, 0, n)
             }
         }
@@ -605,7 +595,7 @@ class HotUpdateManager private constructor(
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "application/vnd.android.package-archive")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
         }
@@ -614,11 +604,10 @@ class HotUpdateManager private constructor(
             AppLogger.i(TAG, "已调起系统安装界面：${apkFile.name}")
         } catch (t: Throwable) {
             AppLogger.e(TAG, "调起安装界面失败", t)
-            throw t
+        throw t
         }
     }
-
-    private fun java.io.OutputStream.closeQuietly() {
+        private fun java.io.OutputStream.closeQuietly() {
         try { close() } catch (_: Throwable) {}
     }
 }

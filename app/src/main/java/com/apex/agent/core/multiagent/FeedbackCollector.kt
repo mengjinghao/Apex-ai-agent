@@ -33,10 +33,9 @@ class FeedbackCollector {
 
     enum class FeedbackStatus {
         PENDING,     // 待处�?       IN_PROGRESS, // 处理�?       RESOLVED,    // 已解�?       CLOSED       // 已关�?   }
-    private val feedbacks = ConcurrentHashMap<String, Feedback>()
-    private val feedbackIdCounter = AtomicInteger(0)
-
-    fun submitFeedback(userId: String, sessionId: String, type: FeedbackType, severity: Severity, content: String): String {
+        private val feedbacks = ConcurrentHashMap<String, Feedback>()
+        private val feedbackIdCounter = AtomicInteger(0)
+        fun submitFeedback(userId: String, sessionId: String, type: FeedbackType, severity: Severity, content: String): String {
         val id = "feedback_${feedbackIdCounter.incrementAndGet()}"
         val feedback = Feedback(
             id = id,
@@ -51,28 +50,22 @@ class FeedbackCollector {
         feedbacks[id] = feedback
         return id
     }
-
-    fun getFeedback(id: String): Feedback? {
+        fun getFeedback(id: String): Feedback? {
         return feedbacks[id]
     }
-
-    fun getAllFeedbacks(): List<Feedback> {
+        fun getAllFeedbacks(): List<Feedback> {
         return feedbacks.values.toList()
     }
-
-    fun getFeedbacksByType(type: FeedbackType): List<Feedback> {
+        fun getFeedbacksByType(type: FeedbackType): List<Feedback> {
         return feedbacks.values.filter { it.type == type }
     }
-
-    fun getFeedbacksByStatus(status: FeedbackStatus): List<Feedback> {
+        fun getFeedbacksByStatus(status: FeedbackStatus): List<Feedback> {
         return feedbacks.values.filter { it.status == status }
     }
-
-    fun getFeedbacksBySeverity(severity: Severity): List<Feedback> {
+        fun getFeedbacksBySeverity(severity: Severity): List<Feedback> {
         return feedbacks.values.filter { it.severity == severity }
     }
-
-    fun updateFeedbackStatus(id: String, status: FeedbackStatus, assignedTo: String? = null): Boolean {
+        fun updateFeedbackStatus(id: String, status: FeedbackStatus, assignedTo: String? = null): Boolean {
         val feedback = feedbacks[id]
         if (feedback != null) {
             val updatedFeedback = feedback.copy(
@@ -84,8 +77,7 @@ class FeedbackCollector {
         }
         return false
     }
-
-    fun resolveFeedback(id: String, resolution: String): Boolean {
+        fun resolveFeedback(id: String, resolution: String): Boolean {
         val feedback = feedbacks[id]
         if (feedback != null) {
             val updatedFeedback = feedback.copy(
@@ -97,8 +89,7 @@ class FeedbackCollector {
         }
         return false
     }
-
-    fun closeFeedback(id: String): Boolean {
+        fun closeFeedback(id: String): Boolean {
         val feedback = feedbacks[id]
         if (feedback != null) {
             val updatedFeedback = feedback.copy(
@@ -109,17 +100,14 @@ class FeedbackCollector {
         }
         return false
     }
-
-    fun deleteFeedback(id: String): Boolean {
+        fun deleteFeedback(id: String): Boolean {
         return feedbacks.remove(id) != null
     }
-
-    fun getFeedbackStats(): FeedbackStats {
+        fun getFeedbackStats(): FeedbackStats {
         val total = feedbacks.size
         val byType = feedbacks.values.groupBy { it.type }.mapValues { it.value.size }
         val byStatus = feedbacks.values.groupBy { it.status }.mapValues { it.value.size }
         val bySeverity = feedbacks.values.groupBy { it.severity }.mapValues { it.value.size }
-
         return FeedbackStats(
             total = total,
             byType = byType,
@@ -134,8 +122,7 @@ class FeedbackCollector {
         val byStatus: Map<FeedbackStatus, Int>,
         val bySeverity: Map<Severity, Int>
     )
-
-    fun exportFeedbacks(): String {
+        fun exportFeedbacks(): String {
         val sb = StringBuilder()
         sb.appendLine("ID,UserID,SessionID,Type,Severity,Content,Timestamp,Status,AssignedTo,Resolution")
         feedbacks.values.forEach { feedback ->
@@ -143,8 +130,7 @@ class FeedbackCollector {
         }
         return sb.toString()
     }
-
-    fun clearAllFeedbacks() {
+        fun clearAllFeedbacks() {
         feedbacks.clear()
     }
 }

@@ -29,7 +29,7 @@ class DragonBonesAvatarController(
         get() = libController.animationNames
 
     private var emotionAnimationMapping: Map<AvatarEmotion, String> = emptyMap()
-    private var triggerAnimationMapping: Map<String, String> = emptyMap()
+        private var triggerAnimationMapping: Map<String, String> = emptyMap()
 
     override fun setEmotion(newEmotion: AvatarEmotion) {
         playEmotion(newEmotion, loop = 0)
@@ -68,7 +68,6 @@ class DragonBonesAvatarController(
         if (!durationSeconds.isFinite() || durationSeconds <= 0f) {
             return null
         }
-
         return (durationSeconds * 1000f).toLong().coerceAtLeast(1L)
     }
 
@@ -79,7 +78,6 @@ class DragonBonesAvatarController(
         if (!durationSeconds.isFinite() || durationSeconds <= 0f) {
             return null
         }
-
         return (durationSeconds * 1000f).toLong().coerceAtLeast(1L)
     }
 
@@ -141,54 +139,45 @@ class DragonBonesAvatarController(
         triggerAnimationMapping =
             mapping.entries.mapNotNull { (rawKey, rawAnimationName) ->
                 val key = AvatarMoodTypes.normalizeKey(rawKey)
-                val animationName = rawAnimationName.trim()
-                if (key.isBlank() || animationName.isBlank()) {
+        val animationName = rawAnimationName.trim()
+        if (key.isBlank() || animationName.isBlank()) {
                     return@mapNotNull null
                 }
                 key to animationName
             }.toMap()
     }
-
-    private fun resolveAnimationForEmotion(emotion: AvatarEmotion): String? {
+        private fun resolveAnimationForEmotion(emotion: AvatarEmotion): String? {
         val preferred = emotionAnimationMapping[emotion]
         if (!preferred.isNullOrBlank() && availableAnimations.contains(preferred)) {
             return preferred
         }
-
         val directName = emotion.name.lowercase()
         if (availableAnimations.contains(directName)) {
             return directName
         }
-
         if (emotion != AvatarEmotion.IDLE) {
             val idleFallback = emotionAnimationMapping[AvatarEmotion.IDLE]
             if (!idleFallback.isNullOrBlank() && availableAnimations.contains(idleFallback)) {
                 return idleFallback
             }
-
-            val idleName = AvatarEmotion.IDLE.name.lowercase()
-            if (availableAnimations.contains(idleName)) {
+        val idleName = AvatarEmotion.IDLE.name.lowercase()
+        if (availableAnimations.contains(idleName)) {
                 return idleName
             }
         }
-
         return null
     }
-
-    private fun resolveAnimationForTrigger(triggerName: String): String? {
+        private fun resolveAnimationForTrigger(triggerName: String): String? {
         val preferred = triggerAnimationMapping[triggerName]
         if (!preferred.isNullOrBlank() && availableAnimations.contains(preferred)) {
             return preferred
         }
-
         if (availableAnimations.contains(triggerName)) {
             return triggerName
         }
-
         return null
     }
-
-    private fun resolveEmotionFromAnimationName(animationName: String): AvatarEmotion? {
+        private fun resolveEmotionFromAnimationName(animationName: String): AvatarEmotion? {
         return AvatarEmotion.values().firstOrNull { emotion ->
             emotion.name.lowercase() == animationName
         }

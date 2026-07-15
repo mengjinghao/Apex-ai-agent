@@ -208,7 +208,7 @@ fun File.sha256(): String {
             digest.update(buffer, 0, read)
         }
     }
-    return digest.digest().joinToString("") { "%02x".format(it) }
+        return digest.digest().joinToString("") { "%02x".format(it) }
 }
 
 /**
@@ -225,7 +225,7 @@ fun File.md5(): String {
             digest.update(buffer, 0, read)
         }
     }
-    return digest.digest().joinToString("") { "%02x".format(it) }
+        return digest.digest().joinToString("") { "%02x".format(it) }
 }
 
 /**
@@ -236,13 +236,13 @@ fun File.md5(): String {
  */
 fun File.listFilesRecursive(filter: ((File) -> Boolean)? = null): List<File> {
     if (!isDirectory) return if (filter?.invoke(this) != false) listOf(this) else emptyList()
-    val result = mutableListOf<File>()
+        val result = mutableListOf<File>()
     walkTopDown().forEach { file ->
         if (file.isFile && (filter == null || filter(file))) {
             result.add(file)
         }
     }
-    return result
+        return result
 }
 
 /**
@@ -254,18 +254,18 @@ fun File.listFilesRecursive(filter: ((File) -> Boolean)? = null): List<File> {
  */
 fun File.findFiles(pattern: String, maxDepth: Int = Int.MAX_VALUE): List<File> {
     if (!isDirectory) return emptyList()
-    val matcher = FileSystems.getDefault().getPathMatcher("glob:**/$pattern")
-    val result = mutableListOf<File>()
+        val matcher = FileSystems.getDefault().getPathMatcher("glob:**/$pattern")
+        val result = mutableListOf<File>()
     Files.walkFileTree(toPath(), setOf(java.nio.file.FileVisitOption.FOLLOW_LINKS), maxDepth,
         object : SimpleFileVisitor<Path>() {
             override fun visitFile(file: Path, attrs: BasicFileAttributes): java.nio.file.FileVisitResult {
                 if (matcher.matches(file)) {
                     result.add(file.toFile())
                 }
-                return java.nio.file.FileVisitResult.CONTINUE
+        return java.nio.file.FileVisitResult.CONTINUE
             }
         })
-    return result
+        return result
 }
 
 /**
@@ -326,7 +326,7 @@ fun File.touch(): File {
     } else {
         setLastModified(System.currentTimeMillis())
     }
-    return this
+        return this
 }
 
 /**
@@ -341,7 +341,7 @@ fun File.isEmpty(): Boolean = !exists() || length() == 0L
  */
 fun File.ensureDirectoryExists(): File {
     parentFile?.mkdirs()
-    return this
+        return this
 }
 
 /**
@@ -352,9 +352,9 @@ fun File.ensureDirectoryExists(): File {
  */
 fun File.splitBySize(maxSize: Long): List<File> {
     if (!exists() || length() <= maxSize) return listOf(this)
-    val parts = mutableListOf<File>()
-    val buffer = ByteArray(8192)
-    var partIndex = 0
+        val parts = mutableListOf<File>()
+        val buffer = ByteArray(8192)
+        var partIndex = 0
     inputStream().use { input ->
         var output: FileOutputStream? = null
         var currentSize = 0L
@@ -362,7 +362,7 @@ fun File.splitBySize(maxSize: Long): List<File> {
         while (input.read(buffer).also { read = it } >= 0) {
             if (output == null || currentSize >= maxSize) {
                 output?.close()
-                val partFile = File(parentFile, "${name}.part${String.format("%03d", partIndex++)}")
+        val partFile = File(parentFile, "${name}.part${String.format("%03d", partIndex++)}")
                 output = FileOutputStream(partFile)
                 parts.add(partFile)
                 currentSize = 0L
@@ -372,7 +372,7 @@ fun File.splitBySize(maxSize: Long): List<File> {
         }
         output?.close()
     }
-    return parts
+        return parts
 }
 
 /**

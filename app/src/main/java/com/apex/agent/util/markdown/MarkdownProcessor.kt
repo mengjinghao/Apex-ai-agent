@@ -51,7 +51,7 @@ enum class MarkdownProcessorType {
  */
 class MarkdownNode(val type: MarkdownProcessorType, initialContent: String = "") {
     val content: SmartString = SmartString(initialContent)
-    val children: SnapshotStateList<MarkdownNode> = mutableStateListOf()
+        val children: SnapshotStateList<MarkdownNode> = mutableStateListOf()
 }
 
 @Stable
@@ -79,7 +79,7 @@ fun Stream<String>.toCharStream(): Stream<Char> {
             }
         }
     }
-    val carrier = this as? TextStreamEventCarrier ?: return charStream
+        val carrier = this as? TextStreamEventCarrier ?: return charStream
     return charStream.withTextEventChannel(carrier.eventChannel)
 }
 
@@ -174,7 +174,6 @@ class MarkdownUIBinder<T>(
         // 处理当前�?
     val content = StringBuilder()
         group.stream.collect { content.append(it) }
-
         val node = MarkdownNode(group.tag, initialContent = content.toString())
 
         // 递归处理子组
@@ -183,7 +182,6 @@ class MarkdownUIBinder<T>(
             val childNode = processGroupToNodes(childGroup)
             node.children.add(childNode)
         }
-
         return node
     }
 }

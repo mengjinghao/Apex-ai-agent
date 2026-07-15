@@ -13,8 +13,7 @@ internal class PermissionModeStateCache {
         private const val TAG = "PermissionModeCache"
         private const val CACHE_TTL_MS = 30_000L // 30�?
     }
-
-    private val stateCache = ConcurrentHashMap<PermissionMode, CachedState>()
+        private val stateCache = ConcurrentHashMap<PermissionMode, CachedState>()
 
     data class CachedState(
         val state: PermissionModeState,
@@ -27,12 +26,10 @@ internal class PermissionModeStateCache {
     fun get(mode: PermissionMode): PermissionModeState? {
         val cached = stateCache[mode] ?: return null
         val now = System.currentTimeMillis()
-
         if (now - cached.timestamp > CACHE_TTL_MS) {
             stateCache.remove(mode)
-            return null
+        return null
         }
-
         return cached.state
     }
 
@@ -67,7 +64,6 @@ internal class PermissionModeStateCache {
         }.keys
 
         expiredKeys.forEach { stateCache.remove(it) }
-
         if (expiredKeys.isNotEmpty()) {
             AppLogger.d(TAG, "清除�?${expiredKeys.size} 个过期缓存项")
         }
@@ -89,15 +85,14 @@ internal suspend fun PermissionModeManager.checkAllModesOptimized(
     forceRefresh: Boolean = false
 ): BatchDetectionResult {
     val startTime = System.currentTimeMillis()
-
-    val states = mutableMapOf<PermissionMode, PermissionModeState>()
+        val states = mutableMapOf<PermissionMode, PermissionModeState>()
 
     // 并行检测独立的模式
     for (mode in PermissionMode.values()) {
         if (!forceRefresh) {
             // 尝试使用缓存
     val cached = stateCache.get(mode)
-            if (cached != null) {
+        if (cached != null) {
                 states[mode] = cached
                 continue
             }
@@ -112,11 +107,9 @@ internal suspend fun PermissionModeManager.checkAllModesOptimized(
     // 更新状态流
     _modeStates.update { states }
     notifyStateChanges(states.values)
-
-    val duration = System.currentTimeMillis() - startTime
+        val duration = System.currentTimeMillis() - startTime
     AppLogger.d(TAG, "批量检测完成，耗时: ${duration}ms")
-
-    return BatchDetectionResult(states, duration)
+        return BatchDetectionResult(states, duration)
 }
 
 /**
@@ -126,8 +119,7 @@ private suspend fun PermissionModeManager.checkModeInternal(
     mode: PermissionMode
 ): PermissionModeState {
     val timestamp = System.currentTimeMillis()
-
-    return when (mode) {
+        return when (mode) {
         PermissionMode.STANDARD -> checkStandardMode(timestamp)
         PermissionMode.ACCESSIBILITY -> checkAccessibilityMode(timestamp)
         PermissionMode.DEBUGGER -> checkDebuggerMode(timestamp)
@@ -150,9 +142,8 @@ class PermissionModePerformanceMonitor {
     companion object {
         private const val TAG = "PermissionModePerf"
     }
-
-    private val checkTimes = mutableListOf<Long>()
-    private var checkCount = 0
+        private val checkTimes = mutableListOf<Long>()
+        private var checkCount = 0
     private var cacheHits = 0
     private var cacheMisses = 0
 
@@ -192,14 +183,12 @@ class PermissionModePerformanceMonitor {
         } else {
             0.0
         }
-
         val totalCacheLookups = cacheHits + cacheMisses
         val hitRate = if (totalCacheLookups > 0) {
             (cacheHits.toDouble() / totalCacheLookups) * 100
         } else {
             0.0
         }
-
         return PerformanceStatistics(
             checkCount = checkCount,
             avgCheckTimeMs = avgTime,
@@ -250,15 +239,12 @@ suspend fun PermissionModeManager.checkAllModesWithMonitor(
     forceRefresh: Boolean = false
 ): BatchDetectionResult {
     val startTime = System.currentTimeMillis()
-
-    val result = checkAllModesOptimized(forceRefresh)
+        val result = checkAllModesOptimized(forceRefresh)
 
     performanceMonitor.recordCheckTime(result.durationMs)
-
-    val stats = performanceMonitor.getStatistics()
+        val stats = performanceMonitor.getStatistics()
     AppLogger.d(TAG, "性能统计: checks=${stats.checkCount}, " +
             "avg=${String.format("%.2f", stats.avgCheckTimeMs)}ms, " +
             "hitRate=${String.format("%.1f", stats.cacheHitRate)}%")
-
-    return result
+        return result
 }

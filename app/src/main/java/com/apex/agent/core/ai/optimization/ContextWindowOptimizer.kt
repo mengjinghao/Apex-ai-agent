@@ -76,15 +76,15 @@ data class SemanticScore(
 class ContextWindowOptimizer private constructor() {
 
     private val contextSegments = CopyOnWriteArrayList<ContextSegment>()
-    private val segmentIndex = ConcurrentHashMap<String, ContextSegment>()
-    private val compressionCache = ConcurrentHashMap<String, CompressedContext>()
-    private val config = ContextWindowConfig()
-    private val totalSegmentsTracked = AtomicLong(0)
-    private val totalTokensProcessed = AtomicLong(0)
-    private val pruneEventsCount = AtomicLong(0)
-    private val cacheHits = AtomicLong(0)
-    private val cacheMisses = AtomicLong(0)
-    private var scope: CoroutineScope? = null
+        private val segmentIndex = ConcurrentHashMap<String, ContextSegment>()
+        private val compressionCache = ConcurrentHashMap<String, CompressedContext>()
+        private val config = ContextWindowConfig()
+        private val totalSegmentsTracked = AtomicLong(0)
+        private val totalTokensProcessed = AtomicLong(0)
+        private val pruneEventsCount = AtomicLong(0)
+        private val cacheHits = AtomicLong(0)
+        private val cacheMisses = AtomicLong(0)
+        private var scope: CoroutineScope? = null
     private val mutex = Mutex()
 
     companion object {
@@ -96,12 +96,10 @@ class ContextWindowOptimizer private constructor() {
                 instance ?: ContextWindowOptimizer().also { instance = it }
             }
         }
-
         private const val MAX_CACHE_SIZE = 200
         private const val MAX_SEGMENTS = 500
     }
-
-    fun initialize(coroutineScope: CoroutineScope) {
+        fun initialize(coroutineScope: CoroutineScope) {
         scope = coroutineScope
         coroutineScope.launch(Dispatchers.Default) {
             while (isActive) {
@@ -110,8 +108,7 @@ class ContextWindowOptimizer private constructor() {
             }
         }
     }
-
-    fun addSegment(content: String, segmentType: SegmentType = SegmentType.CONVERSATION, relevanceScore: Double = 1.0): String {
+        fun addSegment(content: String, segmentType: SegmentType = SegmentType.CONVERSATION, relevanceScore: Double = 1.0): String {
         val id = "seg_${System.currentTimeMillis()}_${segmentType.name}"
         val tokenCount = estimateTokens(content)
         val segment = ContextSegment(
@@ -128,41 +125,32 @@ class ContextWindowOptimizer private constructor() {
         totalTokensProcessed.addAndGet(tokenCount.toLong())
         id
     }
-
-    fun addSegments(segments: List<Pair<String, SegmentType>>) {
+        fun addSegments(segments: List<Pair<String, SegmentType>>) {
         for ((content, type) in segments) {
             addSegment(content, type)
         }
     }
-
-    fun getSegment(id: String): ContextSegment? = segmentIndex[id]
+        fun getSegment(id: String): ContextSegment? = segmentIndex[id]
 
     fun getAllSegments(): List<ContextSegment> = contextSegments.toList()
-
-    fun getSegmentsByType(type: SegmentType): List<ContextSegment> {
+        fun getSegmentsByType(type: SegmentType): List<ContextSegment> {
         contextSegments.filter { it.segmentType == type }.sortedByDescending { it.timestampMs }
     }
-
-    fun getRecentSegments(count: Int = 10): List<ContextSegment> {
+        fun getRecentSegments(count: Int = 10): List<ContextSegment> {
         contextSegments.sortedByDescending { it.timestampMs }.take(count)
     }
-
-    fun getCurrentTokenCount(): Int {
+        fun getCurrentTokenCount(): Int {
         contextSegments.sumOf { it.tokenCount }
     }
-
-    fun isOverCapacity(): Boolean {
+        fun isOverCapacity(): Boolean {
         getCurrentTokenCount() > config.maxTokens - config.reservedTokens
     }
-
-    fun compressContext(): CompressedContext {
+        fun compressContext(): CompressedContext {
         val currentTokens = getCurrentTokenCount()
         val appliedPrunes = mutableListOf<String>()
-
         if (!isOverCapacity()) {
             return CompressedContext(currentTokens, currentTokens, 1.0, contextSegments.toList(), null, emptyList())
         }
-
         var segments = contextSegments.toList()
         val targetSize = config.maxTokens - config.reservedTokens
 
@@ -172,9 +160,9 @@ class ContextWindowOptimizer private constructor() {
                     val oldestNonSystem = segments
                         .filter { it.segmentType != SegmentType.SYSTEM_PROMPT }
                         .minByOrNull { it.timestampMs }
-                    if (oldestNonSystem != null) {
+        if (oldestNonSystem != null) {
                         val summary = summarizeText(oldestNonSystem.content)
-                        val summaryTokens = estimateTokens(summary)
+        val summaryTokens = estimateTokens(summary)
                         segments = segments.map {
                             if (it.id == oldestNonSystem.id) it.copy(content = summary, tokenCount = summaryTokens)
                             else it
@@ -184,14 +172,14 @@ class ContextWindowOptimizer private constructor() {
                 }
                 PruneStrategy.DROP_OLDEST -> {
                     val oldest = segments.minByOrNull { it.timestampMs }
-                    if (oldest != null && oldest.segmentType != SegmentType.SYSTEM_PROMPT) {
+        if (oldest != null && oldest.segmentType != SegmentType.SYSTEM_PROMPT) {
                         segments = segments.filter { it.id != oldest.id }
                         appliedPrunes.add("dropped:${oldest.id}")
                     }
                 }
                 PruneStrategy.DROP_LOWEST_SCORE -> {
                     val lowest = segments.minByOrNull { it.relevanceScore }
-                    if (lowest != null && lowest.segmentType != SegmentType.SYSTEM_PROMPT) {
+        if (lowest != null && lowest.segmentType != SegmentType.SYSTEM_PROMPT) {
                         segments = segments.filter { it.id != lowest.id }
                         appliedPrunes.add("dropped_low_score:${lowest.id}")
                     }
@@ -203,16 +191,15 @@ class ContextWindowOptimizer private constructor() {
                 }
                 PruneStrategy.SEMANTIC_CLUSTER -> {
                     val toCluster = segments.filter { it.segmentType != SegmentType.SYSTEM_PROMPT }
-                    if (toCluster.size >= 3) {
+        if (toCluster.size >= 3) {
                         val clusterSize = (toCluster.size / 2).coerceAtLeast(1)
-                        val toRemove = toCluster.take(clusterSize)
+        val toRemove = toCluster.take(clusterSize)
                         segments = segments.filter { it !in toRemove }
                         appliedPrunes.add("semantic_cluster:removed_${clusterSize}")
                     }
                 }
             }
         }
-
         val compressedTokens = segments.sumOf { it.tokenCount }
         val summary = if (appliedPrunes.isNotEmpty()) {
             "Context compressed: ${appliedPrunes.joinToString(", ")}"
@@ -223,7 +210,6 @@ class ContextWindowOptimizer private constructor() {
         contextSegments.addAll(segments)
         segmentIndex.clear()
         segments.forEach { segmentIndex[it.id] = it }
-
         val compressed = CompressedContext(
             originalTokens = currentTokens,
             compressedTokens = compressedTokens,
@@ -232,23 +218,19 @@ class ContextWindowOptimizer private constructor() {
             summary = summary,
             pruningApplied = appliedPrunes
         )
-
         if (compressionCache.size < MAX_CACHE_SIZE) {
             compressionCache["ctx_${System.currentTimeMillis()}"] = compressed
         }
         compressed
     }
-
-    fun getOptimizedContext(targetTokenCount: Int? = null): List<ContextSegment> {
+        fun getOptimizedContext(targetTokenCount: Int? = null): List<ContextSegment> {
         val target = targetTokenCount ?: (config.maxTokens - config.reservedTokens)
         var segments = contextSegments.toList()
         var tokenCount = segments.sumOf { it.tokenCount }
-
         if (tokenCount <= target) return segments
 
         segments = segments.sortedByDescending { it.relevanceScore }
             .thenByDescending { it.timestampMs }
-
         val result = mutableListOf<ContextSegment>()
         var runningTotal = 0
         for (segment in segments) {
@@ -259,15 +241,13 @@ class ContextWindowOptimizer private constructor() {
         }
         result.sortedBy { it.timestampMs }
     }
-
-    fun estimateTokens(text: String): Int {
+        fun estimateTokens(text: String): Int {
         if (text.isEmpty()) return 0
         val words = text.split(Regex("\\s+")).size
         val chars = text.length
         (words * 1.3 + chars * 0.04).toInt().coerceAtLeast(1)
     }
-
-    private fun summarizeText(text: String): String {
+        private fun summarizeText(text: String): String {
         if (text.length <= 200) return text
         val sentences = text.split(Regex("(?<=[.!?])\\s+"))
         when {
@@ -275,18 +255,17 @@ class ContextWindowOptimizer private constructor() {
             sentences.size <= 4 -> sentences.take(2).joinToString(" ") + "..."
             else -> {
                 val first = sentences.first()
-                val last = sentences.last()
+        val last = sentences.last()
                 "$first ... $last"
             }
         }
     }
-
-    fun computeRelevance(query: String): List<SemanticScore> {
+        fun computeRelevance(query: String): List<SemanticScore> {
         val queryWords = query.lowercase().split(Regex("\\s+")).toSet()
         contextSegments.map { segment ->
             val contentWords = segment.content.lowercase().split(Regex("\\s+")).toSet()
-            val common = queryWords.intersect(contentWords)
-            val score = if (queryWords.isNotEmpty()) common.size.toDouble() / queryWords.size else 0.0
+        val common = queryWords.intersect(contentWords)
+        val score = if (queryWords.isNotEmpty()) common.size.toDouble() / queryWords.size else 0.0
             SemanticScore(
                 segmentId = segment.id,
                 score = score.coerceIn(0.0, 1.0),
@@ -295,8 +274,7 @@ class ContextWindowOptimizer private constructor() {
             )
         }.sortedByDescending { it.score }
     }
-
-    fun getMetrics(): ContextMetrics {
+        fun getMetrics(): ContextMetrics {
         val avgRelevance = if (contextSegments.isNotEmpty()) {
             contextSegments.map { it.relevanceScore }.average()
         } else 0.0
@@ -317,24 +295,20 @@ class ContextWindowOptimizer private constructor() {
             averageRelevanceScore = avgRelevance
         )
     }
-
-    fun getMemoryUsage(): Long {
+        fun getMemoryUsage(): Long {
         contextSegments.sumOf { it.content.toByteArray().size.toLong() }
     }
-
-    fun clear() {
+        fun clear() {
         contextSegments.clear()
         segmentIndex.clear()
         compressionCache.clear()
     }
-
-    fun clearSegmentsByType(type: SegmentType) {
+        fun clearSegmentsByType(type: SegmentType) {
         val toRemove = contextSegments.filter { it.segmentType == type }
         contextSegments.removeAll(toRemove)
         toRemove.forEach { segmentIndex.remove(it.id) }
     }
-
-    fun updateSegmentRelevance(id: String, score: Double) {
+        fun updateSegmentRelevance(id: String, score: Double) {
         val segment = segmentIndex[id] ?: return
         val updated = segment.copy(relevanceScore = score)
         val idx = contextSegments.indexOfFirst { it.id == id }
@@ -343,10 +317,8 @@ class ContextWindowOptimizer private constructor() {
             segmentIndex[id] = updated
         }
     }
-
-    fun updateConfig(newConfig: ContextWindowConfig): ContextWindowConfig { newConfig }
-
-    fun resetMetrics() {
+        fun updateConfig(newConfig: ContextWindowConfig): ContextWindowConfig { newConfig }
+        fun resetMetrics() {
         totalSegmentsTracked.set(0)
         totalTokensProcessed.set(0)
         pruneEventsCount.set(0)
@@ -354,8 +326,7 @@ class ContextWindowOptimizer private constructor() {
         cacheMisses.set(0)
         compressionCache.clear()
     }
-
-    private fun maintenanceCycle() {
+        private fun maintenanceCycle() {
         val now = System.currentTimeMillis()
         if (contextSegments.size > MAX_SEGMENTS) {
             val toRemove = contextSegments

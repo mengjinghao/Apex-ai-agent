@@ -148,31 +148,23 @@ class SkillStore private constructor(private val context: Context) {
 
     // ========== 状�?==========
     private val _storeSkills = MutableStateFlow<List<StoreSkill>>(emptyList())
-    val storeSkills: StateFlow<List<StoreSkill>> = _storeSkills.asStateFlow()
-
-    private val _featuredSkills = MutableStateFlow<List<StoreSkill>>(emptyList())
-    val featuredSkills: StateFlow<List<StoreSkill>> = _featuredSkills.asStateFlow()
-
-    private val _trendingSkills = MutableStateFlow<List<StoreSkill>>(emptyList())
-    val trendingSkills: StateFlow<List<StoreSkill>> = _trendingSkills.asStateFlow()
-
-    private val _categories = MutableStateFlow<List<Category>>(emptyList())
-    val categories: StateFlow<List<Category>> = _categories.asStateFlow()
-
-    private val _leaderboard = MutableStateFlow<List<LeaderboardEntry>>(emptyList())
-    val leaderboard: StateFlow<List<LeaderboardEntry>> = _leaderboard.asStateFlow()
-
-    private val _searchResults = MutableStateFlow<SearchResults?>(null)
-    val searchResults: StateFlow<SearchResults?> = _searchResults.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _downloadProgress = MutableStateFlow<Map<String, Float>>(emptyMap())
-    val downloadProgress: StateFlow<Map<String, Float>> = _downloadProgress.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+        val storeSkills: StateFlow<List<StoreSkill>> = _storeSkills.asStateFlow()
+        private val _featuredSkills = MutableStateFlow<List<StoreSkill>>(emptyList())
+        val featuredSkills: StateFlow<List<StoreSkill>> = _featuredSkills.asStateFlow()
+        private val _trendingSkills = MutableStateFlow<List<StoreSkill>>(emptyList())
+        val trendingSkills: StateFlow<List<StoreSkill>> = _trendingSkills.asStateFlow()
+        private val _categories = MutableStateFlow<List<Category>>(emptyList())
+        val categories: StateFlow<List<Category>> = _categories.asStateFlow()
+        private val _leaderboard = MutableStateFlow<List<LeaderboardEntry>>(emptyList())
+        val leaderboard: StateFlow<List<LeaderboardEntry>> = _leaderboard.asStateFlow()
+        private val _searchResults = MutableStateFlow<SearchResults?>(null)
+        val searchResults: StateFlow<SearchResults?> = _searchResults.asStateFlow()
+        private val _isLoading = MutableStateFlow(false)
+        val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+        private val _downloadProgress = MutableStateFlow<Map<String, Float>>(emptyMap())
+        val downloadProgress: StateFlow<Map<String, Float>> = _downloadProgress.asStateFlow()
+        private val _error = MutableStateFlow<String?>(null)
+        val error: StateFlow<String?> = _error.asStateFlow()
 
     data class SearchResults(
         val skills: List<StoreSkill>,
@@ -200,14 +192,12 @@ class SkillStore private constructor(private val context: Context) {
 
     // 本地数据
     private val localReviews = mutableMapOf<String, MutableList<SkillReview>>()
-    private val localFavorites = mutableMapOf<String, UserFavorite>()
-    private val downloadHistory = mutableListOf<DownloadRecord>()
-
-    private var lastCacheTime = 0L
+        private val localFavorites = mutableMapOf<String, UserFavorite>()
+        private val downloadHistory = mutableListOf<DownloadRecord>()
+        private var lastCacheTime = 0L
     private var cachedSkills = listOf<StoreSkill>()
-
-    private val skillManager by lazy { SkillManager.getInstance(context) }
-    private val skillRepoClient by lazy { SkillRepoClient.getInstance() }
+        private val skillManager by lazy { SkillManager.getInstance(context) }
+        private val skillRepoClient by lazy { SkillRepoClient.getInstance() }
 
     init {
         loadLocalData()
@@ -225,7 +215,7 @@ class SkillStore private constructor(private val context: Context) {
         try {
             // 检查连�?
     val connected = skillRepoClient.testConnection()
-            if (!connected) {
+        if (!connected) {
                 // 使用缓存或示例数�?
     if (cachedSkills.isEmpty()) {
                     loadSampleData()
@@ -253,7 +243,7 @@ class SkillStore private constructor(private val context: Context) {
 
             // 获取所有技�?
     val allSkills = mutableListOf<StoreSkill>()
-            var page = 1
+        var page = 1
             var hasMore = true
 
             while (hasMore) {
@@ -304,8 +294,7 @@ class SkillStore private constructor(private val context: Context) {
             _isLoading.value = false
         }
     }
-
-    private fun com.apex.agent.core.tools.skill.SkillRepoClient.SkillInfo.toStoreSkill() = StoreSkill(
+        private fun com.apex.agent.core.tools.skill.SkillRepoClient.SkillInfo.toStoreSkill() = StoreSkill(
         id = id,
         name = name,
         description = description,
@@ -345,8 +334,7 @@ class SkillStore private constructor(private val context: Context) {
                 category = filters.category,
                 sortBy = filters.sortBy.name.lowercase()
             )
-
-            val skills = result.getOrNull()?.skills?.map { it.toStoreSkill() } ?: emptyList()
+        val skills = result.getOrNull()?.skills?.map { it.toStoreSkill() } ?: emptyList()
 
             // 应用本地筛�?
     var filtered = skills
@@ -378,8 +366,7 @@ class SkillStore private constructor(private val context: Context) {
                 SortOption.NAME_DESC -> filtered.sortedByDescending { it.name }
                 else -> filtered
             }
-
-            val searchResults = SearchResults(
+        val searchResults = SearchResults(
                 skills = filtered,
                 total = filtered.size,
                 page = filters.page,
@@ -448,15 +435,14 @@ class SkillStore private constructor(private val context: Context) {
             // 获取技能信�?
     val detail = if (version != null) {
                 val versions = skillRepoClient.getSkillVersions(skillId)
-                if (versions.isFailure) {
+        if (versions.isFailure) {
                     return@withContext DownloadResult(
                         success = false,
                         skillId = skillId,
                         errorMessage = "Failed to get versions"
                     )
                 }
-
-                val targetVersion = versions.getOrNull()?.find { it == version } ?: versions.getOrNull()?.firstOrNull()
+        val targetVersion = versions.getOrNull()?.find { it == version } ?: versions.getOrNull()?.firstOrNull()
                     ?: return@withContext DownloadResult(
                         success = false,
                         skillId = skillId,
@@ -484,9 +470,8 @@ class SkillStore private constructor(private val context: Context) {
 
             // 创建缓存目录
     val cacheDir = File(context.cacheDir, STORE_CACHE_DIR)
-            if (!cacheDir.exists()) cacheDir.mkdirs()
-
-            val downloadFile = File(cacheDir, "${skillId}_${detail.version}.zip")
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+        val downloadFile = File(cacheDir, "${skillId}_${detail.version}.zip")
 
             // 下载
     val downloadResult = skillRepoClient.downloadSkill(
@@ -501,8 +486,7 @@ class SkillStore private constructor(private val context: Context) {
                     }
                 }
             }
-
-            if (downloadResult.isFailure) {
+        if (downloadResult.isFailure) {
                 return@withContext DownloadResult(
                     success = false,
                     skillId = skillId,
@@ -538,8 +522,7 @@ class SkillStore private constructor(private val context: Context) {
 
             // 刷新技能列�?
             skillManager.refreshAvailableSkills()
-
-            if (importResult.contains("imported") || importResult.contains("成功")) {
+        if (importResult.contains("imported") || importResult.contains("成功")) {
                 DownloadResult(
                     success = true,
                     skillId = skillId,
@@ -575,9 +558,7 @@ class SkillStore private constructor(private val context: Context) {
      */
     suspend fun getReviews(skillId: String): ReviewStats = withContext(Dispatchers.IO) {
         val reviews = localReviews[skillId] ?: emptyList()
-
         val allReviews = reviews + getSampleReviews(skillId)
-
         val avgRating = if (allReviews.isNotEmpty()) {
             allReviews.map { it.rating }.average().toFloat()
         } else 0f
@@ -731,26 +712,25 @@ class SkillStore private constructor(private val context: Context) {
                 )
             }
     }
-
-    private fun loadLocalData() {
+        private fun loadLocalData() {
         try {
             // 加载收藏
     val favoritesFile = File(context.filesDir, FAVORITES_FILE)
-            if (favoritesFile.exists()) {
+        if (favoritesFile.exists()) {
                 val favorites = Json.decodeFromString<List<UserFavorite>>(favoritesFile.readText())
                 favorites.forEach { localFavorites[it.skillId] = it }
             }
 
             // 加载下载历史
     val historyFile = File(context.filesDir, DOWNLOAD_HISTORY_FILE)
-            if (historyFile.exists()) {
+        if (historyFile.exists()) {
                 val history = Json.decodeFromString<List<DownloadRecord>>(historyFile.readText())
                 downloadHistory.addAll(history)
             }
 
             // 加载评论
     val reviewsFile = File(context.filesDir, REVIEWS_FILE)
-            if (reviewsFile.exists()) {
+        if (reviewsFile.exists()) {
                 val allReviews = Json.decodeFromString<Map<String, List<SkillReview>>>(reviewsFile.readText())
                 localReviews.putAll(allReviews)
             }
@@ -758,8 +738,7 @@ class SkillStore private constructor(private val context: Context) {
             AppLogger.e(TAG, "Failed to load local data", e)
         }
     }
-
-    private fun saveFavorites() {
+        private fun saveFavorites() {
         try {
             val favoritesFile = File(context.filesDir, FAVORITES_FILE)
             favoritesFile.writeText(Json.encodeToString(localFavorites.values.toList()))
@@ -767,8 +746,7 @@ class SkillStore private constructor(private val context: Context) {
             AppLogger.e(TAG, "Failed to save favorites", e)
         }
     }
-
-    private fun saveDownloadHistory() {
+        private fun saveDownloadHistory() {
         try {
             val historyFile = File(context.filesDir, DOWNLOAD_HISTORY_FILE)
             historyFile.writeText(Json.encodeToString(downloadHistory))
@@ -776,8 +754,7 @@ class SkillStore private constructor(private val context: Context) {
             AppLogger.e(TAG, "Failed to save download history", e)
         }
     }
-
-    private fun saveLocalReviews() {
+        private fun saveLocalReviews() {
         try {
             val reviewsFile = File(context.filesDir, REVIEWS_FILE)
             reviewsFile.writeText(Json.encodeToString(localReviews))
@@ -785,19 +762,17 @@ class SkillStore private constructor(private val context: Context) {
             AppLogger.e(TAG, "Failed to save reviews", e)
         }
     }
-
-    private fun saveCacheToFile() {
+        private fun saveCacheToFile() {
         try {
             val cacheDir = File(context.filesDir, STORE_CACHE_DIR)
-            if (!cacheDir.exists()) cacheDir.mkdirs()
-            val cacheFile = File(cacheDir, "store_cache.json")
+        if (!cacheDir.exists()) cacheDir.mkdirs()
+        val cacheFile = File(cacheDir, "store_cache.json")
             cacheFile.writeText(Json.encodeToString(cachedSkills))
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to save cache", e)
         }
     }
-
-    private fun loadSampleData() {
+        private fun loadSampleData() {
         // 示例数据
     val sampleSkills = listOf(
             StoreSkill(
@@ -892,8 +867,7 @@ class SkillStore private constructor(private val context: Context) {
 
         buildLeaderboard(sampleSkills)
     }
-
-    private fun getSampleReviews(skillId: String): List<SkillReview> {
+        private fun getSampleReviews(skillId: String): List<SkillReview> {
         // 生成一些示例评�?
     return listOf(
             SkillReview(
@@ -918,14 +892,12 @@ class SkillStore private constructor(private val context: Context) {
             )
         )
     }
-
-    private fun getCategoryIcon(index: Int): String {
+        private fun getCategoryIcon(index: Int): String {
         val icons = listOf("�?, "📁", "⚙️", "🌐", "💻", "📱", "🔧", "📊", "🎨", "🔒")
         return icons.getOrElse(index % icons.size) { "📦" }
     }
 
     // ========== 数据�?==========
-
     data class RefreshResult(
         val success: Boolean,
         val message: String,
@@ -950,16 +922,14 @@ class SkillStore private constructor(private val context: Context) {
             else -> "${bytes / (1024 * 1024 * 1024)} GB"
         }
     }
-
-    fun formatDate(timestamp: Long): String {
+        fun formatDate(timestamp: Long): String {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
         return LocalDateTime.ofInstant(
             Instant.ofEpochMilli(timestamp),
             ZoneId.systemDefault()
         ).format(formatter)
     }
-
-    fun formatInstallCount(count: Int): String {
+        fun formatInstallCount(count: Int): String {
         return when {
             count < 1000 -> count.toString()
             count < 10000 -> "${count / 1000}.${(count % 1000) / 100}K"

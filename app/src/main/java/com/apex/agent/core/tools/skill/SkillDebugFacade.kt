@@ -16,12 +16,10 @@ class SkillDebugFacade private constructor(private val context: Context) {
             }
         }
     }
-
-    private val debugger: SkillDebugger = SkillDebugger.getInstance(context)
-    private val consoleUI: DebugConsoleUI = DebugConsoleUI.getInstance(context)
-    private val executionTracer: ExecutionTracer = ExecutionTracer.getInstance(context)
-
-    fun getDebugger(): SkillDebugger = debugger
+        private val debugger: SkillDebugger = SkillDebugger.getInstance(context)
+        private val consoleUI: DebugConsoleUI = DebugConsoleUI.getInstance(context)
+        private val executionTracer: ExecutionTracer = ExecutionTracer.getInstance(context)
+        fun getDebugger(): SkillDebugger = debugger
     fun getConsoleUI(): DebugConsoleUI = consoleUI
     fun getExecutionTracer(): ExecutionTracer = executionTracer
 
@@ -31,8 +29,7 @@ class SkillDebugFacade private constructor(private val context: Context) {
         consoleUI.logSessionStart(session.id, skillName)
         return session
     }
-
-    fun endDebugSession(sessionId: String): SkillDebugger.DebugSession? {
+        fun endDebugSession(sessionId: String): SkillDebugger.DebugSession? {
         val session = debugger.endDebugSession(sessionId)
         session?.let {
             val totalDuration = it.endTime?.minus(it.startTime) ?: 0
@@ -42,8 +39,7 @@ class SkillDebugFacade private constructor(private val context: Context) {
         }
         return session
     }
-
-    fun addToolBreakpoint(toolName: String): SkillDebugger.Breakpoint {
+        fun addToolBreakpoint(toolName: String): SkillDebugger.Breakpoint {
         val breakpoint = debugger.addBreakpoint(
             SkillDebugger.BreakpointType.TOOL_CALL,
             toolName
@@ -51,8 +47,7 @@ class SkillDebugFacade private constructor(private val context: Context) {
         consoleUI.addBreakpoint(breakpoint)
         return breakpoint
     }
-
-    fun addLineBreakpoint(lineNumber: Int): SkillDebugger.Breakpoint {
+        fun addLineBreakpoint(lineNumber: Int): SkillDebugger.Breakpoint {
         val breakpoint = debugger.addBreakpoint(
             SkillDebugger.BreakpointType.LINE_NUMBER,
             lineNumber.toString()
@@ -60,8 +55,7 @@ class SkillDebugFacade private constructor(private val context: Context) {
         consoleUI.addBreakpoint(breakpoint)
         return breakpoint
     }
-
-    fun addConditionBreakpoint(condition: String): SkillDebugger.Breakpoint {
+        fun addConditionBreakpoint(condition: String): SkillDebugger.Breakpoint {
         val breakpoint = debugger.addBreakpoint(
             SkillDebugger.BreakpointType.CONDITION,
             condition,
@@ -70,129 +64,107 @@ class SkillDebugFacade private constructor(private val context: Context) {
         consoleUI.addBreakpoint(breakpoint)
         return breakpoint
     }
-
-    fun removeBreakpoint(breakpointId: String): Boolean {
+        fun removeBreakpoint(breakpointId: String): Boolean {
         debugger.removeBreakpoint(breakpointId)
         consoleUI.removeBreakpoint(breakpointId)
         return true
     }
-
-    fun pauseExecution(reason: SkillDebugger.PauseReason = SkillDebugger.PauseReason.MANUAL) {
+        fun pauseExecution(reason: SkillDebugger.PauseReason = SkillDebugger.PauseReason.MANUAL) {
         debugger.pauseExecution(reason)
         consoleUI.log(
             DebugConsoleUI.ConsoleLevel.INFO,
             "Execution paused: ${reason.name}"
         )
     }
-
-    fun resumeExecution() {
+        fun resumeExecution() {
         debugger.resumeExecution()
         consoleUI.log(
             DebugConsoleUI.ConsoleLevel.INFO,
             "Execution resumed"
         )
     }
-
-    fun stepOver() {
+        fun stepOver() {
         debugger.stepOver()
         consoleUI.log(
             DebugConsoleUI.ConsoleLevel.DEBUG,
             "Step over"
         )
     }
-
-    fun stepInto() {
+        fun stepInto() {
         debugger.stepInto()
         consoleUI.log(
             DebugConsoleUI.ConsoleLevel.DEBUG,
             "Step into"
         )
     }
-
-    fun stepOut() {
+        fun stepOut() {
         debugger.stepOut()
         consoleUI.log(
             DebugConsoleUI.ConsoleLevel.DEBUG,
             "Step out"
         )
     }
-
-    fun onToolCallStart(toolName: String, input: Map<String, Any?>) {
+        fun onToolCallStart(toolName: String, input: Map<String, Any?>) {
         debugger.onToolCallStart(toolName, input)
         consoleUI.logToolCallStart(toolName, input)
     }
-
-    fun onToolCallEnd(toolName: String, output: Any?, error: String? = null) {
+        fun onToolCallEnd(toolName: String, output: Any?, error: String? = null) {
         debugger.onToolCallEnd(toolName, output, error)
         val duration = debugger.getActiveSession()?.toolCalls?.lastOrNull { it.toolName == toolName && it.endTime == null }?.durationMs
         consoleUI.logToolCallEnd(toolName, output, error, duration)
     }
-
-    fun onLineReached(lineNumber: Int) {
+        fun onLineReached(lineNumber: Int) {
         debugger.onLineReached(lineNumber)
     }
-
-    fun onError(error: String) {
+        fun onError(error: String) {
         debugger.onError(error)
         consoleUI.log(
             DebugConsoleUI.ConsoleLevel.ERROR,
             error
         )
     }
-
-    fun getCurrentDebugState(): DebugConsoleUI.DebugState {
+        fun getCurrentDebugState(): DebugConsoleUI.DebugState {
         val session = debugger.getActiveSession()
         return consoleUI.getCurrentState(session)
     }
-
-    fun getDebugSummary(): String {
+        fun getDebugSummary(): String {
         val state = getCurrentDebugState()
         return consoleUI.buildStateSummary(state)
     }
-
-    fun getToolCallTree(): String {
+        fun getToolCallTree(): String {
         val session = debugger.getActiveSession()
         return consoleUI.buildToolCallTree(session)
     }
-
-    fun getVariableTable(): String {
+        fun getVariableTable(): String {
         val variables = debugger.getAllVariables()
         return consoleUI.buildVariableTable(variables)
     }
-
-    fun getBreakpointTable(): String {
+        fun getBreakpointTable(): String {
         return consoleUI.buildBreakpointTable()
     }
-
-    fun getExecutionFlowDiagram(): String {
+        fun getExecutionFlowDiagram(): String {
         val session = debugger.getActiveSession()
         return consoleUI.getExecutionFlowDiagram(session)
     }
-
-    fun getMermaidFlowChart(): String {
+        fun getMermaidFlowChart(): String {
         val session = debugger.getActiveSession() ?: return "No active session"
         return executionTracer.generateMermaidFlowChart(session.id)
     }
-
-    fun getTraceLog(): List<ExecutionTracer.TraceEntry> {
+        fun getTraceLog(): List<ExecutionTracer.TraceEntry> {
         return executionTracer.getTraceLog()
     }
-
-    fun getSessionTrace(sessionId: String): List<ExecutionTracer.TraceEntry> {
+        fun getSessionTrace(sessionId: String): List<ExecutionTracer.TraceEntry> {
         return executionTracer.getSessionTrace(sessionId)
     }
-
-    fun clearAllDebugData() {
+        fun clearAllDebugData() {
         debugger.clearAllSessions()
         consoleUI.clearConsole()
         executionTracer.clearTrace()
         AppLogger.d(TAG, "All debug data cleared")
     }
-
-    fun exportDebugSession(sessionId: String): DebugSessionExport? {
+        fun exportDebugSession(sessionId: String): DebugSessionExport? {
         val session = debugger.getSession(sessionId) ?: return null
         val flow = executionTracer.buildExecutionFlow(sessionId)
-
         return DebugSessionExport(
             session = session,
             flow = flow,
@@ -214,8 +186,7 @@ class SkillDebugFacade private constructor(private val context: Context) {
         debugger.addDebugListener(listener)
         consoleUI.addConsoleListener(listener)
     }
-
-    fun unregisterDebugListener(listener: DebugSessionListener) {
+        fun unregisterDebugListener(listener: DebugSessionListener) {
         debugger.removeDebugListener(listener)
         consoleUI.removeConsoleListener(listener)
     }

@@ -76,14 +76,14 @@ data class BatchPromptResult(
 class PromptCacheOptimizer private constructor() {
 
     private val promptCache = ConcurrentHashMap<String, PromptCacheEntry>()
-    private val templates = ConcurrentHashMap<String, PromptTemplate>()
-    private val optimizationHistory = CopyOnWriteArrayList<Long>()
-    private val templateUsageCount = ConcurrentHashMap<String, AtomicInteger>()
-    private val totalProcessed = AtomicLong(0)
-    private val cacheHits = AtomicLong(0)
-    private val cacheMisses = AtomicLong(0)
-    private val tokensSaved = AtomicLong(0)
-    private var scope: CoroutineScope? = null
+        private val templates = ConcurrentHashMap<String, PromptTemplate>()
+        private val optimizationHistory = CopyOnWriteArrayList<Long>()
+        private val templateUsageCount = ConcurrentHashMap<String, AtomicInteger>()
+        private val totalProcessed = AtomicLong(0)
+        private val cacheHits = AtomicLong(0)
+        private val cacheMisses = AtomicLong(0)
+        private val tokensSaved = AtomicLong(0)
+        private var scope: CoroutineScope? = null
 
     companion object {
         @Volatile
@@ -94,14 +94,12 @@ class PromptCacheOptimizer private constructor() {
                 instance ?: PromptCacheOptimizer().also { instance = it }
             }
         }
-
         private const val MAX_CACHE_SIZE = 2000
         private const val CACHE_TTL_MS = 1800000L
         private const val MIN_TOKEN_SAVINGS = 10
         private const val MAX_PROMPT_LENGTH = 32768
     }
-
-    fun initialize(coroutineScope: CoroutineScope) {
+        fun initialize(coroutineScope: CoroutineScope) {
         scope = coroutineScope
         registerDefaultTemplates()
         coroutineScope.launch(Dispatchers.Default) {
@@ -111,8 +109,7 @@ class PromptCacheOptimizer private constructor() {
             }
         }
     }
-
-    private fun registerDefaultTemplates() {
+        private fun registerDefaultTemplates() {
         registerTemplate(PromptTemplate(
             "code_generate", "Generate ${'$'}language code that ${'$'}requirement. Context: ${'$'}context", listOf("language", "requirement", "context"),
             category = PromptCategory.CODE_GENERATION, maxTokens = 4096))
@@ -144,19 +141,15 @@ class PromptCacheOptimizer private constructor() {
             "performance_review", "Analyze performance of this ${'$'}language code. Identify bottlenecks in: ${'$'}aspects. Code: ${'$'}code", listOf("language", "aspects", "code"),
             category = PromptCategory.PERFORMANCE))
     }
-
-    fun registerTemplate(template: PromptTemplate) {
+        fun registerTemplate(template: PromptTemplate) {
         templates[template.id] = template
     }
-
-    fun getTemplate(id: String): PromptTemplate? = templates[id]
+        fun getTemplate(id: String): PromptTemplate? = templates[id]
 
     fun getAllTemplates(): List<PromptTemplate> = templates.values.toList()
-
-    fun optimizePrompt(text: String, templateId: String? = null): OptimizedPrompt {
+        fun optimizePrompt(text: String, templateId: String? = null): OptimizedPrompt {
         val startTime = System.nanoTime()
         totalProcessed.incrementAndGet()
-
         val optimizations = mutableListOf<String>()
         var optimized = text
 
@@ -165,13 +158,11 @@ class PromptCacheOptimizer private constructor() {
             optimizations.add("trim_whitespace")
             optimized = trimmed
         }
-
         val singleSpaced = optimized.replace(Regex("\\s+"), " ")
         if (singleSpaced.length < optimized.length) {
             optimizations.add("collapse_whitespace")
             optimized = singleSpaced
         }
-
         var resolvedText = optimized
         if (templateId != null) {
             val template = templates[templateId]
@@ -181,36 +172,31 @@ class PromptCacheOptimizer private constructor() {
                 optimizations.add("template_applied:$templateId")
             }
         }
-
         val minified = removeRedundantPhrases(resolvedText)
         if (minified.length < resolvedText.length) {
             optimizations.add("redundant_phrases_removed")
             resolvedText = minified
         }
-
         val shortenInstructions = shortenBoilerplate(resolvedText)
         if (shortenInstructions.length < resolvedText.length) {
             optimizations.add("boilerplate_shortened")
             resolvedText = shortenInstructions
         }
-
         val estimatedTokens = estimateTokens(resolvedText)
         val originalTokens = estimateTokens(text)
-
         if (optimizations.isNotEmpty()) {
             val cacheKey = computeHash(resolvedText)
-            val entry = PromptCacheEntry(
+        val entry = PromptCacheEntry(
                 promptHash = cacheKey,
                 response = resolvedText,
                 timestampMs = System.currentTimeMillis(),
                 tokenCount = estimatedTokens,
                 averageLatencyMs = 0.0
             )
-            if (promptCache.size() < MAX_CACHE_SIZE) {
+        if (promptCache.size() < MAX_CACHE_SIZE) {
                 promptCache[cacheKey] = entry
             }
         }
-
         val elapsed = (System.nanoTime() - startTime) / 1_000_000
         optimizationHistory.add(elapsed)
         if (optimizationHistory.size > 500) optimizationHistory.removeAt(0)
@@ -225,8 +211,7 @@ class PromptCacheOptimizer private constructor() {
             optimizedLength = resolvedText.length
         )
     }
-
-    fun optimizeBatch(request: BatchPromptRequest): BatchPromptResult {
+        fun optimizeBatch(request: BatchPromptRequest): BatchPromptResult {
         val startTime = System.currentTimeMillis()
         val results = if (request.parallelize) {
             request.promts.map { optimizePrompt(it, request.templateId) }
@@ -241,34 +226,30 @@ class PromptCacheOptimizer private constructor() {
             averageCompressionRatio = if (results.isNotEmpty()) results.map { it.compressionRatio }.average() else 0.0
         )
     }
-
-    fun retrieveFromCache(text: String): String? {
+        fun retrieveFromCache(text: String): String? {
         val hash = computeHash(text)
         val entry = promptCache[hash] ?: return null
         if (System.currentTimeMillis() - entry.timestampMs > CACHE_TTL_MS) {
             promptCache.remove(hash)
-            return null
+        return null
         }
         entry.accessCount.incrementAndGet()
         cacheHits.incrementAndGet()
         entry
     }
-
-    fun applyTemplate(template: PromptTemplate, params: Map<String, String>): String {
+        fun applyTemplate(template: PromptTemplate, params: Map<String, String>): String {
         var result = template.template
         for ((key, value) in params) {
             result = result.replace("${'$'}$key", value)
         }
         result
     }
-
-    fun generateFromTemplate(templateId: String, params: Map<String, String>): String? {
+        fun generateFromTemplate(templateId: String, params: Map<String, String>): String? {
         val template = templates[templateId] ?: return null
         templateUsageCount.computeIfAbsent(templateId) { AtomicInteger(0) }.incrementAndGet()
         applyTemplate(template, params)
     }
-
-    fun removeRedundantPhrases(text: String): String {
+        fun removeRedundantPhrases(text: String): String {
         val redundancies = listOf(
             Regex("\\b(?:I think|I believe|In my opinion|It seems that|Basically|Essentially|Actually|Obviously|Clearly|Of course)\\b", RegexOption.IGNORE_CASE),
             Regex("\\b(?:Please note that|It is important to note that|It should be noted that|It is worth mentioning that|It goes without saying that)\\b", RegexOption.IGNORE_CASE),
@@ -305,8 +286,7 @@ class PromptCacheOptimizer private constructor() {
         }
         result.replace(Regex("\\s+"), " ").trim()
     }
-
-    fun shortenBoilerplate(text: String): String {
+        fun shortenBoilerplate(text: String): String {
         val replacements = mapOf(
             Regex("\\b(?:could you please|would you please|can you please|please )", RegexOption.IGNORE_CASE) to "",
             Regex("\\b(?:thank you|thanks|thank you very much|thanks a lot)", RegexOption.IGNORE_CASE) to "",
@@ -320,36 +300,31 @@ class PromptCacheOptimizer private constructor() {
         }
         result.trim()
     }
-
-    fun estimateTokens(text: String): Int {
+        fun estimateTokens(text: String): Int {
         if (text.isEmpty()) return 0
         val words = text.split(Regex("\\s+")).size
         val punctuation = text.count { it in setOf('.', ',', '!', '?', ';', ':', '"', '\'', '(', ')', '[', ']', '{', '}') }
         val specialTokens = text.split(Regex("\\s+")).count { it.length > 10 }
         (words * 1.3 + punctuation * 0.5 + specialTokens * 0.8).toInt().coerceAtLeast(1)
     }
-
-    fun computeHash(text: String): String {
+        fun computeHash(text: String): String {
         val digest = MessageDigest.getInstance("MD5")
         digest.update(text.toByteArray(Charsets.UTF_8))
         digest.digest().joinToString("") { "%02x".format(it) }
     }
-
-    fun clearCache() { promptCache.clear() }
-
-    fun getCachedCount(): Int = promptCache.size
+        fun clearCache() { promptCache.clear() }
+        fun getCachedCount(): Int = promptCache.size
 
     fun getCacheHitRate(): Double {
         val total = cacheHits.get() + cacheMisses.get()
         if (total == 0L) return 0.0
         cacheHits.get().toDouble() / total
     }
-
-    fun getMetrics(): PromptMetrics {
+        fun getMetrics(): PromptMetrics {
         val avgTime = if (optimizationHistory.isNotEmpty()) optimizationHistory.average() else 0.0
         val avgCompression = if (totalProcessed.get() > 0) {
             val samples = optimizationHistory.takeLast(100)
-            if (samples.isNotEmpty()) 0.85 else 0.0
+        if (samples.isNotEmpty()) 0.85 else 0.0
         } else 0.0
         PromptMetrics(
             cacheSize = promptCache.size,
@@ -365,8 +340,7 @@ class PromptCacheOptimizer private constructor() {
                 .associate { it.key to it.value.get() }
         )
     }
-
-    fun reset() {
+        fun reset() {
         promptCache.clear()
         optimizationHistory.clear()
         templateUsageCount.clear()

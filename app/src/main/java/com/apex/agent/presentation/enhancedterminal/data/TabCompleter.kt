@@ -16,8 +16,7 @@ class TabCompleter(
             else -> completeHistory(input)
         }
     }
-
-    private fun completeCommand(prefix: String): List<String> {
+        private fun completeCommand(prefix: String): List<String> {
         val results = mutableSetOf<String>()
         BuiltInCommands.all.forEach { if (it.action.startsWith(prefix, true)) results.add(it.action) }
         aliases().keys.forEach { if (it.startsWith(prefix, true)) results.add(it) }
@@ -26,8 +25,7 @@ class TabCompleter(
         listOf("ls","cd","pwd","cat","grep","find","cp","mv","rm","mkdir","touch","chmod","echo","head","tail","wc","sort","ps","top","kill","git","node","npm","python","java","curl","wget","ssh","tar","zip","vi","vim","man","df","du","free","uptime","env","export","ifconfig","ip","netstat","ping","diff","sed","awk").forEach { if (it.startsWith(prefix, true)) results.add(it) }
         return results.sorted().take(10)
     }
-
-    private fun completePath(input: String, workingDir: String): List<String> = try {
+        private fun completePath(input: String, workingDir: String): List<String> = try {
         val expanded = input.replace("~", System.getProperty("user.home") ?: "/")
         val base = if (File(expanded).isAbsolute) expanded else File(workingDir, expanded).path
         val file = File(base)
@@ -38,7 +36,6 @@ class TabCompleter(
             basePath + f.name + if (f.isDirectory) "/" else ""
         } ?: emptyList()
     } catch (e: Exception) { emptyList() }
-
-    private fun completeHistory(prefix: String): List<String> =
+        private fun completeHistory(prefix: String): List<String> =
         history().reversed().filter { (_, cmd) -> cmd.startsWith(prefix, true) && cmd != prefix }.map { it.first }.distinct().take(5)
 }

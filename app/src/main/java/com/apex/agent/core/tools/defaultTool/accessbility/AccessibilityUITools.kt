@@ -60,7 +60,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
         while (retryCount < MAX_RETRY_COUNT) {
             uiXml = UIHierarchyManager.getUIHierarchy(context)
-            if (uiXml.isNotEmpty()) {
+        if (uiXml.isNotEmpty()) {
                 return uiXml
             }
             
@@ -81,7 +81,6 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             withAccessibilityCheck(tool) {
         val format = tool.parameters.find { it.name == "format" }?.value ?: "xml"
         val detail = tool.parameters.find { it.name == "detail" }?.value ?: "summary"
-
         if (format !in listOf("xml", "json")) {
                     return@withAccessibilityCheck ToolResult(
                     toolName = tool.name,
@@ -93,7 +92,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
             // 使用无障碍服务获取UI数据（带重试着
     val uiXml = getUIHierarchyWithRetry()
-            if (uiXml.isEmpty()) {
+        if (uiXml.isEmpty()) {
                     return@withAccessibilityCheck ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -135,12 +134,12 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
         try {
             // 1. 获取UI层次结构的XML快照（带重试着
     val hierarchyXml = getUIHierarchyWithRetry()
-            if (hierarchyXml.isEmpty()) {
+        if (hierarchyXml.isEmpty()) {
                 AppLogger.w(TAG, "无法获取UI层次结构XML，使用默认值，)
                 focusInfo.packageName = "android"
                 // 即使XML获取失败，仍然尝试获取Activity名称
                 focusInfo.activityName = UIHierarchyManager.getCurrentActivityName(context) ?: "ForegroundActivity"
-                return focusInfo
+        return focusInfo
             }
 
             // 2. 从XML中解析包�?
@@ -153,7 +152,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
             // 如果没有获取到，使用默认�?
     if (focusInfo.packageName == null) focusInfo.packageName = "android"
-            if (focusInfo.activityName == null) focusInfo.activityName = "ForegroundActivity"
+        if (focusInfo.activityName == null) focusInfo.activityName = "ForegroundActivity"
         } catch (e: Exception) {
             AppLogger.e(TAG, "从XML解析焦点信息时出�? e)
             // 设置默认�?           focusInfo.packageName = "android"
@@ -166,7 +165,6 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
     fun simplifyLayout(xml: String): SimplifiedUINode {
         val factory = XmlPullParserFactory.newInstance().apply { isNamespaceAware = false }
         val parser = factory.newPullParser().apply { setInput(StringReader(xml)) }
-
         val nodeStack = mutableListOf<UINode>()
         var rootNode: UINode? = null
 
@@ -175,7 +173,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                 XmlPullParser.START_TAG -> {
                     if (parser.name == "node") {
                         val newNode = createNode(parser)
-                        if (rootNode == null) {
+        if (rootNode == null) {
                             rootNode = newNode
                             nodeStack.add(newNode)
                         } else {
@@ -192,7 +190,6 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             }
             parser.next()
         }
-
         return rootNode?.toUINode()
                 ?: SimplifiedUINode(
                         className = null,
@@ -204,8 +201,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                         children = emptyList()
                 )
     }
-
-    private fun createNode(parser: XmlPullParser): UINode {
+        private fun createNode(parser: XmlPullParser): UINode {
         // 解析关键属的
     val className = parser.getAttributeValue(null, "class")?.substringAfterLast('.')
         val text = parser.getAttributeValue(null, "text")?.replace("&#10;", "\n")
@@ -213,7 +209,6 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
         val resourceId = parser.getAttributeValue(null, "resource-id")
         val bounds = parser.getAttributeValue(null, "bounds")
         val isClickable = parser.getAttributeValue(null, "clickable") == "true"
-
         return UINode(
                 className = className,
                 text = text,
@@ -250,7 +245,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
                 // 获取UI层次结构XML（带重试着
     val uiXml = getUIHierarchyWithRetry()
-                if (uiXml.isEmpty()) {
+        if (uiXml.isEmpty()) {
                     return@withAccessibilityCheck ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Unable to get UI hierarchy.")
                 }
 
@@ -260,10 +255,9 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                     if (!hasSelectors) {
                         return@findNodesInXml false
                     }
-
-                    val actualId = parser.getAttributeValue(null, "resource-id")
-                    val actualClass = parser.getAttributeValue(null, "class")
-                    val actualDesc = parser.getAttributeValue(null, "content-desc")
+        val actualId = parser.getAttributeValue(null, "resource-id")
+        val actualClass = parser.getAttributeValue(null, "class")
+        val actualDesc = parser.getAttributeValue(null, "content-desc")
 
                     if(resourceId != null && (actualId == null || !actualId.endsWith(resourceId))){
                         return@findNodesInXml false
@@ -279,8 +273,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                     
                     true
                 }
-
-                if (matchedNodes.isEmpty()) {
+        if (matchedNodes.isEmpty()) {
                     return@withAccessibilityCheck ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "No matching element found.")
                 }
 
@@ -313,21 +306,18 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                 )
             }
     }
-
-    private suspend fun handleClickByBounds(tool: AITool, bounds: String): ToolResult {
+        private suspend fun handleClickByBounds(tool: AITool, bounds: String): ToolResult {
         try {
             val rect = parseBounds(bounds)
-            if (rect.isEmpty) {
+        if (rect.isEmpty) {
                  return ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Invalid bounds format: ${bounds}")
             }
-
-            val centerX = rect.centerX()
-            val centerY = rect.centerY()
+        val centerX = rect.centerX()
+        val centerY = rect.centerY()
 
             operationOverlay.showTap(centerX, centerY)
-            val clickSuccess = performAccessibilityClick(centerX, centerY)
-
-            return if (clickSuccess) {
+        val clickSuccess = performAccessibilityClick(centerX, centerY)
+        return if (clickSuccess) {
                 // 成功后也主动隐藏overlay，不等待自动清理
                 operationOverlay.hide()
                 ToolResult(
@@ -346,11 +336,10 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error clicking by bounds", e)
             operationOverlay.hide()
-            return ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Error clicking at bounds: ${e.message}")
+        return ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Error clicking at bounds: ${e.message}")
         }
     }
-
-    private fun findNodesInXml(xml: String, predicate: (parser: XmlPullParser) -> Boolean): List<NodeInfo> {
+        private fun findNodesInXml(xml: String, predicate: (parser: XmlPullParser) -> Boolean): List<NodeInfo> {
         val matchedNodes = mutableListOf<NodeInfo>()
         val factory = XmlPullParserFactory.newInstance().apply { isNamespaceAware = false }
         val parser = factory.newPullParser().apply { setInput(StringReader(xml)) }
@@ -370,8 +359,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
         }
         return matchedNodes
     }
-
-    private data class NodeInfo(val bounds: String?, val text: String)
+        private data class NodeInfo(val bounds: String?, val text: String)
 
     /** 设置输入文本 */
     override suspend fun setInputText(tool: AITool): ToolResult {
@@ -381,7 +369,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
             // 通过UIHierarchyManager请求远程服务找到焦点节点的ID
     val focusedNodeId = UIHierarchyManager.findFocusedNodeId(context)
-            if (focusedNodeId.isNullOrEmpty()) {
+        if (focusedNodeId.isNullOrEmpty()) {
                     return@withAccessibilityCheck ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -392,14 +380,13 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
             // 显示反馈
     val rect = parseBounds(focusedNodeId)
-            if (!rect.isEmpty) {
+        if (!rect.isEmpty) {
             operationOverlay.showTextInput(rect.centerX(), rect.centerY(), text)
             }
 
             // 通过UIHierarchyManager请求远程服务设置文本
     val result = UIHierarchyManager.setTextOnNode(context, focusedNodeId, text)
-
-                if (result) {
+        if (result) {
                 // 成功后主动隐藏overlay
                 operationOverlay.hide()
                 ToolResult(
@@ -441,7 +428,6 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             withAccessibilityCheck(tool) {
         val x = tool.parameters.find { it.name == "x" }?.value?.toIntOrNull()
         val y = tool.parameters.find { it.name == "y" }?.value?.toIntOrNull()
-
         if (x == null || y == null) {
                     return@withAccessibilityCheck ToolResult(
                     toolName = tool.name,
@@ -456,8 +442,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
             // 使用无障碍服务执行点�?
     val result = performAccessibilityClick(x, y)
-
-                if (result) {
+        if (result) {
                 // 成功后主动隐藏overlay
                 operationOverlay.hide()
                 ToolResult(
@@ -500,7 +485,6 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             withAccessibilityCheck(tool) {
         val x = tool.parameters.find { it.name == "x" }?.value?.toIntOrNull()
         val y = tool.parameters.find { it.name == "y" }?.value?.toIntOrNull()
-
         if (x == null || y == null) {
                     return@withAccessibilityCheck ToolResult(
                     toolName = tool.name,
@@ -515,8 +499,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
             // 使用无障碍服务执行长�?
     val result = performAccessibilityLongPress(x, y)
-
-                if (result) {
+        if (result) {
                 // 成功后主动隐藏overlay
                 operationOverlay.hide()
                 ToolResult(
@@ -577,8 +560,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
 
             // 使用无障碍服务执行滑�?
     val result = performAccessibilitySwipe(startX, startY, endX, endY, duration)
-
-                if (result) {
+        if (result) {
                 // 成功后主动隐藏overlay
                 operationOverlay.hide()
                 ToolResult(
@@ -620,7 +602,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             UIHierarchyManager.performClick(context, x, y)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error performing accessibility click", e)
-            return false
+        return false
         }
     }
 
@@ -630,7 +612,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             UIHierarchyManager.performLongPress(context, x, y)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error performing accessibility long press", e)
-            return false
+        return false
         }
     }
 
@@ -646,7 +628,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             UIHierarchyManager.performSwipe(context, startX, startY, endX, endY, duration.toLong())
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error performing accessibility swipe", e)
-            return false
+        return false
         }
     }
 
@@ -674,11 +656,10 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                 "KEYCODE_POWER_DIALOG" -> android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_POWER_DIALOG
                         else -> null
                     }
-
-            if (keyAction != null) {
+        if (keyAction != null) {
                 // 通过UIHierarchyManager请求远程服务执行操作
     val success = UIHierarchyManager.performGlobalAction(context, keyAction)
-                return if (success) {
+        return if (success) {
                     ToolResult(
                             toolName = tool.name,
                             success = true,
@@ -711,7 +692,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error pressing key", e)
-            return ToolResult(
+        return ToolResult(
                     toolName = tool.name,
                     success = false,
                     result = StringResultData(""),
@@ -723,19 +704,16 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
     override suspend fun captureScreenshotToFile(tool: AITool): Pair<String?, Pair<Int, Int>?> {
         return try {
             val screenshotDir = LogistraPaths.cleanOnExitDir()
-
-            val shortName = System.currentTimeMillis().toString().takeLast(4)
-            val file = File(screenshotDir, "${shortName}.png")
-
-            val success = UIHierarchyManager.takeScreenshot(context, file.absolutePath, "png")
-            if (!success) {
+        val shortName = System.currentTimeMillis().toString().takeLast(4)
+        val file = File(screenshotDir, "${shortName}.png")
+        val success = UIHierarchyManager.takeScreenshot(context, file.absolutePath, "png")
+        if (!success) {
                 AppLogger.w(TAG, "captureScreenshotForAgent: AIDL takeScreenshot failed")
-                return Pair(null, null)
+        return Pair(null, null)
             }
-
-            val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeFile(file.absolutePath, options)
-            val dimensions = if (options.outWidth > 0 && options.outHeight > 0) {
+        val dimensions = if (options.outWidth > 0 && options.outHeight > 0) {
                 Pair(options.outWidth, options.outHeight)
             } else {
                 null
@@ -757,18 +735,16 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
         if (filePath == null) {
             return Pair(null, dimensions)
         }
-
         val bitmap = BitmapFactory.decodeFile(filePath) ?: return Pair(null, dimensions)
         val resolvedDimensions = dimensions ?: Pair(bitmap.width, bitmap.height)
         return Pair(bitmap, resolvedDimensions)
     }
-
-    private fun parseBounds(boundsString: String): android.graphics.Rect {
+        private fun parseBounds(boundsString: String): android.graphics.Rect {
         // 解析 "[left,top][right,bottom]" 格式的边界字符串
     val rect = android.graphics.Rect()
         try {
             val parts = boundsString.replace("[", "").replace("]", ",").split(",")
-            if (parts.size >= 4) {
+        if (parts.size >= 4) {
                 rect.left = parts[0].toInt()
                 rect.top = parts[1].toInt()
                 rect.right = parts[2].toInt()

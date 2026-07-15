@@ -18,7 +18,7 @@ import java.util.regex.Pattern
  */
 object StreamingOutputOptimizer {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private const val TAG = "StreamingOptimizer"
+        private const val TAG = "StreamingOptimizer"
 
     // 打字间隔（毫秒）
     private const val TYPING_INTERVAL_MS = 40L
@@ -26,9 +26,11 @@ object StreamingOutputOptimizer {
     // 每次渲染的字符数
     private const val CHARS_PER_TICK = 2
 
-    // 断句识别：中文标点符   private val CHINESE_PUNCTUATION = setOf(' ' ' ' ' ' ' ' '。
+    // 断句识别：中文标点符
+    private val CHINESE_PUNCTUATION = setOf(' ' ' ' ' ' ' ' '。
     
-    // 断句识别：英文标点符   private val ENGLISH_PUNCTUATION = setOf('.', '!', '?', ';', ':', ',')
+    // 断句识别：英文标点符
+    private val ENGLISH_PUNCTUATION = setOf('.', '!', '?', ';', ':', ',')
 
     /**
      * 优化流式输出，实现顺滑打字效    * @param rawFlow 原始流式输出
@@ -51,7 +53,7 @@ object StreamingOutputOptimizer {
                         // 从缓冲区取内容渲
     if (buffer.isNotEmpty()) {
                             val chunkSize = minOf(CHARS_PER_TICK, buffer.length)
-                            val chunk = buffer.substring(0, chunkSize)
+        val chunk = buffer.substring(0, chunkSize)
                             buffer.delete(0, chunkSize)
                             
                             // 发送到输出                           fullText.append(chunk)
@@ -79,7 +81,7 @@ object StreamingOutputOptimizer {
                 
                 // 异常兜底：输出已收集的完整文
     val remainingBuffer = buffer.toString()
-                if (remainingBuffer.isNotEmpty()) {
+        if (remainingBuffer.isNotEmpty()) {
                     send(remainingBuffer)
                 }
                 
@@ -118,7 +120,7 @@ object StreamingOutputOptimizer {
         // 如果找到标点，在标点后分
     return if (lastPunctuationIndex > 0) {
             val output = buffer.substring(0, lastPunctuationIndex + 1)
-            val remaining = buffer.substring(lastPunctuationIndex + 1)
+        val remaining = buffer.substring(lastPunctuationIndex + 1)
             output to remaining
         } else {
             // 如果没有找到标点，返回空输出，继续缓           "" to buffer

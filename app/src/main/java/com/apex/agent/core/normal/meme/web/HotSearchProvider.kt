@@ -25,7 +25,7 @@ class HotSearchProvider {
         return withContext(Dispatchers.IO) {
             // 微博热搜公开页面
     val url = "https://m.weibo.cn/api/container/getIndex?containerid=106003type%3D25%26t%3D3%26disable_hot%3D1%26filter_type%3Drealtimehot"
-    val result = MemeHttpUtil.get(url)
+        val result = MemeHttpUtil.get(url)
         if (!result.success) return@withContext emptyList()
         val items = mutableListOf<HotSearchItem>()
         val json = MemeJsonUtil.parseObject(result.body)
@@ -67,7 +67,7 @@ class HotSearchProvider {
         return withContext(Dispatchers.IO) {
             // 百度热搜页面
     val url = "https://top.baidu.com/board?tab=realtime"
-    val result = MemeHttpUtil.get(url)
+        val result = MemeHttpUtil.get(url)
         if (!result.success) return@withContext emptyList()
 
             // 解析 HTML 提取热搜词
@@ -95,7 +95,7 @@ class HotSearchProvider {
     suspend fun getZhihuHotList(limit: Int = 20): List<HotSearchItem> {
         return withContext(Dispatchers.IO) {
             val url = "https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=$limit"
-    val result = MemeHttpUtil.get(url, mapOf(
+        val result = MemeHttpUtil.get(url, mapOf(
                 "Referer" to "https://www.zhihu.com/hot"
             ))
         if (!result.success) return@withContext emptyList()

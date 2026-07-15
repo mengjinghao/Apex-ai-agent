@@ -63,24 +63,18 @@ class SkillPermissionManager private constructor(private val context: Context) {
             }
         }
     }
-
-    private val scope = CoroutineScope(Dispatchers.IO)
-
-    private val _permissionCheckResults = MutableStateFlow<Map<String, SkillPermissionCheckResult>>(emptyMap())
-    val permissionCheckResults: Flow<Map<String, SkillPermissionCheckResult>> = _permissionCheckResults.asStateFlow()
-
-    private val _pendingPermissionRequests = MutableStateFlow<List<Pair<String, PackagePermission>>>(emptyList())
-    val pendingPermissionRequests: Flow<List<Pair<String, PackagePermission>>> = _pendingPermissionRequests.asStateFlow()
-
-    private var permissionCallback: ((Boolean) -> Unit)? = null
+        private val scope = CoroutineScope(Dispatchers.IO)
+        private val _permissionCheckResults = MutableStateFlow<Map<String, SkillPermissionCheckResult>>(emptyMap())
+        val permissionCheckResults: Flow<Map<String, SkillPermissionCheckResult>> = _permissionCheckResults.asStateFlow()
+        private val _pendingPermissionRequests = MutableStateFlow<List<Pair<String, PackagePermission>>>(emptyList())
+        val pendingPermissionRequests: Flow<List<Pair<String, PackagePermission>>> = _pendingPermissionRequests.asStateFlow()
+        private var permissionCallback: ((Boolean) -> Unit)? = null
     private var currentSkillName: String? = null
 
     private val alwaysAllowSkills = mutableSetOf<String>()
-
-    private fun skillPermissionKey(skillName: String, permissionName: String) =
+        private fun skillPermissionKey(skillName: String, permissionName: String) =
         stringPreferencesKey("${PERMISSION_PREFIX}${skillName}_${permissionName}${STATE_SUFFIX}")
-
-    private fun skillAlwaysAllowKey(skillName: String) =
+        private fun skillAlwaysAllowKey(skillName: String) =
         booleanPreferencesKey("${PERMISSION_PREFIX}${skillName}_always_allow")
 
     suspend fun checkSkillPermissions(skillName: String, permissions: List<PackagePermission>): SkillPermissionCheckResult {
@@ -91,16 +85,13 @@ class SkillPermissionManager private constructor(private val context: Context) {
                 permissions = emptyList()
             )
         }
-
         val skillPermissions = permissions.map { perm ->
             val state = getPermissionStateInternal(skillName, perm.name)
             SkillPermission(skillName, perm, state)
         }
-
         val missingRequired = skillPermissions
             .filter { it.state == SkillPermissionState.DENIED && it.permission.required }
             .map { it.permission }
-
         val result = SkillPermissionCheckResult(
             skillName = skillName,
             allGranted = missingRequired.isEmpty(),
@@ -111,11 +102,9 @@ class SkillPermissionManager private constructor(private val context: Context) {
         _permissionCheckResults.value = _permissionCheckResults.value.toMutableMap().apply {
             put(skillName, result)
         }
-
         return result
     }
-
-    private suspend fun getPermissionStateInternal(skillName: String, permissionName: String): SkillPermissionState {
+        private suspend fun getPermissionStateInternal(skillName: String, permissionName: String): SkillPermissionState {
         val preferences = context.skillPermissionsDataStore.data.first()
         val key = skillPermissionKey(skillName, permissionName)
         val storedState = preferences[key]
@@ -127,15 +116,12 @@ class SkillPermissionManager private constructor(private val context: Context) {
                 else -> checkAndroidPermission(permissionName)
             }
         }
-
         if (alwaysAllowSkills.contains(skillName)) {
             return SkillPermissionState.GRANTED
         }
-
         return checkAndroidPermission(permissionName)
     }
-
-    private fun checkAndroidPermission(permissionName: String): SkillPermissionState {
+        private fun checkAndroidPermission(permissionName: String): SkillPermissionState {
         return try {
             val granted = ContextCompat.checkSelfPermission(context, permissionName) == PackageManager.PERMISSION_GRANTED
             if (granted) SkillPermissionState.GRANTED else SkillPermissionState.DENIED
@@ -175,12 +161,10 @@ class SkillPermissionManager private constructor(private val context: Context) {
         permissionCallback = null
         return result ?: false
     }
-
-    private fun notifyPermissionRequest(skillName: String, permission: PackagePermission) {
+        private fun notifyPermissionRequest(skillName: String, permission: PackagePermission) {
         AppLogger.d(TAG, "Permission request notification: ${skillName}:${permission.name}")
     }
-
-    fun handlePermissionResult(granted: Boolean) {
+        fun handlePermissionResult(granted: Boolean) {
         permissionCallback?.invoke(granted)
         _pendingPermissionRequests.value = _pendingPermissionRequests.value.filter { it.first != currentSkillName }
     }
@@ -221,7 +205,6 @@ class SkillPermissionManager private constructor(private val context: Context) {
         if (alwaysAllow) {
             alwaysAllowSkills.add(skillName)
         }
-
         return alwaysAllow
     }
 
@@ -242,7 +225,7 @@ class SkillPermissionManager private constructor(private val context: Context) {
                 val key = skillPermissionKey(skillName, perm.name)
                 preferences.remove(key)
             }
-            val alwaysAllowKey = skillAlwaysAllowKey(skillName)
+        val alwaysAllowKey = skillAlwaysAllowKey(skillName)
             preferences.remove(alwaysAllowKey)
         }
         alwaysAllowSkills.remove(skillName)
@@ -253,16 +236,13 @@ class SkillPermissionManager private constructor(private val context: Context) {
             perm.name to getPermissionStateInternal(skillName, perm.name)
         }
     }
-
-    fun hasPendingRequest(): Boolean {
+        fun hasPendingRequest(): Boolean {
         return _pendingPermissionRequests.value.isNotEmpty()
     }
-
-    fun getCurrentPendingRequest(): Pair<String, PackagePermission>? {
+        fun getCurrentPendingRequest(): Pair<String, PackagePermission>? {
         return _pendingPermissionRequests.value.firstOrNull()
     }
-
-    fun getPermissionDescription(permission: PackagePermission, language: String = "zh"): String {
+        fun getPermissionDescription(permission: PackagePermission, language: String = "zh"): String {
         return permission.description.resolve(language)
     }
 }

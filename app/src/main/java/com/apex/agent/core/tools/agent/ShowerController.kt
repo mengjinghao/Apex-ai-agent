@@ -26,19 +26,16 @@ object ShowerController {
 
     /** Gets the display ID for a specific agent. */
     fun getDisplayId(agentId: String): Int? = instances[agentId]?.getDisplayId()
-
-    fun getDisplayId(): Int? = getDisplayId("default")
+        fun getDisplayId(): Int? = getDisplayId("default")
 
     /** Gets the video size for a specific agent. */
     fun getVideoSize(agentId: String): Pair<Int, Int>? = instances[agentId]?.getVideoSize()
-
-    fun getVideoSize(): Pair<Int, Int>? = getVideoSize("default")
+        fun getVideoSize(): Pair<Int, Int>? = getVideoSize("default")
 
     /** Sets the binary video frame handler for a specific agent. */
     fun setBinaryHandler(agentId: String, handler: ((ByteArray) -> Unit)) =
         instances[agentId]?.setBinaryHandler(handler)
-
-    fun setBinaryHandler(handler: ((ByteArray) -> Unit)) = setBinaryHandler("default", handler)
+        fun setBinaryHandler(handler: ((ByteArray) -> Unit)) = setBinaryHandler("default", handler)
 
     suspend fun requestScreenshot(agentId: String, timeoutMs: Long = 3000L): ByteArray? =
         getInstance(agentId).requestScreenshot(timeoutMs)
@@ -185,8 +182,7 @@ object ShowerController {
     fun shutdown(agentId: String) {
         instances.remove(agentId)?.shutdown()
     }
-
-    fun shutdown() = shutdown("default")
+        fun shutdown() = shutdown("default")
 
     /** Injects a key event into the virtual display associated with the specified agent. */
     suspend fun key(agentId: String, keyCode: Int): Boolean =

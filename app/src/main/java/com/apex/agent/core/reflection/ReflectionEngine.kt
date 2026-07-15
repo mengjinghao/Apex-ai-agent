@@ -17,8 +17,7 @@ class ReflectionEngine(
     companion object {
         private const val TAG = "ReflectionEngine"
     }
-
-    private val reflectionPrompts = ReflectionPrompts()
+        private val reflectionPrompts = ReflectionPrompts()
 
     suspend fun reflectOnTask(
         taskId: String,
@@ -27,9 +26,7 @@ class ReflectionEngine(
         outcome: TaskOutcome
     ): Reflection = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "Starting reflection for task: ${taskId}")
-
         val analysis = analyzeExecution(executionSteps, outcome)
-        
         val reflection = Reflection(
             taskId = taskId,
             taskGoal = taskGoal,
@@ -44,14 +41,12 @@ class ReflectionEngine(
         AppLogger.d(TAG, "Reflection completed for task: ${taskId}")
         reflection
     }
-
-    private suspend fun analyzeExecution(
+        private suspend fun analyzeExecution(
         steps: List<ExecutionStep>,
         outcome: TaskOutcome
     ): ReflectionAnalysis = withContext(Dispatchers.IO) {
         val failedSteps = steps.filter { !it.success }
         val successfulSteps = steps.filter { it.success }
-
         val keyFactors = mutableListOf<KeyFactor>()
         val suggestions = mutableListOf<ImprovementSuggestion>()
         val learnings = mutableListOf<Learning>()
@@ -65,7 +60,6 @@ class ReflectionEngine(
         analyzePerformance(steps, outcome, keyFactors, suggestions)
         
         generateLearnings(steps, outcome, learnings)
-
         val confidence = calculateConfidence(successfulSteps.size, steps.size)
 
         ReflectionAnalysis(
@@ -75,8 +69,7 @@ class ReflectionEngine(
             learnings = learnings
         )
     }
-
-    private fun analyzeTaskPlanning(
+        private fun analyzeTaskPlanning(
         steps: List<ExecutionStep>,
         outcome: TaskOutcome,
         keyFactors: MutableList<KeyFactor>,
@@ -99,9 +92,8 @@ class ReflectionEngine(
                     "设置最小步骤数阈�?
                 )
             ))
-            return
+        return
         }
-
         val stepSequenceScore = evaluateStepSequence(steps)
         if (stepSequenceScore < 0.7) {
             keyFactors.add(KeyFactor(
@@ -122,8 +114,7 @@ class ReflectionEngine(
             ))
         }
     }
-
-    private fun evaluateStepSequence(steps: List<ExecutionStep>): Double {
+        private fun evaluateStepSequence(steps: List<ExecutionStep>): Double {
         var score = 0.0
         var logicalFlow = 0
 
@@ -141,14 +132,11 @@ class ReflectionEngine(
         } else {
             1.0
         }
-
         return score
     }
-
-    private fun isLogicallySequential(action1: String, action2: String): Boolean {
+        private fun isLogicallySequential(action1: String, action2: String): Boolean {
         val action1Lower = action1.lowercase()
         val action2Lower = action2.lowercase()
-
         val sequentialPatterns = listOf(
             Pair("获取", "分析"),
             Pair("分析", "处理"),
@@ -157,13 +145,11 @@ class ReflectionEngine(
             Pair("搜索", "解析"),
             Pair("解析", "生成")
         )
-
         return sequentialPatterns.any { (first, second) ->
             action1Lower.contains(first) && action2Lower.contains(second)
         }
     }
-
-    private fun analyzeToolUsage(
+        private fun analyzeToolUsage(
         steps: List<ExecutionStep>,
         keyFactors: MutableList<KeyFactor>,
         suggestions: MutableList<ImprovementSuggestion>
@@ -172,7 +158,7 @@ class ReflectionEngine(
         
         toolUsage.forEach { (tool, toolSteps) ->
             val failures = toolSteps.count { !it.success }
-            if (failures > 0 && failures >= toolSteps.size / 2) {
+        if (failures > 0 && failures >= toolSteps.size / 2) {
                 keyFactors.add(KeyFactor(
                     factor = "工具使用不当: ${tool}",
                     impact = ImpactLevel.MEDIUM,
@@ -192,8 +178,7 @@ class ReflectionEngine(
             }
         }
     }
-
-    private fun extractToolName(action: String): String {
+        private fun extractToolName(action: String): String {
         val patterns = listOf(
             Regex("调用\\s*(\\w+)"),
             Regex("使用\\s*(\\w+)"),
@@ -207,8 +192,7 @@ class ReflectionEngine(
         }
         return "未知工具"
     }
-
-    private fun analyzeErrorHandling(
+        private fun analyzeErrorHandling(
         failedSteps: List<ExecutionStep>,
         keyFactors: MutableList<KeyFactor>,
         suggestions: MutableList<ImprovementSuggestion>
@@ -223,8 +207,7 @@ class ReflectionEngine(
                 impact = if (failures.size > 1) ImpactLevel.HIGH else ImpactLevel.MEDIUM,
                 explanation = "${failures.size} 个步骤因 ${category} 失败"
             ))
-            
-            if (failures.size > 1) {
+        if (failures.size > 1) {
                 suggestions.add(ImprovementSuggestion(
                     category = SuggestionCategory.ERROR_HANDLING,
                     description = "增强 ${category} 类型错误的处理能�?,
@@ -235,10 +218,8 @@ class ReflectionEngine(
             }
         }
     }
-
-    private fun categorizeFailure(result: String): String {
+        private fun categorizeFailure(result: String): String {
         val lowerResult = result.lowercase()
-        
         return when {
             lowerResult.contains("权限") || lowerResult.contains("permission") -> "权限问题"
             lowerResult.contains("网络") || lowerResult.contains("network") -> "网络问题"
@@ -249,8 +230,7 @@ class ReflectionEngine(
             else -> "其他错误"
         }
     }
-
-    private fun generateErrorHandlingSuggestions(category: String): List<String> {
+        private fun generateErrorHandlingSuggestions(category: String): List<String> {
         return when (category) {
             "权限问题" -> listOf(
                 "在执行前检查权�?,
@@ -279,8 +259,7 @@ class ReflectionEngine(
             )
         }
     }
-
-    private fun analyzePerformance(
+        private fun analyzePerformance(
         steps: List<ExecutionStep>,
         outcome: TaskOutcome,
         keyFactors: MutableList<KeyFactor>,
@@ -306,7 +285,6 @@ class ReflectionEngine(
                 )
             ))
         }
-
         if (outcome.metrics.resourceUsage.cpuUsagePercent > 80.0) {
             keyFactors.add(KeyFactor(
                 factor = "CPU使用率过�?,
@@ -326,8 +304,7 @@ class ReflectionEngine(
             ))
         }
     }
-
-    private fun generateLearnings(
+        private fun generateLearnings(
         steps: List<ExecutionStep>,
         outcome: TaskOutcome,
         learnings: MutableList<Learning>
@@ -348,7 +325,6 @@ class ReflectionEngine(
                 confidence = 0.85f
             ))
         }
-
         if (outcome.success) {
             learnings.add(Learning(
                 insight = "任务 '${outcome}' 整体执行成功",
@@ -371,8 +347,7 @@ class ReflectionEngine(
             ))
         }
     }
-
-    private fun calculateConfidence(successfulSteps: Int, totalSteps: Int): Float {
+        private fun calculateConfidence(successfulSteps: Int, totalSteps: Int): Float {
         if (totalSteps == 0) return 0.5f
         
         val stepSuccessRate = successfulSteps.toFloat() / totalSteps
@@ -380,8 +355,7 @@ class ReflectionEngine(
         
         return (baseConfidence + stepSuccessRate * 0.4f).coerceIn(0.1f, 0.95f)
     }
-
-    private suspend fun saveReflection(reflection: Reflection) {
+        private suspend fun saveReflection(reflection: Reflection) {
         memoryRepository.createMemory(
             title = "任务反�? ${reflection.taskGoal}",
             content = reflection.toSummaryString(),
@@ -390,8 +364,7 @@ class ReflectionEngine(
             tags = listOf("反�?, "任务分析", reflection.outcome.success.toString())
         )
     }
-
-    private suspend fun applyLearnings(reflection: Reflection) {
+        private suspend fun applyLearnings(reflection: Reflection) {
         reflection.analysis.learnings.forEach { learning ->
             memoryRepository.createMemory(
                 title = "学习洞察: ${learning.insight.take(30)}...",
@@ -407,23 +380,19 @@ class ReflectionEngine(
             )
         }
     }
-
-    fun generateSummary(reflection: Reflection): ReflectionSummary {
+        fun generateSummary(reflection: Reflection): ReflectionSummary {
         val overallAssessment = when {
             reflection.outcome.success && reflection.analysis.confidence > 0.8 -> Assessment.EXCELLENT
             reflection.outcome.success && reflection.analysis.confidence > 0.6 -> Assessment.GOOD
             reflection.outcome.success -> Assessment.FAIR
             else -> Assessment.POOR
         }
-
         val keyTakeaways = reflection.analysis.keyFactors
             .filter { it.impact >= ImpactLevel.MEDIUM }
             .map { "${it.factor}: ${it.explanation}" }
-
         val recommendedChanges = reflection.analysis.suggestions
             .filter { it.priority >= SuggestionPriority.MEDIUM }
             .map { it.description }
-
         return ReflectionSummary(
             reflectionId = reflection.id,
             taskId = reflection.taskId,

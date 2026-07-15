@@ -20,7 +20,6 @@ class BehaviorAnalyzer(private val context: Context) {
      */
     suspend fun analyzeUserBehavior(messages: List<ChatMessage>): UserBehaviorProfile = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "开始分析用户行为，消息数量: ${messages.size}")
-        
         val behaviorProfile = UserBehaviorProfile()
         
         // 分析对话模式
@@ -64,18 +63,17 @@ class BehaviorAnalyzer(private val context: Context) {
         // 分析对话密度
     if (messages.size > 1) {
             val timeDifferences = mutableListOf<Long>()
-            for (i in 1 until messages.size) {
+        for (i in 1 until messages.size) {
                 val time1 = parseTimestamp(messages[i-1].timestamp)
-                val time2 = parseTimestamp(messages[i].timestamp)
-                if (time1 != null && time2 != null) {
+        val time2 = parseTimestamp(messages[i].timestamp)
+        if (time1 != null && time2 != null) {
                     val diff = abs(time2.time - time1.time) / 1000 // 转换为秒
     if (diff < 3600) { // 只考虑1小时内的消息
                         timeDifferences.add(diff)
                     }
                 }
             }
-            
-            if (timeDifferences.isNotEmpty()) {
+        if (timeDifferences.isNotEmpty()) {
                 profile.avgResponseTime = timeDifferences.average()
                 profile.responseTimeVariance = calculateVariance(timeDifferences)
             }
@@ -88,10 +86,9 @@ class BehaviorAnalyzer(private val context: Context) {
     private fun analyzeUsageTime(messages: List<ChatMessage>, profile: UserBehaviorProfile) {
         val hourDistribution = mutableMapOf<Int, Int>()
         val dayDistribution = mutableMapOf<Int, Int>()
-        
         for (message in messages) {
             val timestamp = parseTimestamp(message.timestamp)
-            if (timestamp != null) {
+        if (timestamp != null) {
                 val hour = timestamp.hours
                 val day = timestamp.day
                 
@@ -175,15 +172,13 @@ class BehaviorAnalyzer(private val context: Context) {
                     break
                 }
             }
-            
-            for (word in casualWords) {
+        for (word in casualWords) {
                 if (content.contains(word)) {
                     isCasual = true
                     break
                 }
             }
-            
-            if (isFormal) formalCount++
+        if (isFormal) formalCount++
             if (isCasual) casualCount++
         }
         
@@ -205,7 +200,6 @@ class BehaviorAnalyzer(private val context: Context) {
         // 分析轮次长度
     var currentTurn = 0
         val turnLengths = mutableListOf<Int>()
-        
         for (i in messages.indices) {
             currentTurn++
             
@@ -218,7 +212,6 @@ class BehaviorAnalyzer(private val context: Context) {
                 currentTurn = 0
             }
         }
-        
         if (turnLengths.isNotEmpty()) {
             profile.avgTurnLength = turnLengths.average()
             profile.maxTurnLength = turnLengths.maxOrNull() ?: 0
@@ -227,7 +220,6 @@ class BehaviorAnalyzer(private val context: Context) {
         
         // 分析回复模式
     val responsePatterns = mutableMapOf<String, Int>()
-        
         for (i in 1 until messages.size) {
             val prevSender = messages[i-1].sender
             val currentSender = messages[i].sender
@@ -250,7 +242,6 @@ class BehaviorAnalyzer(private val context: Context) {
         
         // 分析场景关键�?
     val scenarios = mutableMapOf<String, Int>()
-        
         val scenarioKeywords = mapOf(
             "工作" to listOf("工作", "职场", "业务", "项目", "任务", "会议", "报告"),
             "学习" to listOf("学习", "教育", "知识", "课程", "考试", "作业", "研究"),
@@ -258,7 +249,6 @@ class BehaviorAnalyzer(private val context: Context) {
             "技�?to listOf("技�? "编程", "软件", "硬件", "开�? "代码", "问题"),
             "创意" to listOf("创意", "想法", "灵感", "设计", "方案", "构，, "创作")
         )
-        
         for (message in userMessages) {
             val content = message.content
             for ((scenario, keywords) in scenarioKeywords) {
@@ -270,7 +260,6 @@ class BehaviorAnalyzer(private val context: Context) {
                 }
             }
         }
-        
         if (scenarios.isNotEmpty()) {
             val topScenarios = scenarios.entries
                 .sortedByDescending { it.value }

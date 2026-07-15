@@ -35,8 +35,7 @@ data class ProviderProfile(
         LOCAL,
         SELF_HOSTED
     }
-
-    fun getHostname(): String {
+        fun getHostname(): String {
         return hostname ?: run {
             val url = baseUrl.removePrefix("https://").removePrefix("http://")
             url.split("/")[0]
@@ -60,7 +59,7 @@ data class ProviderProfile(
             val url = if (modelsUrl.isNotEmpty()) modelsUrl else "${baseUrl}/models"
             try {
                 val client = OkHttpClient()
-                val request = Request.Builder()
+        val request = Request.Builder()
                     .url(url)
                     .apply {
                         apiKey?.let {
@@ -121,7 +120,6 @@ data class ProviderProfile(
                 modelsUrl = "https://api.openai.com/v1/models"
             )
         }
-
         fun anthropic(): ProviderProfile {
             return ProviderProfile(
                 name = "anthropic",
@@ -134,7 +132,6 @@ data class ProviderProfile(
                 modelsUrl = "https://api.anthropic.com/v1/models"
             )
         }
-
         fun google(): ProviderProfile {
             return ProviderProfile(
                 name = "google",
@@ -146,7 +143,6 @@ data class ProviderProfile(
                 defaultAuxModel = "gemini-1.5-flash"
             )
         }
-
         fun openRouter(): ProviderProfile {
             return ProviderProfile(
                 name = "openrouter",
@@ -158,7 +154,6 @@ data class ProviderProfile(
                 modelsUrl = "https://openrouter.ai/api/v1/models"
             )
         }
-
         fun ollama(): ProviderProfile {
             return ProviderProfile(
                 name = "ollama",
@@ -170,7 +165,6 @@ data class ProviderProfile(
                 providerType = ProviderType.LOCAL
             )
         }
-
         fun kimi(): ProviderProfile {
             return ProviderProfile(
                 name = "kimi",
@@ -182,7 +176,6 @@ data class ProviderProfile(
                 defaultAuxModel = "moonshot-v1-32k"
             )
         }
-
         fun minimax(): ProviderProfile {
             return ProviderProfile(
                 name = "minimax",
@@ -193,7 +186,6 @@ data class ProviderProfile(
                 defaultModel = "abab6.5s-chat"
             )
         }
-
         fun zai(): ProviderProfile {
             return ProviderProfile(
                 name = "zai",
@@ -210,19 +202,18 @@ data class ProviderProfile(
 class ProviderRegistry private constructor() {
 
     private val logger = LoggerFactory.getLogger(ProviderRegistry::class.java)
-    private val providers = ConcurrentHashMap<String, ProviderProfile>()
-    private var isInitialized = false
+        private val providers = ConcurrentHashMap<String, ProviderProfile>()
+        private var isInitialized = false
 
     fun registerProvider(profile: ProviderProfile, overwrite: Boolean = false) {
         if (providers.containsKey(profile.name) && !overwrite) {
             logger.warn("Provider ${profile.name} already registered, skipping")
-            return
+        return
         }
         providers[profile.name] = profile
         logger.info("Registered provider: ${profile.name}")
     }
-
-    fun registerCustomProvider(
+        fun registerCustomProvider(
         name: String,
         baseUrl: String,
         apiKeyEnvVar: String = "",
@@ -235,34 +226,28 @@ class ProviderRegistry private constructor() {
         ).apply(configure)
         registerProvider(profile)
     }
-
-    fun getProviderProfile(name: String): ProviderProfile? {
+        fun getProviderProfile(name: String): ProviderProfile? {
         ensureInitialized()
         return providers[name]
     }
-
-    fun listProviders(): List<ProviderProfile> {
+        fun listProviders(): List<ProviderProfile> {
         ensureInitialized()
         return providers.values.toList()
     }
-
-    fun findProviderByHostname(hostname: String): ProviderProfile? {
+        fun findProviderByHostname(hostname: String): ProviderProfile? {
         ensureInitialized()
         return providers.values.firstOrNull { it.getHostname() == hostname }
     }
-
-    fun findProviderByUrl(url: String): ProviderProfile? {
+        fun findProviderByUrl(url: String): ProviderProfile? {
         ensureInitialized()
         val hostname = url.removePrefix("https://").removePrefix("http://").split("/")[0]
     return findProviderByHostname(hostname)
     }
-
-    fun findProvidersByModel(modelId: String): List<ProviderProfile> {
+        fun findProvidersByModel(modelId: String): List<ProviderProfile> {
         ensureInitialized()
         return providers.values.filter { it.defaultModel == modelId }
     }
-
-    fun registerDefaultProviders() {
+        fun registerDefaultProviders() {
         registerProvider(ProviderProfile.openAI())
         registerProvider(ProviderProfile.anthropic())
         registerProvider(ProviderProfile.google())
@@ -272,19 +257,16 @@ class ProviderRegistry private constructor() {
         registerProvider(ProviderProfile.minimax())
         registerProvider(ProviderProfile.zai())
     }
-
-    private fun ensureInitialized() {
+        private fun ensureInitialized() {
         if (!isInitialized) {
             registerDefaultProviders()
             isInitialized = true
         }
     }
-
-    fun isProviderRegistered(name: String): Boolean {
+        fun isProviderRegistered(name: String): Boolean {
         return providers.containsKey(name)
     }
-
-    fun getProviderCount(): Int {
+        fun getProviderCount(): Int {
         return providers.size
     }
 

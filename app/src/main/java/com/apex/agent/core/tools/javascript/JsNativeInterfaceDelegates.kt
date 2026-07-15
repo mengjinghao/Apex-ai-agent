@@ -45,18 +45,16 @@ import org.json.JSONObject
 
 internal object JsNativeInterfaceDelegates {
     private const val TAG = "JsNativeInterface"
-    private data class ParsedToolCall(
+        private data class ParsedToolCall(
         val params: Map<String, String>,
         val fullToolName: String,
         val aiTool: AITool
     )
-
-    private data class SerializedToolResultData(
+        private data class SerializedToolResultData(
         val data: JsonElement,
         val dataType: String? = null
     )
-
-    private fun buildToolErrorJson(message: String): String {
+        private fun buildToolErrorJson(message: String): String {
         return Json.encodeToString(
             JsonElement.serializer(),
             buildJsonObject {
@@ -65,8 +63,7 @@ internal object JsNativeInterfaceDelegates {
             }
         )
     }
-
-    private fun parseToolCall(
+        private fun parseToolCall(
         toolType: String,
         toolName: String,
         paramsJson: String
@@ -75,20 +72,17 @@ internal object JsNativeInterfaceDelegates {
         if (normalizedToolName.isEmpty()) {
             throw IllegalArgumentException("Tool name cannot be empty")
         }
-
         val params = mutableMapOf<String, String>()
         val jsonObject = JSONObject(paramsJson)
         jsonObject.keys().forEach { key ->
             params[key] = jsonObject.opt(key)?.toString() ?: ""
         }
-
         val fullToolName =
             if (toolType.isNotEmpty() && toolType != "default") {
                 "${toolType}:${normalizedToolName}"
             } else {
                 normalizedToolName
             }
-
         val toolParameters = params.map { (name, value) -> ToolParameter(name = name, value = value) }
         val aiTool = AITool(name = fullToolName, parameters = toolParameters)
         return ParsedToolCall(
@@ -97,8 +91,7 @@ internal object JsNativeInterfaceDelegates {
             aiTool = aiTool
         )
     }
-
-    private fun serializeToolExecutionResult(
+        private fun serializeToolExecutionResult(
         result: ToolResult,
         binaryDataRegistry: ConcurrentHashMap<String, ByteArray>,
         binaryHandlePrefix: String,
@@ -111,12 +104,11 @@ internal object JsNativeInterfaceDelegates {
                 binaryHandlePrefix = binaryHandlePrefix,
                 binaryDataThreshold = binaryDataThreshold
             )
-
         return Json.encodeToString(
             JsonElement.serializer(),
             buildJsonObject {
                 put("success", JsonPrimitive(result.success))
-                if (!result.success) {
+        if (!result.success) {
                     put("error", JsonPrimitive(result.error ?: "Unknown error"))
                 }
                 put("data", serializedData.data)
@@ -124,8 +116,7 @@ internal object JsNativeInterfaceDelegates {
             }
         )
     }
-
-    private fun serializeToolResultData(
+        private fun serializeToolResultData(
         resultData: ToolResultData,
         binaryDataRegistry: ConcurrentHashMap<String, ByteArray>,
         binaryHandlePrefix: String,
@@ -160,7 +151,7 @@ internal object JsNativeInterfaceDelegates {
             }
             else -> {
                 val jsonString = resultData.toJson()
-                val jsonData =
+        val jsonData =
                     try {
                         Json.parseToJsonElement(jsonString)
                     } catch (_e: Exception) {
@@ -170,8 +161,7 @@ internal object JsNativeInterfaceDelegates {
             }
         }
     }
-
-    private inline fun <T> guard(
+        private inline fun <T> guard(
         fallback: T,
         failureMessage: String,
         block: () -> T
@@ -183,19 +173,16 @@ internal object JsNativeInterfaceDelegates {
             fallback
         }
     }
-
-    private fun normalizeNonBlank(value: String): String? {
+        private fun normalizeNonBlank(value: String): String? {
         return value.trim().takeIf { it.isNotBlank() }
     }
-
-    private fun parseBooleanFlag(value: String): Boolean {
+        private fun parseBooleanFlag(value: String): Boolean {
         return when (value.trim().lowercase()) {
             "1", "true", "yes", "y", "on" -> true
             else -> false
         }
     }
-
-    private fun applyEnvValue(
+        private fun applyEnvValue(
         preferences: EnvPreferences,
         key: String,
         value: String?
@@ -208,14 +195,12 @@ internal object JsNativeInterfaceDelegates {
             preferences.setEnv(normalizedKey, normalizedValue)
         }
     }
-
-    fun setEnv(context: Context, key: String, value: String) {
+        fun setEnv(context: Context, key: String, value: String) {
         guard(Unit, "Error writing environment variable from JS: ${key}") {
             applyEnvValue(EnvPreferences.getInstance(context), key, value)
         }
     }
-
-    fun getEnv(
+        fun getEnv(
         context: Context,
         key: String,
         envOverrides: Map<String, String>
@@ -227,48 +212,42 @@ internal object JsNativeInterfaceDelegates {
                 ?: ""
         }
     }
-
-    fun setEnvs(context: Context, valuesJson: String) {
+        fun setEnvs(context: Context, valuesJson: String) {
         guard(Unit, "Error batch-writing environment variables from JS") {
             if (valuesJson.isBlank()) {
                 return@guard
             }
-            val payload = JSONObject(valuesJson)
-            val preferences = EnvPreferences.getInstance(context)
+        val payload = JSONObject(valuesJson)
+        val preferences = EnvPreferences.getInstance(context)
             payload.keys().forEach { rawKey ->
                 applyEnvValue(preferences, rawKey, payload.opt(rawKey)?.toString())
             }
         }
     }
-
-    fun isPackageImported(packageManager: PackageManager, packageName: String): Boolean {
+        fun isPackageImported(packageManager: PackageManager, packageName: String): Boolean {
         return guard(false, "Error checking package imported from JS: ${packageName}") {
             normalizeNonBlank(packageName)?.let(packageManager::isPackageImported) ?: false
         }
     }
-
-    fun importPackage(packageManager: PackageManager, packageName: String): String {
+        fun importPackage(packageManager: PackageManager, packageName: String): String {
         return guard("Error: package import failed", "Error importing package from JS: ${packageName}") {
             val normalized = normalizeNonBlank(packageName) ?: return@guard "Package name is required"
             packageManager.importPackage(normalized)
         }
     }
-
-    fun removePackage(packageManager: PackageManager, packageName: String): String {
+        fun removePackage(packageManager: PackageManager, packageName: String): String {
         return guard("Error: package removal failed", "Error removing package from JS: ${packageName}") {
             val normalized = normalizeNonBlank(packageName) ?: return@guard "Package name is required"
             packageManager.removePackage(normalized)
         }
     }
-
-    fun usePackage(packageManager: PackageManager, packageName: String): String {
+        fun usePackage(packageManager: PackageManager, packageName: String): String {
         return guard("Error: package activation failed", "Error using package from JS: ${packageName}") {
             val normalized = normalizeNonBlank(packageName) ?: return@guard "Package name is required"
             packageManager.usePackage(normalized)
         }
     }
-
-    fun listImportedPackagesJson(packageManager: PackageManager): String {
+        fun listImportedPackagesJson(packageManager: PackageManager): String {
         return guard("[]", "Error listing imported packages from JS") {
             Json.encodeToString(
                 ListSerializer(String.serializer()),
@@ -276,8 +255,7 @@ internal object JsNativeInterfaceDelegates {
             )
         }
     }
-
-    fun resolveToolName(
+        fun resolveToolName(
         packageManager: PackageManager,
         packageName: String,
         subpackageId: String,
@@ -289,12 +267,11 @@ internal object JsNativeInterfaceDelegates {
             failureMessage = "Error resolving tool name from JS: package=${packageName}, subpackage=${subpackageId}, tool=${toolName}"
         ) {
             val normalizedTool = normalizeNonBlank(toolName) ?: return@guard ""
-            if (normalizedTool.contains(":")) {
+        if (normalizedTool.contains(":")) {
                 return@guard normalizedTool
             }
-
-            val preferImportedBool = !preferImported.equals("false", ignoreCase = true)
-            val resolvedPackageName =
+        val preferImportedBool = !preferImported.equals("false", ignoreCase = true)
+        val resolvedPackageName =
                 normalizeNonBlank(packageName)?.let { candidate ->
                     packageManager.findPreferredPackageNameForSubpackageId(
                         candidate,
@@ -306,16 +283,14 @@ internal object JsNativeInterfaceDelegates {
                         preferImported = preferImportedBool
                     ) ?: candidate
                 }.orEmpty()
-
-            if (resolvedPackageName.isBlank()) {
+        if (resolvedPackageName.isBlank()) {
                 normalizedTool
             } else {
                 "${resolvedPackageName}:${normalizedTool}"
             }
         }
     }
-
-    fun readToolPkgResource(
+        fun readToolPkgResource(
         context: Context,
         packageManager: PackageManager,
         packageNameOrSubpackageId: String,
@@ -328,24 +303,23 @@ internal object JsNativeInterfaceDelegates {
             failureMessage = "Error reading toolpkg resource from JS: package/subpackage=${packageNameOrSubpackageId}, resource=${resourceKey}"
         ) {
             val target = normalizeNonBlank(packageNameOrSubpackageId) ?: return@guard ""
-            val key = normalizeNonBlank(resourceKey) ?: return@guard ""
-            val fileName = normalizeNonBlank(outputFileName)
+        val key = normalizeNonBlank(resourceKey) ?: return@guard ""
+        val fileName = normalizeNonBlank(outputFileName)
                 ?: packageManager.getToolPkgResourceOutputFileName(
                     packageNameOrSubpackageId = target,
                     resourceKey = key,
                     preferImportedContainer = true
                 )
                 ?: "${key}.bin"
-            val safeName = fileName.substringAfterLast('/').substringAfterLast('\\').ifBlank { "${key}.bin" }
-            val outputDir =
+        val safeName = fileName.substringAfterLast('/').substringAfterLast('\\').ifBlank { "${key}.bin" }
+        val outputDir =
                 if (parseBooleanFlag(internal)) {
                     ApexPaths.cleanOnExitInternalDir(context)
                 } else {
                     ApexPaths.cleanOnExitDir()
                 }
-
-            val outputFile = File(outputDir, safeName)
-            val copied =
+        val outputFile = File(outputDir, safeName)
+        val copied =
                 packageManager.copyToolPkgResourceToFile(target, key, outputFile) ||
                     packageManager.copyToolPkgResourceToFileBySubpackageId(
                         subpackageId = target,
@@ -353,11 +327,10 @@ internal object JsNativeInterfaceDelegates {
                         destinationFile = outputFile,
                         preferImportedContainer = true
                     )
-            if (copied) outputFile.absolutePath else ""
+        if (copied) outputFile.absolutePath else ""
         }
     }
-
-    fun readToolPkgTextResource(
+        fun readToolPkgTextResource(
         packageManager: PackageManager,
         packageNameOrSubpackageId: String,
         resourcePath: String
@@ -367,15 +340,14 @@ internal object JsNativeInterfaceDelegates {
             failureMessage = "Error reading toolpkg text resource from JS: package/subpackage=${packageNameOrSubpackageId}, path=${resourcePath}"
         ) {
             val target = normalizeNonBlank(packageNameOrSubpackageId) ?: return@guard ""
-            val path = normalizeNonBlank(resourcePath) ?: return@guard ""
+        val path = normalizeNonBlank(resourcePath) ?: return@guard ""
             packageManager.readToolPkgTextResource(
                 packageNameOrSubpackageId = target,
                 resourcePath = path
             ) ?: ""
         }
     }
-
-    fun measureComposeText(context: Context, payloadJson: String): String {
+        fun measureComposeText(context: Context, payloadJson: String): String {
         val payload = JSONObject(payloadJson)
         val text = payload.optString("text")
         if (text.isEmpty()) {
@@ -384,11 +356,9 @@ internal object JsNativeInterfaceDelegates {
                 .put("height", 0)
                 .toString()
         }
-
         val fontSize = payload.optDouble("fontSize", 10.0).toFloat()
         val maxWidth = payload.optInt("maxWidth", -1)
         require(maxWidth > 0) { "measureText requires maxWidth" }
-
         val maxHeight =
             if (payload.has("maxHeight")) payload.optInt("maxHeight", -1).takeIf { it > 0 } else null
         val minWidth =
@@ -397,7 +367,6 @@ internal object JsNativeInterfaceDelegates {
             if (payload.has("minHeight")) payload.optInt("minHeight", 0).takeIf { it >= 0 } else null
         val maxLines = payload.optInt("maxLines", Int.MAX_VALUE).takeIf { it > 0 } ?: Int.MAX_VALUE
         val overflow = payload.optString("overflow", "clip").trim().lowercase()
-
         val scaledDensity = context.resources.displayMetrics.scaledDensity
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
         paint.textSize = fontSize * scaledDensity
@@ -407,18 +376,15 @@ internal object JsNativeInterfaceDelegates {
                 .setAlignment(Layout.Alignment.ALIGN_NORMAL)
                 .setIncludePad(false)
                 .setMaxLines(maxLines)
-
         if (overflow == "ellipsis") {
             builder.setEllipsize(TextUtils.TruncateAt.END)
         }
-
         val layout = builder.build()
         var width = 0f
         for (i in 0 until layout.lineCount) {
             width = maxOf(width, layout.getLineWidth(i))
         }
         var height = layout.height.toFloat()
-
         if (minWidth != null) {
             width = maxOf(width, minWidth.toFloat())
         }
@@ -431,14 +397,12 @@ internal object JsNativeInterfaceDelegates {
         if (width > maxWidth) {
             width = maxWidth.toFloat()
         }
-
         return JSONObject()
             .put("width", width)
             .put("height", height)
             .toString()
     }
-
-    fun decompress(
+        fun decompress(
         data: String,
         algorithm: String,
         binaryDataRegistry: ConcurrentHashMap<String, ByteArray>,
@@ -448,8 +412,7 @@ internal object JsNativeInterfaceDelegates {
             if (algorithm.lowercase() != "deflate") {
                 throw IllegalArgumentException("Unsupported algorithm: ${algorithm}. Only 'deflate' is supported.")
             }
-
-            val compressedData: ByteArray =
+        val compressedData: ByteArray =
                 if (data.startsWith(binaryHandlePrefix)) {
                     val handle = data.substring(binaryHandlePrefix.length)
                     binaryDataRegistry.remove(handle)
@@ -457,19 +420,17 @@ internal object JsNativeInterfaceDelegates {
                 } else {
                     Base64.decode(data, Base64.NO_WRAP)
                 }
-
-            if (compressedData.isEmpty()) {
+        if (compressedData.isEmpty()) {
                 return ""
             }
-
-            val inflater = java.util.zip.Inflater(true)
+        val inflater = java.util.zip.Inflater(true)
             inflater.setInput(compressedData)
-            val outputStream = ByteArrayOutputStream()
-            val buffer = ByteArray(1024)
+        val outputStream = ByteArrayOutputStream()
+        val buffer = ByteArray(1024)
 
             while (!inflater.finished()) {
                 val count = inflater.inflate(buffer)
-                if (count == 0 && inflater.needsInput()) {
+        if (count == 0 && inflater.needsInput()) {
                     throw java.util.zip.DataFormatException("Input is incomplete or corrupt")
                 }
                 outputStream.write(buffer, 0, count)
@@ -484,8 +445,7 @@ internal object JsNativeInterfaceDelegates {
             "{\"nativeError\":\"${e.message?.replace("\"", "'")}\"}"
         }
     }
-
-    fun callToolSync(
+        fun callToolSync(
         toolHandler: AIToolHandler,
         toolType: String,
         toolName: String,
@@ -496,14 +456,13 @@ internal object JsNativeInterfaceDelegates {
     ): String {
         if (toolName.trim().isEmpty()) {
             AppLogger.e(TAG, "Tool name cannot be empty")
-            return "Error: Tool name cannot be empty"
+        return "Error: Tool name cannot be empty"
         }
-
         return try {
             val parsed = parseToolCall(toolType, toolName, paramsJson)
             AppLogger.d(TAG, "[Sync] JavaScript tool call: ${parsed.fullToolName} with params: ${parsed.params}")
-            val result = toolHandler.executeTool(parsed.aiTool)
-            if (result.success) {
+        val result = toolHandler.executeTool(parsed.aiTool)
+        if (result.success) {
                 val resultString = result.result.toString()
                 AppLogger.d(
                     TAG,
@@ -524,8 +483,7 @@ internal object JsNativeInterfaceDelegates {
             buildToolErrorJson("Error: ${e.message}")
         }
     }
-
-    fun callToolAsync(
+        fun callToolAsync(
         toolHandler: AIToolHandler,
         callbackId: String,
         toolType: String,
@@ -541,8 +499,8 @@ internal object JsNativeInterfaceDelegates {
                 parseToolCall(toolType, toolName, paramsJson)
             } catch (e: Exception) {
                 AppLogger.e(TAG, "[Async] Error preparing tool call: ${e.message}", e)
-                val rawMessage = e.message?.trim().orEmpty()
-                val finalMessage =
+        val rawMessage = e.message?.trim().orEmpty()
+        val finalMessage =
                     if (rawMessage.equals("Tool name cannot be empty", ignoreCase = true)) {
                         "Tool name cannot be empty"
                     } else {
@@ -553,7 +511,7 @@ internal object JsNativeInterfaceDelegates {
                     buildToolErrorJson(finalMessage),
                     true
                 )
-                return
+        return
             }
 
         AppLogger.d(
@@ -564,8 +522,7 @@ internal object JsNativeInterfaceDelegates {
         Thread {
             try {
                 val result = toolHandler.executeTool(parsed.aiTool)
-
-                if (result.success) {
+        if (result.success) {
                     val resultString = result.result.toString()
                     AppLogger.d(
                         TAG,
@@ -574,8 +531,7 @@ internal object JsNativeInterfaceDelegates {
                 } else {
                     AppLogger.e(TAG, "[Async] Tool execution failed: ${result.error}")
                 }
-
-                val resultJson =
+        val resultJson =
                     serializeToolExecutionResult(
                         result = result,
                         binaryDataRegistry = binaryDataRegistry,
@@ -593,17 +549,15 @@ internal object JsNativeInterfaceDelegates {
             }
         }.start()
     }
-
-    fun buildToolResultCallbackScript(callbackId: String, result: String, isError: Boolean): String {
+        fun buildToolResultCallbackScript(callbackId: String, result: String, isError: Boolean): String {
         val trimmedResult = result.trim()
         val isJsonLiteral =
             (trimmedResult.startsWith("{") && trimmedResult.endsWith("}")) ||
                 (trimmedResult.startsWith("[") && trimmedResult.endsWith("]")) ||
                 (trimmedResult.startsWith("\"") && trimmedResult.endsWith("\""))
-
         return if (isJsonLiteral) {
             """
-                if (typeof window['${callbackId}'] === 'function') {
+        if (typeof window['${callbackId}'] === 'function') {
                     window['${callbackId}'](${result}, ${isError});
                 } else {
                     console.error("Callback not found: ${callbackId}");
@@ -616,7 +570,7 @@ internal object JsNativeInterfaceDelegates {
                     .replace("\n", "\\n")
                     .replace("\r", "\\r")
             """
-                if (typeof window['${callbackId}'] === 'function') {
+        if (typeof window['${callbackId}'] === 'function') {
                     window['${callbackId}']("${escapedResult}", ${isError});
                 } else {
                     console.error("Callback not found: ${callbackId}");
@@ -624,8 +578,7 @@ internal object JsNativeInterfaceDelegates {
             """.trimIndent()
         }
     }
-
-    fun imageProcessing(
+        fun imageProcessing(
         callbackId: String,
         operation: String,
         argsJson: String,
@@ -637,11 +590,11 @@ internal object JsNativeInterfaceDelegates {
         Thread {
             try {
                 val args = Json.decodeFromString(ListSerializer(JsonElement.serializer()), argsJson)
-                val result: Any? =
+        val result: Any? =
                     when (operation.lowercase()) {
                         "read" -> {
                             AppLogger.d(TAG, "Entering 'read' operation in image_processing.")
-                            val data = args[0].jsonPrimitive.content
+        val data = args[0].jsonPrimitive.content
                             val decodedBytes: ByteArray
                             if (data.startsWith(binaryHandlePrefix)) {
                                 val handle = data.substring(binaryHandlePrefix.length)
@@ -654,20 +607,18 @@ internal object JsNativeInterfaceDelegates {
                                 decodedBytes = Base64.decode(data, Base64.DEFAULT)
                             }
                             AppLogger.d(TAG, "Decoded data to ${decodedBytes.size} bytes.")
-
-                            val bitmap =
+        val bitmap =
                                 BitmapFactory.decodeByteArray(
                                     decodedBytes,
                                     0,
                                     decodedBytes.size
                                 )
-
-                            if (bitmap == null) {
+        if (bitmap == null) {
                                 AppLogger.e(
                                     TAG,
                                     "BitmapFactory.decodeByteArray returned null. Throwing exception."
                                 )
-                                throw Exception(
+        throw Exception(
                                     "Failed to decode image. The format may be unsupported or data is corrupt."
                                 )
                             } else {
@@ -677,7 +628,7 @@ internal object JsNativeInterfaceDelegates {
                                 )
                                 AppLogger.d(TAG, "Bitmap dimensions: ${bitmap.width}x${bitmap.height}")
                                 AppLogger.d(TAG, "Bitmap config: ${bitmap.config}")
-                                val id = UUID.randomUUID().toString()
+        val id = UUID.randomUUID().toString()
                                 AppLogger.d(TAG, "Storing bitmap with ID: ${id}")
                                 bitmapRegistry[id] = bitmap
                                 id
@@ -688,22 +639,22 @@ internal object JsNativeInterfaceDelegates {
                             val height = args[1].jsonPrimitive.int
                             val bitmap =
                                 Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                            val id = UUID.randomUUID().toString()
+        val id = UUID.randomUUID().toString()
                             bitmapRegistry[id] = bitmap
                             id
                         }
                         "crop" -> {
                             val id = args[0].jsonPrimitive.content
                             AppLogger.d(TAG, "Attempting to crop bitmap with ID: ${id}")
-                            val x = args[1].jsonPrimitive.int
+        val x = args[1].jsonPrimitive.int
                             val y = args[2].jsonPrimitive.int
                             val w = args[3].jsonPrimitive.int
                             val h = args[4].jsonPrimitive.int
                             val originalBitmap =
                                 bitmapRegistry[id]
                                     ?: throw Exception("Source bitmap not found for crop (ID: ${id})")
-                            val croppedBitmap = Bitmap.createBitmap(originalBitmap, x, y, w, h)
-                            val newId = UUID.randomUUID().toString()
+        val croppedBitmap = Bitmap.createBitmap(originalBitmap, x, y, w, h)
+        val newId = UUID.randomUUID().toString()
                             bitmapRegistry[newId] = croppedBitmap
                             newId
                         }
@@ -714,19 +665,19 @@ internal object JsNativeInterfaceDelegates {
                                 TAG,
                                 "Attempting to composite with base ID: ${baseId} and src ID: ${srcId}"
                             )
-                            val x = args[2].jsonPrimitive.int
+        val x = args[2].jsonPrimitive.int
                             val y = args[3].jsonPrimitive.int
                             val baseBitmap =
                                 bitmapRegistry[baseId]
                                     ?: throw Exception(
                                         "Base bitmap not found for composite (ID: ${baseId})"
                                     )
-                            val srcBitmap =
+        val srcBitmap =
                                 bitmapRegistry[srcId]
                                     ?: throw Exception(
                                         "Source bitmap not found for composite (ID: ${srcId})"
                                     )
-                            val canvas = Canvas(baseBitmap)
+        val canvas = Canvas(baseBitmap)
                             canvas.drawBitmap(srcBitmap, x.toFloat(), y.toFloat(), null)
                             null
                         }
@@ -745,12 +696,12 @@ internal object JsNativeInterfaceDelegates {
                         "getbase64" -> {
                             val id = args[0].jsonPrimitive.content
                             AppLogger.d(TAG, "Attempting to getBase64 for bitmap with ID: ${id}")
-                            val mime = args.getOrNull(1)?.jsonPrimitive?.content ?: "image/jpeg"
-                            val bitmap =
+        val mime = args.getOrNull(1)?.jsonPrimitive?.content ?: "image/jpeg"
+        val bitmap =
                                 bitmapRegistry[id]
                                     ?: throw Exception("Bitmap not found for getBase64 (ID: ${id})")
-                            val outputStream = ByteArrayOutputStream()
-                            val format =
+        val outputStream = ByteArrayOutputStream()
+        val format =
                                 if (mime == "image/png") {
                                     Bitmap.CompressFormat.PNG
                                 } else {
@@ -767,7 +718,7 @@ internal object JsNativeInterfaceDelegates {
                         }
                         else -> throw IllegalArgumentException("Unknown image operation: ${operation}")
                     }
-                val jsonResultElement =
+        val jsonResultElement =
                     when (result) {
                         is String -> JsonPrimitive(result)
                         is Number -> JsonPrimitive(result)
@@ -786,46 +737,39 @@ internal object JsNativeInterfaceDelegates {
             }
         }.start()
     }
-
-    fun crypto(algorithm: String, operation: String, argsJson: String): String {
+        fun crypto(algorithm: String, operation: String, argsJson: String): String {
         return try {
             val args = Json.decodeFromString(ListSerializer(String.serializer()), argsJson)
-
-            when (algorithm.lowercase()) {
+        when (algorithm.lowercase()) {
                 "md5" -> {
                     val input = args.getOrNull(0) ?: ""
-                    val md = MessageDigest.getInstance("MD5")
-                    val digest = md.digest(input.toByteArray(Charsets.UTF_8))
+        val md = MessageDigest.getInstance("MD5")
+        val digest = md.digest(input.toByteArray(Charsets.UTF_8))
                     digest.joinToString("") { "%02x".format(it) }
                 }
                 "aes" -> {
                     when (operation.lowercase()) {
                         "decrypt" -> {
                             val data = args.getOrNull(0) ?: ""
-                            val keyHex =
+        val keyHex =
                                 args.getOrNull(1)
                                     ?: throw IllegalArgumentException(
                                         "Missing key for AES decryption"
                                     )
-
-                            val keyBytes = keyHex.toByteArray(Charsets.UTF_8)
-                            val secretKey = SecretKeySpec(keyBytes, "AES")
-                            val cipher = Cipher.getInstance("AES/ECB/NoPadding")
+        val keyBytes = keyHex.toByteArray(Charsets.UTF_8)
+        val secretKey = SecretKeySpec(keyBytes, "AES")
+        val cipher = Cipher.getInstance("AES/ECB/NoPadding")
                             cipher.init(Cipher.DECRYPT_MODE, secretKey)
-                            val decodedData = Base64.decode(data, Base64.DEFAULT)
-                            val decryptedWithPadding = cipher.doFinal(decodedData)
-
-                            if (decryptedWithPadding.isEmpty()) {
+        val decodedData = Base64.decode(data, Base64.DEFAULT)
+        val decryptedWithPadding = cipher.doFinal(decodedData)
+        if (decryptedWithPadding.isEmpty()) {
                                 return ""
                             }
-
-                            val paddingLength = decryptedWithPadding.last().toInt()
-
-                            if (paddingLength < 1 || paddingLength > decryptedWithPadding.size) {
+        val paddingLength = decryptedWithPadding.last().toInt()
+        if (paddingLength < 1 || paddingLength > decryptedWithPadding.size) {
                                 throw Exception("Invalid PKCS7 padding length: ${paddingLength}")
                             }
-
-                            val decryptedBytes =
+        val decryptedBytes =
                                 decryptedWithPadding.copyOfRange(
                                     0,
                                     decryptedWithPadding.size - paddingLength

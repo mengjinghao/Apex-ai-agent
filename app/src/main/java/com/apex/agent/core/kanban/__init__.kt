@@ -53,14 +53,12 @@ object KanbanProvider {
             defaultBoard ?: KanbanBoard.createDefault().also { defaultBoard = it }
         }
     }
-
-    fun getDefaultRegistry(): WorkerRegistry {
+        fun getDefaultRegistry(): WorkerRegistry {
         return defaultRegistry ?: synchronized(this) {
             defaultRegistry ?: WorkerRegistry.getInstance().also { defaultRegistry = it }
         }
     }
-
-    fun reset() {
+        fun reset() {
         defaultBoard = null
         defaultRegistry = null
     }

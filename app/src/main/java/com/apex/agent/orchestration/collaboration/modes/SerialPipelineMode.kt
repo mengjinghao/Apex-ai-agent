@@ -21,8 +21,7 @@ class SerialPipelineMode @Inject constructor(
         var currentAgentIndex: Int = 0
         var pipelineData: String = ""
     }
-
-    private val pipelineStages = listOf(
+        private val pipelineStages = listOf(
         context.getString(R.string.pipeline_stage_requirements),
         context.getString(R.string.pipeline_stage_design),
         context.getString(R.string.pipeline_stage_implementation),
@@ -38,12 +37,10 @@ class SerialPipelineMode @Inject constructor(
         val agents = state.agents
         if (agents.isEmpty()) {
             state.running.set(false)
-            return
+        return
         }
-
         val currentAgent = agents[state.currentAgentIndex]
         updateAgentStatus(state, currentAgent.id, AgentStatus.WORKING)
-
         val stageName = pipelineStages.getOrElse(state.currentAgentIndex) {
             context.getString(R.string.pipeline_stage_fallback)
         }
@@ -60,12 +57,10 @@ class SerialPipelineMode @Inject constructor(
             completePipeline(state)
         }
     }
-
-    private fun processStage(agent: Agent, stageName: String, input: String): String {
+        private fun processStage(agent: Agent, stageName: String, input: String): String {
         return context.getString(R.string.pipeline_stage_processed_format, stageName, agent.name)
     }
-
-    private fun completePipeline(state: PipelineState) {
+        private fun completePipeline(state: PipelineState) {
         getSupervisorAgent(state)?.let { supervisor ->
             updateAgentStatus(state, supervisor.id, AgentStatus.FINISHED)
         }

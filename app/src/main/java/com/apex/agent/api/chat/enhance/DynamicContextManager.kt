@@ -13,9 +13,11 @@ object DynamicContextManager {
     // 最大窗口大小：保留最，轮对象
     private const val MAX_WINDOW_SIZE = 8
     
-    // 核心信息最大长度（字符�?   private const val MAX_CORE_INFO_LENGTH = 300
+    // 核心信息最大长度（字符�?
+    private const val MAX_CORE_INFO_LENGTH = 300
     
-    // 会话级核心信息存�?   private val sessionCoreInfo = mutableMapOf<String, String>()
+    // 会话级核心信息存�?
+    private val sessionCoreInfo = mutableMapOf<String, String>()
 
     /**
      * 处理聊天上下�?    * @param sessionId 当前会话ID
@@ -63,7 +65,6 @@ object DynamicContextManager {
                 }
             }
         }
-        
         return splitIndex
     }
 
@@ -85,8 +86,7 @@ object DynamicContextManager {
                 val shortInput = input.take(100)
                 append("${index + 1}. ${shortInput}\n")
             }
-            
-            if (userInputs.size > 5) {
+        if (userInputs.size > 5) {
                 append("... 还有${userInputs.size - 5}条消�?
             }
         }
@@ -113,8 +113,7 @@ object DynamicContextManager {
     return mutableListOf<PromptTurn>().apply {
             // 查找是否已存在系统提�?
     val existingSystemTurn = recentHistory.find { it.kind == PromptTurnKind.SYSTEM }
-            
-            if (existingSystemTurn != null) {
+        if (existingSystemTurn != null) {
                 // 如果有系统提示，保留它，然后添加核心信息
                 add(existingSystemTurn)
                 add(PromptTurn(kind = PromptTurnKind.SYSTEM, content = coreInfoPrompt))

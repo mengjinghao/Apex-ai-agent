@@ -85,7 +85,7 @@ object IntentUtils {
     fun sendSms(context: Context, phoneNumber: String, message: String? = null) {
         val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phoneNumber")).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (message != null) {
+        if (message != null) {
                 putExtra("sms_body", message)
             }
         }
@@ -105,8 +105,8 @@ object IntentUtils {
     fun sendEmail(context: Context, to: String, subject: String? = null, body: String? = null) {
         val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$to")).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (subject != null) putExtra(Intent.EXTRA_SUBJECT, subject)
-            if (body != null) putExtra(Intent.EXTRA_TEXT, body)
+        if (subject != null) putExtra(Intent.EXTRA_SUBJECT, subject)
+        if (body != null) putExtra(Intent.EXTRA_TEXT, body)
         }
         if (isIntentAvailable(context, intent)) {
             context.startActivity(intent)
@@ -238,7 +238,7 @@ object IntentUtils {
     fun openCamera(context: Context, uri: Uri? = null) {
         val intent = Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (uri != null) {
+        if (uri != null) {
                 putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri)
                 addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             }

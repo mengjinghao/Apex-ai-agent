@@ -47,7 +47,6 @@ class CrossAgentQualityEnhancer(
             appendLine("Agent's output: ${agentOutput.output}")
             appendLine("\nProvide structured feedback with scores.")
         }
-
         val review = aiService?.let {
             val result = session.thinkAndProduce(
                 agent = reviewer,
@@ -58,7 +57,6 @@ class CrossAgentQualityEnhancer(
             )
             result.finalAnswer
         } ?: ""
-
         val score = extractScore(review, 0.7f)
         val issues = extractIssues(review)
         val suggestions = extractSuggestions(review)
@@ -83,7 +81,7 @@ class CrossAgentQualityEnhancer(
                             appendLine("Context: $taskContext")
                             appendLine("Review ${agent.name}'s output: $output")
                         }
-                        val review = aiService?.let {
+        val review = aiService?.let {
                             session.thinkAndProduce(
                                 agent = reviewer,
                                 task = "Cross-review ${agent.name}'s work",
@@ -92,8 +90,7 @@ class CrossAgentQualityEnhancer(
                                 enableQualityCheck = false
                             ).finalAnswer
                         } ?: ""
-
-                        val score = extractScore(review, 0.7f)
+        val score = extractScore(review, 0.7f)
                         reviewed.add(ReviewResult(
                             AgentOutput(agent, output),
                             score, extractIssues(review),
@@ -117,17 +114,14 @@ class CrossAgentQualityEnhancer(
         val avgScore = reviews.map { it.score }.average().toFloat()
         val passCount = reviews.count { it.passed }
         val agreementRatio = passCount.toFloat() / reviews.size.coerceAtLeast(1)
-
         val commonIssues = reviews.flatMap { it.issues }
             .groupBy { it }
             .filter { it.value.size >= 2 }
             .keys.toList()
-
         val topSuggestions = reviews.flatMap { it.suggestions }
             .groupBy { it }
             .maxByOrNull { it.value.size }
             ?.key?.let { listOf(it) } ?: emptyList()
-
         val consensus = if (agreementRatio >= minAgreementRatio) {
             val topOutput = outputs.maxByOrNull { (id, _) ->
                 reviews.filter { it.agentOutput.agent.id == id }.sumOf { it.score.toDouble() }
@@ -142,14 +136,14 @@ class CrossAgentQualityEnhancer(
             )
         } else {
             val session = AgentThinkingSession(context, aiService)
-            val mediatorPrompt = buildString {
+        val mediatorPrompt = buildString {
                 appendLine("Task: $taskContext")
                 appendLine("\nAgent outputs and their peer reviews show disagreement.")
                 appendLine("Average quality score: $avgScore")
                 appendLine("Common issues identified: ${commonIssues.take(3).joinToString("; ")}")
                 appendLine("\nSynthesize a consensus solution.")
             }
-            val mediated = aiService?.let {
+        val mediated = aiService?.let {
                 session.thinkAndProduce(
                     agent = agents.first(),
                     task = "Resolve disagreements and synthesize consensus",
@@ -180,23 +174,20 @@ class CrossAgentQualityEnhancer(
         val commonIssues: List<String>,
         val suggestions: List<String>
     )
-
-    private fun extractScore(text: String, default: Float): Float {
+        private fun extractScore(text: String, default: Float): Float {
         val scores = Regex("""\b(\d\.?\d*)\b""").findAll(text)
             .map { it.groupValues[1].toFloatOrNull() }
             .filterNotNull()
             .toList()
         return scores.average().toFloat().takeIf { it.isFinite() } ?: default
     }
-
-    private fun extractIssues(text: String): List<String> {
+        private fun extractIssues(text: String): List<String> {
         return text.lines()
             .filter { it.contains("issue", ignoreCase = true) || it.contains("problem", ignoreCase = true) || it.contains("missing", ignoreCase = true) }
             .map { it.trim().removePrefix("- ").removePrefix("* ") }
             .take(5)
     }
-
-    private fun extractSuggestions(text: String): List<String> {
+        private fun extractSuggestions(text: String): List<String> {
         return text.lines()
             .filter { it.contains("suggest", ignoreCase = true) || it.contains("improve", ignoreCase = true) || it.contains("recommend", ignoreCase = true) }
             .map { it.trim().removePrefix("- ").removePrefix("* ") }

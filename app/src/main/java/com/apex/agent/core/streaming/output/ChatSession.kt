@@ -95,7 +95,7 @@ class ChatSession(
         _isBusy.value = true
 
         // 2. Agent 执行(实际接入真实 Agent 逻辑)
-    if (_isBerserkMode.value) {
+        if (_isBerserkMode.value) {
             executeBerserkAgent(text)
         } else {
             executeNormalAgent(text)
@@ -121,7 +121,7 @@ class ChatSession(
         stream.advanceTaskStep(taskId)
 
         // 执行命令(示例)
-    val cmdId = stream.startCommand("ls -la src/", workingDir = "/project")
+        val cmdId = stream.startCommand("ls -la src/", workingDir = "/project")
         delay(800)
         stream.appendCommandOutput(cmdId, "Main.kt\nUtils.kt\nREADME.md\n")
         stream.completeCommand(cmdId, exitCode = 0, durationMs = 800)

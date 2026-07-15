@@ -52,7 +52,7 @@ class ImpersonationEngine {
 
     private val profiles = ConcurrentHashMap<String, ImpersonationProfile>()
         private val activeProfiles = ConcurrentHashMap<String, String>()  // chatId -> profileId
-        init {
+    init {
         registerBuiltinProfiles()
     }
 

@@ -34,46 +34,39 @@ class ApiConfigDelegate(
 
     // Preferences
     private val apiPreferences = ApiPreferences.getInstance(context)
-    private val modelConfigManager = ModelConfigManager(context)
-    private val functionalConfigManager = FunctionalConfigManager(context)
+        private val modelConfigManager = ModelConfigManager(context)
+        private val functionalConfigManager = FunctionalConfigManager(context)
 
     // State flows
-    private val _isConfigured = MutableStateFlow(true) // 默认已配�?   val isConfigured: StateFlow<Boolean> = _isConfigured.asStateFlow()
-    private val _featureToggles = MutableStateFlow<Map<String, Boolean>>(emptyMap())
-    val featureToggles: StateFlow<Map<String, Boolean>> = _featureToggles.asStateFlow()
-
-    private val _keepScreenOn = MutableStateFlow(ApiPreferences.DEFAULT_KEEP_SCREEN_ON)
-    val keepScreenOn: StateFlow<Boolean> = _keepScreenOn.asStateFlow()
-
-    private val _enableThinkingMode = MutableStateFlow(ApiPreferences.DEFAULT_ENABLE_THINKING_MODE)
-    val enableThinkingMode: StateFlow<Boolean> = _enableThinkingMode.asStateFlow()
-
-    private val _enableThinkingGuidance =
+    private val _isConfigured = MutableStateFlow(true) // 默认已配�?
+    val isConfigured: StateFlow<Boolean> = _isConfigured.asStateFlow()
+        private val _featureToggles = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+        val featureToggles: StateFlow<Map<String, Boolean>> = _featureToggles.asStateFlow()
+        private val _keepScreenOn = MutableStateFlow(ApiPreferences.DEFAULT_KEEP_SCREEN_ON)
+        val keepScreenOn: StateFlow<Boolean> = _keepScreenOn.asStateFlow()
+        private val _enableThinkingMode = MutableStateFlow(ApiPreferences.DEFAULT_ENABLE_THINKING_MODE)
+        val enableThinkingMode: StateFlow<Boolean> = _enableThinkingMode.asStateFlow()
+        private val _enableThinkingGuidance =
             MutableStateFlow(ApiPreferences.DEFAULT_ENABLE_THINKING_GUIDANCE)
-    val enableThinkingGuidance: StateFlow<Boolean> = _enableThinkingGuidance.asStateFlow()
-
-    private val _thinkingQualityLevel =
+        val enableThinkingGuidance: StateFlow<Boolean> = _enableThinkingGuidance.asStateFlow()
+        private val _thinkingQualityLevel =
             MutableStateFlow(ApiPreferences.DEFAULT_THINKING_QUALITY_LEVEL)
-    val thinkingQualityLevel: StateFlow<Int> = _thinkingQualityLevel.asStateFlow()
-
-    private val _enableMemoryQuery =
+        val thinkingQualityLevel: StateFlow<Int> = _thinkingQualityLevel.asStateFlow()
+        private val _enableMemoryQuery =
             MutableStateFlow(ApiPreferences.DEFAULT_ENABLE_MEMORY_QUERY)
-    val enableMemoryQuery: StateFlow<Boolean> = _enableMemoryQuery.asStateFlow()
-
-    private val _enableAutoRead =
+        val enableMemoryQuery: StateFlow<Boolean> = _enableMemoryQuery.asStateFlow()
+        private val _enableAutoRead =
             MutableStateFlow(ApiPreferences.DEFAULT_ENABLE_AUTO_READ)
-    val enableAutoRead: StateFlow<Boolean> = _enableAutoRead.asStateFlow()
-
-    private val _contextLength = MutableStateFlow(ModelConfigDefaults.DEFAULT_CONTEXT_LENGTH)
-    val baseContextLength: StateFlow<Float> = _contextLength.asStateFlow()
-    private val _maxContextLength =
+        val enableAutoRead: StateFlow<Boolean> = _enableAutoRead.asStateFlow()
+        private val _contextLength = MutableStateFlow(ModelConfigDefaults.DEFAULT_CONTEXT_LENGTH)
+        val baseContextLength: StateFlow<Float> = _contextLength.asStateFlow()
+        private val _maxContextLength =
             MutableStateFlow(ModelConfigDefaults.DEFAULT_MAX_CONTEXT_LENGTH)
-    val maxContextLengthSetting: StateFlow<Float> = _maxContextLength.asStateFlow()
-    private val _enableMaxContextMode =
+        val maxContextLengthSetting: StateFlow<Float> = _maxContextLength.asStateFlow()
+        private val _enableMaxContextMode =
             MutableStateFlow(ModelConfigDefaults.DEFAULT_ENABLE_MAX_CONTEXT_MODE)
-    val enableMaxContextMode: StateFlow<Boolean> = _enableMaxContextMode.asStateFlow()
-
-    val contextLength: StateFlow<Float> = combine(
+        val enableMaxContextMode: StateFlow<Boolean> = _enableMaxContextMode.asStateFlow()
+        val contextLength: StateFlow<Float> = combine(
         _enableMaxContextMode,
         _contextLength,
         _maxContextLength
@@ -84,62 +77,47 @@ class ApiConfigDelegate(
             kotlinx.coroutines.flow.SharingStarted.Eagerly,
             ModelConfigDefaults.DEFAULT_CONTEXT_LENGTH
     )
-
-    private val _summaryTokenThreshold =
+        private val _summaryTokenThreshold =
             MutableStateFlow(ModelConfigDefaults.DEFAULT_SUMMARY_TOKEN_THRESHOLD)
-    val summaryTokenThreshold: StateFlow<Float> = _summaryTokenThreshold.asStateFlow()
-
-    private val _enableSummary = MutableStateFlow(ModelConfigDefaults.DEFAULT_ENABLE_SUMMARY)
-    val enableSummary: StateFlow<Boolean> = _enableSummary.asStateFlow()
-
-    private val _enableSummaryByMessageCount =
+        val summaryTokenThreshold: StateFlow<Float> = _summaryTokenThreshold.asStateFlow()
+        private val _enableSummary = MutableStateFlow(ModelConfigDefaults.DEFAULT_ENABLE_SUMMARY)
+        val enableSummary: StateFlow<Boolean> = _enableSummary.asStateFlow()
+        private val _enableSummaryByMessageCount =
             MutableStateFlow(ModelConfigDefaults.DEFAULT_ENABLE_SUMMARY_BY_MESSAGE_COUNT)
-    val enableSummaryByMessageCount: StateFlow<Boolean> = _enableSummaryByMessageCount.asStateFlow()
-
-    private val _summaryMessageCountThreshold =
+        val enableSummaryByMessageCount: StateFlow<Boolean> = _enableSummaryByMessageCount.asStateFlow()
+        private val _summaryMessageCountThreshold =
             MutableStateFlow(ModelConfigDefaults.DEFAULT_SUMMARY_MESSAGE_COUNT_THRESHOLD)
-    val summaryMessageCountThreshold: StateFlow<Int> = _summaryMessageCountThreshold.asStateFlow()
-
-    private val _enableTools = MutableStateFlow(ApiPreferences.DEFAULT_ENABLE_TOOLS)
-    val enableTools: StateFlow<Boolean> = _enableTools.asStateFlow()
-
-    private val _toolPromptVisibility = MutableStateFlow<Map<String, Boolean>>(emptyMap())
-    val toolPromptVisibility: StateFlow<Map<String, Boolean>> = _toolPromptVisibility.asStateFlow()
-
-    private val _disableStreamOutput = MutableStateFlow(ApiPreferences.DEFAULT_DISABLE_STREAM_OUTPUT)
-    val disableStreamOutput: StateFlow<Boolean> = _disableStreamOutput.asStateFlow()
-
-    private val _disableUserPreferenceDescription =
+        val summaryMessageCountThreshold: StateFlow<Int> = _summaryMessageCountThreshold.asStateFlow()
+        private val _enableTools = MutableStateFlow(ApiPreferences.DEFAULT_ENABLE_TOOLS)
+        val enableTools: StateFlow<Boolean> = _enableTools.asStateFlow()
+        private val _toolPromptVisibility = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+        val toolPromptVisibility: StateFlow<Map<String, Boolean>> = _toolPromptVisibility.asStateFlow()
+        private val _disableStreamOutput = MutableStateFlow(ApiPreferences.DEFAULT_DISABLE_STREAM_OUTPUT)
+        val disableStreamOutput: StateFlow<Boolean> = _disableStreamOutput.asStateFlow()
+        private val _disableUserPreferenceDescription =
             MutableStateFlow(ApiPreferences.DEFAULT_DISABLE_USER_PREFERENCE_DESCRIPTION)
-    val disableUserPreferenceDescription: StateFlow<Boolean> =
+        val disableUserPreferenceDescription: StateFlow<Boolean> =
             _disableUserPreferenceDescription.asStateFlow()
-
-    private val _disableLatexDescription =
+        private val _disableLatexDescription =
             MutableStateFlow(ApiPreferences.DEFAULT_DISABLE_LATEX_DESCRIPTION)
-    val disableLatexDescription: StateFlow<Boolean> = _disableLatexDescription.asStateFlow()
-
-    private val _disableStatusTags = MutableStateFlow(ApiPreferences.DEFAULT_DISABLE_STATUS_TAGS)
-    val disableStatusTags: StateFlow<Boolean> = _disableStatusTags.asStateFlow()
+        val disableLatexDescription: StateFlow<Boolean> = _disableLatexDescription.asStateFlow()
+        private val _disableStatusTags = MutableStateFlow(ApiPreferences.DEFAULT_DISABLE_STATUS_TAGS)
+        val disableStatusTags: StateFlow<Boolean> = _disableStatusTags.asStateFlow()
 
     // 为了兼容现有代码，添加API密钥状态流
     private val _apiKey = MutableStateFlow("")
-    val apiKey: StateFlow<String> = _apiKey.asStateFlow()
-
-    private val _apiEndpoint = MutableStateFlow("")
-    val apiEndpoint: StateFlow<String> = _apiEndpoint.asStateFlow()
-
-    private val _modelName = MutableStateFlow("")
-    val modelName: StateFlow<String> = _modelName.asStateFlow()
-
-    private val _apiProviderType = MutableStateFlow(ApiProviderType.DEEPSEEK)
-    val apiProviderType: StateFlow<ApiProviderType> = _apiProviderType.asStateFlow()
-
-    private val _isInitialized = MutableStateFlow(false)
-    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
-
-    private val _activeConfigId =
+        val apiKey: StateFlow<String> = _apiKey.asStateFlow()
+        private val _apiEndpoint = MutableStateFlow("")
+        val apiEndpoint: StateFlow<String> = _apiEndpoint.asStateFlow()
+        private val _modelName = MutableStateFlow("")
+        val modelName: StateFlow<String> = _modelName.asStateFlow()
+        private val _apiProviderType = MutableStateFlow(ApiProviderType.DEEPSEEK)
+        val apiProviderType: StateFlow<ApiProviderType> = _apiProviderType.asStateFlow()
+        private val _isInitialized = MutableStateFlow(false)
+        val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+        private val _activeConfigId =
             MutableStateFlow(FunctionalConfigManager.DEFAULT_CONFIG_ID)
-    val activeConfigId: StateFlow<String> = _activeConfigId.asStateFlow()
+        val activeConfigId: StateFlow<String> = _activeConfigId.asStateFlow()
 
     init {
         coroutineScope.launch {
@@ -187,15 +165,14 @@ class ApiConfigDelegate(
         // 异步创建AI服务实例，避免在主线程上执行阻塞操作
         coroutineScope.launch(Dispatchers.IO) {
             AppLogger.d(TAG, "开始在后台线程创建EnhancedAIService")
-            val enhancedAiService = EnhancedAIService.getInstance(context)
+        val enhancedAiService = EnhancedAIService.getInstance(context)
             AppLogger.d(TAG, "EnhancedAIService创建完成")
             withContext(Dispatchers.Main) {
                 onConfigChanged(enhancedAiService)
             }
         }
     }
-
-    private fun updateStateFromConfig(config: ModelConfigData) {
+        private fun updateStateFromConfig(config: ModelConfigData) {
         _apiKey.value = config.apiKey
         _apiEndpoint.value = config.apiEndpoint
         _modelName.value = config.modelName
@@ -208,8 +185,7 @@ class ApiConfigDelegate(
         _enableSummaryByMessageCount.value = config.enableSummaryByMessageCount
         _summaryMessageCountThreshold.value = config.summaryMessageCountThreshold
     }
-
-    private fun initializeSettingsCollection() {
+        private fun initializeSettingsCollection() {
         // Collect feature toggle settings
         coroutineScope.launch {
             apiPreferences.featureTogglesFlow.collect { toggles ->
@@ -366,14 +342,13 @@ class ApiConfigDelegate(
             }
         }
     }
-
-    fun toggleFeature(featureKey: String) {
+        fun toggleFeature(featureKey: String) {
         coroutineScope.launch {
             val normalizedKey = featureKey.trim()
-            if (normalizedKey.isEmpty()) {
+        if (normalizedKey.isEmpty()) {
                 return@launch
             }
-            val currentValue =
+        val currentValue =
                 _featureToggles.value[normalizedKey] ?: ApiPreferences.DEFAULT_FEATURE_TOGGLE_STATE
             val newValue = !currentValue
             apiPreferences.saveFeatureToggle(normalizedKey, newValue)
@@ -402,8 +377,7 @@ class ApiConfigDelegate(
             )
         }
     }
-
-    fun updateThinkingQualityLevel(level: Int) {
+        fun updateThinkingQualityLevel(level: Int) {
         coroutineScope.launch {
             val clampedLevel = level.coerceIn(1, 4)
             apiPreferences.saveThinkingQualityLevel(clampedLevel)
@@ -479,7 +453,7 @@ class ApiConfigDelegate(
             )
         }
     }
-    fun updateSummaryTokenThreshold(threshold: Float) {
+        fun updateSummaryTokenThreshold(threshold: Float) {
         coroutineScope.launch {
             _summaryTokenThreshold.value = threshold
             val configId = _activeConfigId.value
@@ -493,8 +467,7 @@ class ApiConfigDelegate(
             )
         }
     }
-
-    fun updateMaxContextLength(length: Float) {
+        fun updateMaxContextLength(length: Float) {
         coroutineScope.launch {
             _maxContextLength.value = length
             val configId = _activeConfigId.value
@@ -507,8 +480,7 @@ class ApiConfigDelegate(
             )
         }
     }
-
-    fun toggleEnableMaxContextMode() {
+        fun toggleEnableMaxContextMode() {
         coroutineScope.launch {
             val newValue = !_enableMaxContextMode.value
             _enableMaxContextMode.value = newValue
@@ -580,15 +552,13 @@ class ApiConfigDelegate(
             _enableTools.value = newValue
         }
     }
-
-    fun saveToolPromptVisibility(toolName: String, isVisible: Boolean) {
+        fun saveToolPromptVisibility(toolName: String, isVisible: Boolean) {
         coroutineScope.launch {
             apiPreferences.saveToolPromptVisibility(toolName, isVisible)
             _toolPromptVisibility.value = _toolPromptVisibility.value + (toolName to isVisible)
         }
     }
-
-    fun saveToolPromptVisibilityMap(visibilityMap: Map<String, Boolean>) {
+        fun saveToolPromptVisibilityMap(visibilityMap: Map<String, Boolean>) {
         coroutineScope.launch {
             apiPreferences.saveToolPromptVisibilityMap(visibilityMap)
             _toolPromptVisibility.value = visibilityMap

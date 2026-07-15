@@ -54,18 +54,18 @@ data class RenderTree(
 class StreamingMarkdownRenderer {
 
     private val buffer = StringBuilder()
-    private val root = RenderNode(RenderNodeType.TEXT)
-    private var currentNode: RenderNode = root
+        private val root = RenderNode(RenderNodeType.TEXT)
+        private var currentNode: RenderNode = root
 
     // 解析状态
     private var inCodeBlock = false
     private var codeBlockLang = ""
-    private var codeBlockBuffer = StringBuilder()
-    private var inTable = false
+        private var codeBlockBuffer = StringBuilder()
+        private var inTable = false
     private var tableRows = mutableListOf<List<String>>()
-    private var inThinkingBlock = false
+        private var inThinkingBlock = false
     private var thinkingBuffer = StringBuilder()
-    private var inList = false
+        private var inList = false
     private var listItems = mutableListOf<String>()
 
     /**
@@ -77,11 +77,9 @@ class StreamingMarkdownRenderer {
         // 按行处理（保留最后不完整的行）
     val lines = buffer.toString().split("\n")
         val completeLines = if (buffer.endsWith("\n")) lines.dropLast(1) else lines.dropLast(1)
-
         for (line in completeLines) {
             processLine(line)
         }
-
         return buildRenderTree()
     }
 
@@ -92,7 +90,7 @@ class StreamingMarkdownRenderer {
         // 处理缓冲区剩余内容
     if (buffer.isNotEmpty()) {
             val remaining = buffer.toString().split("\n")
-            for (line in remaining) {
+        for (line in remaining) {
                 processLine(line)
             }
             buffer.clear()
@@ -124,7 +122,6 @@ class StreamingMarkdownRenderer {
             thinkingBuffer.clear()
             inThinkingBlock = false
         }
-
         return buildRenderTree().copy(streamingNode = null)
     }
 
@@ -233,8 +230,7 @@ class StreamingMarkdownRenderer {
             }
         }
     }
-
-    private fun finalizeTable() {
+        private fun finalizeTable() {
         if (tableRows.isNotEmpty()) {
             root.children.add(RenderNode(
                 type = RenderNodeType.TABLE,
@@ -252,8 +248,7 @@ class StreamingMarkdownRenderer {
         tableRows.clear()
         inTable = false
     }
-
-    private fun finalizeList() {
+        private fun finalizeList() {
         if (listItems.isNotEmpty()) {
             root.children.add(RenderNode(
                 type = RenderNodeType.LIST,
@@ -266,8 +261,7 @@ class StreamingMarkdownRenderer {
         listItems.clear()
         inList = false
     }
-
-    private fun buildRenderTree(): RenderTree {
+        private fun buildRenderTree(): RenderTree {
         val completed = root.children.filter { it.complete }
         val streaming = root.children.lastOrNull { !it.complete }
         return RenderTree(

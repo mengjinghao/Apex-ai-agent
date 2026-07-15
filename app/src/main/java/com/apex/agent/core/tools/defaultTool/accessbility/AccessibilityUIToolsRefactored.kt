@@ -50,7 +50,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 3. 获取参数
     val format = getParameter(tool, "format", "xml")
-            val detail = getParameter(tool, "detail", "summary")
+        val detail = getParameter(tool, "detail", "summary")
 
             // 4. 验证format参数
     if (format !in listOf("xml", "json")) {
@@ -67,8 +67,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
                 delayMs = UIToolsConfig.RETRY_DELAY_MS,
                 errorMessage = "获取UI层次结构失败"
             )
-
-            if (uiXml.isEmpty()) {
+        if (uiXml.isEmpty()) {
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.SERVICE_UNAVAILABLE,
                     message = "Failed to retrieve UI data via accessibility service."
@@ -109,10 +108,10 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 3. 获取参数
     val resourceId = getParameter(tool, "resourceId", null)
-            val className = getParameter(tool, "className", null)
-            val contentDesc = getParameter(tool, "contentDesc", null)
-            val bounds = getParameter(tool, "bounds", null)
-            val index = getParameter(tool, "index", "0").toIntOrNull() ?: 0
+        val className = getParameter(tool, "className", null)
+        val contentDesc = getParameter(tool, "contentDesc", null)
+        val bounds = getParameter(tool, "bounds", null)
+        val index = getParameter(tool, "index", "0").toIntOrNull() ?: 0
 
             // 4. 至少需要一个选择条件
     if (resourceId == null && className == null && bounds == null && contentDesc == null) {
@@ -134,8 +133,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
                 delayMs = UIToolsConfig.RETRY_DELAY_MS,
                 errorMessage = "获取UI层次结构失败"
             )
-
-            if (uiXml.isEmpty()) {
+        if (uiXml.isEmpty()) {
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.SERVICE_UNAVAILABLE,
                     message = "Unable to get UI hierarchy."
@@ -149,10 +147,8 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
                 contentDesc = contentDesc,
                 index = index
             )
-
-            val matchedNodes = xmlParser.findNodes(uiXml, selector)
-
-            if (matchedNodes.isEmpty()) {
+        val matchedNodes = xmlParser.findNodes(uiXml, selector)
+        if (matchedNodes.isEmpty()) {
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.ELEMENT_NOT_FOUND,
                     message = "No matching element found."
@@ -190,9 +186,8 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 2. 获取参数
     val x = getRequiredParameter(tool, "x").toIntOrNull()
-            val y = getRequiredParameter(tool, "y").toIntOrNull()
-
-            if (x == null || y == null) {
+        val y = getRequiredParameter(tool, "y").toIntOrNull()
+        if (x == null || y == null) {
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.INVALID_COORDINATES,
                     message = "Missing or invalid coordinates. Both 'x' and 'y' must be valid integers."
@@ -204,8 +199,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 4. 执行无障碍点�?
     val result = performAccessibilityClick(x, y)
-
-            if (!result) {
+        if (!result) {
                 hideOverlay()
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.OPERATION_FAILED,
@@ -235,9 +229,8 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 2. 获取参数
     val x = getRequiredParameter(tool, "x").toIntOrNull()
-            val y = getRequiredParameter(tool, "y").toIntOrNull()
-
-            if (x == null || y == null) {
+        val y = getRequiredParameter(tool, "y").toIntOrNull()
+        if (x == null || y == null) {
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.INVALID_COORDINATES,
                     message = "Missing or invalid coordinates. Both 'x' and 'y' must be valid integers."
@@ -249,8 +242,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 4. 执行无障碍长�?
     val result = performAccessibilityLongPress(x, y)
-
-            if (!result) {
+        if (!result) {
                 hideOverlay()
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.OPERATION_FAILED,
@@ -280,10 +272,10 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 2. 获取参数
     val startX = getRequiredParameter(tool, "start_x").toIntOrNull()
-            val startY = getRequiredParameter(tool, "start_y").toIntOrNull()
-            val endX = getRequiredParameter(tool, "end_x").toIntOrNull()
-            val endY = getRequiredParameter(tool, "end_y").toIntOrNull()
-            val duration = getParameter(tool, "duration", "300")?.toIntOrNull() ?: 300
+        val startY = getRequiredParameter(tool, "start_y").toIntOrNull()
+        val endX = getRequiredParameter(tool, "end_x").toIntOrNull()
+        val endY = getRequiredParameter(tool, "end_y").toIntOrNull()
+        val duration = getParameter(tool, "duration", "300")?.toIntOrNull() ?: 300
 
             if (startX == null || startY == null || endX == null || endY == null) {
                 return@executeWithCatch UIToolsResult.Error(
@@ -297,8 +289,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 4. 执行无障碍滑�?
     val result = performAccessibilitySwipe(startX, startY, endX, endY, duration)
-
-            if (!result) {
+        if (!result) {
                 hideOverlay()
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.SWIPE_FAILED,
@@ -330,7 +321,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 3. 查找焦点节点
     val focusedNodeId = UIHierarchyManager.findFocusedNodeId(context)
-            if (focusedNodeId.isNullOrEmpty()) {
+        if (focusedNodeId.isNullOrEmpty()) {
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.ELEMENT_NOT_FOUND,
                     message = "No focused editable field found."
@@ -339,14 +330,13 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 4. 显示输入反馈
     val rect = parseBounds(focusedNodeId)
-            if (rect != null) {
+        if (rect != null) {
                 showTextInputOverlay(rect.first, rect.second, text)
             }
 
             // 5. 设置文本
     val result = UIHierarchyManager.setTextOnNode(context, focusedNodeId, text)
-
-            if (!result) {
+        if (!result) {
                 hideOverlay()
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.INPUT_FAILED,
@@ -386,8 +376,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
                 "KEYCODE_POWER_DIALOG" -> android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_POWER_DIALOG
                 else -> null
             }
-
-            if (keyAction == null) {
+        if (keyAction == null) {
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.INVALID_PARAMETER,
                     message = "Key: ${keyCode} is not supported via accessibility service. Only system keys like BACK, HOME, etc. are supported."
@@ -396,8 +385,7 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
 
             // 4. 执行全局操作
     val success = UIHierarchyManager.performGlobalAction(context, keyAction)
-
-            if (!success) {
+        if (!success) {
                 return@executeWithCatch UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.OPERATION_FAILED,
                     message = "Failed to press key: ${keyCode} via accessibility service. Not all keys are supported."
@@ -457,21 +445,20 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
         return try {
             // 解析bounds格式: [left,top][right,bottom]
     val coords = parseBounds(bounds)
-            if (coords == null) {
+        if (coords == null) {
                 return UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.INVALID_PARAMETER,
                     message = "Invalid bounds format: ${bounds}"
                 )
             }
-
-            val (left, top, right, bottom) = coords
+        val (left, top, right, bottom) = coords
             val centerX = (left + right) / 2
             val centerY = (top + bottom) / 2
 
             // 调用 UIHierarchyManager 通过无障碍服务执行点击
             AppLogger.d(TAG, "点击坐标: ($centerX, $centerY)")
-            val clicked = UIHierarchyManager.performClick(context, centerX, centerY)
-            if (!clicked) {
+        val clicked = UIHierarchyManager.performClick(context, centerX, centerY)
+        if (!clicked) {
                 return UIToolsResult.Error(
                     errorCode = UIToolsErrorCode.ACTION_FAILED,
                     message = "Failed to perform click at ($centerX, $centerY); accessibility service may not be bound"
@@ -501,9 +488,8 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
         return try {
             // 格式: [left,top][right,bottom]
     val regex = Regex("""\[(\d+),(\d+)\]\[(\d+),(\d+)\]""")
-            val matchResult = regex.find(bounds)
-            
-            if (matchResult != null) {
+        val matchResult = regex.find(bounds)
+        if (matchResult != null) {
                 val (left, top, right, bottom) = matchResult.destructured
                 Quadruple(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
             } else {
@@ -598,9 +584,8 @@ open class AccessibilityUITools(context: Context) : BaseUITools(context) {
     private fun parseBoundsCenter(bounds: String): Pair<Int, Int>? {
         return try {
             val regex = Regex("""\[(\d+),(\d+)\]\[(\d+),(\d+)\]""")
-            val matchResult = regex.find(bounds)
-            
-            if (matchResult != null) {
+        val matchResult = regex.find(bounds)
+        if (matchResult != null) {
                 val (left, top, right, bottom) = matchResult.destructured
                 val centerX = (left.toInt() + right.toInt()) / 2
                 val centerY = (top.toInt() + bottom.toInt()) / 2

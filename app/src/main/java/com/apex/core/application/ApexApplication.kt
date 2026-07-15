@@ -13,14 +13,11 @@ object ApexApplication {
     fun init(context: Context) {
         appContext = context.applicationContext
     }
-    
-    val context: Context
+        val context: Context
         get() = appContext ?: throw IllegalStateException("ApexApplication not initialized")
-    
-    val isDebug: Boolean = false
+        val isDebug: Boolean = false
     
     val appStartupTimeMs: Long = System.currentTimeMillis()
-    
-    val instance: ApexApplication
+        val instance: ApexApplication
         get() = this
 }

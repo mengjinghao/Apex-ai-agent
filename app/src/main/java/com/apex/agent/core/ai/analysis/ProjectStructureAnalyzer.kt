@@ -17,7 +17,6 @@ class ProjectStructureAnalyzer {
      */
     suspend fun analyzeProject(files: List<GitHubFileNode>): ProjectAnalysis {
         val allFiles = collectAllFiles(files)
-        
         return ProjectAnalysis(
             projectType = detectProjectType(allFiles),
             mainLanguage = detectMainLanguage(allFiles),
@@ -35,14 +34,12 @@ class ProjectStructureAnalyzer {
      */
     private fun collectAllFiles(nodes: List<GitHubFileNode>): List<GitHubFileNode.File> {
         val files = mutableListOf<GitHubFileNode.File>()
-        
         for (node in nodes) {
             when (node) {
                 is GitHubFileNode.File -> files.add(node)
                 is GitHubFileNode.Directory -> files.addAll(collectAllFiles(node.children))
             }
         }
-        
         return files
     }
     
@@ -52,7 +49,6 @@ class ProjectStructureAnalyzer {
     private fun detectProjectType(files: List<GitHubFileNode.File>): ProjectType {
         val fileNames = files.map { it.name }.toSet()
         val paths = files.map { it.path }.toSet()
-        
         return when {
             // Android Gradle 项目
             fileNames.contains("build.gradle.kts") || fileNames.contains("build.gradle") -> {
@@ -95,7 +91,6 @@ class ProjectStructureAnalyzer {
                 languageCount[lang] = languageCount.getOrDefault(lang, 0) + 1
             }
         }
-        
         return languageCount.maxByOrNull { it.value }?.key ?: "Unknown"
     }
     
@@ -107,11 +102,10 @@ class ProjectStructureAnalyzer {
         
         files.forEach { file ->
             val keyFile = categorizeAndScoreFile(file)
-            if (keyFile != null) {
+        if (keyFile != null) {
                 keyFiles.add(keyFile)
             }
         }
-        
         return keyFiles.sortedByDescending { it.importance }.take(20)
     }
     
@@ -121,7 +115,6 @@ class ProjectStructureAnalyzer {
     private fun categorizeAndScoreFile(file: GitHubFileNode.File): KeyFile? {
         val name = file.name.lowercase()
         val path = file.path.lowercase()
-        
         return when {
             // README 文件 - 最高优先级
             name.startsWith("readme") -> KeyFile(
@@ -210,7 +203,6 @@ class ProjectStructureAnalyzer {
      */
     private fun inferArchitecture(files: List<GitHubFileNode.File>): String? {
         val paths = files.map { it.path }.toSet()
-        
         return when {
             // MVVM 架构（Android�?
             paths.any { it.contains("/view/") } &&
@@ -237,7 +229,6 @@ class ProjectStructureAnalyzer {
     private fun calculateComplexity(files: List<GitHubFileNode.File>): ComplexityScore {
         val fileCount = files.size
         val sourceFiles = files.count { it.type == FileType.SOURCE_CODE }
-        
         return when {
             fileCount > 1000 || sourceFiles > 500 -> ComplexityScore.VERY_HIGH
             fileCount > 500 || sourceFiles > 200 -> ComplexityScore.HIGH
@@ -259,8 +250,7 @@ class ProjectStructureAnalyzer {
             appendLine("**总大�?*: ${formatSize(analysis.totalSize)}")
             appendLine("**复杂�?*: ${analysis.complexity}")
             appendLine()
-            
-            if (analysis.architecture != null) {
+        if (analysis.architecture != null) {
                 appendLine("**架构模式**: ${analysis.architecture}")
                 appendLine()
             }
@@ -269,8 +259,7 @@ class ProjectStructureAnalyzer {
             analysis.keyFiles.take(10).forEach { keyFile ->
                 appendLine("- `${keyFile.path}` (${keyFile.category}) - ${keyFile.reason}")
             }
-            
-            if (analysis.dependencies.isNotEmpty()) {
+        if (analysis.dependencies.isNotEmpty()) {
                 appendLine()
                 appendLine("### 主要依赖")
                 analysis.dependencies.take(10).forEach { dep ->
@@ -279,8 +268,7 @@ class ProjectStructureAnalyzer {
             }
         }
     }
-    
-    private fun formatSize(bytes: Long): String {
+        private fun formatSize(bytes: Long): String {
         return when {
             bytes < 1024 -> "${bytes} B"
             bytes < 1024 * 1024 -> "${bytes / 1024} KB"

@@ -28,8 +28,7 @@ class AdminShellExecutor(private val context: Context) : ShellExecutor {
             adminComponentName = componentName
         }
     }
-
-    private val devicePolicyManager =
+        private val devicePolicyManager =
             context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
     override fun getPermissionLevel(): AndroidPermissionLevel = AndroidPermissionLevel.ADMIN
@@ -42,7 +41,6 @@ class AdminShellExecutor(private val context: Context) : ShellExecutor {
         if (adminComponentName == null) {
             return ShellExecutor.PermissionStatus.denied("Device admin component name not set")
         }
-
         return if (isDeviceAdminActive()) {
             ShellExecutor.PermissionStatus.granted()
         } else {
@@ -57,13 +55,12 @@ class AdminShellExecutor(private val context: Context) : ShellExecutor {
     override fun requestPermission(onResult: (Boolean) -> Unit) {
         if (isAvailable()) {
             onResult(true)
-            return
+        return
         }
-
         if (adminComponentName == null) {
             AppLogger.e(TAG, "Admin component name not set")
             onResult(false)
-            return
+        return
         }
 
         // 引导用户激活设备管理员
@@ -97,7 +94,7 @@ class AdminShellExecutor(private val context: Context) : ShellExecutor {
     ): ShellExecutor.CommandResult =
             withContext(Dispatchers.IO) {
                 val permStatus = hasPermission()
-                if (!permStatus.granted) {
+        if (!permStatus.granted) {
                     return@withContext ShellExecutor.CommandResult(false, "", permStatus.reason, -1)
                 }
 

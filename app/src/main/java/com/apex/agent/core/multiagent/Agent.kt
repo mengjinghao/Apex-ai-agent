@@ -29,8 +29,7 @@ class Agent(
         SPECIFIC_CONFIG,
         GLOBAL_CONFIG
     }
-
-    fun getConfigSource(): ConfigSource {
+        fun getConfigSource(): ConfigSource {
         return when {
             useGlobalConfig -> ConfigSource.GLOBAL_CONFIG
             configId != null -> ConfigSource.SPECIFIC_CONFIG

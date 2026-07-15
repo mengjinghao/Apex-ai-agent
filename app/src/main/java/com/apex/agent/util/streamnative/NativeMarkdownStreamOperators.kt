@@ -42,13 +42,11 @@ private fun Stream<Char>.nativeMarkdownSplitBySession(
 
                 launch {
                     val session = sessionFactory()
-                    val fullContent = StringBuilder()
-                    val deltaBuffer = StringBuilder()
-
-                    val mutex = Mutex()
-                    val flushMutex = Mutex()
-
-                    var defaultTextChannel: Channel<String>? = null
+        val fullContent = StringBuilder()
+        val deltaBuffer = StringBuilder()
+        val mutex = Mutex()
+        val flushMutex = Mutex()
+        var defaultTextChannel: Channel<String>? = null
                     var activePluginChannel: Channel<String>? = null
                     var activeTag: MarkdownProcessorType? = null
 
@@ -91,11 +89,10 @@ private fun Stream<Char>.nativeMarkdownSplitBySession(
                             } ?: return
 
                             val segments = session.push(delta)
-                            if (segments.isEmpty()) return
+        if (segments.isEmpty()) return
 
                             data class Action(val type: MarkdownProcessorType?, val text: String)
-
-                            val actions = ArrayList<Action>(segments.size / 3)
+        val actions = ArrayList<Action>(segments.size / 3)
                             mutex.withLock {
                                 var i = 0
                                 while (i + 2 < segments.size) {
@@ -108,8 +105,7 @@ private fun Stream<Char>.nativeMarkdownSplitBySession(
                                         actions.add(Action(type = null, text = null))
                                         continue
                                     }
-
-                                    val type = typeOrdinal.toMarkdownTypeOrNull() ?: MarkdownProcessorType.PLAIN_TEXT
+        val type = typeOrdinal.toMarkdownTypeOrNull() ?: MarkdownProcessorType.PLAIN_TEXT
                                     if (start < 0 || end < 0 || start > end || end > fullContent.length) {
                                         continue
                                     }
@@ -117,44 +113,40 @@ private fun Stream<Char>.nativeMarkdownSplitBySession(
                                     actions.add(Action(type = type, text = fullContent.substring(start, end)))
                                 }
                             }
-
-                            for (action in actions) {
+        for (action in actions) {
                                 if (action.type == null) {
                                     closeDefaultChannel()
                                     closePluginChannel()
                                     continue
                                 }
-
-                                val type = action.type
+        val type = action.type
                                 val text = action.text ?: ""
-
-                                if (type == MarkdownProcessorType.PLAIN_TEXT) {
+        if (type == MarkdownProcessorType.PLAIN_TEXT) {
                                     if (activePluginChannel != null) {
                                         closePluginChannel()
                                     }
                                     openDefaultChannel()
-                                    if (text.isNotEmpty()) {
+        if (text.isNotEmpty()) {
                                         defaultTextChannel?.send(text)
                                     }
                                 } else {
                                     if (defaultTextChannel != null) {
                                         closeDefaultChannel()
                                     }
-                                    if (activeTag == null) {
+        if (activeTag == null) {
                                         openPluginChannel(type)
                                     } else if (activeTag != type) {
                                         closePluginChannel()
                                         openPluginChannel(type)
                                     }
-                                    if (text.isNotEmpty()) {
+        if (text.isNotEmpty()) {
                                         activePluginChannel?.send(text)
                                     }
                                 }
                             }
                         }
                     }
-
-                    val flushJob =
+        val flushJob =
                         if (flushIntervalMs != null && flushIntervalMs > 0) {
                             launch {
                                 while (true) {
@@ -177,8 +169,7 @@ private fun Stream<Char>.nativeMarkdownSplitBySession(
                                     c == '\n' ||
                                         (maxDeltaChars != null && maxDeltaChars > 0 && deltaBuffer.length >= maxDeltaChars)
                                 }
-
-                            if (noBatching) {
+        if (noBatching) {
                                 flushDelta()
                             } else if (shouldFlush) {
                                 flushDelta()
@@ -187,7 +178,7 @@ private fun Stream<Char>.nativeMarkdownSplitBySession(
                         flushDelta()
                     } catch (e: Exception) {
                         StreamLogger.e(debugTag, "nativeMarkdownSplitBy failed: ${e.message}", e)
-                        throw e
+        throw e
                     } finally {
                         flushJob?.cancel()
                         try {
@@ -199,8 +190,7 @@ private fun Stream<Char>.nativeMarkdownSplitBySession(
                         }
                     }
                 }
-
-                for (group in groupChannel) {
+        for (group in groupChannel) {
                     collector.emit(group)
                 }
             }
@@ -233,13 +223,11 @@ private fun Stream<String>.nativeMarkdownSplitBySessionString(
 
                 launch {
                     val session = sessionFactory()
-                    val fullContent = StringBuilder()
-                    val deltaBuffer = StringBuilder()
-
-                    val mutex = Mutex()
-                    val flushMutex = Mutex()
-
-                    var defaultTextChannel: Channel<String>? = null
+        val fullContent = StringBuilder()
+        val deltaBuffer = StringBuilder()
+        val mutex = Mutex()
+        val flushMutex = Mutex()
+        var defaultTextChannel: Channel<String>? = null
                     var activePluginChannel: Channel<String>? = null
                     var activeTag: MarkdownProcessorType? = null
 
@@ -282,11 +270,10 @@ private fun Stream<String>.nativeMarkdownSplitBySessionString(
                             } ?: return
 
                             val segments = session.push(delta)
-                            if (segments.isEmpty()) return
+        if (segments.isEmpty()) return
 
                             data class Action(val type: MarkdownProcessorType?, val text: String)
-
-                            val actions = ArrayList<Action>(segments.size / 3)
+        val actions = ArrayList<Action>(segments.size / 3)
                             mutex.withLock {
                                 var i = 0
                                 while (i + 2 < segments.size) {
@@ -299,8 +286,7 @@ private fun Stream<String>.nativeMarkdownSplitBySessionString(
                                         actions.add(Action(type = null, text = null))
                                         continue
                                     }
-
-                                    val type = typeOrdinal.toMarkdownTypeOrNull() ?: MarkdownProcessorType.PLAIN_TEXT
+        val type = typeOrdinal.toMarkdownTypeOrNull() ?: MarkdownProcessorType.PLAIN_TEXT
                                     if (start < 0 || end < 0 || start > end || end > fullContent.length) {
                                         continue
                                     }
@@ -308,44 +294,40 @@ private fun Stream<String>.nativeMarkdownSplitBySessionString(
                                     actions.add(Action(type = type, text = fullContent.substring(start, end)))
                                 }
                             }
-
-                            for (action in actions) {
+        for (action in actions) {
                                 if (action.type == null) {
                                     closeDefaultChannel()
                                     closePluginChannel()
                                     continue
                                 }
-
-                                val type = action.type
+        val type = action.type
                                 val text = action.text ?: ""
-
-                                if (type == MarkdownProcessorType.PLAIN_TEXT) {
+        if (type == MarkdownProcessorType.PLAIN_TEXT) {
                                     if (activePluginChannel != null) {
                                         closePluginChannel()
                                     }
                                     openDefaultChannel()
-                                    if (text.isNotEmpty()) {
+        if (text.isNotEmpty()) {
                                         defaultTextChannel?.send(text)
                                     }
                                 } else {
                                     if (defaultTextChannel != null) {
                                         closeDefaultChannel()
                                     }
-                                    if (activeTag == null) {
+        if (activeTag == null) {
                                         openPluginChannel(type)
                                     } else if (activeTag != type) {
                                         closePluginChannel()
                                         openPluginChannel(type)
                                     }
-                                    if (text.isNotEmpty()) {
+        if (text.isNotEmpty()) {
                                         activePluginChannel?.send(text)
                                     }
                                 }
                             }
                         }
                     }
-
-                    val flushJob =
+        val flushJob =
                         if (flushIntervalMs != null && flushIntervalMs > 0) {
                             launch {
                                 while (true) {
@@ -368,8 +350,7 @@ private fun Stream<String>.nativeMarkdownSplitBySessionString(
                                     chunk.indexOf('\n') >= 0 ||
                                         (maxDeltaChars != null && maxDeltaChars > 0 && deltaBuffer.length >= maxDeltaChars)
                                 }
-
-                            if (noBatching) {
+        if (noBatching) {
                                 flushDelta()
                             } else if (shouldFlush) {
                                 flushDelta()
@@ -378,7 +359,7 @@ private fun Stream<String>.nativeMarkdownSplitBySessionString(
                         flushDelta()
                     } catch (e: Exception) {
                         StreamLogger.e(debugTag, "nativeMarkdownSplitBy failed: ${e.message}", e)
-                        throw e
+        throw e
                     } finally {
                         flushJob?.cancel()
                         try {
@@ -390,8 +371,7 @@ private fun Stream<String>.nativeMarkdownSplitBySessionString(
                         }
                     }
                 }
-
-                for (group in groupChannel) {
+        for (group in groupChannel) {
                     collector.emit(group)
                 }
             }

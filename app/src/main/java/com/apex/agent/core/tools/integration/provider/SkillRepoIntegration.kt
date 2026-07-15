@@ -14,12 +14,12 @@ import kotlinx.coroutines.withContext
 class SkillRepoIntegration : IntegrationProvider {
 
     private val repoClient = SkillRepoClient.getInstance()
-    private val source = IntegrationSource.SKILL_REPO
+        private val source = IntegrationSource.SKILL_REPO
 
     override fun getInfo(): IntegrationInfo = IntegrationInfo(
         id = source.id,
         name = source.name,
-        description = "官方技能仓�?�?浏览、搜索和安装技�?,
+        description = "官方技能仓�?�浏览、搜索和安装技�?,
         version = "1.0.0",
         author = "Logistra AI",
         homepage = "https://skill-repo.logistra.ai",
@@ -131,8 +131,7 @@ class SkillRepoIntegration : IntegrationProvider {
             )
         }
     }
-
-    private fun SkillRepoClient.SkillInfo.toUnifiedItem() = UnifiedItem(
+        private fun SkillRepoClient.SkillInfo.toUnifiedItem() = UnifiedItem(
         source = source,
         sourceId = id,
         name = name,

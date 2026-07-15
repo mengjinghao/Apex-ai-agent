@@ -140,7 +140,7 @@ object ScreenUtils {
     fun getStatusBarHeight(context: Context): Int {
         return try {
             val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
-            if (resourceId > 0) {
+        if (resourceId > 0) {
                 context.resources.getDimensionPixelSize(resourceId)
             } else {
                 0
@@ -162,7 +162,7 @@ object ScreenUtils {
     fun getNavigationBarHeight(context: Context): Int {
         return try {
             val resourceId = context.resources.getIdentifier("navigation_bar_height", "dimen", "android")
-            if (resourceId > 0) {
+        if (resourceId > 0) {
                 context.resources.getDimensionPixelSize(resourceId)
             } else {
                 0
@@ -245,7 +245,7 @@ object ScreenUtils {
             display?.refreshRate ?: 60f
         } else {
             @Suppress("DEPRECATION")
-            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             @Suppress("DEPRECATION")
             wm.defaultDisplay.refreshRate
         }

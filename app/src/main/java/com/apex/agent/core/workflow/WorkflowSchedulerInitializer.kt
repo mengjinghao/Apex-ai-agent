@@ -29,7 +29,7 @@ object WorkflowSchedulerInitializer {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repository = WorkflowRepository(context.applicationContext)
-                val result = repository.getAllWorkflows()
+        val result = repository.getAllWorkflows()
                 
                 result.getOrNull()?.let { workflows ->
                     var scheduledCount = 0
@@ -37,7 +37,7 @@ object WorkflowSchedulerInitializer {
                     workflows.forEach { workflow ->
                         if (workflow.enabled) {
                             val success = repository.scheduleWorkflow(workflow.id)
-                            if (success) {
+        if (success) {
                                 scheduledCount++
                                 AppLogger.d(TAG, "Scheduled workflow: ${workflow.name} (${workflow.id})")
                             }

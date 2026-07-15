@@ -52,24 +52,21 @@ internal class UserscriptRepository private constructor(
             }
         }
     }
-
-    private val store = UserscriptJsonStore.getInstance(context)
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
-    private val rootDir = LogistraPaths.webSessionUserscriptsDir()
-    private val scriptsDir = File(rootDir, "scripts").apply { mkdirs() }
-    private val cacheDir = File(rootDir, "cache").apply { mkdirs() }
-    private val httpClient =
+        private val store = UserscriptJsonStore.getInstance(context)
+        private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+        private val rootDir = LogistraPaths.webSessionUserscriptsDir()
+        private val scriptsDir = File(rootDir, "scripts").apply { mkdirs() }
+        private val cacheDir = File(rootDir, "cache").apply { mkdirs() }
+        private val httpClient =
         OkHttpClient.Builder()
             .followRedirects(true)
             .followSslRedirects(true)
             .build()
-
-    val installedScriptsFlow: Flow<List<UserscriptListItem>> =
+        val installedScriptsFlow: Flow<List<UserscriptListItem>> =
         store.observeUserscripts().map { entities ->
             entities.map(::entityToListItem)
         }
-
-    fun observeRecentLogs(limit: Int = 50): Flow<List<UserscriptLogItem>> =
+        fun observeRecentLogs(limit: Int = 50): Flow<List<UserscriptLogItem>> =
         store.observeRecentLogs(limit).map { logs ->
             logs.map { log ->
                 UserscriptLogItem(
@@ -118,7 +115,7 @@ internal class UserscriptRepository private constructor(
         val response = httpClient.newCall(Request.Builder().url(normalizedUrl).get().build()).execute()
         if (!response.isSuccessful) {
             response.close()
-            throw IllegalStateException("Failed to load userscript: HTTP ${response.code}")
+        throw IllegalStateException("Failed to load userscript: HTTP ${response.code}")
         }
         val body = response.body?.string().orEmpty()
         response.close()
@@ -143,7 +140,6 @@ internal class UserscriptRepository private constructor(
         val scriptFile = File(scriptsDir, "${fileStem}.user.js")
         scriptFile.parentFile?.mkdirs()
         scriptFile.writeText(preview.rawSource)
-
         val entity =
             UserscriptEntity(
                 id = existing?.id ?: 0L,
@@ -175,7 +171,6 @@ internal class UserscriptRepository private constructor(
                 installedAt = existing?.installedAt ?: now,
                 updatedAt = now
             )
-
         val scriptId =
             if (existing == null) {
                 store.insertUserscript(entity)
@@ -183,7 +178,6 @@ internal class UserscriptRepository private constructor(
                 store.updateUserscript(entity)
                 entity.id
             }
-
         val resourceEntities =
             fetchAndCacheResources(
                 metadata = preview.metadata,
@@ -266,14 +260,13 @@ internal class UserscriptRepository private constructor(
         if (entities.isEmpty()) {
             return@withContext UserscriptBootstrapPayload()
         }
-
         val matched =
             entities.filter { entity ->
                 if (!entity.enabled) {
                     return@filter false
                 }
-                val metadata = entityToMetadata(entity)
-                if (UserscriptCapabilityRegistry.blockedReasons(metadata.grants).isNotEmpty()) {
+        val metadata = entityToMetadata(entity)
+        if (UserscriptCapabilityRegistry.blockedReasons(metadata.grants).isNotEmpty()) {
                     return@filter false
                 }
                 UserscriptMatcher.matches(
@@ -285,35 +278,33 @@ internal class UserscriptRepository private constructor(
         if (matched.isEmpty()) {
             return@withContext UserscriptBootstrapPayload()
         }
-
         val resourcesByScript =
             store.getResourcesForScripts(matched.map { it.id })
                 .groupBy { it.userscriptId }
-
         val payloads =
             matched.mapNotNull { entity ->
                 val source = runCatching { File(entity.scriptFilePath).readText() }.getOrNull() ?: return@mapNotNull null
                 val metadata = entityToMetadata(entity)
-                val values =
+        val values =
                     store.getValuesForScript(entity.id).associate { value ->
                         value.storageKey to value.valueJson
                     }
-                val resourceEntities = resourcesByScript[entity.id].orEmpty().sortedBy { it.resourceKey }
-                val requireBodies =
+        val resourceEntities = resourcesByScript[entity.id].orEmpty().sortedBy { it.resourceKey }
+        val requireBodies =
                     resourceEntities
                         .filter { it.entryType == ENTRY_TYPE_REQUIRE }
                         .mapNotNull { resource -> runCatching { File(resource.localPath).readText() }.getOrNull() }
-                val resourcePayloads =
+        val resourcePayloads =
                     resourceEntities
                         .filter { it.entryType == ENTRY_TYPE_RESOURCE }
                         .associateNotNull { resource ->
                             val file = File(resource.localPath)
-                            if (!file.exists()) {
+        if (!file.exists()) {
                                 null
                             } else {
                                 val bytes = file.readBytes()
-                                val mimeType = resource.mimeType ?: "application/octet-stream"
-                                val dataUrl =
+        val mimeType = resource.mimeType ?: "application/octet-stream"
+        val dataUrl =
                                     "data:${mimeType};base64," +
                                         Base64.encodeToString(bytes, Base64.NO_WRAP)
                                 resource.resourceKey to
@@ -417,8 +408,7 @@ internal class UserscriptRepository private constructor(
             store.deleteValue(scriptId, key)
         }
     }
-
-    private suspend fun fetchAndCacheResources(
+        private suspend fun fetchAndCacheResources(
         metadata: ParsedUserscriptMetadata,
         userscriptId: Long,
         sourceUrl: String?
@@ -426,12 +416,12 @@ internal class UserscriptRepository private constructor(
         val requireResources =
             metadata.requires.mapIndexed { index, entry ->
                 val absoluteUrl = resolveRemoteUrl(sourceUrl, entry.url)
-                val target =
+        val target =
                     File(
                         cacheDir,
                         "${buildSafeCachePrefix(metadata)}_require_${index.toString().padStart(4, '0')}.js"
                     )
-                val fetched = fetchRemoteAsset(absoluteUrl, target)
+        val fetched = fetchRemoteAsset(absoluteUrl, target)
                 UserscriptResourceEntity(
                     userscriptId = userscriptId,
                     entryType = ENTRY_TYPE_REQUIRE,
@@ -444,17 +434,16 @@ internal class UserscriptRepository private constructor(
                     updatedAt = System.currentTimeMillis()
                 )
             }
-
         val namedResources =
             metadata.resources.mapIndexed { index, entry ->
                 val absoluteUrl = resolveRemoteUrl(sourceUrl, entry.url)
-                val extension = MimeTypeMap.getFileExtensionFromUrl(absoluteUrl).takeIf { !it.isNullOrBlank() }
-                val target =
+        val extension = MimeTypeMap.getFileExtensionFromUrl(absoluteUrl).takeIf { !it.isNullOrBlank() }
+        val target =
                     File(
                         cacheDir,
                         "${buildSafeCachePrefix(metadata)}_resource_${index.toString().padStart(4, '0')}.${extension ?: "bin"}"
                     )
-                val fetched = fetchRemoteAsset(absoluteUrl, target)
+        val fetched = fetchRemoteAsset(absoluteUrl, target)
                 UserscriptResourceEntity(
                     userscriptId = userscriptId,
                     entryType = ENTRY_TYPE_RESOURCE,
@@ -469,8 +458,7 @@ internal class UserscriptRepository private constructor(
             }
         return requireResources + namedResources
     }
-
-    private fun entityToListItem(entity: UserscriptEntity): UserscriptListItem {
+        private fun entityToListItem(entity: UserscriptEntity): UserscriptListItem {
         val metadata = entityToMetadata(entity)
         val unknownGrants = UserscriptCapabilityRegistry.unknownGrants(metadata.grants)
         val blockedReasons = UserscriptCapabilityRegistry.blockedReasons(metadata.grants)
@@ -508,8 +496,7 @@ internal class UserscriptRepository private constructor(
             updatedAt = entity.updatedAt
         )
     }
-
-    private suspend fun resolveExistingScript(preview: UserscriptInstallPreview): UserscriptEntity? {
+        private suspend fun resolveExistingScript(preview: UserscriptInstallPreview): UserscriptEntity? {
         preview.existingScriptId?.let { scriptId ->
             return store.getUserscriptById(scriptId)
         }
@@ -523,8 +510,7 @@ internal class UserscriptRepository private constructor(
                 entity.sourceUrl == preview.sourceUrl
         }
     }
-
-    private fun entityToMetadata(entity: UserscriptEntity): ParsedUserscriptMetadata {
+        private fun entityToMetadata(entity: UserscriptEntity): ParsedUserscriptMetadata {
         if (entity.metadataJson.isNotBlank()) {
             runCatching { json.decodeFromString<ParsedUserscriptMetadata>(entity.metadataJson) }
                 .getOrNull()
@@ -551,31 +537,24 @@ internal class UserscriptRepository private constructor(
             noFrames = entity.noFrames
         )
     }
-
-    private fun decodeStringList(raw: String): List<String> =
+        private fun decodeStringList(raw: String): List<String> =
         runCatching { json.decodeFromString<List<String>>(raw) }.getOrElse { emptyList() }
-
-    private fun decodeRequireList(raw: String): List<UserscriptRequireEntry> =
+        private fun decodeRequireList(raw: String): List<UserscriptRequireEntry> =
         runCatching { json.decodeFromString<List<UserscriptRequireEntry>>(raw) }.getOrElse { emptyList() }
-
-    private fun decodeResourceList(raw: String): List<UserscriptResourceEntry> =
+        private fun decodeResourceList(raw: String): List<UserscriptResourceEntry> =
         runCatching { json.decodeFromString<List<UserscriptResourceEntry>>(raw) }.getOrElse { emptyList() }
-
-    private fun buildFileStem(metadata: ParsedUserscriptMetadata): String =
+        private fun buildFileStem(metadata: ParsedUserscriptMetadata): String =
         buildSafeCachePrefix(metadata) + "_" + sha256("${metadata.namespace.orEmpty()}::${metadata.name}").take(12)
-
-    private fun buildSafeCachePrefix(metadata: ParsedUserscriptMetadata): String {
+        private fun buildSafeCachePrefix(metadata: ParsedUserscriptMetadata): String {
         val raw = "${metadata.namespace.orEmpty()}_${metadata.name}".lowercase(Locale.ROOT)
         val normalized = raw.replace("[^a-z0-9._-]+".toRegex(), "_").trim('_')
         return normalized.ifBlank { "userscript" }
     }
-
-    private fun sha256(raw: String): String {
+        private fun sha256(raw: String): String {
         val digest = MessageDigest.getInstance("SHA-256").digest(raw.toByteArray(Charsets.UTF_8))
         return digest.joinToString("") { "%02x".format(it) }
     }
-
-    private fun resolveRemoteUrl(baseUrl: String?, candidate: String): String {
+        private fun resolveRemoteUrl(baseUrl: String?, candidate: String): String {
         val trimmed = candidate.trim()
         if (trimmed.isBlank()) {
             throw IllegalArgumentException("Empty remote dependency URL")
@@ -590,13 +569,12 @@ internal class UserscriptRepository private constructor(
             ?: throw IllegalArgumentException("Relative dependency URL without install source: ${trimmed}")
         return URI(base).resolve(trimmed).toString()
     }
-
-    private fun fetchRemoteAsset(url: String, targetFile: File): FetchedAsset {
+        private fun fetchRemoteAsset(url: String, targetFile: File): FetchedAsset {
         if (url.startsWith("data:", ignoreCase = true)) {
             val header = url.substringAfter("data:", "").substringBefore(',', "")
-            val payload = url.substringAfter(',', "")
-            val mimeType = header.substringBefore(';', "application/octet-stream")
-            val bytes =
+        val payload = url.substringAfter(',', "")
+        val mimeType = header.substringBefore(';', "application/octet-stream")
+        val bytes =
                 if (header.contains(";base64", ignoreCase = true)) {
                     Base64.decode(payload, Base64.DEFAULT)
                 } else {
@@ -604,16 +582,16 @@ internal class UserscriptRepository private constructor(
                 }
             targetFile.parentFile?.mkdirs()
             targetFile.writeBytes(bytes)
-            return FetchedAsset(file = targetFile, mimeType = mimeType, etag = null, lastModified = null)
+        return FetchedAsset(file = targetFile, mimeType = mimeType, etag = null, lastModified = null)
         }
         val response = httpClient.newCall(Request.Builder().url(url).get().build()).execute()
         if (!response.isSuccessful) {
             response.close()
-            throw IllegalStateException("Failed to fetch ${url}: HTTP ${response.code}")
+        throw IllegalStateException("Failed to fetch ${url}: HTTP ${response.code}")
         }
         val body = response.body ?: run {
             response.close()
-            throw IllegalStateException("No response body for ${url}")
+        throw IllegalStateException("No response body for ${url}")
         }
         val bytes = body.bytes()
         val mimeType =
@@ -634,8 +612,7 @@ internal class UserscriptRepository private constructor(
             lastModified = lastModified
         )
     }
-
-    private fun guessMimeTypeFromUrl(url: String): String {
+        private fun guessMimeTypeFromUrl(url: String): String {
         val extension =
             MimeTypeMap.getFileExtensionFromUrl(url)
                 ?.lowercase(Locale.ROOT)
@@ -647,8 +624,7 @@ internal class UserscriptRepository private constructor(
             MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
         }
     }
-
-    private fun compareVersions(candidate: String, current: String): Int {
+        private fun compareVersions(candidate: String, current: String): Int {
         if (candidate == current) {
             return 0
         }
@@ -657,29 +633,27 @@ internal class UserscriptRepository private constructor(
         val max = maxOf(candidateParts.size, currentParts.size)
         for (index in 0 until max) {
             val left = candidateParts.getOrNull(index).orEmpty()
-            val right = currentParts.getOrNull(index).orEmpty()
-            val leftNumber = left.toLongOrNull()
-            val rightNumber = right.toLongOrNull()
-            val comparison =
+        val right = currentParts.getOrNull(index).orEmpty()
+        val leftNumber = left.toLongOrNull()
+        val rightNumber = right.toLongOrNull()
+        val comparison =
                 when {
                     leftNumber != null && rightNumber != null -> leftNumber.compareTo(rightNumber)
                     else -> left.compareTo(right, ignoreCase = true)
                 }
-            if (comparison != 0) {
+        if (comparison != 0) {
                 return comparison
             }
         }
         return candidate.compareTo(current, ignoreCase = true)
     }
-
-    private data class FetchedAsset(
+        private data class FetchedAsset(
         val file: File,
         val mimeType: String?,
         val etag: String?,
         val lastModified: String?
     )
-
-    private inline fun <K, V> Iterable<V>.associateNotNull(
+        private inline fun <K, V> Iterable<V>.associateNotNull(
         transform: (V) -> Pair<K, UserscriptResourcePayload>?
     ): Map<K, UserscriptResourcePayload> {
         val result = LinkedHashMap<K, UserscriptResourcePayload>()

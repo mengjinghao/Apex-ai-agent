@@ -33,21 +33,20 @@ import kotlinx.coroutines.withContext
 fun DiagnosticsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var usedMb by remember { mutableStateOf(0L) }
-    var totalMb by remember { mutableStateOf(0L) }
-    var maxMb by remember { mutableStateOf(0L) }
-    var nativeTotal by remember { mutableStateOf(0L) }
-    var nativeAllocated by remember { mutableStateOf(0L) }
-    var apkHealth by remember { mutableStateOf<List<HealthItem>>(emptyList()) }
-    var crashCount by remember { mutableStateOf(0) }
-    var logCount by remember { mutableStateOf(0) }
-    var systemInfo by remember { mutableStateOf<SystemInfo?>(null) }
-
-    fun refresh() {
+        var usedMb by remember { mutableStateOf(0L) }
+        var totalMb by remember { mutableStateOf(0L) }
+        var maxMb by remember { mutableStateOf(0L) }
+        var nativeTotal by remember { mutableStateOf(0L) }
+        var nativeAllocated by remember { mutableStateOf(0L) }
+        var apkHealth by remember { mutableStateOf<List<HealthItem>>(emptyList()) }
+        var crashCount by remember { mutableStateOf(0) }
+        var logCount by remember { mutableStateOf(0) }
+        var systemInfo by remember { mutableStateOf<SystemInfo?>(null) }
+        fun refresh() {
         scope.launch {
             withContext(Dispatchers.IO) {
                 val facade = TypedServiceRegistry.get<DiagnosticsServiceFacade>()
-                if (facade != null) {
+        if (facade != null) {
                     val mem = facade.getMemoryStats()
                     usedMb = mem.usedMb
                     totalMb = mem.totalMb
@@ -56,9 +55,9 @@ fun DiagnosticsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {
                     nativeTotal = native.totalMb
                     nativeAllocated = native.allocatedMb
                     apkHealth = facade.getApkHealthList().map { HealthItem(it.apkId, it.healthy, it.lastHeartbeatAgoMs) }
-                    val crashes = facade.listCrashReports()
+        val crashes = facade.listCrashReports()
                     crashCount = crashes.size.let { runCatching { it }.getOrDefault(0) }
-                    val logs = facade.listLogFiles()
+        val logs = facade.listLogFiles()
                     logCount = logs.size.let { runCatching { it }.getOrDefault(0) }
                 }
                 systemInfo = SystemInfo(

@@ -33,8 +33,8 @@ data class TrajectoryData(
                     tokenCount = tokenCounter(turn.content)
                 )
             }
-            val totalTokens = trajectoryTurns.sumOf { it.tokenCount }
-            return TrajectoryData(
+        val totalTokens = trajectoryTurns.sumOf { it.tokenCount }
+        return TrajectoryData(
                 id = "traj_${System.currentTimeMillis()}_${(0..9999).random()}",
                 sessionId = sessionId,
                 turns = trajectoryTurns,

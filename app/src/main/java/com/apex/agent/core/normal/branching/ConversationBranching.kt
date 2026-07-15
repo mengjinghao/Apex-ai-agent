@@ -61,7 +61,7 @@ data class BranchTree(
 class ConversationBranching {
 
     private val messages = ConcurrentHashMap<String, MutableMap<String, BranchMessage>>()  // chatId -> (msgId -> msg)
-    private val branches = ConcurrentHashMap<String, MutableList<ConversationBranch>>()     // chatId -> branches
+        private val branches = ConcurrentHashMap<String, MutableList<ConversationBranch>>()     // chatId -> branches
     private val activeTips = ConcurrentHashMap<String, String>()                            // chatId -> 当前活跃消息 ID
 
     /**
@@ -71,7 +71,6 @@ class ConversationBranching {
         val chatMessages = messages.computeIfAbsent(chatId) { mutableMapOf() }
         val parentId = activeTips[chatId]
         val msgId = "msg_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
-
         val message = BranchMessage(
             id = msgId,
             parentId = parentId,
@@ -189,7 +188,6 @@ class ConversationBranching {
         val roots = chatMessages.values.filter { it.parentId == null }.sortedBy { it.timestamp }
         val chatBranches = branches[chatId]?.toList() ?: emptyList()
         val activePath = getActivePath(chatId).map { it.id }
-
         return BranchTree(
             chatId = chatId,
             rootMessages = roots,
@@ -224,15 +222,13 @@ class ConversationBranching {
         val tree = getBranchTree(chatId)
         val sb = StringBuilder()
         sb.appendLine("═══ 对话分支树 ═══")
-
         fun render(msg: BranchMessage, indent: String, isLast: Boolean) {
             val prefix = if (indent.isEmpty()) "" else if (isLast) "└─ " else "├─ "
-            val activeMark = if (msg.isActive) " ★" else ""
-            val branchMark = msg.branchLabel?.let { "  [$it]" } ?: ""
-            val contentPreview = msg.content.take(40).replace("\n", " ")
+        val activeMark = if (msg.isActive) " ★" else ""
+        val branchMark = msg.branchLabel?.let { "  [$it]" } ?: ""
+        val contentPreview = msg.content.take(40).replace("\n", " ")
             sb.appendLine("$indent$prefix[${msg.role}] $contentPreview$branchMark$activeMark")
-
-            val children = msg.childrenIds.mapNotNull { tree.allMessages[it] }
+        val children = msg.childrenIds.mapNotNull { tree.allMessages[it] }
             children.forEachIndexed { i, child ->
                 val newIndent = if (indent.isEmpty()) "" else if (isLast) "   " else "│  "
                 render(child, indent + newIndent, i == children.size - 1)
@@ -264,7 +260,7 @@ class ConversationBranching {
     val queue: ArrayDeque<String> = ArrayDeque(from.childrenIds)
         while (queue.isNotEmpty()) {
             val id = queue.removeFirst()
-            val msg = chatMessages[id] ?: continue
+        val msg = chatMessages[id] ?: continue
             chatMessages[id] = msg.copy(isActive = false)
             queue.addAll(msg.childrenIds)
         }

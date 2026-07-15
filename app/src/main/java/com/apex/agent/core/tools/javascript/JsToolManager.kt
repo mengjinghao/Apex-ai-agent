@@ -42,13 +42,11 @@ class JsToolManager private constructor(
                 }
         }
     }
-
-    private val engines = List(MAX_CONCURRENT_ENGINES) { JsEngine(context) }
-    private val enginePool = Channel<JsEngine>(capacity = MAX_CONCURRENT_ENGINES).also { pool ->
+        private val engines = List(MAX_CONCURRENT_ENGINES) { JsEngine(context) }
+        private val enginePool = Channel<JsEngine>(capacity = MAX_CONCURRENT_ENGINES).also { pool ->
         engines.forEach(pool::trySend)
     }
-
-    private suspend fun <T> withEngine(block: suspend (JsEngine) -> T): T {
+        private suspend fun <T> withEngine(block: suspend (JsEngine) -> T): T {
         val engine = enginePool.receive()
         return try {
             block(engine)
@@ -56,30 +54,26 @@ class JsToolManager private constructor(
             enginePool.trySend(engine)
         }
     }
-
-    private fun <T> withEngineBlocking(block: (JsEngine) -> T): T {
+        private fun <T> withEngineBlocking(block: (JsEngine) -> T): T {
         return runBlocking {
             withEngine { engine -> block(engine) }
         }
     }
-
-    private fun parseDotCall(toolName: String): Pair<String, String>? {
+        private fun parseDotCall(toolName: String): Pair<String, String>? {
         val separatorIndex = toolName.lastIndexOf('.')
         if (separatorIndex <= 0 || separatorIndex >= toolName.lastIndex) {
             return null
         }
         return toolName.substring(0, separatorIndex) to toolName.substring(separatorIndex + 1)
     }
-
-    private fun parsePackageToolName(toolName: String): Pair<String, String>? {
+        private fun parsePackageToolName(toolName: String): Pair<String, String>? {
         val separatorIndex = toolName.indexOf(':')
         if (separatorIndex <= 0 || separatorIndex >= toolName.lastIndex) {
             return null
         }
         return toolName.substring(0, separatorIndex) to toolName.substring(separatorIndex + 1)
     }
-
-    private fun buildRuntimeParams(
+        private fun buildRuntimeParams(
         packageName: String,
         params: Map<String, Any?>
     ): MutableMap<String, Any?> {
@@ -94,7 +88,7 @@ class JsToolManager private constructor(
             "__Apex_package_caller_card_id"
         ).forEach { key ->
             val value = runtimeParams[key]?.toString()?.takeIf { it.isNotBlank() }
-            if (value == null) {
+        if (value == null) {
                 runtimeParams.remove(key)
             } else {
                 runtimeParams[key] = value
@@ -114,11 +108,9 @@ class JsToolManager private constructor(
             runtimeParams.remove("toolPkgId")
             runtimeParams.remove("__Apex_ui_package_name")
         }
-
         return runtimeParams
     }
-
-    private fun convertToolParameters(
+        private fun convertToolParameters(
         tool: AITool,
         packageName: String,
         functionName: String
@@ -134,13 +126,11 @@ class JsToolManager private constructor(
             }
             ?.map { it.name }
             .orEmpty()
-
         if (missingRequiredParameters.isNotEmpty()) {
             throw ToolParameterConversionException(
                 "Missing required parameters: ${missingRequiredParameters.joinToString(", ")}"
             )
         }
-
         val converted = linkedMapOf<String, Any?>()
         tool.parameters.forEach { parameter ->
             val type = parameterDefinitions[parameter.name]?.type?.lowercase() ?: "string"
@@ -151,11 +141,9 @@ class JsToolManager private constructor(
                 type = type
             )
         }
-
         return buildRuntimeParams(packageName, converted)
     }
-
-    private fun convertToolParameterValue(
+        private fun convertToolParameterValue(
         toolName: String,
         parameterName: String,
         rawValue: String,
@@ -176,8 +164,7 @@ class JsToolManager private constructor(
             else -> rawValue
         }
     }
-
-    private fun parseNumberValue(value: String): Number? {
+        private fun parseNumberValue(value: String): Number? {
         if (value.isEmpty()) {
             return null
         }
@@ -186,16 +173,14 @@ class JsToolManager private constructor(
         }
         return value.toDoubleOrNull()
     }
-
-    private fun parseBooleanValue(value: String): Boolean? {
+        private fun parseBooleanValue(value: String): Boolean? {
         return when (value.lowercase()) {
             "true", "1" -> true
             "false", "0" -> false
             else -> null
         }
     }
-
-    private fun invalidParameterType(
+        private fun invalidParameterType(
         toolName: String,
         parameterName: String,
         expectedType: String,
@@ -212,8 +197,7 @@ class JsToolManager private constructor(
             "Invalid parameter '${parameterName}' for tool '${toolName}': expected ${expectedType}"
         )
     }
-
-    private fun jsonObjectToKotlin(jsonObject: JSONObject): Map<String, Any?> {
+        private fun jsonObjectToKotlin(jsonObject: JSONObject): Map<String, Any?> {
         val result = linkedMapOf<String, Any?>()
         val keys = jsonObject.keys()
         while (keys.hasNext()) {
@@ -222,16 +206,14 @@ class JsToolManager private constructor(
         }
         return result
     }
-
-    private fun jsonArrayToKotlin(jsonArray: JSONArray): List<Any?> {
+        private fun jsonArrayToKotlin(jsonArray: JSONArray): List<Any?> {
         val result = mutableListOf<Any?>()
         for (index in 0 until jsonArray.length()) {
             result.add(jsonValueToKotlin(jsonArray.opt(index)))
         }
         return result
     }
-
-    private fun jsonValueToKotlin(value: Any): Any? {
+        private fun jsonValueToKotlin(value: Any): Any? {
         return when (value) {
             null,
             JSONObject.NULL -> null
@@ -240,16 +222,14 @@ class JsToolManager private constructor(
             else -> value
         }
     }
-
-    private fun success(toolName: String, value: Any): ToolResult {
+        private fun success(toolName: String, value: Any): ToolResult {
         return ToolResult(
             toolName = toolName,
             success = true,
             result = StringResultData(value?.toString() ?: "null")
         )
     }
-
-    private fun failure(toolName: String, message: String): ToolResult {
+        private fun failure(toolName: String, message: String): ToolResult {
         return ToolResult(
             toolName = toolName,
             success = false,
@@ -257,8 +237,7 @@ class JsToolManager private constructor(
             error = message
         )
     }
-
-    private fun trace(
+        private fun trace(
         toolName: String,
         kind: String,
         message: String,
@@ -276,14 +255,12 @@ class JsToolManager private constructor(
             )
         )
     }
-
-    fun executeScript(toolName: String, params: Map<String, String>): String {
+        fun executeScript(toolName: String, params: Map<String, String>): String {
         val parsed = parseDotCall(toolName)
             ?: return "Invalid tool name format: ${toolName}. Expected format: packageName.functionName"
         val (packageName, functionName) = parsed
         val script = packageManager.getPackageScript(packageName)
             ?: return "Package not found: ${packageName}"
-
         return withEngineBlocking { engine ->
             try {
                 val runtimeParams = buildRuntimeParams(
@@ -305,14 +282,12 @@ class JsToolManager private constructor(
             }
         }
     }
-
-    fun executeScript(script: String, tool: AITool): Flow<ToolResult> = channelFlow {
+        fun executeScript(script: String, tool: AITool): Flow<ToolResult> = channelFlow {
         val parsed = parsePackageToolName(tool.name)
         if (parsed == null) {
             send(failure(tool.name, "Invalid tool name format. Expected 'packageName:toolName'"))
             return@channelFlow
         }
-
         val (packageName, functionName) = parsed
         val runtimeParams = try {
             convertToolParameters(tool, packageName, functionName)
@@ -354,12 +329,11 @@ class JsToolManager private constructor(
                         params = runtimeParams,
                         executionListener = traceListener
                     )
-
-                    val normalizedError = result?.toString()
+        val normalizedError = result?.toString()
                         ?.takeIf { it.startsWith("Error:", ignoreCase = true) }
                         ?.removePrefix("Error:")
                         ?.trim()
-                    if (normalizedError != null) {
+        if (normalizedError != null) {
                         send(failure(tool.name, normalizedError))
                     } else {
                         send(success(tool.name, result))
@@ -378,8 +352,7 @@ class JsToolManager private constructor(
             }
         }
     }
-
-    fun executeComposeDsl(
+        fun executeComposeDsl(
         script: String,
         packageName: String = "",
         uiModuleId: String = "",
@@ -413,7 +386,6 @@ class JsToolManager private constructor(
                 runtimeOptions["__Apex_package_state"] = it
             }
         }
-
         return withEngineBlocking { engine ->
             try {
                 engine.executeComposeDslScript(
@@ -427,8 +399,7 @@ class JsToolManager private constructor(
             }
         }
     }
-
-    fun destroy() {
+        fun destroy() {
         enginePool.close()
         engines.forEach(JsEngine::destroy)
     }

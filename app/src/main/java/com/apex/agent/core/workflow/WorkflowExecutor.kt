@@ -43,7 +43,7 @@ import com.apex.core.workflow.WorkflowRunLogger
  * 节点执行状�?*/
 sealed class NodeExecutionState {
     object Pending : NodeExecutionState()
-    object Running : NodeExecutionState()
+        object Running : NodeExecutionState()
     data class Success(val result: String) : NodeExecutionState()
     data class Skipped(val reason: String = "") : NodeExecutionState()
     data class Failed(val error: String) : NodeExecutionState()
@@ -78,8 +78,7 @@ class WorkflowExecutor(private val context: Context) {
     companion object {
         private const val TAG = "WorkflowExecutor"
     }
-
-    private fun throwCancellation(
+        private fun throwCancellation(
         node: WorkflowNode,
         runLogger: WorkflowRunLogger,
         e: CancellationException
@@ -91,25 +90,20 @@ class WorkflowExecutor(private val context: Context) {
         )
         throw e
     }
-
-    private class WorkflowRunLogger(
+        private class WorkflowRunLogger(
         private val tag: String
     ) {
         private val _entries = mutableListOf<WorkflowExecutionLogEntry>()
-
         val entries: List<WorkflowExecutionLogEntry>
             get() = _entries.toList()
-
         fun d(message: String, nodeId: String? = null, nodeName: String? = null) {
             append(WorkflowLogLevel.DEBUG, message, nodeId, nodeName)
             AppLogger.d(tag, message)
         }
-
         fun w(message: String, nodeId: String? = null, nodeName: String? = null) {
             append(WorkflowLogLevel.WARN, message, nodeId, nodeName)
             AppLogger.w(tag, message)
         }
-
         fun e(
             message: String,
             nodeId: String? = null,
@@ -117,13 +111,12 @@ class WorkflowExecutor(private val context: Context) {
             throwable: Throwable? = null
         ) {
             append(WorkflowLogLevel.ERROR, message, nodeId, nodeName)
-            if (throwable != null) {
+        if (throwable != null) {
                 AppLogger.e(tag, message, throwable)
             } else {
                 AppLogger.e(tag, message)
             }
         }
-
         private fun append(
             level: WorkflowLogLevel,
             message: String,
@@ -140,12 +133,10 @@ class WorkflowExecutor(private val context: Context) {
             )
         }
     }
-
-    private fun isSkippedState(state: NodeExecutionState): Boolean {
+        private fun isSkippedState(state: NodeExecutionState): Boolean {
         return state is NodeExecutionState.Skipped || (state is NodeExecutionState.Success && state.result == context.getString(R.string.workflow_skip))
     }
-
-    private fun parseBooleanLike(value: String): Boolean? {
+        private fun parseBooleanLike(value: String): Boolean? {
         val normalized = value.trim().lowercase()
         return when (normalized) {
             "true", "1", "yes", "y", "on" -> true
@@ -153,8 +144,7 @@ class WorkflowExecutor(private val context: Context) {
             else -> null
         }
     }
-
-    private fun resolveParameterValue(
+        private fun resolveParameterValue(
         value: ParameterValue,
         nodeResults: Map<String, NodeExecutionState>,
         triggerExtras: Map<String, String>
@@ -172,22 +162,20 @@ class WorkflowExecutor(private val context: Context) {
             }
         }
     }
-
-    private fun compareValues(leftRaw: String, rightRaw: String, operator: ConditionOperator): Boolean {
+        private fun compareValues(leftRaw: String, rightRaw: String, operator: ConditionOperator): Boolean {
         val left = leftRaw
         val right = rightRaw
 
         fun parseDoubleOrNullStrict(value: String): Double? {
             val t = value.trim()
-            if (t.isBlank()) return null
+        if (t.isBlank()) return null
             return t.toDoubleOrNull()
         }
-
         return when (operator) {
             ConditionOperator.EQ -> {
                 val leftNum = parseDoubleOrNullStrict(left)
-                val rightNum = parseDoubleOrNullStrict(right)
-                if (leftNum != null && rightNum != null) {
+        val rightNum = parseDoubleOrNullStrict(right)
+        if (leftNum != null && rightNum != null) {
                     leftNum == rightNum
                 } else if (leftNum != null || rightNum != null) {
                     throw IllegalArgumentException(context.getString(R.string.workflow_condition_type_mismatch, left, right))
@@ -197,8 +185,8 @@ class WorkflowExecutor(private val context: Context) {
             }
             ConditionOperator.NE -> {
                 val leftNum = parseDoubleOrNullStrict(left)
-                val rightNum = parseDoubleOrNullStrict(right)
-                if (leftNum != null && rightNum != null) {
+        val rightNum = parseDoubleOrNullStrict(right)
+        if (leftNum != null && rightNum != null) {
                     leftNum != rightNum
                 } else if (leftNum != null || rightNum != null) {
                     throw IllegalArgumentException(context.getString(R.string.workflow_condition_type_mismatch, left, right))
@@ -208,8 +196,8 @@ class WorkflowExecutor(private val context: Context) {
             }
             ConditionOperator.GT -> {
                 val leftNum = parseDoubleOrNullStrict(left)
-                val rightNum = parseDoubleOrNullStrict(right)
-                if (leftNum != null && rightNum != null) {
+        val rightNum = parseDoubleOrNullStrict(right)
+        if (leftNum != null && rightNum != null) {
                     leftNum > rightNum
                 } else if (leftNum != null || rightNum != null) {
                     throw IllegalArgumentException(context.getString(R.string.workflow_condition_type_mismatch, left, right))
@@ -219,8 +207,8 @@ class WorkflowExecutor(private val context: Context) {
             }
             ConditionOperator.GTE -> {
                 val leftNum = parseDoubleOrNullStrict(left)
-                val rightNum = parseDoubleOrNullStrict(right)
-                if (leftNum != null && rightNum != null) {
+        val rightNum = parseDoubleOrNullStrict(right)
+        if (leftNum != null && rightNum != null) {
                     leftNum >= rightNum
                 } else if (leftNum != null || rightNum != null) {
                     throw IllegalArgumentException(context.getString(R.string.workflow_condition_type_mismatch, left, right))
@@ -230,8 +218,8 @@ class WorkflowExecutor(private val context: Context) {
             }
             ConditionOperator.LT -> {
                 val leftNum = parseDoubleOrNullStrict(left)
-                val rightNum = parseDoubleOrNullStrict(right)
-                if (leftNum != null && rightNum != null) {
+        val rightNum = parseDoubleOrNullStrict(right)
+        if (leftNum != null && rightNum != null) {
                     leftNum < rightNum
                 } else if (leftNum != null || rightNum != null) {
                     throw IllegalArgumentException(context.getString(R.string.workflow_condition_type_mismatch, left, right))
@@ -241,8 +229,8 @@ class WorkflowExecutor(private val context: Context) {
             }
             ConditionOperator.LTE -> {
                 val leftNum = parseDoubleOrNullStrict(left)
-                val rightNum = parseDoubleOrNullStrict(right)
-                if (leftNum != null && rightNum != null) {
+        val rightNum = parseDoubleOrNullStrict(right)
+        if (leftNum != null && rightNum != null) {
                     leftNum <= rightNum
                 } else if (leftNum != null || rightNum != null) {
                     throw IllegalArgumentException(context.getString(R.string.workflow_condition_type_mismatch, left, right))
@@ -259,20 +247,17 @@ class WorkflowExecutor(private val context: Context) {
                 } catch (_: Exception) {
                     right.split(',').map { it.trim() }.filter { it.isNotEmpty() }
                 }
-
-                val contains = if (items.isEmpty()) {
+        val contains = if (items.isEmpty()) {
                     false
                 } else {
                     val leftNum = parseDoubleOrNullStrict(left)
-                    val itemNums = items.map { parseDoubleOrNullStrict(it) }
-                    val listAllNum = itemNums.all { it != null }
-                    val listAllStr = itemNums.all { it == null }
-
-                    if (!listAllNum && !listAllStr) {
+        val itemNums = items.map { parseDoubleOrNullStrict(it) }
+        val listAllNum = itemNums.all { it != null }
+        val listAllStr = itemNums.all { it == null }
+        if (!listAllNum && !listAllStr) {
                         throw IllegalArgumentException(context.getString(R.string.workflow_in_list_type_mismatch, right))
                     }
-
-                    if (listAllNum) {
+        if (listAllNum) {
                         val ln = leftNum ?: throw IllegalArgumentException(context.getString(R.string.workflow_condition_type_mismatch, left, right))
                         itemNums.filterNotNull().any { it == ln }
                     } else {
@@ -282,27 +267,25 @@ class WorkflowExecutor(private val context: Context) {
                         items.contains(left)
                     }
                 }
-                if (operator == ConditionOperator.IN) contains else !contains
+        if (operator == ConditionOperator.IN) contains else !contains
             }
         }
     }
-
-    private fun extractByRegex(source: String, pattern: String, group: Int, defaultValue: String): String {
+        private fun extractByRegex(source: String, pattern: String, group: Int, defaultValue: String): String {
         if (pattern.isBlank()) return defaultValue
         return try {
             val match = Regex(pattern).find(source)
-            val groupValue = match?.groups?.get(group)?.value
+        val groupValue = match?.groups?.get(group)?.value
             groupValue ?: defaultValue
         } catch (_: Exception) {
             defaultValue
         }
     }
-
-    private fun extractByJsonPath(source: String, path: String, defaultValue: String): String {
+        private fun extractByJsonPath(source: String, path: String, defaultValue: String): String {
         if (path.isBlank()) return defaultValue
         val root: Any = try {
             val trimmed = source.trim()
-            if (trimmed.startsWith("[")) {
+        if (trimmed.startsWith("[")) {
                 org.json.JSONArray(trimmed)
             } else {
                 org.json.JSONObject(trimmed)
@@ -310,47 +293,42 @@ class WorkflowExecutor(private val context: Context) {
         } catch (_: Exception) {
             return defaultValue
         }
-
         fun readIndexToken(token: String): Pair<String, List<Int>> {
             val name = token.substringBefore("[")
-            val indexes = mutableListOf<Int>()
-            var rest = token.substringAfter("[", missingDelimiterValue = "")
+        val indexes = mutableListOf<Int>()
+        var rest = token.substringAfter("[", missingDelimiterValue = "")
             while (rest.isNotEmpty()) {
                 val idxStr = rest.substringBefore("]", missingDelimiterValue = "")
-                val idx = idxStr.toIntOrNull()
-                if (idx != null) indexes.add(idx)
+        val idx = idxStr.toIntOrNull()
+        if (idx != null) indexes.add(idx)
                 rest = rest.substringAfter("[", missingDelimiterValue = "")
             }
-            return name to indexes
+        return name to indexes
         }
-
         fun getChild(current: Any?, name: String): Any? {
             return when (current) {
                 is org.json.JSONObject -> if (name.isBlank()) current else current.opt(name)
                 else -> null
             }
         }
-
         fun getIndex(current: Any?, index: Int): Any? {
             return when (current) {
                 is org.json.JSONArray -> current.opt(index)
                 else -> null
             }
         }
-
         var current: Any? = root
         val segments = path.split('.').map { it.trim() }.filter { it.isNotEmpty() }
         for (seg in segments) {
             val (name, indexes) = readIndexToken(seg)
-            if (name.isNotBlank()) {
+        if (name.isNotBlank()) {
                 current = getChild(current, name)
             }
-            for (idx in indexes) {
+        for (idx in indexes) {
                 current = getIndex(current, idx)
             }
-            if (current == null) return defaultValue
+        if (current == null) return defaultValue
         }
-
         return when (current) {
             null -> defaultValue
             is org.json.JSONObject -> current.toString()
@@ -358,8 +336,7 @@ class WorkflowExecutor(private val context: Context) {
             else -> current.toString()
         }
     }
-
-    private fun substringByIndex(source: String, startIndex: Int, length: Int, defaultValue: String): String {
+        private fun substringByIndex(source: String, startIndex: Int, length: Int, defaultValue: String): String {
         if (source.isEmpty()) return defaultValue
         if (startIndex < 0) return defaultValue
         if (startIndex > source.length) return defaultValue
@@ -369,12 +346,10 @@ class WorkflowExecutor(private val context: Context) {
         } else {
             (startIndex + length).coerceAtMost(source.length)
         }
-
         if (endExclusive < startIndex) return defaultValue
         return source.substring(startIndex, endExclusive)
     }
-
-    private fun randomInt(minValue: Int, maxValue: Int): Int {
+        private fun randomInt(minValue: Int, maxValue: Int): Int {
         val low = min(minValue, maxValue)
         val high = max(minValue, maxValue)
         if (low == high) return low
@@ -383,17 +358,14 @@ class WorkflowExecutor(private val context: Context) {
         val value = Random.nextLong(low.toLong(), upperExclusiveLong)
         return value.toInt()
     }
-
-    private fun randomString(length: Int, charset: String): String {
+        private fun randomString(length: Int, charset: String): String {
         val safeLength = length.coerceAtLeast(0)
         if (safeLength == 0) return ""
-
         val safeCharset = if (charset.isNotEmpty()) {
             charset
         } else {
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         }
-
         val sb = StringBuilder(safeLength)
         repeat(safeLength) {
             val idx = Random.nextInt(safeCharset.length)
@@ -401,8 +373,7 @@ class WorkflowExecutor(private val context: Context) {
         }
         return sb.toString()
     }
-
-    private fun getReachableNodeIds(
+        private fun getReachableNodeIds(
         startNodeIds: List<String>,
         adjacencyList: Map<String, List<String>>
     ): Set<String> {
@@ -416,39 +387,34 @@ class WorkflowExecutor(private val context: Context) {
 
         while (forwardQueue.isNotEmpty()) {
             val current = forwardQueue.removeFirst()
-            for (next in adjacencyList[current].orEmpty()) {
+        for (next in adjacencyList[current].orEmpty()) {
                 if (forwardVisited.add(next)) {
                     forwardQueue.addLast(next)
                 }
             }
         }
-
         val reverseAdjacencyList = mutableMapOf<String, MutableList<String>>()
         for ((sourceId, targets) in adjacencyList) {
             for (targetId in targets) {
                 reverseAdjacencyList.getOrPut(targetId) { mutableListOf() }.add(sourceId)
             }
         }
-
         val visited = forwardVisited.toMutableSet()
         val queue: ArrayDeque<String> = ArrayDeque()
         forwardVisited.forEach { queue.addLast(it) }
         while (queue.isNotEmpty()) {
             val current = queue.removeFirst()
-            for (prev in reverseAdjacencyList[current].orEmpty()) {
+        for (prev in reverseAdjacencyList[current].orEmpty()) {
                 if (visited.add(prev)) {
                     queue.addLast(prev)
                 }
             }
         }
-
         return visited
     }
-
-    private fun buildReferenceDependencies(workflow: Workflow): List<Pair<String, String>> {
+        private fun buildReferenceDependencies(workflow: Workflow): List<Pair<String, String>> {
         val nodeIdSet = workflow.nodes.map { it.id }.toSet()
         val dependencies = LinkedHashSet<Pair<String, String>>()
-
         fun addDependency(sourceId: String, targetId: String) {
             if (sourceId == targetId) return
             if (!nodeIdSet.contains(sourceId)) return
@@ -471,7 +437,7 @@ class WorkflowExecutor(private val context: Context) {
                     if (left is ParameterValue.NodeReference) {
                         addDependency(left.nodeId, node.id)
                     }
-                    if (right is ParameterValue.NodeReference) {
+        if (right is ParameterValue.NodeReference) {
                         addDependency(right.nodeId, node.id)
                     }
                 }
@@ -490,7 +456,6 @@ class WorkflowExecutor(private val context: Context) {
                 else -> Unit
             }
         }
-
         return dependencies.toList()
     }
     
@@ -506,10 +471,9 @@ class WorkflowExecutor(private val context: Context) {
         val runId = UUID.randomUUID().toString()
         val runLogger = WorkflowRunLogger(TAG)
         val nodeResults = mutableMapOf<String, NodeExecutionState>()
-
         fun buildResult(success: Boolean, message: String): WorkflowExecutionResult {
             val finishedAt = System.currentTimeMillis()
-            val executionRecord =
+        val executionRecord =
                 WorkflowExecutionRecord(
                     runId = runId,
                     workflowId = workflow.id,
@@ -521,7 +485,7 @@ class WorkflowExecutor(private val context: Context) {
                     message = message,
                     logs = runLogger.entries
                 )
-            return WorkflowExecutionResult(
+        return WorkflowExecutionResult(
                 workflowId = workflow.id,
                 success = success,
                 nodeResults = nodeResults,
@@ -539,8 +503,7 @@ class WorkflowExecutor(private val context: Context) {
         try {
             // 1. 找到所有触发节点作为入�?
     val allTriggerNodes = workflow.nodes.filterIsInstance<TriggerNode>()
-            
-            if (allTriggerNodes.isEmpty()) {
+        if (allTriggerNodes.isEmpty()) {
                 runLogger.w(context.getString(R.string.workflow_log_no_trigger_node))
                 return@withContext buildResult(
                     success = false,
@@ -552,7 +515,7 @@ class WorkflowExecutor(private val context: Context) {
     val triggerNodes = if (triggerNodeId != null) {
                 // 如果指定了触发节点ID（通常是定时任务），只执行该触发节�?
     val specificNode = allTriggerNodes.find { it.id == triggerNodeId }
-                if (specificNode == null) {
+        if (specificNode == null) {
                     runLogger.w(context.getString(R.string.workflow_log_trigger_node_not_exist, triggerNodeId))
                     return@withContext buildResult(
                         success = false,
@@ -568,7 +531,7 @@ class WorkflowExecutor(private val context: Context) {
             } else {
                 // 如果没有指定触发节点ID（通常是手动触发），执行所有手动触发类型的节点
     val manualTriggers = allTriggerNodes.filter { it.triggerType == "manual" }
-                if (manualTriggers.isEmpty()) {
+        if (manualTriggers.isEmpty()) {
                     runLogger.w(context.getString(R.string.workflow_log_no_manual_trigger_node))
                     return@withContext buildResult(
                         success = false,
@@ -608,7 +571,7 @@ class WorkflowExecutor(private val context: Context) {
                     nodeId = triggerNode.id,
                     nodeName = triggerNode.name
                 )
-                val triggerPayload = org.json.JSONObject(triggerExtras).toString()
+        val triggerPayload = org.json.JSONObject(triggerExtras).toString()
                 nodeResults[triggerNode.id] = NodeExecutionState.Success(triggerPayload)
                 onNodeStateChange(triggerNode.id, NodeExecutionState.Success(triggerPayload))
             }
@@ -641,7 +604,7 @@ class WorkflowExecutor(private val context: Context) {
             
         } catch (e: CancellationException) {
             runLogger.w(context.getString(R.string.workflow_log_execution_cancelled, workflow.name))
-            throw e
+        throw e
         } catch (e: Exception) {
             runLogger.e(context.getString(R.string.workflow_log_execution_exception), throwable = e)
             return@withContext buildResult(
@@ -655,12 +618,10 @@ class WorkflowExecutor(private val context: Context) {
      * 构建邻接�?    */
     private fun buildAdjacencyList(connections: List<WorkflowNodeConnection>): Map<String, List<String>> {
         val adjacencyList = mutableMapOf<String, MutableList<String>>()
-        
         for (connection in connections) {
             adjacencyList.getOrPut(connection.sourceNodeId) { mutableListOf() }
                 .add(connection.targetNodeId)
         }
-        
         return adjacencyList
     }
     
@@ -675,11 +636,10 @@ class WorkflowExecutor(private val context: Context) {
             inDegree[node.id] = 0
             adjacencyList[node.id] = mutableListOf()
         }
-        
         fun addEdge(sourceId: String, targetId: String) {
             if (sourceId == targetId) return
             val targets = adjacencyList.getOrPut(sourceId) { mutableListOf() }
-            if (targets.contains(targetId)) return
+        if (targets.contains(targetId)) return
             targets.add(targetId)
             inDegree[targetId] = (inDegree[targetId] ?: 0) + 1
         }
@@ -688,11 +648,9 @@ class WorkflowExecutor(private val context: Context) {
     for (connection in workflow.connections) {
             addEdge(connection.sourceNodeId, connection.targetNodeId)
         }
-
         for ((sourceId, targetId) in buildReferenceDependencies(workflow)) {
             addEdge(sourceId, targetId)
         }
-        
         return DependencyGraph(adjacencyList, inDegree)
     }
     
@@ -705,7 +663,6 @@ class WorkflowExecutor(private val context: Context) {
     for (node in nodes) {
             visitState[node.id] = 0
         }
-        
         fun dfs(nodeId: String): Boolean {
             visitState[nodeId] = 1 // 标记为访问中
             
@@ -728,7 +685,6 @@ class WorkflowExecutor(private val context: Context) {
                 }
             }
         }
-        
         return false
     }
     
@@ -760,19 +716,18 @@ class WorkflowExecutor(private val context: Context) {
             }
             currentInDegree[nodeId] = 0
         }
-
         for ((sourceId, targets) in dependencyGraph.adjacencyList) {
             if (!reachableNodeIds.contains(sourceId)) {
                 continue
             }
-            if (triggerNodeIds.contains(sourceId)) {
+        if (triggerNodeIds.contains(sourceId)) {
                 continue
             }
-            for (targetId in targets) {
+        for (targetId in targets) {
                 if (!reachableNodeIds.contains(targetId)) {
                     continue
                 }
-                if (triggerNodeIds.contains(targetId)) {
+        if (triggerNodeIds.contains(targetId)) {
                     continue
                 }
                 currentInDegree[targetId] = (currentInDegree[targetId] ?: 0) + 1
@@ -788,7 +743,7 @@ class WorkflowExecutor(private val context: Context) {
         
         while (queue.isNotEmpty()) {
             currentCoroutineContext().ensureActive()
-            val currentNodeId = queue.poll() ?: break
+        val currentNodeId = queue.poll() ?: break
             
             // 检查节点是否已经被执行�?
     if (nodeResults.containsKey(currentNodeId)) {
@@ -802,18 +757,16 @@ class WorkflowExecutor(private val context: Context) {
                 runLogger.w(context.getString(R.string.workflow_log_node_not_exist, currentNodeId), nodeId = currentNodeId)
                 continue
             }
-
-            val incomingConnections = incomingConnectionsByTarget[currentNodeId].orEmpty().filter { conn ->
+        val incomingConnections = incomingConnectionsByTarget[currentNodeId].orEmpty().filter { conn ->
                 if (!reachableNodeIds.contains(conn.sourceNodeId)) {
                     return@filter false
                 }
-                if (triggerNodeIds.contains(conn.sourceNodeId) && !startedTriggerNodeIds.contains(conn.sourceNodeId)) {
+        if (triggerNodeIds.contains(conn.sourceNodeId) && !startedTriggerNodeIds.contains(conn.sourceNodeId)) {
                     return@filter false
                 }
                 true
             }
-
-            val shouldExecute = if (incomingConnections.isEmpty()) {
+        val shouldExecute = if (incomingConnections.isEmpty()) {
                 true
             } else {
                 incomingConnections.any { conn ->
@@ -822,36 +775,30 @@ class WorkflowExecutor(private val context: Context) {
                     if (isSkippedState(sourceState)) {
                         return@any false
                     }
-
-                    val rawCondition = conn.condition?.trim().orEmpty()
-                    val effectiveCondition = if (rawCondition.isBlank() && (sourceNode is ConditionNode || sourceNode is LogicNode)) {
+        val rawCondition = conn.condition?.trim().orEmpty()
+        val effectiveCondition = if (rawCondition.isBlank() && (sourceNode is ConditionNode || sourceNode is LogicNode)) {
                         "true"
                     } else {
                         rawCondition
                     }
-
-                    val conditionKey = effectiveCondition.trim().lowercase()
-                    when (conditionKey) {
+        val conditionKey = effectiveCondition.trim().lowercase()
+        when (conditionKey) {
                         "error", "failed", "on_error" -> return@any sourceState is NodeExecutionState.Failed
                         "success", "ok", "on_success" -> return@any sourceState is NodeExecutionState.Success
                     }
-
-                    if (effectiveCondition.isBlank()) {
+        if (effectiveCondition.isBlank()) {
                         return@any sourceState is NodeExecutionState.Success
                     }
-
-                    val desiredBool = when (effectiveCondition.lowercase()) {
+        val desiredBool = when (effectiveCondition.lowercase()) {
                         "true" -> true
                         "false" -> false
                         else -> null
                     }
-
-                    val sourceResult = (sourceState as? NodeExecutionState.Success)?.result
+        val sourceResult = (sourceState as? NodeExecutionState.Success)?.result
                     if (sourceResult == null) {
                         return@any false
                     }
-
-                    if (desiredBool != null) {
+        if (desiredBool != null) {
                         val actual = parseBooleanLike(sourceResult) ?: false
                         return@any actual == desiredBool
                     }
@@ -863,18 +810,16 @@ class WorkflowExecutor(private val context: Context) {
                     }
                 }
             }
-
-            if (!shouldExecute) {
+        if (!shouldExecute) {
                 runLogger.d(
                     context.getString(R.string.workflow_log_condition_not_met_skip, node.name, node.id),
                     nodeId = node.id,
                     nodeName = node.name
                 )
-                val skipReason = context.getString(R.string.workflow_condition_not_met)
+        val skipReason = context.getString(R.string.workflow_condition_not_met)
                 nodeResults[node.id] = NodeExecutionState.Skipped(skipReason)
                 onNodeStateChange(node.id, NodeExecutionState.Skipped(skipReason))
-
-                for (nextNodeId in dependencyGraph.adjacencyList[currentNodeId] ?: emptyList()) {
+        for (nextNodeId in dependencyGraph.adjacencyList[currentNodeId] ?: emptyList()) {
                     if (!currentInDegree.containsKey(nextNodeId)) {
                         continue
                     }
@@ -926,32 +871,27 @@ class WorkflowExecutor(private val context: Context) {
                 }
             }
         }
-        
         if (!hasFailure) {
             return true
         }
-
         val outgoingConnectionsBySource = workflow.connections.groupBy { it.sourceNodeId }
         fun isErrorCondition(condition: String): Boolean {
             val normalized = condition?.trim()?.lowercase().orEmpty()
-            return normalized == "error" || normalized == "failed" || normalized == "on_error"
+        return normalized == "error" || normalized == "failed" || normalized == "on_error"
         }
-
         val hasUnhandledFailure = nodeResults.any { (nodeId, state) ->
             if (state !is NodeExecutionState.Failed) {
                 return@any false
             }
-            val outgoing = outgoingConnectionsBySource[nodeId].orEmpty()
-            val handled = outgoing.any { conn ->
+        val outgoing = outgoingConnectionsBySource[nodeId].orEmpty()
+        val handled = outgoing.any { conn ->
                 isErrorCondition(conn.condition) && nodeResults[conn.targetNodeId] is NodeExecutionState.Success
             }
             !handled
         }
-
         return !hasUnhandledFailure
     }
-    
-    private fun resolveParameters(
+        private fun resolveParameters(
         node: ExecuteNode,
         nodeResults: Map<String, NodeExecutionState>,
         triggerExtras: Map<String, String>
@@ -959,10 +899,10 @@ class WorkflowExecutor(private val context: Context) {
         val schemasByName = getToolParameterSchemas(node.actionType)
         return node.actionConfig.mapNotNull { (key, paramValue) ->
             val normalizedKey = key.trim()
-            if (normalizedKey.isBlank()) {
+        if (normalizedKey.isBlank()) {
                 return@mapNotNull null
             }
-            val schema = schemasByName[normalizedKey]
+        val schema = schemasByName[normalizedKey]
             if (
                 schema != null &&
                 !schema.required &&
@@ -971,38 +911,33 @@ class WorkflowExecutor(private val context: Context) {
             ) {
                 return@mapNotNull null
             }
-            val resolvedValue = resolveParameterValue(paramValue, nodeResults, triggerExtras)
+        val resolvedValue = resolveParameterValue(paramValue, nodeResults, triggerExtras)
             ToolParameter(name = normalizedKey, value = resolvedValue)
         }
     }
-
-    private fun getToolParameterSchemas(toolName: String): Map<String, ToolParameterSchema> {
+        private fun getToolParameterSchemas(toolName: String): Map<String, ToolParameterSchema> {
         val normalizedToolName = toolName.trim()
         if (normalizedToolName.isBlank()) {
             return emptyMap()
         }
-
         if (normalizedToolName.contains(":")) {
             val parts = normalizedToolName.split(":", limit = 2)
-            if (parts.size != 2) {
+        if (parts.size != 2) {
                 return emptyMap()
             }
-
-            val packageName = parts[0].trim()
-            val packageToolName = parts[1].trim()
-            if (packageName.isBlank() || packageToolName.isBlank()) {
+        val packageName = parts[0].trim()
+        val packageToolName = parts[1].trim()
+        if (packageName.isBlank() || packageToolName.isBlank()) {
                 return emptyMap()
             }
-
-            val packageManager = toolHandler.getOrCreatePackageManager()
+        val packageManager = toolHandler.getOrCreatePackageManager()
             runCatching {
                 if (!packageManager.isPackageImported(packageName)) {
                     packageManager.importPackage(packageName)
                 }
                 packageManager.usePackage(packageName)
             }
-
-            return packageManager
+        return packageManager
                 .getEffectivePackageTools(packageName)
                 ?.tools
                 ?.find { it.name == packageToolName }
@@ -1018,7 +953,6 @@ class WorkflowExecutor(private val context: Context) {
                 ?.associateBy { it.name }
                 .orEmpty()
         }
-
         return SystemToolPrompts.getAllCategoriesEn()
             .flatMap { it.tools }
             .find { it.name == normalizedToolName }
@@ -1042,23 +976,20 @@ class WorkflowExecutor(private val context: Context) {
         runLogger: WorkflowRunLogger
     ): Boolean {
         currentCoroutineContext().ensureActive()
-
         if (node is TriggerNode) {
             val triggerPayload = org.json.JSONObject(triggerExtras).toString()
             nodeResults[node.id] = NodeExecutionState.Success(triggerPayload)
             onNodeStateChange(node.id, NodeExecutionState.Success(triggerPayload))
-            return true
+        return true
         }
-
         if (node is ConditionNode) {
             nodeResults[node.id] = NodeExecutionState.Running
             onNodeStateChange(node.id, NodeExecutionState.Running)
-
-            return try {
+        return try {
                 val left = resolveParameterValue(node.left, nodeResults, triggerExtras)
-                val right = resolveParameterValue(node.right, nodeResults, triggerExtras)
-                val ok = compareValues(left, right, node.operator)
-                val result = ok.toString()
+        val right = resolveParameterValue(node.right, nodeResults, triggerExtras)
+        val ok = compareValues(left, right, node.operator)
+        val result = ok.toString()
                 nodeResults[node.id] = NodeExecutionState.Success(result)
                 onNodeStateChange(node.id, NodeExecutionState.Success(result))
                 true
@@ -1072,24 +1003,21 @@ class WorkflowExecutor(private val context: Context) {
                 false
             }
         }
-
         if (node is LogicNode) {
             nodeResults[node.id] = NodeExecutionState.Running
             onNodeStateChange(node.id, NodeExecutionState.Running)
-
-            return try {
+        return try {
                 val inputs = incomingConnections.mapNotNull { conn ->
                     val state = nodeResults[conn.sourceNodeId]
                     val result = (state as? NodeExecutionState.Success)?.result ?: return@mapNotNull null
                     if (isSkippedState(state)) return@mapNotNull null
                     parseBooleanLike(result)
                 }
-
-                val ok = when (node.operator) {
+        val ok = when (node.operator) {
                     LogicOperator.AND -> inputs.isNotEmpty() && inputs.all { it }
                     LogicOperator.OR -> inputs.any { it }
                 }
-                val result = ok.toString()
+        val result = ok.toString()
                 nodeResults[node.id] = NodeExecutionState.Success(result)
                 onNodeStateChange(node.id, NodeExecutionState.Success(result))
                 true
@@ -1103,16 +1031,14 @@ class WorkflowExecutor(private val context: Context) {
                 false
             }
         }
-
         if (node is ExtractNode) {
             nodeResults[node.id] = NodeExecutionState.Running
             onNodeStateChange(node.id, NodeExecutionState.Running)
-
-            return try {
+        return try {
                 var sourceText = ""
-                if (node.mode != ExtractMode.RANDOM_INT && node.mode != ExtractMode.RANDOM_STRING) {
+        if (node.mode != ExtractMode.RANDOM_INT && node.mode != ExtractMode.RANDOM_STRING) {
                     sourceText = resolveParameterValue(node.source, nodeResults, triggerExtras)
-                    if (sourceText.isBlank() && node.source is ParameterValue.StaticValue) {
+        if (sourceText.isBlank() && node.source is ParameterValue.StaticValue) {
                         val fallbackSourceId = incomingConnections.firstOrNull()?.sourceNodeId
                         if (fallbackSourceId != null) {
                             val fallbackState = nodeResults[fallbackSourceId]
@@ -1122,8 +1048,7 @@ class WorkflowExecutor(private val context: Context) {
                         }
                     }
                 }
-
-                val extracted = when (node.mode) {
+        val extracted = when (node.mode) {
                     ExtractMode.REGEX -> extractByRegex(sourceText, node.expression, node.group, node.defaultValue)
                     ExtractMode.JSON -> extractByJsonPath(sourceText, node.expression, node.defaultValue)
                     ExtractMode.SUB -> substringByIndex(sourceText, node.startIndex, node.length, node.defaultValue)
@@ -1136,7 +1061,7 @@ class WorkflowExecutor(private val context: Context) {
                     ExtractMode.RANDOM_INT -> {
                         if (node.useFixed) {
                             val fixed = node.fixedValue.trim()
-                            val fixedInt = fixed.toLongOrNull()
+        val fixedInt = fixed.toLongOrNull()
                                 ?: throw IllegalArgumentException(context.getString(R.string.workflow_error_fixed_value_must_be_int, node.fixedValue))
                             fixedInt.toString()
                         } else {
@@ -1165,17 +1090,16 @@ class WorkflowExecutor(private val context: Context) {
                 false
             }
         }
-
         if (node !is ExecuteNode) {
             runLogger.d(
                 context.getString(R.string.workflow_log_skip_non_execute_node, node.name),
                 nodeId = node.id,
                 nodeName = node.name
             )
-            val skipReason = context.getString(R.string.workflow_non_execute_node)
+        val skipReason = context.getString(R.string.workflow_non_execute_node)
             nodeResults[node.id] = NodeExecutionState.Skipped(skipReason)
             onNodeStateChange(node.id, NodeExecutionState.Skipped(skipReason))
-            return true
+        return true
         }
         
         // 标记为执行中
@@ -1189,7 +1113,7 @@ class WorkflowExecutor(private val context: Context) {
                 runLogger.w(errorMsg, nodeId = node.id, nodeName = node.name)
                 nodeResults[node.id] = NodeExecutionState.Failed(errorMsg)
                 onNodeStateChange(node.id, NodeExecutionState.Failed(errorMsg))
-                return false
+        return false
             }
             
             // 解析参数（支持静态值和节点引用�?
@@ -1211,8 +1135,7 @@ class WorkflowExecutor(private val context: Context) {
 
             // 执行工具
     val result = toolHandler.executeTool(tool)
-            
-            if (result.success) {
+        if (result.success) {
                 val resultData = result.result
                 val resultMessage =
                     if (resultData is MessageSendResultData && !resultData.aiResponse.isNullOrBlank()) {
@@ -1227,7 +1150,7 @@ class WorkflowExecutor(private val context: Context) {
                 )
                 nodeResults[node.id] = NodeExecutionState.Success(resultMessage)
                 onNodeStateChange(node.id, NodeExecutionState.Success(resultMessage))
-                return true
+        return true
             } else {
                 val errorMsg = result.error ?: context.getString(R.string.workflow_node_execution_exception, context.getString(R.string.workflow_unknown_error))
                 runLogger.e(
@@ -1237,7 +1160,7 @@ class WorkflowExecutor(private val context: Context) {
                 )
                 nodeResults[node.id] = NodeExecutionState.Failed(errorMsg)
                 onNodeStateChange(node.id, NodeExecutionState.Failed(errorMsg))
-                return false
+        return false
             }
             
         } catch (e: CancellationException) {
@@ -1252,7 +1175,7 @@ class WorkflowExecutor(private val context: Context) {
             )
             nodeResults[node.id] = NodeExecutionState.Failed(errorMsg)
             onNodeStateChange(node.id, NodeExecutionState.Failed(errorMsg))
-            return false
+        return false
         }
     }
 }

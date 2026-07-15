@@ -22,30 +22,24 @@ data class Workflow(
     val category: String = "通用"
 ) : Parcelable {
     fun toJson(): String = Gson().toJson(this)
-
-    fun addNode(node: WorkflowNode) {
+        fun addNode(node: WorkflowNode) {
         nodes.add(node)
         updated = System.currentTimeMillis()
     }
-
-    fun addEdge(edge: WorkflowEdge) {
+        fun addEdge(edge: WorkflowEdge) {
         edges.add(edge)
         updated = System.currentTimeMillis()
     }
-
-    fun removeNode(nodeId: String) {
+        fun removeNode(nodeId: String) {
         nodes.removeAll { it.id == nodeId }
         edges.removeAll { it.fromNodeId == nodeId || it.toNodeId == nodeId }
         updated = System.currentTimeMillis()
     }
-
-    fun getNode(nodeId: String): WorkflowNode? = nodes.find { it.id == nodeId }
-
-    fun getNextNodes(nodeId: String): List<WorkflowNode> {
+        fun getNode(nodeId: String): WorkflowNode? = nodes.find { it.id == nodeId }
+        fun getNextNodes(nodeId: String): List<WorkflowNode> {
         return edges.filter { it.fromNodeId == nodeId }.mapNotNull { getNode(it.toNodeId) }
     }
-
-    fun getInputNodes(): List<WorkflowNode> {
+        fun getInputNodes(): List<WorkflowNode> {
         val allToNodeIds = edges.map { it.toNodeId }.toSet()
         return nodes.filter { it.id !in allToNodeIds }
     }

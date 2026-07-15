@@ -50,13 +50,12 @@ class ProblemLibraryTool private constructor(private val context: Context) {
             val summary: String = "",
             val timestamp: Long = System.currentTimeMillis()
     )
-
-    private val memoryRepository: MemoryRepository
+        private val memoryRepository: MemoryRepository
         get() {
             val profileId = kotlinx.coroutines.runBlocking {
                 com.apex.data.preferences.preferencesManager.activeProfileIdFlow.first()
             }
-            return MemoryRepository(context, profileId)
+        return MemoryRepository(context, profileId)
         }
 
     // 将ProblemRecord转换为Memory
@@ -79,14 +78,12 @@ class ProblemLibraryTool private constructor(private val context: Context) {
     val contentParts = memory.content.split("\n\n")
         val questionLabel = context.getString(R.string.problem_library_question_label)
         val solutionLabel = context.getString(R.string.problem_library_solution_label)
-
         val query =
                 if (contentParts.isNotEmpty() && contentParts[0].startsWith(questionLabel)) {
                     contentParts[0].substringAfter(questionLabel).trim()
                 } else {
                     memory.title
                 }
-
         val solution =
                 if (contentParts.size > 1 && contentParts[1].startsWith(solutionLabel)) {
                     contentParts[1].substringAfter(solutionLabel).trim()
@@ -99,7 +96,6 @@ class ProblemLibraryTool private constructor(private val context: Context) {
                 memory.tags.filter { it.name.startsWith("tool:") }.map {
                     it.name.substringAfter("tool:")
                 }
-
         return ProblemRecord(
                 uuid = memory.uuid,
                 query = query,
@@ -112,7 +108,7 @@ class ProblemLibraryTool private constructor(private val context: Context) {
 
     // 保存问题记录
     @Deprecated("This method saves to a legacy data structure.")
-    fun saveProblemRecord(record: ProblemRecord) {
+        fun saveProblemRecord(record: ProblemRecord) {
         AppLogger.d(TAG, "[Legacy] 开始保存问题记�?UUID: ${record.uuid}")
         kotlinx.coroutines.runBlocking {
             try {
@@ -138,7 +134,7 @@ class ProblemLibraryTool private constructor(private val context: Context) {
     }
 
     // 获取所有问题记�?   @Deprecated("This method retrieves legacy data.")
-    fun getAllProblemRecords(): List<ProblemRecord> {
+        fun getAllProblemRecords(): List<ProblemRecord> {
         return kotlinx.coroutines.runBlocking {
             try {
                 // 查询带有ProblemLibrary标签的所有Memory
@@ -179,11 +175,11 @@ class ProblemLibraryTool private constructor(private val context: Context) {
 
     // 删除问题记录
     @Deprecated("This method deletes legacy data.")
-    fun deleteProblemRecord(uuid: String): Boolean {
+        fun deleteProblemRecord(uuid: String): Boolean {
         return kotlinx.coroutines.runBlocking {
             try {
                 val memory = memoryRepository.getMemoryByUuid(uuid)
-                if (memory != null) {
+        if (memory != null) {
                     memoryRepository.deleteMemory(memory)
                     AppLogger.d(TAG, "Legacy 问题记录已删${uuid")
                     true
@@ -215,12 +211,10 @@ class ProblemLibraryTool private constructor(private val context: Context) {
                     context.getString(R.string.problem_library_query_error, e.message ?: "")
                 }
             }
-
-    private suspend fun addTagToMemory(memory: Memory, tagName: String) {
+        private suspend fun addTagToMemory(memory: Memory, tagName: String) {
         memoryRepository.addTagToMemory(memory, tagName)
     }
-
-    private fun formatProblemLibraryResults(records: List<ProblemRecord>): String {
+        private fun formatProblemLibraryResults(records: List<ProblemRecord>): String {
         val result = StringBuilder()
         result.appendLine(context.getString(R.string.problem_library_found_records, records.size))
 
@@ -249,7 +243,6 @@ class ProblemLibraryTool private constructor(private val context: Context) {
                 )
             )
         }
-
         return result.toString()
     }
 }

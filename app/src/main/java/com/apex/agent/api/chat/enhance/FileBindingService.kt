@@ -18,8 +18,7 @@ class FileBindingService(context: Context) {
             )
         private const val PARALLEL_MIN_ITERATIONS = 2000
     }
-
-    private enum class EditAction {
+        private enum class EditAction {
         REPLACE,
         DELETE
     }
@@ -34,14 +33,12 @@ class FileBindingService(context: Context) {
         val oldContent: String,
         val newContent: String = ""
     )
-
-    private data class EditOperation(
+        private data class EditOperation(
             val action: EditAction,
             val oldContent: String,
             val newContent: String
     )
-
-    private data class MatchSearchResult(
+        private data class MatchSearchResult(
             val bestScore: Double,
             val startLine: Int,
             val endLine: Int,
@@ -76,26 +73,25 @@ class FileBindingService(context: Context) {
                 "If you want to rewrite an entire existing file: please delete_file first then use apply_file with type=create (do not overwrite directly)." +
                 "If you want to modify a file: please use apply_file with type=replace/delete and provide old/new (or old)."
             AppLogger.w(TAG, "Refusing full overwrite for existing content without structured edit blocks. ${errorMsg}")
-            return Pair(originalContent, errorMsg)
+        return Pair(originalContent, errorMsg)
         }
-
         if (aiGeneratedCode.contains("[START-")) {
             onProgress?.invoke(0f, "Parsing patch...")
             AppLogger.d(TAG, "Structured edit blocks detected. Attempting fuzzy patch.")
             try {
                 val (success, resultString) = applyFuzzyPatch(originalContent, aiGeneratedCode, onProgress)
-                if (success) {
+        if (success) {
                     onProgress?.invoke(1f, "Patch applied")
                     AppLogger.d(TAG, "Fuzzy patch succeeded.")
-                    val diffString = generateDiff(originalContent.replace("\r\n", "\n"), resultString)
-                    return Pair(resultString, diffString)
+        val diffString = generateDiff(originalContent.replace("\r\n", "\n"), resultString)
+        return Pair(resultString, diffString)
                 } else {
                     AppLogger.w(TAG, "Fuzzy patch application failed. Reason: ${resultString}")
-                    return Pair(originalContent, "Error: Could not apply patch. Reason: ${resultString}")
+        return Pair(originalContent, "Error: Could not apply patch. Reason: ${resultString}")
                 }
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Error during fuzzy patch process.", e)
-                return Pair(originalContent, "Error: An unexpected exception occurred during the patching process: ${e.message}")
+        return Pair(originalContent, "Error: An unexpected exception occurred during the patching process: ${e.message}")
             }
         }
 
@@ -115,7 +111,6 @@ class FileBindingService(context: Context) {
         if (operations.isEmpty()) {
             return Pair(originalContent, "Error: No valid edit operations provided")
         }
-
         val internalOps = operations.mapNotNull { op ->
             val old = op.oldContent
             if (old.isBlank()) return@mapNotNull null
@@ -130,7 +125,6 @@ class FileBindingService(context: Context) {
                 }
             }
         }
-
         if (internalOps.isEmpty()) {
             return Pair(originalContent, "Error: No valid edit operations provided")
         }
@@ -139,13 +133,12 @@ class FileBindingService(context: Context) {
         val (success, resultString) = applyFuzzyOperations(originalContent, internalOps, onProgress)
         if (success) {
             onProgress?.invoke(1f, "Patch applied")
-            val diffString = generateDiff(originalContent.replace("\r\n", "\n"), resultString)
-            return Pair(resultString, diffString)
+        val diffString = generateDiff(originalContent.replace("\r\n", "\n"), resultString)
+        return Pair(resultString, diffString)
         }
         return Pair(originalContent, "Error: Could not apply patch. Reason: ${resultString}")
     }
-
-    private fun generateDiff(original: String, modified: String): String {
+        private fun generateDiff(original: String, modified: String): String {
         return generateUnifiedDiff(original, modified)
     }
 
@@ -161,7 +154,6 @@ class FileBindingService(context: Context) {
         val originalLines = if (original.isEmpty()) emptyList() else original.lines()
         val modifiedLines = if (modified.isEmpty()) emptyList() else modified.lines()
         val patch = DiffUtils.diff(originalLines, modifiedLines)
-
         if (patch.deltas.isEmpty()) {
             return "No changes detected (files are identical)"
         }
@@ -192,12 +184,10 @@ class FileBindingService(context: Context) {
             patch,
             3 // Context lines
         )
-
         val resultLines = mutableListOf<String>()
         var origLineNum = 0
         var newLineNum = 0
         val hunkHeaderRegex = """^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@.*$""".toRegex()
-
         for (line in unifiedDiffLines) {
             when {
                 line.startsWith("---") || line.startsWith("+++") -> continue // Skip header lines
@@ -242,27 +232,23 @@ class FileBindingService(context: Context) {
     ): Pair<Boolean, String> {
         try {
             val operations = parseEditOperations(aiPatchCode)
-            if (operations.isEmpty()) {
+        if (operations.isEmpty()) {
                 return Pair(false, "No valid edit operations found in the patch code.")
             }
-
-            return applyFuzzyOperations(originalContent, operations, onProgress)
+        return applyFuzzyOperations(originalContent, operations, onProgress)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to apply fuzzy patch", e)
-            return Pair(false, "Failed to apply fuzzy patch due to an exception: ${e.message}")
+        return Pair(false, "Failed to apply fuzzy patch due to an exception: ${e.message}")
         }
     }
-
-    private fun applyFuzzyOperations(
+        private fun applyFuzzyOperations(
         originalContent: String,
         operations: List<EditOperation>,
         onProgress: ((Float, String) -> Unit)? = null
     ): Pair<Boolean, String> {
         onProgress?.invoke(0f, "Searching match...")
-
         val originalLines = originalContent.lines().toMutableList()
         val enrichedOps = mutableListOf<Triple<EditOperation, Int, Int>>()
-
         val totalOps = operations.size.coerceAtLeast(1)
         val matchPhaseWeight = 0.8f
         val applyPhaseWeight = 0.2f
@@ -273,45 +259,39 @@ class FileBindingService(context: Context) {
                     .coerceIn(0f, 0.99f)
                 onProgress?.invoke(overall, "Matching ${index + 1}/${totalOps}: ${msg}")
             }
-            if (start == -1) {
+        if (start == -1) {
                 AppLogger.w(TAG, "Could not find a suitable match for OLD block: ${op.oldContent.take(100)}...")
-                return Pair(false, "Could not find a match for an OLD block. The file may have changed too much.")
+        return Pair(false, "Could not find a match for an OLD block. The file may have changed too much.")
             }
-            if (hasMultiplePerfectMatches(originalContent, op.oldContent)) {
+        if (hasMultiplePerfectMatches(originalContent, op.oldContent)) {
                 AppLogger.w(TAG, "Multiple perfect matches found for OLD block; aborting to avoid ambiguous replacement.")
-                return Pair(false, "Found multiple perfect matches for an OLD block in the target file. Please refine the patch so it only matches a single location.")
+        return Pair(false, "Found multiple perfect matches for an OLD block in the target file. Please refine the patch so it only matches a single location.")
             }
             enrichedOps.add(Triple(op, start, end))
         }
 
         // Sort operations by start line in descending order to apply from the bottom up
         enrichedOps.sortByDescending { it.second }
-
         var applied = 0
         for ((op, start, end) in enrichedOps) {
             AppLogger.d(TAG, "Applying ${op.action} at lines ${start + 1}-${end + 1}")
-
-            val originalSegment = originalLines.subList(start, end + 1).toList()
-            val boundaryPreservingLines = tryApplyBoundaryPreservingEdit(originalSegment, op)
-
-            for (i in end downTo start) {
+        val originalSegment = originalLines.subList(start, end + 1).toList()
+        val boundaryPreservingLines = tryApplyBoundaryPreservingEdit(originalSegment, op)
+        for (i in end downTo start) {
                 originalLines.removeAt(i)
             }
-
-            if (boundaryPreservingLines != null) {
+        if (boundaryPreservingLines != null) {
                 originalLines.addAll(start, boundaryPreservingLines)
             } else if (op.action == EditAction.REPLACE) {
                 val newLinesRaw = op.newContent.lines()
-
-                val newLines = if (originalSegment.isNotEmpty() &&
+        val newLines = if (originalSegment.isNotEmpty() &&
                     start == end &&
                     newLinesRaw.size == 1
                 ) {
                     val originalFirstLine = originalSegment.first()
-                    val indentPrefix = originalFirstLine.takeWhile { it == ' ' || it == '\t' }
-                    val newLine = newLinesRaw.first()
-
-                    if (indentPrefix.isNotEmpty() &&
+        val indentPrefix = originalFirstLine.takeWhile { it == ' ' || it == '\t' }
+        val newLine = newLinesRaw.first()
+        if (indentPrefix.isNotEmpty() &&
                         !newLine.startsWith(" ") &&
                         !newLine.startsWith("\t")
                     ) {
@@ -331,11 +311,9 @@ class FileBindingService(context: Context) {
                 .coerceIn(0f, 0.99f)
             onProgress?.invoke(overall, "Applying ${applied}/${totalOps}")
         }
-
         return Pair(true, originalLines.joinToString("\n"))
     }
-
-    private fun tryApplyBoundaryPreservingEdit(
+        private fun tryApplyBoundaryPreservingEdit(
         originalSegment: List<String>,
         op: EditOperation
     ): List<String>? {
@@ -349,11 +327,10 @@ class FileBindingService(context: Context) {
 
         val prefix = originalSegment.first().substring(0, startIndex)
         val suffix = originalSegment.last().substring(endIndex + oldLines.last().length)
-
         return when (op.action) {
             EditAction.REPLACE -> {
                 val newLines = op.newContent.lines()
-                if (newLines.isEmpty()) return null
+        if (newLines.isEmpty()) return null
                 when (newLines.size) {
                     1 -> listOf(prefix + newLines.first() + suffix)
                     else -> buildList {
@@ -369,8 +346,7 @@ class FileBindingService(context: Context) {
             }
         }
     }
-
-    private fun findUniqueOccurrence(line: String, fragment: String): Int? {
+        private fun findUniqueOccurrence(line: String, fragment: String): Int? {
         if (fragment.isEmpty()) return null
 
         val firstIndex = line.indexOf(fragment)
@@ -381,44 +357,40 @@ class FileBindingService(context: Context) {
 
         return firstIndex
     }
-
-    private fun parseEditOperations(patchCode: String): List<EditOperation> {
+        private fun parseEditOperations(patchCode: String): List<EditOperation> {
         val operations = mutableListOf<EditOperation>()
         val lines = patchCode.lines()
         var i = 0
 
         while (i < lines.size) {
             val line = lines[i].trim()
-            if (line.startsWith("[START-")) {
+        if (line.startsWith("[START-")) {
                 val header = line
                 val actionStr = header.substringAfter("[START-").substringBefore("]")
-
-                val action = try {
+        val action = try {
                     EditAction.valueOf(actionStr)
                 } catch (e: IllegalArgumentException) {
                     i++
                     continue // Skip invalid action
                 }
-
-                var oldContent = ""
-                var newContent = ""
-                var inBlock: String? = null
+        var oldContent = ""
+        var newContent = ""
+        var inBlock: String? = null
                 i++ // Move to content
 
                 while (i < lines.size && !lines[i].trim().startsWith("[END-${actionStr}]")) {
                     val currentLine = lines[i]
                     val trimmedLine = currentLine.trim()
-
-                    if (trimmedLine.startsWith("[OLD]")) {
+        if (trimmedLine.startsWith("[OLD]")) {
                         inBlock = "OLD"
-                        val inline = currentLine.substringAfter("[OLD]", "")
-                        if (inline.isNotEmpty()) {
+        val inline = currentLine.substringAfter("[OLD]", "")
+        if (inline.isNotEmpty()) {
                             oldContent += inline + "\n"
                         }
                     } else if (trimmedLine.startsWith("[NEW]")) {
                         inBlock = "NEW"
-                        val inline = currentLine.substringAfter("[NEW]", "")
-                        if (inline.isNotEmpty()) {
+        val inline = currentLine.substringAfter("[NEW]", "")
+        if (inline.isNotEmpty()) {
                             newContent += inline + "\n"
                         }
                     } else if (trimmedLine.startsWith("[/OLD]")) inBlock = null
@@ -431,16 +403,15 @@ class FileBindingService(context: Context) {
                     }
                     i++
                 }
-
-                val normalizedOld = oldContent.removeSuffix("\n").removeSuffix("\r")
-                val normalizedNew = newContent.removeSuffix("\n").removeSuffix("\r")
+        val normalizedOld = oldContent.removeSuffix("\n").removeSuffix("\r")
+        val normalizedNew = newContent.removeSuffix("\n").removeSuffix("\r")
 
                 // Basic validation
     if ((action == EditAction.REPLACE || action == EditAction.DELETE) && normalizedOld.isBlank()) {
                     i++
                     continue // Skip invalid operation
                 }
-                if (action == EditAction.REPLACE && normalizedNew.isBlank()) {
+        if (action == EditAction.REPLACE && normalizedNew.isBlank()) {
                     i++
                     continue // Skip invalid operation
                 }
@@ -451,8 +422,7 @@ class FileBindingService(context: Context) {
         }
         return operations
     }
-
-    private fun findBestMatchRange(
+        private fun findBestMatchRange(
         originalLines: List<String>,
         oldContent: String,
         onProgress: ((Float, String) -> Unit)? = null
@@ -476,7 +446,6 @@ class FileBindingService(context: Context) {
             AppLogger.w(TAG, "OLD 块在去空白后过短，无法构建n-gram，放弃匹配）
             return -1 to -1
         }
-
         val lineStartIndices = mutableListOf<Int>()
         val normalizedOriginalContent = buildString {
             originalLines.forEachIndexed { index, line ->
@@ -492,7 +461,6 @@ class FileBindingService(context: Context) {
         // --- 阶段一：计算目标窗口尺寸范�?--
     val delta = (numOldLines * 0.2).toInt() + 2 // 扩大�?0%的容错范围，并确保至少有2行的浮动
     val targetSizes = (maxOf(1, numOldLines - delta))..(numOldLines + delta)
-
         var bestMatchScore = 0.0
         var bestMatchRange = -1 to -1
         var bestMatchSizeDiff = Int.MAX_VALUE
@@ -501,34 +469,29 @@ class FileBindingService(context: Context) {
         // --- 阶段二：并行滑动窗口搜索 ---
     val totalIterations = originalLines.size.toLong() * targetSizes.count().toLong()
         AppLogger.d(TAG, "开始滑动窗口匹配（并行），总迭代次�?${totalIterations}")
-
         val processedWindows = java.util.concurrent.atomic.AtomicLong(0L)
         val lastProgressEmitMs = java.util.concurrent.atomic.AtomicLong(0L)
-
         fun maybeEmitProgress(processed: Long) {
             if (onProgress == null) return
             val total = totalIterations.coerceAtLeast(1L)
-            val p = (processed.toDouble() / total.toDouble()).coerceIn(0.0, 0.99)
-            val now = System.currentTimeMillis()
-            val last = lastProgressEmitMs.get()
-            if (now - last < 200L) return
+        val p = (processed.toDouble() / total.toDouble()).coerceIn(0.0, 0.99)
+        val now = System.currentTimeMillis()
+        val last = lastProgressEmitMs.get()
+        if (now - last < 200L) return
             if (!lastProgressEmitMs.compareAndSet(last, now)) return
             onProgress.invoke(p.toFloat(), "Searching... ${(p * 100).toInt()}%")
         }
-
         val availableCores = Runtime.getRuntime().availableProcessors().coerceAtLeast(2)
         val threadCount = minOf(availableCores, originalLines.size)
         val segmentSize = (originalLines.size + threadCount - 1) / threadCount
         val foundPerfectMatch = java.util.concurrent.atomic.AtomicBoolean(false)
-
         val executor = java.util.concurrent.Executors.newFixedThreadPool(threadCount)
         try {
             val tasks = mutableListOf<java.util.concurrent.Future<MatchSearchResult>>()
-
-            for (threadIndex in 0 until threadCount) {
+        for (threadIndex in 0 until threadCount) {
                 val startLine = threadIndex * segmentSize
                 val endExclusive = minOf(originalLines.size, startLine + segmentSize)
-                if (startLine >= endExclusive) continue
+        if (startLine >= endExclusive) continue
 
                 val task = java.util.concurrent.Callable {
                     var localBestScore = 0.0
@@ -544,13 +507,11 @@ class FileBindingService(context: Context) {
                         if (foundPerfectMatch.get()) {
                             break
                         }
-
-                        for (size in targetSizes) {
+        for (size in targetSizes) {
                             if (foundPerfectMatch.get()) {
                                 break
                             }
-
-                            val endLine = i + size
+        val endLine = i + size
                             if (endLine > originalLines.size) {
                                 break
                             }
@@ -562,19 +523,16 @@ class FileBindingService(context: Context) {
                                 localChunk = 0L
                                 maybeEmitProgress(processed)
                             }
-
-                            val startCharIndex = lineStartIndices[i]
+        val startCharIndex = lineStartIndices[i]
                             val endCharIndex = lineStartIndices[endLine]
                             val normalizedWindow =
                                 normalizedOriginalContent.substring(startCharIndex, endCharIndex)
-
-                            val sizeDiff = abs(size - numOldLines)
-                            val lengthDiff = abs(normalizedWindow.length - normalizedOldLength)
+        val sizeDiff = abs(size - numOldLines)
+        val lengthDiff = abs(normalizedWindow.length - normalizedOldLength)
 
                             localLcs++
                             val score = ngramSimilarity(baseNgrams, normalizedWindow)
-
-                            val isBetter =
+        val isBetter =
                                 (score > localBestScore) ||
                                     (score == localBestScore &&
                                         (sizeDiff < localBestSizeDiff ||
@@ -582,8 +540,7 @@ class FileBindingService(context: Context) {
                                                 (lengthDiff < localBestLengthDiff ||
                                                     (lengthDiff == localBestLengthDiff &&
                                                         (localBestStart == -1 || i < localBestStart))))))
-
-                            if (isBetter) {
+        if (isBetter) {
                                 localBestScore = score
                                 localBestStart = i
                                 localBestEnd = endLine - 1
@@ -594,8 +551,7 @@ class FileBindingService(context: Context) {
                                     TAG,
                                     "并行块[${threadIndex}] 发现更佳匹配: �?{i + 1}-${endLine}, 相似�?${matchPercentage}%"
                                 )
-
-                                if (localBestScore == 1.0 && localBestSizeDiff == 0 && localBestLengthDiff == 0) {
+        if (localBestScore == 1.0 && localBestSizeDiff == 0 && localBestLengthDiff == 0) {
                                     foundPerfectMatch.set(true)
                                     AppLogger.d(TAG, "并行块[${threadIndex}] 已找�?00%匹配，提前结束该块搜索，)
                                     return@Callable MatchSearchResult(
@@ -611,8 +567,7 @@ class FileBindingService(context: Context) {
                             }
                         }
                     }
-
-                    if (localChunk > 0L) {
+        if (localChunk > 0L) {
                         val processed = processedWindows.addAndGet(localChunk)
                         maybeEmitProgress(processed)
                     }
@@ -630,8 +585,7 @@ class FileBindingService(context: Context) {
 
                 tasks.add(executor.submit(task))
             }
-
-            for (future in tasks) {
+        for (future in tasks) {
                 try {
                     val result = future.get()
                     totalWindows += result.windows
@@ -645,8 +599,7 @@ class FileBindingService(context: Context) {
                                         (result.lengthDiff < bestMatchLengthDiff ||
                                             (result.lengthDiff == bestMatchLengthDiff &&
                                                 (bestMatchRange.first == -1 || result.startLine < bestMatchRange.first))))))
-
-                    if (isBetter) {
+        if (isBetter) {
                         bestMatchScore = result.bestScore
                         bestMatchRange = result.startLine to result.endLine
                         bestMatchSizeDiff = result.sizeDiff
@@ -673,21 +626,18 @@ class FileBindingService(context: Context) {
             )
             bestMatchRange
         } else {
-            AppLogger.w(TAG, "未找到足够好的匹�?最高相似度: ${(bestMatchScore * 100).toInt()}% < 90%)")
+            AppLogger.w(TAG, "未找到足够好的匹�最高相似度: ${(bestMatchScore * 100).toInt()}% < 90%)")
             -1 to -1
         }
 
         onProgress?.invoke(1f, "Search done")
-
         return result
     }
-
-    private fun buildNgrams(s: String, n: Int = 3): Set<String> {
+        private fun buildNgrams(s: String, n: Int = 3): Set<String> {
         if (s.length < n) return emptySet()
         return s.windowed(n, 1).toSet()
     }
-
-    private fun ngramSimilarity(baseNgrams: Set<String>, s2: String, n: Int = 3): Double {
+        private fun ngramSimilarity(baseNgrams: Set<String>, s2: String, n: Int = 3): Double {
         if (baseNgrams.isEmpty() || s2.isEmpty()) return 0.0
         if (s2.length < n) return 0.0
 
@@ -699,8 +649,7 @@ class FileBindingService(context: Context) {
 
         return if (union == 0) 0.0 else intersection.toDouble() / union.toDouble()
     }
-
-    private fun hasMultiplePerfectMatches(originalContent: String, oldContent: String): Boolean {
+        private fun hasMultiplePerfectMatches(originalContent: String, oldContent: String): Boolean {
         val normalizedOld = oldContent.replace(Regex("\\s+"), "")
         if (normalizedOld.isEmpty()) return false
 
@@ -716,6 +665,5 @@ class FileBindingService(context: Context) {
         }
         return false
     }
-
-    private fun String.trimTrailingNewline(): String = this.trimEnd('\n', '\r')
+        private fun String.trimTrailingNewline(): String = this.trimEnd('\n', '\r')
 }

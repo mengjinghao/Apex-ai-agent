@@ -84,7 +84,7 @@ class WorkflowBootReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repository = WorkflowRepository(context.applicationContext)
-                val result = repository.getAllWorkflows()
+        val result = repository.getAllWorkflows()
                 
                 result.getOrNull()?.forEach { workflow ->
                     if (workflow.enabled) {

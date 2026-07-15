@@ -146,25 +146,19 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
 
     // ========== 状�?==========
     private val _editorState = MutableStateFlow<EditorState?>(null)
-    val editorState: StateFlow<EditorState?> = _editorState.asStateFlow()
-
-    private val _nodeTemplates = MutableStateFlow<List<NodeTemplate>>(emptyList())
-    val nodeTemplates: StateFlow<List<NodeTemplate>> = _nodeTemplates.asStateFlow()
-
-    private val _validationIssues = MutableStateFlow<List<ValidationIssue>>(emptyList())
-    val validationIssues: StateFlow<List<ValidationIssue>> = _validationIssues.asStateFlow()
-
-    private val _dragState = MutableStateFlow(DragState())
-    val dragState: StateFlow<DragState> = _dragState.asStateFlow()
-
-    private val _selectionBox = MutableStateFlow(SelectionBox())
-    val selectionBox: StateFlow<SelectionBox> = _selectionBox.asStateFlow()
-
-    private val _isExecuting = MutableStateFlow(false)
-    val isExecuting: StateFlow<Boolean> = _isExecuting.asStateFlow()
-
-    private val _executionLogs = MutableStateFlow<List<ExecutionLogEntry>>(emptyList())
-    val executionLogs: StateFlow<List<ExecutionLogEntry>> = _executionLogs.asStateFlow()
+        val editorState: StateFlow<EditorState?> = _editorState.asStateFlow()
+        private val _nodeTemplates = MutableStateFlow<List<NodeTemplate>>(emptyList())
+        val nodeTemplates: StateFlow<List<NodeTemplate>> = _nodeTemplates.asStateFlow()
+        private val _validationIssues = MutableStateFlow<List<ValidationIssue>>(emptyList())
+        val validationIssues: StateFlow<List<ValidationIssue>> = _validationIssues.asStateFlow()
+        private val _dragState = MutableStateFlow(DragState())
+        val dragState: StateFlow<DragState> = _dragState.asStateFlow()
+        private val _selectionBox = MutableStateFlow(SelectionBox())
+        val selectionBox: StateFlow<SelectionBox> = _selectionBox.asStateFlow()
+        private val _isExecuting = MutableStateFlow(false)
+        val isExecuting: StateFlow<Boolean> = _isExecuting.asStateFlow()
+        private val _executionLogs = MutableStateFlow<List<ExecutionLogEntry>>(emptyList())
+        val executionLogs: StateFlow<List<ExecutionLogEntry>> = _executionLogs.asStateFlow()
 
     data class ExecutionLogEntry(
         val timestamp: Long,
@@ -182,9 +176,8 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         FAILED,
         SKIPPED
     }
-
-    private val workflowEngine by lazy { WorkflowEngine.getInstance() }
-    private val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
+        private val workflowEngine by lazy { WorkflowEngine.getInstance() }
+        private val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
 
     init {
         initializeNodeTemplates()
@@ -268,7 +261,6 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
             nodes = emptyList(),
             connections = emptyList()
         )
-
         val state = EditorState(workflow = workflow)
         _editorState.value = state
         return state
@@ -311,7 +303,6 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
 
         val nodeId = WorkflowNode.generateNodeId()
         val nodeName = name ?: "${template.name}_${state.workflow.nodes.size + 1}"
-
         val config = when (type) {
             NodeType.TRIGGER -> NodeConfig(
                 triggerConfig = TriggerConfig(TriggerType.valueOf(template.defaultConfig["triggerType"] ?: "MANUAL"))
@@ -333,7 +324,6 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
                 source = ParameterValue.StaticValue(template.defaultConfig["source"] ?: "")
             )
         }
-
         val newNode = WorkflowNode(
             id = nodeId,
             name = nodeName,
@@ -341,7 +331,6 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
             position = NodePosition(x, y),
             config = config
         )
-
         val updatedWorkflow = state.workflow.copy(
             nodes = state.workflow.nodes + newNode
         )
@@ -378,7 +367,6 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         val updatedConnections = state.workflow.connections.filter {
             it.sourceNodeId != nodeId && it.targetNodeId != nodeId
         }
-
         val action = EditorAction(
             type = ActionType.DELETE_NODE,
             nodeId = nodeId,
@@ -429,7 +417,6 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
                 node.copy(config = config)
             } else node
         }
-
         val action = EditorAction(
             type = ActionType.UPDATE_NODE,
             nodeId = nodeId,
@@ -464,15 +451,13 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         // 验证不会创建循环（简单检查）
     if (wouldCreateCycle(state.workflow, sourceNodeId, targetNodeId)) {
             AppLogger.w(TAG, "Connection would create a cycle")
-            return null
+        return null
         }
-
         val connection = WorkflowConnection(
             sourceNodeId = sourceNodeId,
             targetNodeId = targetNodeId,
             condition = condition
         )
-
         val action = EditorAction(
             type = ActionType.ADD_CONNECTION,
             connectionId = connection.id,
@@ -679,7 +664,6 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         state.selectedConnectionId?.let { connId ->
             if (deleteConnection(connId)) deleted = true
         }
-
         return deleted
     }
 
@@ -729,7 +713,6 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
     val entryNodes = state.workflow.nodes.filter { node ->
             state.workflow.connections.none { it.targetNodeId == node.id }
         }
-
         if (entryNodes.isEmpty()) {
             // 如果没有明确的入口，选择第一个节�?
             entryNodes.firstOrNull()?.let {
@@ -745,10 +728,9 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
     var currentLayer = 0
         while (positioned.size < state.workflow.nodes.size) {
             val nodesInLayer = state.workflow.nodes.filter { layers[it.id] == currentLayer }
-
-            for (node in nodesInLayer) {
+        for (node in nodesInLayer) {
                 val outgoing = state.workflow.connections.filter { it.sourceNodeId == node.id }
-                for (conn in outgoing) {
+        for (conn in outgoing) {
                     if (conn.targetNodeId !in positioned) {
                         layers[conn.targetNodeId] = currentLayer + 1
                         positioned.add(conn.targetNodeId)
@@ -821,8 +803,8 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
 
             // 检查孤立的节点
     val hasIncoming = state.workflow.connections.any { it.targetNodeId == node.id }
-            val hasOutgoing = state.workflow.connections.any { it.sourceNodeId == node.id }
-            val isEntry = node.type == NodeType.TRIGGER
+        val hasOutgoing = state.workflow.connections.any { it.sourceNodeId == node.id }
+        val isEntry = node.type == NodeType.TRIGGER
 
             if (!hasIncoming && !isEntry && state.workflow.nodes.size > 1) {
                 issues.add(ValidationIssue(
@@ -836,9 +818,8 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         // 检查连�?
     for (conn in state.workflow.connections) {
             val sourceExists = state.workflow.nodes.any { it.id == conn.sourceNodeId }
-            val targetExists = state.workflow.nodes.any { it.id == conn.targetNodeId }
-
-            if (!sourceExists || !targetExists) {
+        val targetExists = state.workflow.nodes.any { it.id == conn.targetNodeId }
+        if (!sourceExists || !targetExists) {
                 issues.add(ValidationIssue(
                     severity = IssueSeverity.ERROR,
                     message = "Connection references non-existent node",
@@ -900,8 +881,8 @@ fun exportToImage(): ByteArray? {
                     val x = 40 + (i % 6) * 180
                     val y = 80 + (i / 6) * 140
                     val label = reflectStringField(node, "label") ?: reflectStringField(node, "name") ?: "node_$i"
-                    val typeStr = reflectStringField(node, "type") ?: ""
-                    val fill = if (typeStr.contains("START") || typeStr.contains("END")) "#dbeafe" else "#ffffff"
+        val typeStr = reflectStringField(node, "type") ?: ""
+        val fill = if (typeStr.contains("START") || typeStr.contains("END")) "#dbeafe" else "#ffffff"
                     appendLine("  <rect x=\"$x\" y=\"$y\" width=\"160\" height=\"80\" rx=\"8\" fill=\"$fill\" stroke=\"#94a3b8\" stroke-width=\"1\"/>")
                     appendLine("  <text x=\"${x + 10}\" y=\"${y + 30}\" font-family=\"sans-serif\" font-size=\"13\" font-weight=\"600\" fill=\"#1f2937\">${escapeXml(label)}</text>")
                     appendLine("  <text x=\"${x + 10}\" y=\"${y + 50}\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#64748b\">${escapeXml(typeStr)}</text>")
@@ -910,11 +891,11 @@ fun exportToImage(): ByteArray? {
                 // 边：从 source 到 target 画曲线
                 workflow.edges.forEach { edge ->
                     val srcId = reflectStringField(edge, "sourceId") ?: reflectStringField(edge, "from")
-                    val tgtId = reflectStringField(edge, "targetId") ?: reflectStringField(edge, "to")
-                    if (srcId != null && tgtId != null) {
+        val tgtId = reflectStringField(edge, "targetId") ?: reflectStringField(edge, "to")
+        if (srcId != null && tgtId != null) {
                         val srcIdx = workflow.nodes.indexOfFirst { reflectStringField(it, "id") == srcId }
-                        val tgtIdx = workflow.nodes.indexOfFirst { reflectStringField(it, "id") == tgtId }
-                        if (srcIdx >= 0 && tgtIdx >= 0) {
+        val tgtIdx = workflow.nodes.indexOfFirst { reflectStringField(it, "id") == tgtId }
+        if (srcIdx >= 0 && tgtIdx >= 0) {
                             val sx = 40 + (srcIdx % 6) * 180 + 160
                             val sy = 80 + (srcIdx / 6) * 140 + 40
                             val tx = 40 + (tgtIdx % 6) * 180
@@ -932,16 +913,14 @@ fun exportToImage(): ByteArray? {
             null
         }
     }
-
-    private fun escapeXml(s: String): String {
+        private fun escapeXml(s: String): String {
         return s.replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
             .replace("\"", "&quot;")
             .replace("'", "&apos;")
     }
-
-    private fun reflectStringField(obj: Any?, fieldName: String): String? {
+        private fun reflectStringField(obj: Any?, fieldName: String): String? {
         if (obj == null) return null
         return try {
             val field = obj.javaClass.getDeclaredField(fieldName)
@@ -958,7 +937,6 @@ fun exportToImage(): ByteArray? {
     suspend fun executeWorkflow(): ExecutionResult? {
         val state = _editorState.value ?: return null
         val validationIssues = validateWorkflow()
-
         if (validationIssues.any { it.severity == IssueSeverity.ERROR }) {
             return ExecutionResult(
                 success = false,
@@ -986,8 +964,7 @@ fun exportToImage(): ByteArray? {
                     durationMs = nodeResult.executionTimeMs
                 )
             }
-
-            return result?.let {
+        return result?.let {
                 ExecutionResult(
                     success = it.success,
                     message = if (it.success) "Workflow executed successfully" else "Workflow execution failed",
@@ -1019,24 +996,19 @@ fun exportToImage(): ByteArray? {
             if (from == to) return true
             if (from in visited) return false
             visited.add(from)
-
-            val outgoing = workflow.connections.filter { it.sourceNodeId == from }
-            return outgoing.any { canReach(it.targetNodeId, to) }
+        val outgoing = workflow.connections.filter { it.sourceNodeId == from }
+        return outgoing.any { canReach(it.targetNodeId, to) }
         }
-
         return canReach(targetId, sourceId)
     }
-
-    private fun hasCycle(workflow: WorkflowDefinition): Boolean {
+        private fun hasCycle(workflow: WorkflowDefinition): Boolean {
         val visited = mutableSetOf<String>()
         val recStack = mutableSetOf<String>()
-
         fun hasCycleUtil(nodeId: String): Boolean {
             visited.add(nodeId)
             recStack.add(nodeId)
-
-            val outgoing = workflow.connections.filter { it.sourceNodeId == nodeId }
-            for (conn in outgoing) {
+        val outgoing = workflow.connections.filter { it.sourceNodeId == nodeId }
+        for (conn in outgoing) {
                 if (conn.targetNodeId !in visited) {
                     if (hasCycleUtil(conn.targetNodeId)) return true
                 } else if (conn.targetNodeId in recStack) {
@@ -1045,15 +1017,13 @@ fun exportToImage(): ByteArray? {
             }
 
             recStack.remove(nodeId)
-            return false
+        return false
         }
-
         for (node in workflow.nodes) {
             if (node.id !in visited) {
                 if (hasCycleUtil(node.id)) return true
             }
         }
-
         return false
     }
 
@@ -1061,8 +1031,7 @@ fun exportToImage(): ByteArray? {
     fun getNodeTemplate(type: NodeType): NodeTemplate? {
         return _nodeTemplates.value.find { it.type == type }
     }
-
-    fun getNodeColor(type: NodeType): Int {
+        fun getNodeColor(type: NodeType): Int {
         return when (type) {
             NodeType.TRIGGER -> 0xFF4CAF50.toInt() // 绿色
             NodeType.EXECUTE -> 0xFF2196F3.toInt() // 蓝色
@@ -1071,13 +1040,11 @@ fun exportToImage(): ByteArray? {
             NodeType.EXTRACT -> 0xFF00BCD4.toInt() // 青色
         }
     }
-
-    fun snapToGrid(value: Float): Float {
+        fun snapToGrid(value: Float): Float {
         return (value / GRID_SIZE).toInt() * GRID_SIZE
     }
 
     // ========== 数据�?==========
-
     data class ExecutionResult(
         val success: Boolean,
         val message: String,

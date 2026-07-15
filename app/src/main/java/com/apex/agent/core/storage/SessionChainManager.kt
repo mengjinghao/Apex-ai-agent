@@ -13,8 +13,8 @@ import kotlinx.coroutines.withContext
 class SessionChainManager(private val context: Context) {
     
     private val database = SessionDatabase.getInstance(context)
-    private val sessionDao = database.sessionDao()
-    private val messageDao = database.messageDao()
+        private val sessionDao = database.sessionDao()
+        private val messageDao = database.messageDao()
     
     companion object {
         private const val MAX_CHAIN_DEPTH = 10
@@ -47,7 +47,6 @@ class SessionChainManager(private val context: Context) {
         // 验证分裂点消息存�?
     val splitMessage = messageDao.getMessageById(splitFromMessageId)
             ?: throw IllegalArgumentException("Split message not found: ${splitFromMessageId}")
-        
         if (splitMessage.sessionId != parentSessionId) {
             throw IllegalArgumentException("Split message does not belong to parent session")
         }
@@ -59,7 +58,6 @@ class SessionChainManager(private val context: Context) {
         // 复制分裂点之前的消息到新会话
     val messagesToCopy = messageDao.getMessagesBySessionIdSync(parentSessionId)
             .filter { it.createdAt <= splitMessage.createdAt }
-        
         val newMessages = messagesToCopy.map { message ->
             message.copy(
                 id = "${newSession.id}_${message.id}",
@@ -126,12 +124,11 @@ class SessionChainManager(private val context: Context) {
         chain.forEachIndexed { index, node ->
             val isCurrentSession = index == chain.size - 1
             val messages = messageDao.getMessagesBySessionIdSync(node.sessionId)
-            
-            val filteredMessages = if (isCurrentSession) {
+        val filteredMessages = if (isCurrentSession) {
                 // 当前会话：只取分裂点及之后的消息
                 messages.filter { msg ->
                     val msgIndex = messages.indexOf(msg)
-                    val splitIndex = messages.indexOfFirst { it.id == splitMessageId }
+        val splitIndex = messages.indexOfFirst { it.id == splitMessageId }
                     splitIndex >= 0 && msgIndex >= splitIndex
                 }
             } else {
@@ -191,7 +188,6 @@ class SessionChainManager(private val context: Context) {
     ): String = withContext(Dispatchers.IO) {
         val session = sessionDao.getSessionById(sessionId)
             ?: throw IllegalArgumentException("Session not found: ${sessionId}")
-        
         val messages = messageDao.getMessagesBySessionIdSync(sessionId)
         val keepMessageIds = getCompressionSuggestions(sessionId)
         

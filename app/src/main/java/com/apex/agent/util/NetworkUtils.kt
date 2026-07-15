@@ -62,7 +62,6 @@ object NetworkUtils {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork ?: return context.getString(R.string.not_connected)
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return context.getString(R.string.not_connected)
-
         return when {
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WiFi"
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> context.getString(R.string.mobile_data)
@@ -111,7 +110,7 @@ object NetworkUtils {
         val network = connectivityManager.activeNetwork
         if (network != null) {
             val capabilities = connectivityManager.getNetworkCapabilities(network)
-            if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+        if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
                 return true
             }
         }
@@ -121,9 +120,9 @@ object NetworkUtils {
             val interfaces = NetworkInterface.getNetworkInterfaces()
             while (interfaces.hasMoreElements()) {
                 val networkInterface = interfaces.nextElement()
-                if (networkInterface.isUp) {
+        if (networkInterface.isUp) {
                     val name = networkInterface.displayName.lowercase()
-                    if (name.contains("tun") || name.contains("pptp") ||
+        if (name.contains("tun") || name.contains("pptp") ||
                         name.contains("ppp") || name.contains("tap") ||
                         name.contains("vpn")
                     ) {
@@ -230,14 +229,14 @@ object NetworkUtils {
 
             // 备用：遍历网络接口获取 IPv4 地址
     val interfaces = NetworkInterface.getNetworkInterfaces()
-            val addresses = mutableListOf<InetAddress>()
+        val addresses = mutableListOf<InetAddress>()
             while (interfaces.hasMoreElements()) {
                 val networkInterface = interfaces.nextElement()
-                if (networkInterface.isUp && !networkInterface.isLoopback) {
+        if (networkInterface.isUp && !networkInterface.isLoopback) {
                     val interfaceAddresses = networkInterface.inetAddresses
                     while (interfaceAddresses.hasMoreElements()) {
                         val addr = interfaceAddresses.nextElement()
-                        if (addr is Inet4Address && !addr.isLoopbackAddress) {
+        if (addr is Inet4Address && !addr.isLoopbackAddress) {
                             addresses.add(addr)
                         }
                     }
@@ -278,7 +277,7 @@ object NetworkUtils {
         return when {
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
                 val rssi = getWifiSignalStrength(context)
-                when {
+        when {
                     rssi >= -50 -> NetworkSpeed.VERY_HIGH
                     rssi >= -65 -> NetworkSpeed.HIGH
                     rssi >= -80 -> NetworkSpeed.MEDIUM

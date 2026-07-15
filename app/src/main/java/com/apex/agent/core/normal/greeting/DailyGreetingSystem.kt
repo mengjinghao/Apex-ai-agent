@@ -87,7 +87,7 @@ enum class QuoteCategory {
 class DailyGreetingSystem {
 
     private val quotes = mutableListOf<DailyQuote>()
-    private val lastGreeting = ConcurrentHashMap<String, Long>()  // userId -> 上次问候时间
+        private val lastGreeting = ConcurrentHashMap<String, Long>()  // userId -> 上次问候时间
     private val userNicknames = ConcurrentHashMap<String, String>()
 
     init {
@@ -107,7 +107,6 @@ class DailyGreetingSystem {
         val timeOfDay = getTimeOfDay(now)
         val nickname = userNicknames[userId]
         val personalization = nickname?.let { "，$it" } ?: ""
-
         return when (type) {
             GreetingType.TIME_BASED -> generateTimeGreeting(timeOfDay, personalization)
             GreetingType.DAILY_QUOTE -> generateDailyQuote(personalization)
@@ -134,7 +133,6 @@ class DailyGreetingSystem {
         // 根据上次问候时间决定类型
     val last = lastGreeting[userId] ?: 0
         val hoursSince = (System.currentTimeMillis() - last) / (60 * 60_000)
-
         return when {
             hoursSince > 24 -> generateGreeting(userId, GreetingType.TIME_BASED)
             hoursSince > 6 -> generateGreeting(userId, GreetingType.DAILY_QUOTE)
@@ -204,8 +202,7 @@ class DailyGreetingSystem {
             )
         }
     }
-
-    private fun generateDailyQuote(personalization: String): Greeting {
+        private fun generateDailyQuote(personalization: String): Greeting {
         val quote = quotes.random()
         return Greeting(
             GreetingType.DAILY_QUOTE, "每日一言",
@@ -214,8 +211,7 @@ class DailyGreetingSystem {
             emoji = "💬"
         )
     }
-
-    private fun generateWeatherGreeting(weather: String?, personalization: String): Greeting {
+        private fun generateWeatherGreeting(weather: String?, personalization: String): Greeting {
         val w = weather?.lowercase() ?: "晴"
         return when {
             w.containsAny("晴", "sunny") -> Greeting(GreetingType.WEATHER_BASED, "晴天", "阳光明媚$personalization，适合出门", emoji = "☀️")
@@ -226,8 +222,7 @@ class DailyGreetingSystem {
             else -> Greeting(GreetingType.WEATHER_BASED, "天气", "今天天气$w$personalization", emoji = "🌤️")
         }
     }
-
-    private fun generateMoodGreeting(mood: String?, personalization: String): Greeting {
+        private fun generateMoodGreeting(mood: String?, personalization: String): Greeting {
         val m = mood?.lowercase() ?: "neutral"
         return when {
             m.containsAny("happy", "开心", "快乐") -> Greeting(GreetingType.MOOD_BASED, "心情不错", "看你心情不错$personalization！", emoji = "😄")
@@ -237,8 +232,7 @@ class DailyGreetingSystem {
             else -> Greeting(GreetingType.MOOD_BASED, "你好", "你好$personalization", emoji = "👋")
         }
     }
-
-    private fun generateFestivalGreeting(personalization: String): Greeting {
+        private fun generateFestivalGreeting(personalization: String): Greeting {
         val festival = detectFestival()
         return if (festival != null) {
             Greeting(GreetingType.FESTIVAL_BASED, festival.name, "${festival.greeting}$personalization", emoji = festival.emoji)
@@ -246,13 +240,11 @@ class DailyGreetingSystem {
             generateTimeGreeting(getTimeOfDay(System.currentTimeMillis()), personalization)
         }
     }
-
-    private fun generateRandomGreeting(personalization: String): Greeting {
+        private fun generateRandomGreeting(personalization: String): Greeting {
         val types = GreetingType.values().filter { it != GreetingType.RANDOM }
         return generateGreeting("user", types.random())
     }
-
-    private fun detectFestival(): Festival? {
+        private fun detectFestival(): Festival? {
         val cal = Calendar.getInstance()
         val month = cal.get(Calendar.MONTH) + 1
         val day = cal.get(Calendar.DAY_OF_MONTH)
@@ -269,8 +261,7 @@ class DailyGreetingSystem {
             else -> null
         }
     }
-
-    private fun getTimeOfDay(timestamp: Long): TimeOfDay {
+        private fun getTimeOfDay(timestamp: Long): TimeOfDay {
         val cal = Calendar.getInstance()
         cal.timeInMillis = timestamp
         val hour = cal.get(Calendar.HOUR_OF_DAY)
@@ -284,13 +275,11 @@ class DailyGreetingSystem {
             else -> TimeOfDay.LATE_NIGHT
         }
     }
-
-    private fun String.containsAny(vararg keywords: String): Boolean =
+        private fun String.containsAny(vararg keywords: String): Boolean =
         keywords.any { this.contains(it, ignoreCase = true) }
 
     data class Festival(val name: String, val greeting: String, val emoji: String)
-
-    private fun loadBuiltinQuotes() {
+        private fun loadBuiltinQuotes() {
         quotes.addAll(listOf(
             // 哲理
             DailyQuote("q1", "我思故我在", "笛卡尔", QuoteCategory.PHILOSOPHY, "《第一哲学沉思集》"),

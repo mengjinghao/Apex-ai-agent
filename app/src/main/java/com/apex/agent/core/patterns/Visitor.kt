@@ -31,25 +31,20 @@ data class WorkflowTaskNode(
 /** 工作流 DAG */
 class WorkflowDAG(private val description: String = "") {
     private val nodes = mutableListOf<WorkflowTaskNode>()
-    private val adj = mutableMapOf<String, MutableList<String>>()
-
-    fun addNode(node: WorkflowTaskNode) {
+        private val adj = mutableMapOf<String, MutableList<String>>()
+        fun addNode(node: WorkflowTaskNode) {
         nodes.add(node)
         adj.putIfAbsent(node.id, mutableListOf())
     }
-
-    fun addEdge(fromId: String, toId: String) {
+        fun addEdge(fromId: String, toId: String) {
         adj.getOrPut(fromId) { mutableListOf() }.add(toId)
         adj.putIfAbsent(toId, mutableListOf())
     }
-
-    fun getNodes(): List<WorkflowTaskNode> = nodes.toList()
-
-    fun acceptAll(visitor: Visitor<WorkflowTaskNode>): List<WorkflowTaskNode> {
+        fun getNodes(): List<WorkflowTaskNode> = nodes.toList()
+        fun acceptAll(visitor: Visitor<WorkflowTaskNode>): List<WorkflowTaskNode> {
         return topologicalSort().map { it.accept(visitor) }
     }
-
-    private fun topologicalSort(): List<WorkflowTaskNode> {
+        private fun topologicalSort(): List<WorkflowTaskNode> {
         val inDegree = mutableMapOf<String, Int>()
         nodes.forEach { inDegree[it.id] = 0 }
         adj.forEach { (_, targets) -> targets.forEach { t -> inDegree[t] = (inDegree[t] ?: 0) + 1 } }
@@ -116,7 +111,6 @@ class ExportVisitor(private val source: String, private val target: String) : Vi
         exported.add("${node.id}:${node.name}:${node.type}")
         return node
     }
-
-    fun getExportedData(): List<String> = exported.toList()
-    fun getFormatDescription(): String = "Export from $source to $target: ${exported.size} nodes"
+        fun getExportedData(): List<String> = exported.toList()
+        fun getFormatDescription(): String = "Export from $source to $target: ${exported.size} nodes"
 }

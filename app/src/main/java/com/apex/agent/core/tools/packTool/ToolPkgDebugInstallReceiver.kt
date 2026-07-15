@@ -24,18 +24,16 @@ class ToolPkgDebugInstallReceiver : BroadcastReceiver() {
         if (intent.action != ACTION_DEBUG_INSTALL_TOOLPKG) {
             return
         }
-
         val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)?.trim().orEmpty()
         val filePath = intent.getStringExtra(EXTRA_FILE_PATH)?.trim().orEmpty()
         val resetSubpackageStates =
             intent.getBooleanExtra(EXTRA_RESET_SUBPACKAGE_STATES, true)
-
         if (packageName.isBlank() || filePath.isBlank()) {
             AppLogger.e(
                 TAG,
                 "Missing required parameters: packageName=${packageName}, filePath=${filePath}"
             )
-            return
+        return
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -47,8 +45,7 @@ class ToolPkgDebugInstallReceiver : BroadcastReceiver() {
             )
         }
     }
-
-    private fun installToolPkg(
+        private fun installToolPkg(
         context: Context,
         packageName: String,
         filePath: String,
@@ -61,8 +58,8 @@ class ToolPkgDebugInstallReceiver : BroadcastReceiver() {
 
         try {
             val aiToolHandler = AIToolHandler.getInstance(context)
-            val packageManager = PackageManager.getInstance(context, aiToolHandler)
-            val result =
+        val packageManager = PackageManager.getInstance(context, aiToolHandler)
+        val result =
                 packageManager.installDebugToolPkg(
                     containerPackageName = packageName,
                     externalFilePath = filePath,

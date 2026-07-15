@@ -67,10 +67,9 @@ class MultiModelOrchestrator @Inject constructor() {
         val outputTokens: Int = 0,
         val error: String? = null
     )
-
-    private val configs = mutableMapOf<ModelProvider, ModelConfig>()
-    private val _currentProvider = MutableStateFlow(ModelProvider.OPENAI)
-    val currentProvider: StateFlow<ModelProvider> = _currentProvider
+        private val configs = mutableMapOf<ModelProvider, ModelConfig>()
+        private val _currentProvider = MutableStateFlow(ModelProvider.OPENAI)
+        val currentProvider: StateFlow<ModelProvider> = _currentProvider
 
     private val httpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
@@ -79,10 +78,8 @@ class MultiModelOrchestrator @Inject constructor() {
             .writeTimeout(120, TimeUnit.SECONDS)
             .build()
     }
-
-    private val JSON = "application/json".toMediaType()
-
-    private val providerCapabilities = mapOf(
+        private val JSON = "application/json".toMediaType()
+        private val providerCapabilities = mapOf(
         ModelProvider.OPENAI to ProviderCapability(
             reasoningScore = 0.85f, codeScore = 0.9f, creativityScore = 0.8f,
             speedScore = 0.75f, costScore = 0.4f, contextWindow = 16384
@@ -104,19 +101,16 @@ class MultiModelOrchestrator @Inject constructor() {
             speedScore = 0.3f, costScore = 0.9f, contextWindow = 2048
         )
     )
-
-    fun configureProvider(config: ModelConfig) {
+        fun configureProvider(config: ModelConfig) {
         configs[config.provider] = config
     }
-
-    fun switchProvider(provider: ModelProvider): Boolean {
+        fun switchProvider(provider: ModelProvider): Boolean {
         return configs[provider]?.isEnabled == true && run {
             _currentProvider.value = provider
             true
         }
     }
-
-    fun selectOptimalProvider(request: ModelRequest): ModelProvider {
+        fun selectOptimalProvider(request: ModelRequest): ModelProvider {
         if (request.preferredProvider != null && configs[request.preferredProvider]?.isEnabled == true) {
             return request.preferredProvider
         }
@@ -129,8 +123,7 @@ class MultiModelOrchestrator @Inject constructor() {
             computeProviderFit(provider, capabilities, complexity, request)
         } ?: _currentProvider.value
     }
-
-    private fun computeProviderFit(
+        private fun computeProviderFit(
         provider: ModelProvider,
         requiredCaps: Map<String, Float>,
         complexity: Float,
@@ -147,28 +140,24 @@ class MultiModelOrchestrator @Inject constructor() {
             "speed" to 0.1f to cap.speedScore,
             "cost" to 0.2f to cap.costScore
         )
-
         for ((weightKey, baseScore) in weights) {
             val (weight, _) = weightKey to baseScore
             val requirementWeight = requiredCaps[weightKey] ?: 0.5f
             score += baseScore * requirementWeight
             totalWeight += weight
         }
-
         val complexityPenalty = if (complexity > 0.8f && cap.contextWindow < 8192) 0.2f else 0f
         val contextFit = if (request.maxTokens <= cap.contextWindow) 0f else 0.15f
 
         return (score / totalWeight) * (1f - complexityPenalty) * (1f - contextFit)
     }
-
-    private fun resolveRequiredCapabilities(request: ModelRequest): Map<String, Float> {
+        private fun resolveRequiredCapabilities(request: ModelRequest): Map<String, Float> {
         val caps = mutableMapOf<String, Float>(
             "reasoning" to 0.5f, "code" to 0.3f, "creativity" to 0.3f,
             "speed" to 0.5f, "cost" to 0.5f
         )
         val lower = request.query.lowercase()
         val systemLower = request.systemPrompt.lowercase()
-
         if (lower.contains("code") || lower.contains("program") || lower.contains("function") ||
             lower.contains("algorithm") || lower.contains("debug") || lower.contains("bug") ||
             lower.contains("implement") || lower.contains("class") || lower.contains("api") ||
@@ -196,8 +185,7 @@ class MultiModelOrchestrator @Inject constructor() {
         }
         return caps
     }
-
-    fun estimateComplexity(query: String): Float {
+        fun estimateComplexity(query: String): Float {
         val lower = query.lowercase()
         var complexity = 0.3f
         val lengthScore = (query.length.toFloat() / 2000f).coerceAtMost(0.3f)
@@ -223,7 +211,6 @@ class MultiModelOrchestrator @Inject constructor() {
             ?: return Result.Failure(IllegalStateException("Provider not configured: $provider"))
         val modelName = config.modelName
         val baseUrl = config.baseUrl.ifEmpty { getDefaultBaseUrl(provider) }
-
         return try {
             val content = withContext(Dispatchers.IO) {
                 callLLM(baseUrl, config.apiKey, modelName, request)
@@ -241,8 +228,7 @@ class MultiModelOrchestrator @Inject constructor() {
             Result.Failure(e)
         }
     }
-
-    private fun callLLM(baseUrl: String, apiKey: String, modelName: String, request: ModelRequest): String {
+        private fun callLLM(baseUrl: String, apiKey: String, modelName: String, request: ModelRequest): String {
         val messages = JSONArray()
         if (request.systemPrompt.isNotBlank()) {
             messages.put(JSONObject().apply {
@@ -260,14 +246,12 @@ class MultiModelOrchestrator @Inject constructor() {
             put("role", "user")
             put("content", request.query)
         })
-
         val body = JSONObject().apply {
             put("model", modelName)
             put("messages", messages)
             put("temperature", request.temperature.toDouble())
             put("max_tokens", request.maxTokens)
         }
-
         val requestBody = body.toString().toRequestBody(JSON)
         val httpRequest = Request.Builder()
             .url("$baseUrl/chat/completions")
@@ -275,14 +259,11 @@ class MultiModelOrchestrator @Inject constructor() {
             .addHeader("Content-Type", "application/json")
             .post(requestBody)
             .build()
-
         val response = httpClient.newCall(httpRequest).execute()
         val responseBody = response.body?.string() ?: throw IOException("Empty response body")
-
         if (!response.isSuccessful) {
             throw IOException("API error ${response.code}: $responseBody")
         }
-
         val json = JSONObject(responseBody)
         val choices = json.optJSONArray("choices")
         if (choices == null || choices.length() == 0) {
@@ -293,8 +274,7 @@ class MultiModelOrchestrator @Inject constructor() {
             ?.optString("content", "")
             ?: ""
     }
-
-    private fun getDefaultBaseUrl(provider: ModelProvider): String {
+        private fun getDefaultBaseUrl(provider: ModelProvider): String {
         return when (provider) {
             ModelProvider.OPENAI -> "https://api.openai.com/v1"
             ModelProvider.ANTHROPIC -> "https://api.anthropic.com/v1"
@@ -303,10 +283,8 @@ class MultiModelOrchestrator @Inject constructor() {
             ModelProvider.LOCAL -> "http://localhost:11434/v1"
         }
     }
-
-    fun getAvailableProviders(): List<ModelProvider> {
+        fun getAvailableProviders(): List<ModelProvider> {
         return configs.values.filter { it.isEnabled }.map { it.provider }
     }
-
-    fun getConfig(provider: ModelProvider): ModelConfig? = configs[provider]
+        fun getConfig(provider: ModelProvider): ModelConfig? = configs[provider]
 }

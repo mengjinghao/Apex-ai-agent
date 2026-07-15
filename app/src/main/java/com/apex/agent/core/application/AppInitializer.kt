@@ -25,8 +25,7 @@ class AppInitializer(private val context: Context) {
         private const val DELAY_NORMAL = 500L
         private const val DELAY_LOW = 1000L
     }
-    
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // [优化2] 用于跟踪顺序执行 vs 并行执行的耗时对比
     private val taskDurations = java.util.concurrent.atomic.AtomicLong(0L)
@@ -36,8 +35,7 @@ class AppInitializer(private val context: Context) {
         data object Normal : InitializationPhase(1)
         data object Low : InitializationPhase(2)
     }
-    
-    private val initializationTasks = mutableListOf<InitializationTask>()
+        private val initializationTasks = mutableListOf<InitializationTask>()
     
     data class InitializationTask(
         val name: String,
@@ -49,8 +47,7 @@ class AppInitializer(private val context: Context) {
     init {
         registerTasks()
     }
-    
-    private fun registerTasks() {
+        private fun registerTasks() {
         // Critical phase - needs to be done early but can be async
         initializationTasks.add(
             InitializationTask(
@@ -201,7 +198,7 @@ class AppInitializer(private val context: Context) {
             ) {
                 val prefs = com.apex.agent.data.backup
                     .RoomDatabaseBackupPreferences.getInstance(context)
-                if (prefs.isDailyBackupEnabled()) {
+        if (prefs.isDailyBackupEnabled()) {
                     com.apex.agent.data.backup.RoomDatabaseBackupScheduler
                         .ensureScheduled(context)
                 } else {
@@ -236,7 +233,7 @@ class AppInitializer(private val context: Context) {
 
     // [优化] 各阶段仍保持顺序（Critical→Normal→Low）以保证依赖关系
     // 但每个阶段内部的任务改为并发执行 (async + awaitAll)
-    fun startInitialization() {
+        fun startInitialization() {
         AppLogger.d(TAG, "Starting phased initialization [并发模式]")
         
         applicationScope.launch {
@@ -255,10 +252,8 @@ class AppInitializer(private val context: Context) {
         if (delayMs > 0) {
             delay(delayMs)
         }
-
         val tasks = initializationTasks.filter { it.phase == phase }
         AppLogger.d(TAG, "Executing ${tasks.size} tasks in ${phase::class.simpleName} phase [并行]")
-
         val phaseStart = System.currentTimeMillis()
 
         tasks.map { task ->
@@ -266,7 +261,7 @@ class AppInitializer(private val context: Context) {
                 val taskStart = System.currentTimeMillis()
                 try {
                     task.task()
-                    val taskDuration = System.currentTimeMillis() - taskStart
+        val taskDuration = System.currentTimeMillis() - taskStart
                     AppLogger.d(
                         TAG,
                         "Task '${task.name}' completed in ${taskDuration}ms"
@@ -278,7 +273,6 @@ class AppInitializer(private val context: Context) {
                 }
             }
         }.awaitAll()
-
         val phaseDuration = System.currentTimeMillis() - phaseStart
         val sequentialTotal = taskDurations.getAndSet(0)
         healthCheck.recordPhaseExecution(
@@ -295,9 +289,9 @@ class AppInitializer(private val context: Context) {
         fun recordPhaseExecution(context: Context, phaseName: String, sequentialTotalMs: Long, actualParallelMs: Long) {
             try {
                 val healthClass = Class.forName("com.apex.agent.core.application.ArchitectureHealthCheck")
-                val healthInstance = healthClass.getMethod("getInstance", Context::class.java)
+        val healthInstance = healthClass.getMethod("getInstance", Context::class.java)
                     .invoke(null, context.applicationContext)
-                val method = healthClass.getMethod(
+        val method = healthClass.getMethod(
                     "recordPhaseExecution",
                     String::class.java,
                     Long::class.javaPrimitiveType,
@@ -307,5 +301,5 @@ class AppInitializer(private val context: Context) {
             } catch (_: Throwable) { /* 静默失败 */ }
         }
     }
-    private val healthCheck = HealthCheckBridge
+        private val healthCheck = HealthCheckBridge
 }

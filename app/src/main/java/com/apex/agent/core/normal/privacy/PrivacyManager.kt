@@ -332,7 +332,7 @@ class PrivacyManager(
     }
 
     // ============ 数据结构 ============
-        data class ConsentRecord(
+    data class ConsentRecord(
         val dataType: DataType,
         val granted: Boolean,
         val scope: ConsentScope,

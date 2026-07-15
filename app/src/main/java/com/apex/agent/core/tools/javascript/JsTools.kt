@@ -789,7 +789,7 @@ fun getJsToolsDefinition(): String {
         return toolCall("click_element", { resourceId: param1 });
                     } else if (arguments.length === 2) {
                         // 两个参数，假定为(resourceId, index)，className, index)
-    if (param1 === 'resourceId') {
+        if (param1 === 'resourceId') {
                             return toolCall("click_element", { resourceId: param2 });
                         } else if (param1 === 'className') {
                             return toolCall("click_element", { className: param2 });
@@ -800,7 +800,7 @@ fun getJsToolsDefinition(): String {
                         }
                     } else if (arguments.length === 3) {
                         // 三个参数，假定为(type, value, index)
-    if (param1 === 'resourceId') {
+        if (param1 === 'resourceId') {
                             return toolCall("click_element", { resourceId: param2, index: param3 });
                         } else if (param1 === 'className') {
                             return toolCall("click_element", { className: param2, index: param3 });

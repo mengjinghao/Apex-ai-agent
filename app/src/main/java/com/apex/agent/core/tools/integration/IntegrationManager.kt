@@ -7,35 +7,29 @@ import com.apex.agent.core.tools.integration.provider.SkillRepoIntegration
 import com.apex.util.AppLogger
 
 /**
- * 统一集成管理�?—�?所有市�?集成源的注册和调度中�? */
+ * 统一集成管理�?—�所有市�集成源的注册和调度中�? */
 object IntegrationManager {
 
     private const val TAG = "IntegrationManager"
-    private val providers = mutableMapOf<String, IntegrationProvider>()
-
-    fun initialize(context: Context) {
+        private val providers = mutableMapOf<String, IntegrationProvider>()
+        fun initialize(context: Context) {
         register(McpSoIntegration(context))
         register(LobeHubIntegration(context))
         register(SkillRepoIntegration())
         AppLogger.d(TAG, "已注�?${providers.size} 个集成源: ${providers.keys}")
     }
-
-    fun register(provider: IntegrationProvider) {
+        fun register(provider: IntegrationProvider) {
         providers[provider.getInfo().id] = provider
         AppLogger.d(TAG, "注册集成�? ${provider.getInfo().name}")
     }
-
-    fun unregister(id: String) {
+        fun unregister(id: String) {
         providers.remove(id)
     }
-
-    fun getProvider(id: String): IntegrationProvider? = providers[id]
+        fun getProvider(id: String): IntegrationProvider? = providers[id]
 
     fun getAllProviders(): List<IntegrationProvider> = providers.values.toList()
-
-    fun getAvailableProviders(): List<IntegrationProvider> = providers.values.filter { it.isAvailable() }
-
-    fun getAllIntegrations(): List<IntegrationInfo> = providers.values.map { it.getInfo() }
+        fun getAvailableProviders(): List<IntegrationProvider> = providers.values.filter { it.isAvailable() }
+        fun getAllIntegrations(): List<IntegrationInfo> = providers.values.map { it.getInfo() }
 
     suspend fun searchAll(query: String, sourceFilter: String? = null): List<UnifiedItem> {
         val targets = if (sourceFilter != null) {

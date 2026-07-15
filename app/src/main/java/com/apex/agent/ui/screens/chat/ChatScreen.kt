@@ -46,30 +46,28 @@ fun ChatScreen(
 ) {
     val context = LocalContext.current
     var inputText by remember { mutableStateOf("") }
-    val messages = remember {
+        val messages = remember {
         mutableStateListOf<ChatMessage>(
             ChatMessage(bubbles = listOf(Bubble.Text("你好，我是 Apex AI 助手。\n\n我可以帮你执行任务、分析代码、运行命令、生成文档。\n\n有什么可以帮你的？")), isUser = false)
         )
     }
-    var isStreaming by remember { mutableStateOf(false) }
-    var selectedSkill by remember { mutableStateOf<String?>(null) }
-    var deepThinking by remember { mutableStateOf(false) }
-    var webSearch by remember { mutableStateOf(false) }
-    var showSkillPicker by remember { mutableStateOf(false) }
-    var contextPercent by remember { mutableStateOf(8) }
-    var showCompressDialog by remember { mutableStateOf(false) }
-    var autoCompress by remember { mutableStateOf(true) }
-    var selectedModel by remember { mutableStateOf("DeepSeek · deepseek-chat") }
-    var showModelPicker by remember { mutableStateOf(false) }
-    var pendingCommand by remember { mutableStateOf<String?>(null) }  // 待确认的危险命令
+        var isStreaming by remember { mutableStateOf(false) }
+        var selectedSkill by remember { mutableStateOf<String?>(null) }
+        var deepThinking by remember { mutableStateOf(false) }
+        var webSearch by remember { mutableStateOf(false) }
+        var showSkillPicker by remember { mutableStateOf(false) }
+        var contextPercent by remember { mutableStateOf(8) }
+        var showCompressDialog by remember { mutableStateOf(false) }
+        var autoCompress by remember { mutableStateOf(true) }
+        var selectedModel by remember { mutableStateOf("DeepSeek · deepseek-chat") }
+        var showModelPicker by remember { mutableStateOf(false) }
+        var pendingCommand by remember { mutableStateOf<String?>(null) }  // 待确认的危险命令
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-
-    val launchApk: (String) -> Unit = { ApkIdentityRegistry.launchApk(context, it) }
-
-    if (showSkillPicker) { SkillPickerDialog(SKILLS, selectedSkill, { showSkillPicker = false }, { selectedSkill = it; showSkillPicker = false }) }
-    if (showModelPicker) { ModelPickerDialog(MODELS, selectedModel, { showModelPicker = false }, { selectedModel = "${it.providerName} · ${it.modelName}"; showModelPicker = false }) }
-    if (showCompressDialog) {
+        val scope = rememberCoroutineScope()
+        val launchApk: (String) -> Unit = { ApkIdentityRegistry.launchApk(context, it) }
+        if (showSkillPicker) { SkillPickerDialog(SKILLS, selectedSkill, { showSkillPicker = false }, { selectedSkill = it; showSkillPicker = false }) }
+        if (showModelPicker) { ModelPickerDialog(MODELS, selectedModel, { showModelPicker = false }, { selectedModel = "${it.providerName} · ${it.modelName}"; showModelPicker = false }) }
+        if (showCompressDialog) {
         CompressDialog({ showCompressDialog = false }, {
             val keep = messages.size / 2 + 1
             repeat(messages.size - keep) { if (messages.isNotEmpty()) messages.removeAt(0) }
@@ -77,7 +75,7 @@ fun ChatScreen(
             showCompressDialog = false
         }, autoCompress, { autoCompress = it })
     }
-    if (pendingCommand != null) {
+        if (pendingCommand != null) {
         CommandConfirmDialog(pendingCommand!!, { pendingCommand = null }, {
             // 确认执行 → 跳转终端 APK 执行
             launchApk(ApexSuite.ApkId.TERMINAL)
@@ -91,7 +89,7 @@ fun ChatScreen(
     LaunchedEffect(currentSessionId) {
         if (currentSessionId != null && sessionManager != null) {
             val stored = sessionManager.loadMessages(currentSessionId!!)
-            if (stored.isNotEmpty()) {
+        if (stored.isNotEmpty()) {
                 messages.clear()
                 messages.addAll(stored.map { it.toChatMessage() })
                 contextPercent = (stored.size * 5).coerceAtMost(100)
@@ -123,7 +121,7 @@ fun ChatScreen(
         Column(Modifier.fillMaxSize().padding(padding)) {
             LazyColumn(Modifier.weight(1f), state = listState, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(messages) { msg -> MessageItem(msg) }
-                if (isStreaming) item { TypingIndicator() }
+        if (isStreaming) item { TypingIndicator() }
             }
             QuickActionsRow({ launchApk(ApexSuite.ApkId.WORKING_FILES) }, { launchApk(ApexSuite.ApkId.TERMINAL) }, {}, { launchApk("workflow") })
             ModelSelectorBar(selectedModel) { showModelPicker = true }
@@ -134,7 +132,7 @@ fun ChatScreen(
                 onSend = {
                     if (inputText.isNotBlank() && !isStreaming) {
                         messages.add(ChatMessage(bubbles = listOf(Bubble.Text(inputText)), isUser = true))
-                        val userMsg = inputText; inputText = ""
+        val userMsg = inputText; inputText = ""
                         contextPercent = (contextPercent + userMsg.length / 50).coerceAtMost(100)
                         // 更新会话
                         currentSessionId?.let { sid -> onSessionUpdate(sid, userMsg, messages.size) }
@@ -186,15 +184,13 @@ data class ChatMessage(
 
 object CommandSafety {
     private val SAFE_PREFIXES = listOf("ls", "cat", "echo", "pwd", "whoami", "date", "grep", "find", "wc", "head", "tail", "tree", "git status", "git log", "git diff", "git branch", "npm run", "npm test", "gradle", "./gradlew", "python -c", "node -e", "which", "uname", "df", "free", "top -n")
-    private val DANGEROUS_KEYWORDS = listOf("rm -rf", "mkfs", "dd if=", "chmod 777", ":(){", "fork bomb", "> /dev/sda", "shutdown", "reboot", "init 0", "kill -9")
-
-    fun isSafe(command: String): Boolean {
+        private val DANGEROUS_KEYWORDS = listOf("rm -rf", "mkfs", "dd if=", "chmod 777", ":(){", "fork bomb", "> /dev/sda", "shutdown", "reboot", "init 0", "kill -9")
+        fun isSafe(command: String): Boolean {
         val cmd = command.trim().lowercase()
         if (DANGEROUS_KEYWORDS.any { it in cmd }) return false
         return SAFE_PREFIXES.any { cmd.startsWith(it) }
     }
-
-    fun classify(command: String): CommandRisk {
+        fun classify(command: String): CommandRisk {
         val cmd = command.trim().lowercase()
         return when {
             DANGEROUS_KEYWORDS.any { it in cmd } -> CommandRisk.DANGEROUS
@@ -226,10 +222,9 @@ private suspend fun streamAgentResponse(
     onCommand: (String) -> Unit
 ) {
     val bubbles = mutableListOf<Bubble>()
-    val msgIndex = messages.size
+        val msgIndex = messages.size
     messages.add(ChatMessage(bubbles = emptyList(), isUser = false))
-
-    fun updateBubbles() { if (msgIndex < messages.size) messages[msgIndex] = messages[msgIndex].copy(bubbles = bubbles.toList()) }
+        fun updateBubbles() { if (msgIndex < messages.size) messages[msgIndex] = messages[msgIndex].copy(bubbles = bubbles.toList()) }
 
     // 1. 思考过程（如果开启深度思考）
     if (deepThinking) {
@@ -240,7 +235,7 @@ private suspend fun streamAgentResponse(
             append("用户想要")
             append(when { userMessage.contains("代码") -> "分析代码"; userMessage.contains("搜索") -> "搜索信息"; userMessage.contains("翻译") -> "翻译"; userMessage.contains("文件") -> "操作文件"; userMessage.contains("运行") -> "执行命令"; else -> "执行任务" })
             append("。\n\n计划：\n1. 理解需求\n2. 选择工具\n3. 执行\n4. 验证结果\n\n模型：$model")
-            if (skill != null && skill != "auto") append("\n技能：$skill")
+        if (skill != null && skill != "auto") append("\n技能：$skill")
         }
         streamAppend(thinking, thinkFull, 4, 15) { text ->
             bubbles[bubbles.lastIndex] = Bubble.Thinking(text)
@@ -265,7 +260,7 @@ private suspend fun streamAgentResponse(
     val text1 = StringBuilder()
     bubbles.add(Bubble.Text(""))
     updateBubbles()
-    val text1Full = "好的，我来帮你"
+        val text1Full = "好的，我来帮你"
     streamAppend(text1, text1Full, 3, 25) { text ->
         bubbles[bubbles.lastIndex] = Bubble.Text(text)
         updateBubbles(); scope(listState, messages.size - 1)
@@ -273,7 +268,7 @@ private suspend fun streamAgentResponse(
 
     // 4. 命令执行（如果任务涉及命令）
     val needsCommand = userMessage.contains("运行") || userMessage.contains("执行") || userMessage.contains("命令") || userMessage.contains("终端") || userMessage.contains("查看") || userMessage.contains("检查")
-    if (needsCommand) {
+        if (needsCommand) {
         val cmd = when {
             userMessage.contains("进程") || userMessage.contains("内存") -> "top -n 1"
             userMessage.contains("文件") -> "ls -la"
@@ -295,7 +290,7 @@ private suspend fun streamAgentResponse(
             updateBubbles()
             scope(listState, messages.size - 1)
             delay(300)
-            val output = "drwxr-xr-x  4 root root  4096  Jan 1 10:00 Apex\n-rw-r--r--  1 root root  1024  Jan 1 10:01 README.md\ntotal 2 files"
+        val output = "drwxr-xr-x  4 root root  4096  Jan 1 10:00 Apex\n-rw-r--r--  1 root root  1024  Jan 1 10:01 README.md\ntotal 2 files"
             bubbles[bubbles.lastIndex] = Bubble.Command(cmd, CommandStatus.SUCCESS, output)
             updateBubbles()
             scope(listState, messages.size - 1)
@@ -315,7 +310,7 @@ private suspend fun streamAgentResponse(
     val text2 = StringBuilder()
     bubbles.add(Bubble.Text(""))
     updateBubbles()
-    val text2Full = buildString {
+        val text2Full = buildString {
         append(if (needsCommand) "命令执行完成 ✅\n\n" else "")
         append("分析结果：\n\n")
         append("1. **理解需求** — ")
@@ -386,7 +381,7 @@ private fun BubbleView(bubble: Bubble) {
         }
         is Bubble.Command -> {
             val risk = CommandSafety.classify(bubble.command)
-            val borderColor = risk.color
+        val borderColor = risk.color
             Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)) {
                 Column(Modifier.padding(12.dp, 10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -398,7 +393,7 @@ private fun BubbleView(bubble: Bubble) {
                     Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)) {
                         Text(bubble.command, Modifier.padding(8.dp, 6.dp), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = MaterialTheme.colorScheme.onSurface)
                     }
-                    if (bubble.output.isNotBlank()) {
+        if (bubble.output.isNotBlank()) {
                         Spacer(Modifier.height(6.dp))
                         Surface(shape = RoundedCornerShape(8.dp), color = androidx.compose.ui.graphics.Color(0xFF1A1C1E)) {
                             Text(bubble.output, Modifier.padding(8.dp, 6.dp), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = androidx.compose.ui.graphics.Color(0xFF4EC9B0))
@@ -413,7 +408,7 @@ private fun BubbleView(bubble: Bubble) {
                     Text("🌐 搜索", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
                     Spacer(Modifier.height(4.dp))
                     Text(bubble.query, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                    if (bubble.results.isNotEmpty()) {
+        if (bubble.results.isNotEmpty()) {
                         Spacer(Modifier.height(4.dp))
                         bubble.results.forEach { Text("  • $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer) }
                     }
@@ -432,7 +427,7 @@ private fun RenderMarkdown(text: String, color: androidx.compose.ui.graphics.Col
             block.split("\n").forEach { line ->
                 if (line.isNotBlank()) {
                     val isBold = line.startsWith("**") && line.endsWith("**")
-                    val isList = line.trim().startsWith(Regex("\\d+\\.|[-•]"))
+        val isList = line.trim().startsWith(Regex("\\d+\\.|[-•]"))
                     Row(Modifier.fillMaxWidth()) { if (isList) Spacer(Modifier.width(8.dp)); Text(if (isBold) line.removePrefix("**").removeSuffix("**") else line, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal), color = color) }
                 } else Spacer(Modifier.height(4.dp))
             }
@@ -451,9 +446,9 @@ private fun RenderMarkdown(text: String, color: androidx.compose.ui.graphics.Col
 @Composable
 private fun TypingIndicator() {
     val t = rememberInfiniteTransition("typing")
-    val a1 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), "d1")
-    val a2 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse, delayMillis = 200), "d2")
-    val a3 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse, delayMillis = 400), "d3")
+        val a1 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), "d1")
+        val a2 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse, delayMillis = 200), "d2")
+        val a3 by t.animateFloat(.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse, delayMillis = 400), "d3")
     Row(Modifier.fillMaxWidth()) {
         Box(Modifier.size(36.dp).clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.primaryContainer), Alignment.Center) { Text("🤖") }
         Spacer(Modifier.width(8.dp))
@@ -487,7 +482,7 @@ private fun CommandConfirmDialog(command: String, onDismiss: () -> Unit, onConfi
                     Text("风险等级：", style = MaterialTheme.typography.bodySmall)
                     Text(risk.label, style = MaterialTheme.typography.bodySmall, color = risk.color, fontWeight = FontWeight.Bold)
                 }
-                if (risk == CommandRisk.DANGEROUS) {
+        if (risk == CommandRisk.DANGEROUS) {
                     Text("⚠️ 此命令可能造成不可逆的操作，请确认！", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                 }
             }
@@ -540,7 +535,7 @@ private fun CommandConfirmDialog(command: String, onDismiss: () -> Unit, onConfi
                 IconButton(onClick = {}) { Icon(Icons.Default.AttachFile, "附件") }
                 OutlinedTextField(text, onTextChange, Modifier.weight(1f), placeholder = { Text("向 Agent 发送消息...") }, shape = RoundedCornerShape(24.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outline), maxLines = 4)
                 IconButton(onClick = {}) { Icon(Icons.Default.Mic, "语音") }
-                if (streaming) FilledIconButton(onStop, shape = RoundedCornerShape(50)) { Icon(Icons.Default.Stop, "停止") }
+        if (streaming) FilledIconButton(onStop, shape = RoundedCornerShape(50)) { Icon(Icons.Default.Stop, "停止") }
                 else FilledIconButton(onSend, enabled = text.isNotBlank(), shape = RoundedCornerShape(50)) { Icon(Icons.AutoMirrored.Filled.Send, "发送") }
             }
         }
@@ -567,5 +562,5 @@ fun PersistedMessage.toChatMessage(): ChatMessage {
             is PersistedBubble.Search -> Bubble.Search(pb.query, pb.results, pb.status)
         }
     }
-    return ChatMessage(bubbles = bubbles, isUser = isUser, timestamp = timestamp)
+        return ChatMessage(bubbles = bubbles, isUser = isUser, timestamp = timestamp)
 }

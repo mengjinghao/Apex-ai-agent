@@ -16,12 +16,10 @@ object PresetAgentTemplates {
             productStrategistTemplate
         )
     }
-
-    fun getTemplatesByCategory(category: TemplateCategory): List<AgentTemplate> {
+        fun getTemplatesByCategory(category: TemplateCategory): List<AgentTemplate> {
         return getAllTemplates().filter { it.category == category }
     }
-
-    fun searchTemplates(query: String): List<AgentTemplate> {
+        fun searchTemplates(query: String): List<AgentTemplate> {
         val lowerQuery = query.lowercase()
         return getAllTemplates().filter { template ->
             template.name.lowercase().contains(lowerQuery) ||
@@ -29,8 +27,7 @@ object PresetAgentTemplates {
                     template.tags.any { it.lowercase().contains(lowerQuery) }
         }
     }
-
-    val codeDeveloperTemplate = AgentTemplate(
+        val codeDeveloperTemplate = AgentTemplate(
         id = "template_code_developer",
         name = "代码开发助手，
         description = "专业的软件开发助手，擅长编写高质量代码、代码审查和重构",
@@ -59,8 +56,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val documentWriterTemplate = AgentTemplate(
+        val documentWriterTemplate = AgentTemplate(
         id = "template_document_writer",
         name = "文档撰写助手",
         description = "专业的技术文档撰写专家，能够撰写各类技术文档、用户手册和项目报告",
@@ -89,8 +85,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val dataAnalystTemplate = AgentTemplate(
+        val dataAnalystTemplate = AgentTemplate(
         id = "template_data_analyst",
         name = "数据分析专家",
         description = "专业的数据分析师，擅长数据分析、统计建模和数据可视�?
@@ -119,8 +114,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val designCreativeTemplate = AgentTemplate(
+        val designCreativeTemplate = AgentTemplate(
         id = "template_design_creative",
         name = "设计创意专家",
         description = "创意设计专家，擅？UI/UX 设计、视觉设计和创意构？,
@@ -149,8 +143,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val researchAssistantTemplate = AgentTemplate(
+        val researchAssistantTemplate = AgentTemplate(
         id = "template_research_assistant",
         name = "研究助手",
         description = "专业的研究助手，擅长文献检索、信息整理和研究分析",
@@ -179,8 +172,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val projectManagerTemplate = AgentTemplate(
+        val projectManagerTemplate = AgentTemplate(
         id = "template_project_manager",
         name = "项目经理",
         description = "经验丰富的项目管理专家，擅长任务分解、进度跟踪和团队协调",
@@ -209,8 +201,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val qualityAssuranceTemplate = AgentTemplate(
+        val qualityAssuranceTemplate = AgentTemplate(
         id = "template_quality_assurance",
         name = "质量保证专家",
         description = "专业QA 专家，擅长测试策略制定、缺陷分析和质量评估",
@@ -239,8 +230,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val devOpsEngineerTemplate = AgentTemplate(
+        val devOpsEngineerTemplate = AgentTemplate(
         id = "template_devops_engineer",
         name = "DevOps 工程�?
         description = "专业？DevOps 工程师，擅长 CI/CD、容器化和云原生架构",
@@ -269,8 +259,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val uxResearcherTemplate = AgentTemplate(
+        val uxResearcherTemplate = AgentTemplate(
         id = "template_ux_researcher",
         name = "UX 研究专家,
         description = "专业的用户体验研究员，擅长用户研究、可用性测试和体验优化",
@@ -299,8 +288,7 @@ object PresetAgentTemplates {
             useGlobalConfig = true
         )
     )
-
-    val productStrategistTemplate = AgentTemplate(
+        val productStrategistTemplate = AgentTemplate(
         id = "template_product_strategist",
         name = "产品策略专家",
         description = "专业的产品策略专家，擅长产品规划、市场分析和商业策略",
@@ -342,8 +330,7 @@ enum class TemplateCategory {
     DEVOPS,
     UX_RESEARCH,
     PRODUCT_STRATEGY;
-
-    fun getDisplayName(): String {
+        fun getDisplayName(): String {
         return when (this) {
             CODE_DEVELOPMENT -> "代码开�?
             DOCUMENTATION -> "文档撰写"

@@ -36,7 +36,7 @@ private object SharedHttpClient {
  * value: Pair<指纹(用于检测配置变更）, AIService>
  *
  * 收益�?
- * - 避免每次请求重复构�?Provider 实例（反�?初始�?分配开销�?
+ * - 避免每次请求重复构�?Provider 实例（反�初始�分配开销�?
  * - 减少 GC 压力（LlamaProvider 较重�?
  * - 利用 ConcurrentHashMap 的线程安全读�?
  */
@@ -62,25 +62,20 @@ private object ServiceCache {
             append('|').append(config.llamaGpuLayers)
         }
     }
-
-    fun get(configId: String, expectedFingerprint: String): AIService? {
+        fun get(configId: String, expectedFingerprint: String): AIService? {
         val cached = cache[configId] ?: return null
         return if (cached.first == expectedFingerprint) cached.second else null
     }
-
-    fun put(configId: String, fingerprint: String, service: AIService) {
+        fun put(configId: String, fingerprint: String, service: AIService) {
         cache[configId] = fingerprint to service
     }
-
-    fun invalidate(configId: String) {
+        fun invalidate(configId: String) {
         cache.remove(configId)
     }
-
-    fun clearAll() {
+        fun clearAll() {
         cache.clear()
     }
-
-    fun size(): Int = cache.size
+        fun size(): Int = cache.size
 }
 
 /** AI服务工厂，根据提供商类型创建相应的AIService实例 */
@@ -94,9 +89,9 @@ object AIServiceFactory {
     private fun parseCustomHeaders(customHeadersJson: String): Map<String, String> {
         return try {
             val headers = mutableMapOf<String, String>()
-            if (customHeadersJson.isNotEmpty() && customHeadersJson != "{}") {
+        if (customHeadersJson.isNotEmpty() && customHeadersJson != "{}") {
                 val jsonObject = JSONObject(customHeadersJson)
-                for (key in jsonObject.keys()) {
+        for (key in jsonObject.keys()) {
                     headers[key] = jsonObject.getString(key)
                 }
             }
@@ -121,8 +116,8 @@ object AIServiceFactory {
 
     /**
      * [优化版] 创建或复用AI服务实例
-     * - 相同 config.id + 相同参数指纹 �?复用缓存实例
-     * - 指纹不匹�?�?重新构造并更新缓存
+     * - 相同 config.id + 相同参数指纹 �复用缓存实例
+     * - 指纹不匹�?�重新构造并更新缓存
      */
     fun createService(
         config: ModelConfigData,
@@ -133,7 +128,7 @@ object AIServiceFactory {
         val cached = ServiceCache.get(config.id, fingerprint)
         if (cached != null) {
             reportCacheEvent(context, isHit = true)
-            return cached
+        return cached
         }
 
         reportCacheEvent(context, isHit = false)
@@ -150,11 +145,11 @@ object AIServiceFactory {
     private fun reportCacheEvent(context: Context, isHit: Boolean) {
         try {
             val healthClass = Class.forName("com.apex.agent.core.application.ArchitectureHealthCheck")
-            val healthInstance = healthClass.getMethod("getInstance", Context::class.java)
+        val healthInstance = healthClass.getMethod("getInstance", Context::class.java)
                 .invoke(null, context.applicationContext)
-            val methodName = if (isHit) "recordCacheHit" else "recordCacheMiss"
+        val methodName = if (isHit) "recordCacheHit" else "recordCacheMiss"
             healthClass.getMethod(methodName).invoke(healthInstance)
-            if (!isHit) {
+        if (!isHit) {
                 healthClass.getMethod("updateCacheSize", Int::class.javaPrimitiveType)
                     .invoke(healthInstance, ServiceCache.size())
             }
@@ -173,13 +168,11 @@ object AIServiceFactory {
     ): AIService {
         val httpClient = SharedHttpClient.instance
         val customHeaders = parseCustomHeaders(config.customHeaders)
-
         val apiKeyProvider = if (config.useMultipleApiKeys) {
             MultiApiKeyProvider(config.id, modelConfigManager)
         } else {
             SingleApiKeyProvider(config.apiKey)
         }
-
         val supportsVision = config.enableDirectImageProcessing
         val supportsAudio = config.enableDirectAudioProcessing
         val supportsVideo = config.enableDirectVideoProcessing

@@ -64,8 +64,7 @@ data class MCPToolParameter(
                     if (element != null) smartConvert(element, null) else null 
                 }
             }
-            
-            if (value !is String) return value
+        if (value !is String) return value
 
             return when (typeName?.lowercase()) {
                 "number" -> {
@@ -133,9 +132,8 @@ data class MCPToolParameter(
             // 尝试作为 JSON 数组解析
     try {
                 val jsonArray = JSONArray(trimmed)
-                val result = mutableListOf<Any>()
-                
-                for (i in 0 until jsonArray.length()) {
+        val result = mutableListOf<Any>()
+        for (i in 0 until jsonArray.length()) {
                     val element = when {
                         jsonArray.isNull(i) -> null
                         else -> {
@@ -160,12 +158,11 @@ data class MCPToolParameter(
                             }
                         }
                     }
-                    if (element != null) {
+        if (element != null) {
                         result.add(element)
                     }
                 }
-                
-                return result
+        return result
             } catch (e: JSONException) {
                 // JSON 解析失败，尝试修复常见的非标准格�?
     if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
@@ -192,7 +189,7 @@ data class MCPToolParameter(
                         
                         // 否则，尝试一般的逗号分隔解析
     val elements = content.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                        return elements.map { element -> smartConvert(element, null) }
+        return elements.map { element -> smartConvert(element, null) }
                     } catch (ex: Exception) {
                         // 修复失败，返回原始，
     return value
@@ -215,14 +212,12 @@ data class MCPToolParameter(
             
             try {
                 val jsonObject = JSONObject(trimmed)
-                val result = mutableMapOf<String, Any>()
-                
-                val keys = jsonObject.keys()
+        val result = mutableMapOf<String, Any>()
+        val keys = jsonObject.keys()
                 while (keys.hasNext()) {
                     val key = keys.next()
-                    val rawValue = jsonObject.get(key)
-                    
-                    val convertedValue = when (rawValue) {
+        val rawValue = jsonObject.get(key)
+        val convertedValue = when (rawValue) {
                         is JSONObject -> {
                             // 嵌套对象，递归处理
                             parseObject(rawValue.toString())
@@ -241,8 +236,7 @@ data class MCPToolParameter(
                     
                     result[key] = convertedValue
                 }
-                
-                return result
+        return result
             } catch (e: JSONException) {
                 // JSON 解析失败，返回原始，
     return value

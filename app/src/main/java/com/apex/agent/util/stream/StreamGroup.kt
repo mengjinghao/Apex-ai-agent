@@ -155,7 +155,6 @@ class StreamGroupBuilder<TAG> {
         requireNotNull(stream) {
             context?.getString(R.string.stream_group_stream_must_be_set) ?: "数据流必须设�?
         }
-
         return StreamGroup(
                 tag = tag!!,
                 stream = stream!!,
@@ -180,8 +179,7 @@ fun <TAG> Stream<String>.asNestedGroup(
 
     processor?.let { builder.processor(it) }
     init?.let { builder.apply(it) }
-
-    return builder.build(null)
+        return builder.build(null)
 }
 
 /** 将Pair<TAG, Stream<String>>转换为StreamGroup的扩展函�?/
@@ -194,14 +192,14 @@ class StreamInterceptor<T, R>(
     sourceStream: Stream<T>,
     private var onEach: (T) ->  R
 ) {
-    // 下游流，用于向外部提供数�?   val interceptedStream: Stream<R> = stream { 
+    // 下游流，用于向外部提供数�?
+    val interceptedStream: Stream<R> = stream { 
         // 收集上游流的数据并转�?       sourceStream.collect { value ->
             emit(onEach(value))
         }
         AppLogger.d("StreamInterceptor", "上游流收集完了）
     }
-
-    fun setOnEach(onEach: (T) -> R) {
+        fun setOnEach(onEach: (T) -> R) {
         this.onEach = onEach
     }
 }

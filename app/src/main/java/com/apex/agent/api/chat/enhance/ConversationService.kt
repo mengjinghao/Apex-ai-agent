@@ -69,12 +69,11 @@ class ConversationService(
             setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
         )
     }
-
-    private val apiPreferences = ApiPreferences.getInstance(context)
-    private val displayPreferencesManager = DisplayPreferencesManager.getInstance(context)
-    private val waifuPreferences = WaifuPreferences.getInstance(context)
-    private val activePromptManager = ActivePromptManager.getInstance(context)
-    private val userPreferencesManager = preferencesManager
+        private val apiPreferences = ApiPreferences.getInstance(context)
+        private val displayPreferencesManager = DisplayPreferencesManager.getInstance(context)
+        private val waifuPreferences = WaifuPreferences.getInstance(context)
+        private val activePromptManager = ActivePromptManager.getInstance(context)
+        private val userPreferencesManager = preferencesManager
     private val conversationMutex = Mutex()
 
     /**
@@ -138,15 +137,14 @@ class ConversationService(
     ): String {
         try {
             val useEnglish = LocaleUtils.getCurrentLanguage(context).lowercase().startsWith("en")
-            val systemPrompt = FunctionalPrompts.buildSummarySystemPrompt(previousSummary, useEnglish)
-            val sanitizedMessages = ChatUtils.stripGeminiThoughtSignatureMetaTurns(messages)
-
-            val finalMessages =
+        val systemPrompt = FunctionalPrompts.buildSummarySystemPrompt(previousSummary, useEnglish)
+        val sanitizedMessages = ChatUtils.stripGeminiThoughtSignatureMetaTurns(messages)
+        val finalMessages =
                 listOf(PromptTurn(kind = PromptTurnKind.SYSTEM, content = systemPrompt)) +
                     sanitizedMessages
 
             // Get all model parameters from preferences (with enabled state)
-    val modelParameters = multiServiceManager.getModelParametersForFunction(FunctionType.SUMMARY)
+        val modelParameters = multiServiceManager.getModelParametersForFunction(FunctionType.SUMMARY)
 
             // 获取SUMMARY功能类型的AIService实例
     val summaryService = multiServiceManager.getServiceForFunction(FunctionType.SUMMARY)
@@ -165,8 +163,7 @@ class ConversationService(
                 val progress: Float,
                 val message: String
             )
-
-            val stages = listOf(
+        val stages = listOf(
                 Stage(
                     matchers = listOf({ it.contains(FunctionalPrompts.SUMMARY_MARKER_EN) || it.contains(FunctionalPrompts.SUMMARY_MARKER_CN) }),
                     progress = 0.20f,
@@ -198,15 +195,14 @@ class ConversationService(
                     message = context.getString(R.string.conversation_summary_finishing)
                 )
             )
-
-            var lastStageIndex = -1
+        var lastStageIndex = -1
             fun updateStageIfNeeded() {
                 if (lastStageIndex + 1 >= stages.size) return
                 val snapshot = contentBuilder.toString()
                 while (lastStageIndex + 1 < stages.size) {
                     val next = stages[lastStageIndex + 1]
                     val matched = next.matchers.any { it(snapshot) }
-                    if (!matched) break
+        if (!matched) break
                     lastStageIndex += 1
                     ToolProgressBus.update(
                         ToolProgressBus.SUMMARY_PROGRESS_TOOL_NAME,
@@ -264,12 +260,11 @@ class ConversationService(
             } catch (e: Exception) {
                 AppLogger.e(TAG, "更新token统计失败", e)
             }
-
-            return summaryContent
+        return summaryContent
         } catch (e: Exception) {
             AppLogger.e(TAG, "生成总结时出�? e)
             // return "对话摘要：生成摘要时出错，但对话仍在继续�?
-            throw e
+    throw e
         }
     }
 
@@ -343,8 +338,7 @@ class ConversationService(
             // Add system prompt if not already present
     if (!effectiveChatHistory.any { it.kind == PromptTurnKind.SYSTEM }) {
                 val safeProxySenderName = proxySenderName?.takeIf { it.isNotBlank() }
-
-                val preferencesText = if (safeProxySenderName == null) {
+        val preferencesText = if (safeProxySenderName == null) {
                     val activeProfile = preferencesManager.getUserPreferencesFlow().first()
                     buildPreferencesText(activeProfile)
                 } else {
@@ -356,19 +350,17 @@ class ConversationService(
 
                 // 获取工具启用状�?
     val enableTools = apiPreferences.enableToolsFlow.first()
-                val disableUserPreferenceDescription =
+        val disableUserPreferenceDescription =
                         apiPreferences.disableUserPreferenceDescriptionFlow.first()
-                val disableLatexDescription = apiPreferences.disableLatexDescriptionFlow.first()
-                val disableStatusTags = apiPreferences.disableStatusTagsFlow.first()
-                val toolPromptVisibility = runCatching {
+        val disableLatexDescription = apiPreferences.disableLatexDescriptionFlow.first()
+        val disableStatusTags = apiPreferences.disableStatusTagsFlow.first()
+        val toolPromptVisibility = runCatching {
                     apiPreferences.toolPromptVisibilityFlow.first()
                 }.getOrElse { emptyMap() }
-
-                val safBookmarkNames = runCatching {
+        val safBookmarkNames = runCatching {
                     apiPreferences.safBookmarksFlow.first().map { it.name }
                 }.getOrElse { emptyList() }
-
-                val useEnglish = LocaleUtils.getCurrentLanguage(context).lowercase().startsWith("en")
+        val useEnglish = LocaleUtils.getCurrentLanguage(context).lowercase().startsWith("en")
                 resolvedUseEnglish = useEnglish
 
                 // 获取系统提示词，现在传入workspacePath和识图配置状�?
@@ -411,7 +403,7 @@ class ConversationService(
     val finalSystemPrompt = buildString {
                     append(systemPrompt)
                     append(waifuRulesText)
-                    if (!disableUserPreferenceDescription && preferencesText.isNotEmpty()) {
+        if (!disableUserPreferenceDescription && preferencesText.isNotEmpty()) {
                         append("\n\nUser preference description: ")
                         append(preferencesText)
                     }
@@ -419,7 +411,7 @@ class ConversationService(
 
                 // 替换提示词中的占位符
     val aiName = context.getString(R.string.app_name)
-                val finalSystemPromptWithReplacements = replacePromptPlaceholders(
+        val finalSystemPromptWithReplacements = replacePromptPlaceholders(
                     finalSystemPrompt,
                     aiName
                 )
@@ -440,7 +432,7 @@ class ConversationService(
                 // If it's an assistant message, check for tool results
     if (kind == PromptTurnKind.ASSISTANT) {
                     val xmlTags = splitXmlTag(content)
-                    if (xmlTags.isNotEmpty()) {
+        if (xmlTags.isNotEmpty()) {
                         // Process the message with tool results
                         processChatMessageWithTools(content, xmlTags, preparedHistory, index, effectiveChatHistory.size)
                     } else {
@@ -474,8 +466,7 @@ class ConversationService(
     fun splitXmlTag(content: String): List<List<String>> {
         return NativeXmlSplitter.splitXmlTag(content)
     }
-
-    fun normalizeConversationHistoryForModel(
+        fun normalizeConversationHistoryForModel(
         chatHistory: List<PromptTurn>
     ): List<PromptTurn> {
         return chatHistory.map { turn ->
@@ -487,26 +478,22 @@ class ConversationService(
             }
         }
     }
-
-    private fun normalizeToolResultMarkupForModel(content: String): String {
+        private fun normalizeToolResultMarkupForModel(content: String): String {
         return ChatMarkupRegex.toolResultTagWithAttrs.replace(content) { matchResult ->
             val tagName = matchResult.groupValues[1]
             val attrs = matchResult.groupValues[2]
             val body = matchResult.groupValues[3]
             val toolName =
                 ChatMarkupRegex.nameAttr.find(attrs)?.groupValues?.getOrNull(1).orEmpty()
-
-            if (!toolName.equals(APPLY_FILE_TOOL_NAME, ignoreCase = true)) {
+        if (!toolName.equals(APPLY_FILE_TOOL_NAME, ignoreCase = true)) {
                 return@replace matchResult.value
             }
-
-            val requestContent =
+        val requestContent =
                 extractApplyFileRequestContent(body) ?: return@replace matchResult.value
             "<${tagName}${attrs}><content>${requestContent}</content></${tagName}>"
         }
     }
-
-    private fun extractApplyFileRequestContent(toolResultBody: String): String? {
+        private fun extractApplyFileRequestContent(toolResultBody: String): String? {
         val contentBody =
             ChatMarkupRegex.contentTag.find(toolResultBody)?.groupValues?.getOrNull(1)
                 ?: toolResultBody
@@ -530,12 +517,11 @@ class ConversationService(
                     content = content
                 )
             )
-            return
+        return
         }
 
         // 按顺序处理标�?
     val segments = mutableListOf<PromptTurn>()
-
         for (tag in xmlTags) {
             val tagName = tag[0]
             val normalizedTagName = ChatMarkupRegex.normalizeToolLikeTagName(tagName) ?: tagName
@@ -587,12 +573,11 @@ class ConversationService(
         var currentContent = StringBuilder()
         var currentToolName: String? = null
         var currentMetadata: Map<String, Any?> = emptyMap()
-
         for (segment in segments) {
             val shouldMergeCurrent =
                 segment.kind == currentKind &&
                     segment.kind !in setOf(PromptTurnKind.TOOL_CALL, PromptTurnKind.TOOL_RESULT)
-            if (shouldMergeCurrent) {
+        if (shouldMergeCurrent) {
                 // 如果角色与当前角色相同，则合并内�?               currentContent.append("\n").append(segment.content)
             } else {
                 // 角色不同，先保存当前内容（如果有�?
@@ -633,16 +618,14 @@ class ConversationService(
     /** Build a formatted preferences text string from a PreferenceProfile */
     fun buildPreferencesText(profile: PreferenceProfile): String {
         val parts = mutableListOf<String>()
-
         if (profile.gender.isNotEmpty()) {
             parts.add("Gender: ${profile.gender}")
         }
-
         if (profile.birthDate > 0) {
             // Convert timestamp to age and format as text
     val today = Calendar.getInstance()
-            val birthCal = Calendar.getInstance().apply { timeInMillis = profile.birthDate }
-            var age = today.get(Calendar.YEAR) - birthCal.get(Calendar.YEAR)
+        val birthCal = Calendar.getInstance().apply { timeInMillis = profile.birthDate }
+        var age = today.get(Calendar.YEAR) - birthCal.get(Calendar.YEAR)
             // Adjust age if birthday hasn't occurred yet this year
     if (today.get(Calendar.MONTH) < birthCal.get(Calendar.MONTH) ||
                             (today.get(Calendar.MONTH) == birthCal.get(Calendar.MONTH) &&
@@ -657,23 +640,18 @@ class ConversationService(
     val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
             parts.add("Birth Date: ${dateFormat.format(java.util.Date(profile.birthDate))}")
         }
-
         if (profile.personality.isNotEmpty()) {
             parts.add("Personality: ${profile.personality}")
         }
-
         if (profile.identity.isNotEmpty()) {
             parts.add("Identity: ${profile.identity}")
         }
-
         if (profile.occupation.isNotEmpty()) {
             parts.add("Occupation: ${profile.occupation}")
         }
-
         if (profile.aiStyle.isNotEmpty()) {
             parts.add("Expected AI Style: ${profile.aiStyle}")
         }
-
         return parts.joinToString("; ")
     }
 
@@ -687,7 +665,6 @@ class ConversationService(
     private fun flattenUiInfo(pageInfo: UIPageResultData): String {
         val clickableElements = mutableListOf<String>()
         val screenTexts = mutableListOf<String>()
-
         fun traverse(node: SimplifiedUINode) {
             // If the node is clickable, treat it as an atomic unit. We'll gather all text from
             // its entire subtree to form a comprehensive description for the AI.
@@ -698,7 +675,7 @@ class ConversationService(
 
                 // --- NEW: Recursively find all text and content descriptions in the subtree ---
     val descriptiveTexts = mutableListOf<String>()
-                fun findTextsRecursively(n: SimplifiedUINode) {
+        fun findTextsRecursively(n: SimplifiedUINode) {
                     n.text?.takeIf { it.isNotBlank() }?.let { descriptiveTexts.add(it) }
                     n.contentDesc?.takeIf { it.isNotBlank() }?.let { descriptiveTexts.add(it) }
                     n.children.forEach(::findTextsRecursively)
@@ -708,7 +685,7 @@ class ConversationService(
                 // Combine all found texts into a single descriptive string. This is crucial for
                 // elements where the text label is in a child node of the clickable area.
     val combinedText = descriptiveTexts.distinct().joinToString(" | ")
-                if (combinedText.isNotBlank()) {
+        if (combinedText.isNotBlank()) {
                     // Using "desc" to signify this is a constructed description. Increased length.parts.add("desc: \"${combinedText.replace("\"", "'").take(80)}\"")
                 }
                 // --- END NEW ---
@@ -733,7 +710,6 @@ class ConversationService(
 
         // Use distinct to remove duplicate text entries from non-clickable elements.
     val distinctScreenTexts = screenTexts.distinct()
-
         return """
         Package: ${pageInfo.packageName}
         Activity: ${pageInfo.activityName}
@@ -744,40 +720,37 @@ class ConversationService(
         ${distinctScreenTexts.joinToString("\n")}
         """.trimIndent()
     }
-
-    private fun JSONObject.toMap(): Map<String, Any> {
+        private fun JSONObject.toMap(): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
         val keysItr = this.keys()
         while (keysItr.hasNext()) {
             val key = keysItr.next()
-            var value = this.get(key)
-            if (value is JSONObject) {
+        var value = this.get(key)
+        if (value is JSONObject) {
                 value = value.toMap()
             }
-            if (value is JSONArray) {
+        if (value is JSONArray) {
                 value = value.toList()
             }
             map[key] = value
         }
         return map
     }
-
-    private fun JSONArray.toList(): List<Any> {
+        private fun JSONArray.toList(): List<Any> {
         val list = mutableListOf<Any>()
         for (i in 0 until this.length()) {
             var value = this.get(i)
-            if (value is JSONObject) {
+        if (value is JSONObject) {
                 value = value.toMap()
             }
-            if (value is JSONArray) {
+        if (value is JSONArray) {
                 value = value.toList()
             }
             list.add(value)
         }
         return list
     }
-
-    private fun createToolFromJson(type: String, arg: Any): AITool {
+        private fun createToolFromJson(type: String, arg: Any): AITool {
         val parameters = mutableListOf<ToolParameter>()
         when (arg) {
             is Map<*, *> -> {
@@ -818,7 +791,6 @@ class ConversationService(
         val waifuCustomPrompt = waifuPreferences.waifuCustomPromptFlow.first()
         val waifuSelfiePrompt = waifuPreferences.waifuSelfiePromptFlow.first()
         val waifuRules = mutableListOf<String>()
-
         if (waifuEnableEmoticons) {
             // 动态获取当前可用的表情分组
     val availableCategories = try {
@@ -828,8 +800,7 @@ class ConversationService(
                 com.apex.util.AppLogger.e("ConversationService", "获取表情分组失败", e)
                 emptyList()
             }
-            
-            if (availableCategories.isNotEmpty()) {
+        if (availableCategories.isNotEmpty()) {
                 val emotionListText = availableCategories.joinToString(", ")
                 waifuRules.add(FunctionalPrompts.waifuEmotionRule(emotionListText))
             } else {
@@ -837,15 +808,12 @@ class ConversationService(
                 waifuRules.add(FunctionalPrompts.waifuNoCustomEmojiRule())
             }
         }
-        
         if (waifuEnableSelfie) {
             waifuRules.add(FunctionalPrompts.waifuSelfieRule(waifuSelfiePrompt))
         }
-
         if (waifuCustomPrompt.isNotBlank()) {
             waifuRules.add(FunctionalPrompts.waifuCustomPromptRule(waifuCustomPrompt))
         }
-
         return if (waifuRules.isNotEmpty()) {
             buildString {
                 append("\n\n[Extra Rules]")
@@ -861,8 +829,7 @@ class ConversationService(
     private fun buildAvatarMoodRulesText(useEnglish: Boolean): String {
         return ""
     }
-
-    private fun shouldInjectMoodRules(promptFunctionType: PromptFunctionType): Boolean {
+        private fun shouldInjectMoodRules(promptFunctionType: PromptFunctionType): Boolean {
         return false
     }
 
@@ -882,7 +849,6 @@ class ConversationService(
         
         // 替换占位�?       finalPrompt = finalPrompt.replace("{{user}}", globalUserName)
         finalPrompt = finalPrompt.replace("{{char}}", aiName)
-        
         return finalPrompt
     }
 
@@ -900,17 +866,15 @@ class ConversationService(
             "zh" -> context.getString(R.string.conversation_language_chinese)
             "en" -> "English"
             else -> context.getString(R.string.conversation_language_chinese) // 默认翻译为中�?       }
-    val translationPrompt = """
+        val translationPrompt = """
 ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
         """.trim()
-        
         val chatHistory = listOf(
             PromptTurn(
                 kind = PromptTurnKind.SYSTEM,
                 content = FunctionalPrompts.translationSystemPrompt()
             )
         )
-        
         val contentBuilder = StringBuilder()
         
         try {
@@ -919,8 +883,7 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
             
             // 获取模型参数
     val modelParameters = multiServiceManager.getModelParametersForFunction(FunctionType.TRANSLATION)
-            
-            val stream = translationService.sendMessage(
+        val stream = translationService.sendMessage(
                 context = context,
                 chatHistory = chatHistory + PromptTurn(kind = PromptTurnKind.USER, content = translationPrompt),
                 modelParameters = modelParameters
@@ -929,8 +892,7 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
             stream.collect { content ->
                 contentBuilder.append(content)
             }
-            
-            return contentBuilder.toString().trim()
+        return contentBuilder.toString().trim()
         } catch (e: Exception) {
             throw e
         }
@@ -949,9 +911,7 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
         if (toolDescriptions.isEmpty()) {
             return ""
         }
-        
         val toolList = toolDescriptions.joinToString("\n") { "- ${it}" }
-
         val useEnglish = LocaleUtils.getCurrentLanguage(context).lowercase().startsWith("en")
         val descriptionPrompt =
             FunctionalPrompts.packageDescriptionUserPrompt(
@@ -959,7 +919,6 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
                 toolList = toolList,
                 useEnglish = useEnglish
             )
-
         val chatHistory =
             listOf(
                 PromptTurn(
@@ -967,7 +926,6 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
                     content = FunctionalPrompts.packageDescriptionSystemPrompt(useEnglish)
                 )
             )
-        
         val contentBuilder = StringBuilder()
         
         try {
@@ -976,8 +934,7 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
             
             // 获取模型参数
     val modelParameters = multiServiceManager.getModelParametersForFunction(FunctionType.SUMMARY)
-            
-            val stream = summaryService.sendMessage(
+        val stream = summaryService.sendMessage(
                 context = context,
                 chatHistory = chatHistory + PromptTurn(kind = PromptTurnKind.USER, content = descriptionPrompt),
                 modelParameters = modelParameters
@@ -986,8 +943,7 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
             stream.collect { content ->
                 contentBuilder.append(content)
             }
-            
-            val result = ChatUtils.removeThinkingContent(contentBuilder.toString().trim())
+        val result = ChatUtils.removeThinkingContent(contentBuilder.toString().trim())
             
             // 如果生成失败或内容为空，返回空字符串表示生成失败
     return if (result.isBlank()) {
@@ -997,7 +953,7 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "生成工具包描述时出错", e)
-            return ""
+        return ""
         }
     }
 
@@ -1017,13 +973,13 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
             
             // 添加图片到池子并获取ID
     val imageId = com.apex.util.ImagePoolManager.addImage(imagePath)
-            if (imageId == "error") {
+        if (imageId == "error") {
                 return "Failed to load image: ${imagePath}"
             }
 
             // 构建提示词，包含用户意图和图片链�?
     val imageLink = MediaLinkBuilder.image(context, imageId)
-            val prompt = if (userIntent.isNullOrBlank()) {
+        val prompt = if (userIntent.isNullOrBlank()) {
                 "${imageLink}\n${context.getString(R.string.conversation_analyze_image_prompt)}"
             } else {
                 "${imageLink}\n${userIntent}"
@@ -1059,26 +1015,21 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
     ): String {
         return try {
             val service = multiServiceManager.getServiceForFunction(FunctionType.AUDIO_RECOGNITION)
-
-            val mimeType = android.webkit.MimeTypeMap.getSingleton()
+        val mimeType = android.webkit.MimeTypeMap.getSingleton()
                 .getMimeTypeFromExtension(java.io.File(audioPath).extension.lowercase())
                 ?: "audio/*"
-
-            val mediaId = com.apex.util.MediaPoolManager.addMedia(audioPath, mimeType)
-            if (mediaId == "error") {
+        val mediaId = com.apex.util.MediaPoolManager.addMedia(audioPath, mimeType)
+        if (mediaId == "error") {
                 return "Failed to load audio: ${audioPath}"
             }
-
-            val audioLink = MediaLinkBuilder.audio(context, mediaId)
-            val prompt = if (userIntent.isNullOrBlank()) {
+        val audioLink = MediaLinkBuilder.audio(context, mediaId)
+        val prompt = if (userIntent.isNullOrBlank()) {
                 "${audioLink}\n${context.getString(R.string.conversation_analyze_audio_prompt)}"
             } else {
                 "${audioLink}\n${userIntent}"
             }
-
-            val modelParameters = multiServiceManager.getModelParametersForFunction(FunctionType.AUDIO_RECOGNITION)
-
-            val result = StringBuilder()
+        val modelParameters = multiServiceManager.getModelParametersForFunction(FunctionType.AUDIO_RECOGNITION)
+        val result = StringBuilder()
             service.sendMessage(
                 context = context,
                 chatHistory = listOf(PromptTurn(kind = PromptTurnKind.USER, content = prompt)),
@@ -1102,26 +1053,21 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
     ): String {
         return try {
             val service = multiServiceManager.getServiceForFunction(FunctionType.VIDEO_RECOGNITION)
-
-            val mimeType = android.webkit.MimeTypeMap.getSingleton()
+        val mimeType = android.webkit.MimeTypeMap.getSingleton()
                 .getMimeTypeFromExtension(java.io.File(videoPath).extension.lowercase())
                 ?: "video/*"
-
-            val mediaId = com.apex.util.MediaPoolManager.addMedia(videoPath, mimeType)
-            if (mediaId == "error") {
+        val mediaId = com.apex.util.MediaPoolManager.addMedia(videoPath, mimeType)
+        if (mediaId == "error") {
                 return "Failed to load video: ${videoPath}"
             }
-
-            val videoLink = MediaLinkBuilder.video(context, mediaId)
-            val prompt = if (userIntent.isNullOrBlank()) {
+        val videoLink = MediaLinkBuilder.video(context, mediaId)
+        val prompt = if (userIntent.isNullOrBlank()) {
                 "${videoLink}\n${context.getString(R.string.conversation_analyze_video_prompt)}"
             } else {
                 "${videoLink}\n${userIntent}"
             }
-
-            val modelParameters = multiServiceManager.getModelParametersForFunction(FunctionType.VIDEO_RECOGNITION)
-
-            val result = StringBuilder()
+        val modelParameters = multiServiceManager.getModelParametersForFunction(FunctionType.VIDEO_RECOGNITION)
+        val result = StringBuilder()
             service.sendMessage(
                 context = context,
                 chatHistory = listOf(PromptTurn(kind = PromptTurnKind.USER, content = prompt)),

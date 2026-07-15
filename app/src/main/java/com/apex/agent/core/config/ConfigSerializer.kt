@@ -71,7 +71,7 @@ class JsonConfigSerializer : ConfigSerializer {
                 .replace("\n", "\\n")
                 .replace("\t", "\\t")
             sb.append("  \"${entry.key}\": \"$escapedValue\"")
-            if (index < entries.size - 1) sb.append(",")
+        if (index < entries.size - 1) sb.append(",")
             sb.appendLine()
         }
         sb.appendLine("}")
@@ -100,8 +100,8 @@ class JsonConfigSerializer : ConfigSerializer {
                 if (inner[i] == '\\') i++ // 跳过转义
                 i++
             }
-            if (i >= len) throw IllegalArgumentException("键名未闭合")
-            val key = inner.substring(keyStart, i)
+        if (i >= len) throw IllegalArgumentException("键名未闭合")
+        val key = inner.substring(keyStart, i)
             i++ // 跳过闭合引号
             // 跳过冒号
             while (i < len && (inner[i].isWhitespace() || inner[i] == ':')) i++
@@ -114,7 +114,7 @@ class JsonConfigSerializer : ConfigSerializer {
                     if (inner[i] == '\\') i++
                     i++
                 }
-                val value = inner.substring(valueStart, i)
+        val value = inner.substring(valueStart, i)
                 i++ // 跳过闭合引号
                 result[key] = value
             } else {
@@ -139,14 +139,13 @@ class YamlConfigSerializer : ConfigSerializer {
         val sb = StringBuilder()
         sb.appendLine("# Configuration exported at ${java.time.Instant.now()}")
         sb.appendLine()
-
         val grouped = config.keys.groupBy { ConfigPath.root(it) }
         for ((root, keys) in grouped) {
             sb.appendLine("$root:")
-            for (key in keys) {
+        for (key in keys) {
                 val segments = ConfigPath.segments(key)
-                val indent = "  ".repeat(segments.size - 1)
-                val leaf = segments.last()
+        val indent = "  ".repeat(segments.size - 1)
+        val leaf = segments.last()
                 sb.appendLine("$indent$leaf: \"${config[key]}\"")
             }
             sb.appendLine()
@@ -158,26 +157,25 @@ class YamlConfigSerializer : ConfigSerializer {
         val result = mutableMapOf<String, String>()
         val lines = content.lines()
         val pathStack = mutableListOf<String>()
-
         for (line in lines) {
             val trimmed = line.trim()
-            if (trimmed.isEmpty() || trimmed.startsWith("#")) continue
+        if (trimmed.isEmpty() || trimmed.startsWith("#")) continue
             val indent = line.length - line.trimStart().length
             while (pathStack.size > indent / 2) {
                 pathStack.removeAt(pathStack.lastIndex)
             }
-            if (trimmed.endsWith(":")) {
+        if (trimmed.endsWith(":")) {
                 val key = trimmed.dropLast(1).trim()
                 pathStack.add(key)
             } else {
                 val colonIdx = trimmed.indexOf(": ")
-                if (colonIdx > 0) {
+        if (colonIdx > 0) {
                     val key = trimmed.substring(0, colonIdx).trim()
-                    var value = trimmed.substring(colonIdx + 2).trim()
-                    if (value.startsWith("\"") && value.endsWith("\"")) {
+        var value = trimmed.substring(colonIdx + 2).trim()
+        if (value.startsWith("\"") && value.endsWith("\"")) {
                         value = value.substring(1, value.length - 1)
                     }
-                    val fullPath = (pathStack + key).joinToString(".")
+        val fullPath = (pathStack + key).joinToString(".")
                     result[fullPath] = value
                 }
             }
@@ -209,11 +207,11 @@ class FlatConfigSerializer : ConfigSerializer {
         val result = mutableMapOf<String, String>()
         for (line in content.lines()) {
             val trimmed = line.trim()
-            if (trimmed.isEmpty() || trimmed.startsWith("#")) continue
+        if (trimmed.isEmpty() || trimmed.startsWith("#")) continue
             val eqIdx = trimmed.indexOf('=')
-            if (eqIdx > 0) {
+        if (eqIdx > 0) {
                 val key = trimmed.substring(0, eqIdx).trim()
-                val value = trimmed.substring(eqIdx + 1).trim()
+        val value = trimmed.substring(eqIdx + 1).trim()
                 result[key] = value
             }
         }

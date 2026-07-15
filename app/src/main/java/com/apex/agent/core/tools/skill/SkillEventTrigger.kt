@@ -115,40 +115,31 @@ class SkillEventTrigger private constructor() {
         data class TriggerExecuted(val execution: TriggerExecution) : TriggerEvent()
         data class TriggerCooldown(val triggerId: String, val remainingMs: Long) : TriggerEvent()
     }
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val mutex = Mutex()
-
-    private val triggers = ConcurrentHashMap<String, EventTrigger>()
-    private val triggerCooldowns = ConcurrentHashMap<String, Long>()
-    private val triggerHistory = ConcurrentHashMap<String, MutableList<TriggerExecution>>()
-    private val activeExecutions = ConcurrentHashMap<String, Job>()
-
-    private val _triggersFlow = MutableStateFlow<List<EventTrigger>>(emptyList())
-    val triggersFlow: StateFlow<List<EventTrigger>> = _triggersFlow.asStateFlow()
-
-    private val _triggerEvents = MutableSharedFlow<TriggerEvent>()
-    val triggerEvents: SharedFlow<TriggerEvent> = _triggerEvents.asSharedFlow()
-
-    private val _activeExecutionsCount = MutableStateFlow(0)
-    val activeExecutionsCount: StateFlow<Int> = _activeExecutionsCount.asStateFlow()
-
-    private val eventBus = SkillEventBus.getInstance()
-    private val workflowEngine = WorkflowEngine.getInstance()
-
-    private val json = Json { encodeDefaults = true }
-
-    private val statsTotalTriggers = AtomicLong(0)
-    private val statsTotalMatches = AtomicLong(0)
-    private val statsTotalExecutions = AtomicLong(0)
-    private val statsTotalSuccess = AtomicLong(0)
-    private val statsTotalFailure = AtomicLong(0)
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val mutex = Mutex()
+        private val triggers = ConcurrentHashMap<String, EventTrigger>()
+        private val triggerCooldowns = ConcurrentHashMap<String, Long>()
+        private val triggerHistory = ConcurrentHashMap<String, MutableList<TriggerExecution>>()
+        private val activeExecutions = ConcurrentHashMap<String, Job>()
+        private val _triggersFlow = MutableStateFlow<List<EventTrigger>>(emptyList())
+        val triggersFlow: StateFlow<List<EventTrigger>> = _triggersFlow.asStateFlow()
+        private val _triggerEvents = MutableSharedFlow<TriggerEvent>()
+        val triggerEvents: SharedFlow<TriggerEvent> = _triggerEvents.asSharedFlow()
+        private val _activeExecutionsCount = MutableStateFlow(0)
+        val activeExecutionsCount: StateFlow<Int> = _activeExecutionsCount.asStateFlow()
+        private val eventBus = SkillEventBus.getInstance()
+        private val workflowEngine = WorkflowEngine.getInstance()
+        private val json = Json { encodeDefaults = true }
+        private val statsTotalTriggers = AtomicLong(0)
+        private val statsTotalMatches = AtomicLong(0)
+        private val statsTotalExecutions = AtomicLong(0)
+        private val statsTotalSuccess = AtomicLong(0)
+        private val statsTotalFailure = AtomicLong(0)
 
     init {
         setupEventBusSubscription()
     }
-
-    private fun setupEventBusSubscription() {
+        private fun setupEventBusSubscription() {
         scope.launch {
             eventBus.subscribe(
                 subscriber = this@SkillEventTrigger,
@@ -160,15 +151,12 @@ class SkillEventTrigger private constructor() {
             }
         }
     }
-
-    private suspend fun handleEvent(event: SkillEventBus.SkillEvent): Boolean {
+        private suspend fun handleEvent(event: SkillEventBus.SkillEvent): Boolean {
         val eventType = event.eventType
         val matchingTriggers = triggers.values.filter { it.enabled && it.eventType == eventType }
-
         if (matchingTriggers.isEmpty()) return true
 
         val eventData = extractEventData(event)
-
         for (trigger in matchingTriggers) {
             if (evaluateCondition(trigger.condition, eventData)) {
                 statsTotalMatches.incrementAndGet()
@@ -180,11 +168,9 @@ class SkillEventTrigger private constructor() {
                 executeTrigger(trigger, eventData)
             }
         }
-
         return true
     }
-
-    private fun extractEventData(event: SkillEventBus.SkillEvent): Map<String, Any> {
+        private fun extractEventData(event: SkillEventBus.SkillEvent): Map<String, Any> {
         return when (event) {
             is SkillEventBus.SkillEvent.SkillLoaded -> mapOf(
                 "skillName" to event.skillName,
@@ -240,8 +226,7 @@ class SkillEventTrigger private constructor() {
             )
         }
     }
-
-    private fun evaluateCondition(condition: TriggerCondition?, eventData: Map<String, Any>): Boolean {
+        private fun evaluateCondition(condition: TriggerCondition?, eventData: Map<String, Any>): Boolean {
         if (condition == null) return true
 
         return when (condition.type) {
@@ -264,7 +249,7 @@ class SkillEventTrigger private constructor() {
 
             ConditionType.REGEX -> {
                 val fieldValue = eventData[condition.field ?: ""]?.toString() ?: ""
-                val pattern = condition.regex ?: condition.pattern ?: ""
+        val pattern = condition.regex ?: condition.pattern ?: ""
                 try {
                     Regex(pattern).matches(fieldValue)
                 } catch (e: Exception) {
@@ -295,8 +280,7 @@ class SkillEventTrigger private constructor() {
             }
         }
     }
-
-    fun registerTrigger(
+        fun registerTrigger(
         name: String,
         eventType: String,
         targetWorkflowId: String? = null,
@@ -307,9 +291,8 @@ class SkillEventTrigger private constructor() {
     ): EventTrigger? {
         if (triggers.size >= MAX_CONCURRENT_TRIGGERS) {
             AppLogger.w(TAG, "Max triggers limit reached")
-            return null
+        return null
         }
-
         val trigger = EventTrigger(
             name = name,
             eventType = eventType,
@@ -332,8 +315,7 @@ class SkillEventTrigger private constructor() {
         AppLogger.i(TAG, "Trigger registered: ${trigger.name} [${trigger.id}] for event: ${eventType}")
         return trigger
     }
-
-    fun unregisterTrigger(triggerId: String): Boolean {
+        fun unregisterTrigger(triggerId: String): Boolean {
         val trigger = triggers.remove(triggerId) ?: return false
 
         triggerCooldowns.remove(triggerId)
@@ -347,8 +329,7 @@ class SkillEventTrigger private constructor() {
         AppLogger.i(TAG, "Trigger unregistered: ${trigger.name} [${triggerId}]")
         return true
     }
-
-    fun updateTrigger(triggerId: String, updates: (EventTrigger) -> EventTrigger): EventTrigger? {
+        fun updateTrigger(triggerId: String, updates: (EventTrigger) -> EventTrigger): EventTrigger? {
         val trigger = triggers[triggerId] ?: return null
 
         val updatedTrigger = updates(trigger)
@@ -359,8 +340,7 @@ class SkillEventTrigger private constructor() {
         AppLogger.d(TAG, "Trigger updated: ${updatedTrigger.name} [${updatedTrigger.id}]")
         return updatedTrigger
     }
-
-    fun enableTrigger(triggerId: String): Boolean {
+        fun enableTrigger(triggerId: String): Boolean {
         val trigger = triggers[triggerId] ?: return false
         if (trigger.enabled) return true
 
@@ -376,8 +356,7 @@ class SkillEventTrigger private constructor() {
         AppLogger.i(TAG, "Trigger enabled: ${trigger.name} [${triggerId}]")
         return true
     }
-
-    fun disableTrigger(triggerId: String): Boolean {
+        fun disableTrigger(triggerId: String): Boolean {
         val trigger = triggers[triggerId] ?: return false
         if (!trigger.enabled) return true
 
@@ -393,22 +372,16 @@ class SkillEventTrigger private constructor() {
         AppLogger.i(TAG, "Trigger disabled: ${trigger.name} [${triggerId}]")
         return true
     }
-
-    fun getTrigger(triggerId: String): EventTrigger? = triggers[triggerId]
+        fun getTrigger(triggerId: String): EventTrigger? = triggers[triggerId]
 
     fun getAllTriggers(): List<EventTrigger> = triggers.values.toList()
-
-    fun getTriggersForEvent(eventType: String): List<EventTrigger> =
+        fun getTriggersForEvent(eventType: String): List<EventTrigger> =
         triggers.values.filter { it.eventType == eventType }
-
-    fun getEnabledTriggers(): List<EventTrigger> = triggers.values.filter { it.enabled }
-
-    fun getTriggerHistory(triggerId: String): List<TriggerExecution> =
+        fun getEnabledTriggers(): List<EventTrigger> = triggers.values.filter { it.enabled }
+        fun getTriggerHistory(triggerId: String): List<TriggerExecution> =
         triggerHistory[triggerId]?.toList() ?: emptyList()
-
-    private fun executeTrigger(trigger: EventTrigger, eventData: Map<String, Any>) {
+        private fun executeTrigger(trigger: EventTrigger, eventData: Map<String, Any>) {
         val now = System.currentTimeMillis()
-
         val lastTriggered = triggerCooldowns[trigger.id] ?: 0
         if (now - lastTriggered < trigger.cooldownMs) {
             val remainingMs = trigger.cooldownMs - (now - lastTriggered)
@@ -416,25 +389,21 @@ class SkillEventTrigger private constructor() {
                 _triggerEvents.emit(TriggerEvent.TriggerCooldown(trigger.id, remainingMs))
             }
             AppLogger.d(TAG, "Trigger ${trigger.id} is on cooldown, remaining: ${remainingMs}ms")
-            return
+        return
         }
-
         if (activeExecutions.size >= MAX_CONCURRENT_TRIGGERS) {
             AppLogger.w(TAG, "Max concurrent trigger executions reached")
-            return
+        return
         }
-
         val executionId = "trig_exec_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
         val startTime = System.currentTimeMillis()
-
         val job = scope.launch {
             var success = false
             var error: String? = null
 
             try {
                 statsTotalExecutions.incrementAndGet()
-
-                when {
+        when {
                     trigger.targetWorkflowId != null -> {
                         val result = workflowEngine.executeWorkflow(
                             trigger.targetWorkflowId,
@@ -455,8 +424,7 @@ class SkillEventTrigger private constructor() {
                         success = true
                     }
                 }
-
-                for (action in trigger.actions) {
+        for (action in trigger.actions) {
                     executeAction(action, eventData)
                 }
 
@@ -465,10 +433,8 @@ class SkillEventTrigger private constructor() {
                 success = false
                 AppLogger.e(TAG, "Trigger execution failed: ${trigger.id}", e)
             }
-
-            val endTime = System.currentTimeMillis()
-
-            val execution = TriggerExecution(
+        val endTime = System.currentTimeMillis()
+        val execution = TriggerExecution(
                 triggerId = trigger.id,
                 triggerName = trigger.name,
                 workflowId = trigger.targetWorkflowId,
@@ -481,14 +447,12 @@ class SkillEventTrigger private constructor() {
                 executionTimeMs = endTime - startTime,
                 error = error
             )
-
-            val history = triggerHistory.getOrPut(trigger.id) { mutableListOf() }
+        val history = triggerHistory.getOrPut(trigger.id) { mutableListOf() }
             history.add(execution)
-            if (history.size > MAX_TRIGGER_HISTORY) {
+        if (history.size > MAX_TRIGGER_HISTORY) {
                 history.removeAt(0)
             }
-
-            val updatedTrigger = trigger.copy(
+        val updatedTrigger = trigger.copy(
                 lastTriggeredTime = now,
                 executionCount = trigger.executionCount + 1,
                 matchCount = trigger.matchCount + 1
@@ -516,8 +480,7 @@ class SkillEventTrigger private constructor() {
             _activeExecutionsCount.value = activeExecutions.size
         }
     }
-
-    private suspend fun executeAction(action: TriggerAction, eventData: Map<String, Any>) {
+        private suspend fun executeAction(action: TriggerAction, eventData: Map<String, Any>) {
         when (action.type) {
             ActionType.LOG -> {
                 val message = action.config["message"] ?: "Trigger action executed"
@@ -526,7 +489,7 @@ class SkillEventTrigger private constructor() {
 
             ActionType.NOTIFY -> {
                 val title = action.config["title"] ?: "Trigger Notification"
-                val content = action.config["content"] ?: "Trigger was executed"
+        val content = action.config["content"] ?: "Trigger was executed"
                 AppLogger.d(TAG, "[Trigger Notify] ${title}: ${content}")
             }
 
@@ -553,8 +516,7 @@ class SkillEventTrigger private constructor() {
             }
         }
     }
-
-    fun emitCustomEvent(eventType: String, data: Map<String, Any> = emptyMap()) {
+        fun emitCustomEvent(eventType: String, data: Map<String, Any> = emptyMap()) {
         scope.launch {
             eventBus.emit(SkillEventBus.SkillEvent.CustomEvent(
                 source = TAG,
@@ -563,8 +525,7 @@ class SkillEventTrigger private constructor() {
             ))
         }
     }
-
-    fun createAlwaysTrigger(
+        fun createAlwaysTrigger(
         name: String,
         eventType: String,
         targetWorkflowId: String? = null,
@@ -578,8 +539,7 @@ class SkillEventTrigger private constructor() {
             condition = TriggerCondition(type = ConditionType.ALWAYS)
         )
     }
-
-    fun createRegexTrigger(
+        fun createRegexTrigger(
         name: String,
         eventType: String,
         field: String,
@@ -599,8 +559,7 @@ class SkillEventTrigger private constructor() {
             )
         )
     }
-
-    fun createContainsTrigger(
+        fun createContainsTrigger(
         name: String,
         eventType: String,
         field: String,
@@ -620,19 +579,16 @@ class SkillEventTrigger private constructor() {
             )
         )
     }
-
-    private fun updateTriggersFlow() {
+        private fun updateTriggersFlow() {
         _triggersFlow.value = triggers.values.toList()
     }
-
-    fun cancelAllTriggers() {
+        fun cancelAllTriggers() {
         activeExecutions.values.forEach { it.cancel() }
         activeExecutions.clear()
         _activeExecutionsCount.value = 0
         AppLogger.i(TAG, "All trigger executions cancelled")
     }
-
-    fun getStats(): TriggerStats {
+        fun getStats(): TriggerStats {
         return TriggerStats(
             totalTriggers = triggers.size.toLong(),
             enabledTriggers = triggers.values.count { it.enabled },
@@ -655,6 +611,5 @@ class SkillEventTrigger private constructor() {
         val totalFailure: Long,
         val activeExecutions: Int
     )
-
-    private fun generateTriggerId(): String = "trig_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
+        private fun generateTriggerId(): String = "trig_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
 }

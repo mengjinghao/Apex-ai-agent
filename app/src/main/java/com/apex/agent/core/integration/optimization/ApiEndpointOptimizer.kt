@@ -101,16 +101,16 @@ data class ApiPoolConfig(
 class ApiEndpointOptimizer private constructor() {
 
     private val endpointProfiles = ConcurrentHashMap<String, ApiEndpointProfile>()
-    private val requestCounts = ConcurrentHashMap<String, AtomicLong>()
-    private val successCounts = ConcurrentHashMap<String, AtomicLong>()
-    private val failureCounts = ConcurrentHashMap<String, AtomicLong>()
-    private val latencySamples = ConcurrentHashMap<String, CopyOnWriteArrayList<Long>>()
-    private val circuitBreakers = ConcurrentHashMap<String, CircuitBreakerState>()
-    private val rateLimitBuckets = ConcurrentHashMap<String, TokenBucket>()
-    private val cacheHits = ConcurrentHashMap<String, AtomicLong>()
-    private val cacheMisses = ConcurrentHashMap<String, AtomicLong>()
-    private val config = ApiPoolConfig()
-    private var scope: CoroutineScope? = null
+        private val requestCounts = ConcurrentHashMap<String, AtomicLong>()
+        private val successCounts = ConcurrentHashMap<String, AtomicLong>()
+        private val failureCounts = ConcurrentHashMap<String, AtomicLong>()
+        private val latencySamples = ConcurrentHashMap<String, CopyOnWriteArrayList<Long>>()
+        private val circuitBreakers = ConcurrentHashMap<String, CircuitBreakerState>()
+        private val rateLimitBuckets = ConcurrentHashMap<String, TokenBucket>()
+        private val cacheHits = ConcurrentHashMap<String, AtomicLong>()
+        private val cacheMisses = ConcurrentHashMap<String, AtomicLong>()
+        private val config = ApiPoolConfig()
+        private var scope: CoroutineScope? = null
 
     companion object {
         @Volatile
@@ -121,13 +121,11 @@ class ApiEndpointOptimizer private constructor() {
                 instance ?: ApiEndpointOptimizer().also { instance = it }
             }
         }
-
         private const val LATENCY_HISTORY_SIZE = 200
         private const val METRICS_WINDOW_MS = 60000L
         private const val DEFAULT_RATE_LIMIT = 30
     }
-
-    fun initialize(coroutineScope: CoroutineScope) {
+        fun initialize(coroutineScope: CoroutineScope) {
         scope = coroutineScope
         registerCommonEndpoints()
         coroutineScope.launch(Dispatchers.Default) {
@@ -137,8 +135,7 @@ class ApiEndpointOptimizer private constructor() {
             }
         }
     }
-
-    private fun registerCommonEndpoints() {
+        private fun registerCommonEndpoints() {
         registerEndpoint(ApiEndpointProfile("/api/chat", HttpMethod.POST, 2000L, 5000L, 2.0, 30000L, cacheable = false))
         registerEndpoint(ApiEndpointProfile("/api/search", HttpMethod.GET, 500L, 1500L, 5.0, 10000L, cacheable = true, cacheTtlMs = 120000L))
         registerEndpoint(ApiEndpointProfile("/api/analyze", HttpMethod.POST, 3000L, 8000L, 1.0, 45000L, cacheable = false))
@@ -150,8 +147,7 @@ class ApiEndpointOptimizer private constructor() {
         registerEndpoint(ApiEndpointProfile("/api/tools", HttpMethod.GET, 200L, 500L, 8.0, 5000L, cacheable = true, cacheTtlMs = 120000L))
         registerEndpoint(ApiEndpointProfile("/api/health", HttpMethod.GET, 50L, 100L, 20.0, 3000L, cacheable = false))
     }
-
-    fun registerEndpoint(profile: ApiEndpointProfile) {
+        fun registerEndpoint(profile: ApiEndpointProfile) {
         val key = endpointKey(profile.path, profile.method)
         endpointProfiles[key] = profile
         requestCounts[key] = AtomicLong(0)
@@ -163,19 +159,15 @@ class ApiEndpointOptimizer private constructor() {
         circuitBreakers[key] = CircuitBreakerState(key, CircuitState.CLOSED, 0, 0, 0, System.currentTimeMillis())
         rateLimitBuckets[key] = TokenBucket(profile.rateLimitPerSecond, profile.rateLimitPerSecond)
     }
-
-    fun getEndpoint(path: String, method: HttpMethod): ApiEndpointProfile? {
+        fun getEndpoint(path: String, method: HttpMethod): ApiEndpointProfile? {
         return endpointProfiles[endpointKey(path, method)]
     }
-
-    fun getAllEndpoints(): List<ApiEndpointProfile> = endpointProfiles.values.toList()
-
-    fun recordRequest(path: String, method: HttpMethod) {
+        fun getAllEndpoints(): List<ApiEndpointProfile> = endpointProfiles.values.toList()
+        fun recordRequest(path: String, method: HttpMethod) {
         val key = endpointKey(path, method)
         requestCounts.computeIfAbsent(key) { AtomicLong(0) }.incrementAndGet()
     }
-
-    fun recordSuccess(path: String, method: HttpMethod, latencyMs: Long) {
+        fun recordSuccess(path: String, method: HttpMethod, latencyMs: Long) {
         val key = endpointKey(path, method)
         successCounts.computeIfAbsent(key) { AtomicLong(0) }.incrementAndGet()
         val samples = latencySamples.computeIfAbsent(key) { CopyOnWriteArrayList() }
@@ -190,8 +182,7 @@ class ApiEndpointOptimizer private constructor() {
             ) else null
         }
     }
-
-    fun recordFailure(path: String, method: HttpMethod, latencyMs: Long) {
+        fun recordFailure(path: String, method: HttpMethod, latencyMs: Long) {
         val key = endpointKey(path, method)
         failureCounts.computeIfAbsent(key) { AtomicLong(0) }.incrementAndGet()
 
@@ -213,18 +204,15 @@ class ApiEndpointOptimizer private constructor() {
             } else null
         }
     }
-
-    fun recordCacheHit(path: String, method: HttpMethod) {
+        fun recordCacheHit(path: String, method: HttpMethod) {
         val key = endpointKey(path, method)
         cacheHits.computeIfAbsent(key) { AtomicLong(0) }.incrementAndGet()
     }
-
-    fun recordCacheMiss(path: String, method: HttpMethod) {
+        fun recordCacheMiss(path: String, method: HttpMethod) {
         val key = endpointKey(path, method)
         cacheMisses.computeIfAbsent(key) { AtomicLong(0) }.incrementAndGet()
     }
-
-    fun isCircuitOpen(path: String, method: HttpMethod): Boolean {
+        fun isCircuitOpen(path: String, method: HttpMethod): Boolean {
         val key = endpointKey(path, method)
         val breaker = circuitBreakers[key] ?: return false
         when (breaker.state) {
@@ -243,12 +231,10 @@ class ApiEndpointOptimizer private constructor() {
             }
         }
     }
-
-    fun getCircuitBreakerState(path: String, method: HttpMethod): CircuitBreakerState? {
+        fun getCircuitBreakerState(path: String, method: HttpMethod): CircuitBreakerState? {
         return circuitBreakers[endpointKey(path, method)]
     }
-
-    fun allowRequest(path: String, method: HttpMethod): Boolean {
+        fun allowRequest(path: String, method: HttpMethod): Boolean {
         if (isCircuitOpen(path, method)) return false
         val key = endpointKey(path, method)
         val bucket = rateLimitBuckets[key] ?: return true
@@ -256,8 +242,7 @@ class ApiEndpointOptimizer private constructor() {
         val limit = profile?.rateLimitPerSecond ?: DEFAULT_RATE_LIMIT
         if (bucket.tryConsume(1, limit, limit)) true else false
     }
-
-    fun getRateLimitStatus(path: String, method: HttpMethod): RateLimitStatus {
+        fun getRateLimitStatus(path: String, method: HttpMethod): RateLimitStatus {
         val key = endpointKey(path, method)
         val bucket = rateLimitBuckets[key]
         val profile = endpointProfiles[key]
@@ -270,8 +255,7 @@ class ApiEndpointOptimizer private constructor() {
             resetTimeMs = System.currentTimeMillis() + 1000L
         )
     }
-
-    fun getMetrics(path: String, method: HttpMethod): ApiMetrics {
+        fun getMetrics(path: String, method: HttpMethod): ApiMetrics {
         val key = endpointKey(path, method)
         val requests = requestCounts[key]?.get() ?: 0
         val successes = successCounts[key]?.get() ?: 0
@@ -294,54 +278,49 @@ class ApiEndpointOptimizer private constructor() {
             cacheHitRate = cacheHitRate, averagePayloadSize = endpointProfiles[key]?.payloadSizeBytes ?: 0
         )
     }
-
-    fun getAllMetrics(): List<ApiMetrics> {
+        fun getAllMetrics(): List<ApiMetrics> {
         endpointProfiles.keys.map { key ->
             val parts = key.split(":")
-            val path = parts.getOrElse(0) { "/unknown" }
-            val method = try { HttpMethod.valueOf(parts.getOrElse(1) { "GET" }) } catch (_: Exception) { HttpMethod.GET }
+        val path = parts.getOrElse(0) { "/unknown" }
+        val method = try { HttpMethod.valueOf(parts.getOrElse(1) { "GET" }) } catch (_: Exception) { HttpMethod.GET }
             getMetrics(path, method)
         }
     }
-
-    fun suggestOptimizations(): List<ApiOptimizationSuggestion> {
+        fun suggestOptimizations(): List<ApiOptimizationSuggestion> {
         val suggestions = mutableListOf<ApiOptimizationSuggestion>()
         for ((key, profile) in endpointProfiles) {
             val parts = key.split(":")
-            val path = parts[0]
+        val path = parts[0]
             val method = try { HttpMethod.valueOf(parts[1]) } catch (_: Exception) { HttpMethod.GET }
-            val metrics = getMetrics(path, method)
-            val breaker = circuitBreakers[key]
+        val metrics = getMetrics(path, method)
+        val breaker = circuitBreakers[key]
 
             if (profile.cacheable && metrics.cacheHitRate < 0.3 && metrics.requestRatePerSecond > 2) {
                 suggestions.add(ApiOptimizationSuggestion(path, method, ApiSuggestionType.ADD_CACHE,
                     "High request rate (${"%.1f".format(metrics.requestRatePerSecond)}/s) but low cache hit rate", 40.0, 5))
             }
-            if (metrics.p95LatencyMs > metrics.averageLatencyMs * 3) {
+        if (metrics.p95LatencyMs > metrics.averageLatencyMs * 3) {
                 suggestions.add(ApiOptimizationSuggestion(path, method, ApiSuggestionType.ENABLE_COMPRESSION,
                     "High latency variance detected", 25.0, 4))
             }
-            if (breaker?.state != CircuitState.CLOSED) {
+        if (breaker?.state != CircuitState.CLOSED) {
                 suggestions.add(ApiOptimizationSuggestion(path, method, ApiSuggestionType.ADD_CIRCUIT_BREAKER,
                     "Circuit breaker status: ${breaker?.state}", 60.0, 5))
             }
-            if (metrics.failedRequests > 10 && profile.retryCount < 2) {
+        if (metrics.failedRequests > 10 && profile.retryCount < 2) {
                 suggestions.add(ApiOptimizationSuggestion(path, method, ApiSuggestionType.INCREASE_RETRY_COUNT,
                     "${metrics.failedRequests} failures detected", 30.0, 3))
             }
-            if (profile.averageLatencyMs > 1000 && profile.timeoutMs > 30000) {
+        if (profile.averageLatencyMs > 1000 && profile.timeoutMs > 30000) {
                 suggestions.add(ApiOptimizationSuggestion(path, method, ApiSuggestionType.REDUCE_TIMEOUT,
                     "Reduce timeout from ${profile.timeoutMs}ms based on ${metrics.averageLatencyMs}ms avg latency", 10.0, 2))
             }
         }
         suggestions.sortedByDescending { it.priority }
     }
-
-    private fun endpointKey(path: String, method: HttpMethod): String = "$path:${method.name}"
-
-    fun updateConfig(newConfig: ApiPoolConfig): ApiPoolConfig { newConfig }
-
-    fun resetMetrics(path: String? = null) {
+        private fun endpointKey(path: String, method: HttpMethod): String = "$path:${method.name}"
+        fun updateConfig(newConfig: ApiPoolConfig): ApiPoolConfig { newConfig }
+        fun resetMetrics(path: String? = null) {
         if (path != null) {
             endpointProfiles.keys.filter { it.startsWith(path) }.forEach { key ->
                 requestCounts[key]?.set(0)
@@ -360,14 +339,13 @@ class ApiEndpointOptimizer private constructor() {
             cacheMisses.values.forEach { it.set(0) }
         }
     }
-
-    private class TokenBucket(private var capacity: Int, private var tokens: Int = capacity) {
+        private class TokenBucket(private var capacity: Int, private var tokens: Int = capacity) {
         private var lastRefillMs = System.currentTimeMillis()
 
         @Synchronized
         fun tryConsume(count: Int, limit: Int, refillRate: Int): Boolean {
             refill(limit, refillRate)
-            if (tokens >= count) {
+        if (tokens >= count) {
                 tokens -= count
                 true
             } else false
@@ -378,10 +356,9 @@ class ApiEndpointOptimizer private constructor() {
             refill(capacity, capacity)
             tokens
         }
-
         private fun refill(limit: Int, refillRate: Int) {
             val now = System.currentTimeMillis()
-            val elapsed = now - lastRefillMs
+        val elapsed = now - lastRefillMs
             if (elapsed >= 1000L) {
                 val toAdd = (elapsed / 1000L * refillRate).toInt()
                 tokens = (tokens + toAdd).coerceAtMost(limit)
@@ -389,8 +366,7 @@ class ApiEndpointOptimizer private constructor() {
             }
         }
     }
-
-    private fun analyzeAndSuggest() {
+        private fun analyzeAndSuggest() {
         val suggestions = suggestOptimizations()
         if (suggestions.isNotEmpty()) {
             val top = suggestions.first()

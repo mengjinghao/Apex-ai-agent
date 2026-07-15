@@ -23,9 +23,8 @@ class SwarmIntelligenceEngine(
         private const val MAX_DEBATE_ROUNDS = 3
         private const val CONSENSUS_THRESHOLD = 0.66
     }
-
-    private val debates = mutableMapOf<String, Debate>()
-    private val swarmTasks = mutableMapOf<String, SwarmTask>()
+        private val debates = mutableMapOf<String, Debate>()
+        private val swarmTasks = mutableMapOf<String, SwarmTask>()
 
     /**
      * AI 驱动调用：通过 PromptTurn 发送消息给真实�?AI 服务并收集完整响�?
@@ -36,7 +35,7 @@ class SwarmIntelligenceEngine(
                 PromptTurn(kind = PromptTurnKind.SYSTEM, content = systemPrompt),
                 PromptTurn(kind = PromptTurnKind.USER, content = prompt)
             )
-            val result = StringBuilder()
+        val result = StringBuilder()
             aiService.sendMessage(
                 context = context,
                 chatHistory = turns,
@@ -54,7 +53,6 @@ class SwarmIntelligenceEngine(
         participantIds: List<String>
     ): Debate = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "Starting debate on topic: ${topic}")
-
         val debate = Debate(
             topic = topic,
             participants = participantIds,
@@ -68,8 +66,7 @@ class SwarmIntelligenceEngine(
 
         debate
     }
-
-    private suspend fun conductDebate(debateId: String) = withContext(Dispatchers.IO) {
+        private suspend fun conductDebate(debateId: String) = withContext(Dispatchers.IO) {
         val debate = debates[debateId] ?: return@withContext
 
         for (round in 1..MAX_DEBATE_ROUNDS) {
@@ -83,8 +80,7 @@ class SwarmIntelligenceEngine(
             }.awaitAll()
 
             debate.arguments.addAll(newArguments)
-
-            if (round < MAX_DEBATE_ROUNDS) {
+        if (round < MAX_DEBATE_ROUNDS) {
                 addRebuttals(debateId)
             }
         }
@@ -92,8 +88,7 @@ class SwarmIntelligenceEngine(
         debate.status = DebateStatus.COMPLETED
         debate.updatedAt = System.currentTimeMillis()
     }
-
-    private suspend fun generateArgument(
+        private suspend fun generateArgument(
         agentId: String,
         topic: String,
         existingArguments: List<Argument>
@@ -115,7 +110,6 @@ class SwarmIntelligenceEngine(
         val content = aiResponse.ifBlank {
             generateArgumentContentFallback(topic, stance, existingArguments)
         }
-
         return Argument(
             agentId = agentId,
             content = content,
@@ -124,8 +118,7 @@ class SwarmIntelligenceEngine(
             evidence = generateEvidence(topic)
         )
     }
-
-    private fun getRandomStance(): Stance {
+        private fun getRandomStance(): Stance {
         val rand = Random().nextInt(10)
         return when {
             rand < 4 -> Stance.FOR
@@ -133,8 +126,7 @@ class SwarmIntelligenceEngine(
             else -> Stance.NEUTRAL
         }
     }
-
-    private fun generateArgumentContentFallback(
+        private fun generateArgumentContentFallback(
         topic: String,
         stance: Stance,
         existingArguments: List<Argument>
@@ -144,7 +136,6 @@ class SwarmIntelligenceEngine(
             Stance.AGAINST -> "反对"
             Stance.NEUTRAL -> "中立观点"
         }
-
         val points = listOf(
             "从技术角度分�?,
             "考虑用户体验",
@@ -152,21 +143,18 @@ class SwarmIntelligenceEngine(
             "分析潜在风险",
             "考虑长期影响"
         )
-
         val selectedPoint = points[Random().nextInt(points.size)]
 
         return "${stancePrefix} '${topic}' - ${selectedPoint}"
     }
-
-    private fun generateEvidence(topic: String): List<String> {
+        private fun generateEvidence(topic: String): List<String> {
         return listOf(
             "相关研究表明...",
             "过往经验显示...",
             "数据分析支持..."
         ).take(Random().nextInt(3) + 1)
     }
-
-    private suspend fun addRebuttals(debateId: String) = withContext(Dispatchers.IO) {
+        private suspend fun addRebuttals(debateId: String) = withContext(Dispatchers.IO) {
         val debate = debates[debateId] ?: return@withContext
         val recentArguments = debate.arguments.takeLast(debate.participants.size)
 
@@ -201,7 +189,6 @@ class SwarmIntelligenceEngine(
                 vote = determineVoteFromAI(aiOpinion)
             )
         }
-
         val voteResults = calculateVoteResults(opinions)
 
         // AI 驱动：让 AI 作为辩论主席综合分析生成结论
@@ -235,8 +222,7 @@ class SwarmIntelligenceEngine(
             else -> VoteType.ABSTAIN
         }
     }
-
-    private fun getRandomVote(): VoteType {
+        private fun getRandomVote(): VoteType {
         val rand = Random().nextInt(10)
         return when {
             rand < 5 -> VoteType.AGREE
@@ -244,12 +230,10 @@ class SwarmIntelligenceEngine(
             else -> VoteType.ABSTAIN
         }
     }
-
-    private fun calculateVoteResults(opinions: List<AgentOpinion>): VoteResults {
+        private fun calculateVoteResults(opinions: List<AgentOpinion>): VoteResults {
         val agreeCount = opinions.count { it.vote == VoteType.AGREE }
         val disagreeCount = opinions.count { it.vote == VoteType.DISAGREE }
         val abstainCount = opinions.count { it.vote == VoteType.ABSTAIN }
-
         return VoteResults(
             totalVotes = opinions.size,
             agreeCount = agreeCount,
@@ -258,22 +242,20 @@ class SwarmIntelligenceEngine(
             voterIds = opinions.map { it.agentId }
         )
     }
-
-    private fun synthesizeConclusionFallback(
+        private fun synthesizeConclusionFallback(
         debate: Debate,
         opinions: List<AgentOpinion>
     ): String {
         val agreeOpinions = opinions.filter { it.vote == VoteType.AGREE }
         val disagreeOpinions = opinions.filter { it.vote == VoteType.DISAGREE }
-
         return buildString {
             appendLine("关于\"${debate.topic}\"的共识结�?")
             appendLine()
-            if (agreeOpinions.isNotEmpty()) {
+        if (agreeOpinions.isNotEmpty()) {
                 appendLine("支持方观�?")
                 agreeOpinions.take(3).forEach { appendLine("- ${it.opinion}") }
             }
-            if (disagreeOpinions.isNotEmpty()) {
+        if (disagreeOpinions.isNotEmpty()) {
                 appendLine("反对方观�?")
                 disagreeOpinions.take(3).forEach { appendLine("- ${it.opinion}") }
             }
@@ -281,8 +263,7 @@ class SwarmIntelligenceEngine(
             appendLine("综合结论: 根据讨论，建议采取平衡方案�?)
         }
     }
-
-    private fun calculateConsensusConfidence(opinions: List<AgentOpinion>): Float {
+        private fun calculateConsensusConfidence(opinions: List<AgentOpinion>): Float {
         if (opinions.isEmpty()) return 0.1f
         val avgConfidence = opinions.map { it.confidence }.average().toFloat()
         val agreementRatio = opinions.count { it.vote == VoteType.AGREE }.toFloat() / opinions.size
@@ -296,7 +277,6 @@ class SwarmIntelligenceEngine(
         swarmTasks[task.id] = task
 
         val solutions = mutableListOf<Solution>()
-
         val agentSolutions = task.maxAgents.times { agentIndex ->
             async {
                 generateSolution("agent_${agentIndex + 1}", task)
@@ -304,13 +284,11 @@ class SwarmIntelligenceEngine(
         }.awaitAll()
 
         solutions.addAll(agentSolutions)
-
         val consensus = if (task.requireConsensus) {
             simulateConsensus(task, solutions)
         } else {
             null
         }
-
         val qualityScore = calculateQualityScore(solutions)
         val diversityScore = calculateDiversityScore(solutions)
 
@@ -322,8 +300,7 @@ class SwarmIntelligenceEngine(
             diversityScore = diversityScore
         )
     }
-
-    private suspend fun generateSolution(agentId: String, task: SwarmTask): Solution {
+        private suspend fun generateSolution(agentId: String, task: SwarmTask): Solution {
         val solutionContent = when (task.type) {
             TaskType.PROBLEM_SOLVING -> "针对问题\"${task.description}\"的解决方�?.."
             TaskType.DECISION_MAKING -> "关于\"${task.description}\"的决策建�?.."
@@ -331,7 +308,6 @@ class SwarmIntelligenceEngine(
             TaskType.CRITICAL_ANALYSIS -> "分析报告: ${task.description}..."
             TaskType.PLANNING -> "行动计划: ${task.description}..."
         }
-
         return Solution(
             agentId = agentId,
             content = solutionContent,
@@ -339,13 +315,11 @@ class SwarmIntelligenceEngine(
             supportingEvidence = listOf("依据1", "依据2")
         )
     }
-
-    private fun simulateConsensus(task: SwarmTask, solutions: List<Solution>): Consensus? {
+        private fun simulateConsensus(task: SwarmTask, solutions: List<Solution>): Consensus? {
         if (solutions.isEmpty()) return null
 
         val bestSolution = solutions.maxByOrNull { it.qualityScore }
         val agreeCount = (solutions.size * 0.7).toInt()
-
         return Consensus(
             debateId = task.id,
             conclusion = bestSolution?.content ?: "无共�?,
@@ -361,20 +335,17 @@ class SwarmIntelligenceEngine(
             )
         )
     }
-
-    private fun calculateQualityScore(solutions: List<Solution>): Float {
+        private fun calculateQualityScore(solutions: List<Solution>): Float {
         if (solutions.isEmpty()) return 0.0f
         return solutions.map { it.qualityScore }.average().toFloat()
     }
-
-    private fun calculateDiversityScore(solutions: List<Solution>): Float {
+        private fun calculateDiversityScore(solutions: List<Solution>): Float {
         if (solutions.size < 2) return 1.0f
 
         val scoreVariance = solutions.map { it.qualityScore }.let { scores ->
             val mean = scores.average()
             scores.map { (it - mean).let { it * it } }.average()
         }
-
         return (scoreVariance * 10).coerceIn(0.1f, 1.0f).toFloat()
     }
 
@@ -411,16 +382,13 @@ class SwarmIntelligenceEngine(
             it.updatedAt = System.currentTimeMillis()
         }
     }
-
-    fun getSwarmTask(taskId: String): SwarmTask? {
+        fun getSwarmTask(taskId: String): SwarmTask? {
         return swarmTasks[taskId]
     }
-
-    fun getAllSwarmTasks(): List<SwarmTask> {
+        fun getAllSwarmTasks(): List<SwarmTask> {
         return swarmTasks.values.toList()
     }
-
-    fun cleanupOldDebates(maxAgeMs: Long = 24 * 60 * 60 * 1000L) {
+        fun cleanupOldDebates(maxAgeMs: Long = 24 * 60 * 60 * 1000L) {
         val cutoff = System.currentTimeMillis() - maxAgeMs
         debates.entries.removeIf { it.value.createdAt < cutoff }
     }

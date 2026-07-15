@@ -29,8 +29,7 @@ class QuickSearchToolAdapter : ToolAdapter {
         val result: String,
         val timestamp: Long
     )
-
-    private val cache = ConcurrentHashMap<String, CachedResult>()
+        private val cache = ConcurrentHashMap<String, CachedResult>()
 
     // OkHttpClient
     private val client by lazy {
@@ -70,19 +69,18 @@ class QuickSearchToolAdapter : ToolAdapter {
         try {
             // 执行搜索
     val searchUrl = "https://cn.bing.com/search?q=${java.net.URLEncoder.encode(query, "UTF-8")}"
-    val request = Request.Builder()
+        val request = Request.Builder()
                 .url(searchUrl)
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0")
                 .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                 .header("Accept-Language", "zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3")
                 .build()
-
-            val response = client.newCall(request).execute()
-            val html = response.body?.string() ?: ""
+        val response = client.newCall(request).execute()
+        val html = response.body?.string() ?: ""
 
             // 解析搜索结果
     val results = parseSearchResults(html, count)
-            val formattedResult = formatResults(query, results)
+        val formattedResult = formatResults(query, results)
 
             // 缓存结果
     if (cache.size >= MAX_CACHE_SIZE) {
@@ -114,29 +112,26 @@ class QuickSearchToolAdapter : ToolAdapter {
         try {
             // 使用正则表达式提取搜索结�?
     val itemPattern = Regex("""<li[^>]*class="[^"]*b_algo[^"]*"[^>]*>.*?</li>""", RegexOption.DOT_MATCHES_ALL)
-            val items = itemPattern.findAll(html).take(maxResults)
-            
-            for (item in items) {
+        val items = itemPattern.findAll(html).take(maxResults)
+        for (item in items) {
                 val itemHtml = item.value
                 
                 // 提取标题
     val titleMatch = Regex("""<h2[^>]*>.*?<a[^>]*href="([^"]*)"[^>]*>(.*)</a>.*?</h2>""", RegexOption.DOT_MATCHES_ALL).find(itemHtml)
-                var url = titleMatch?.groupValues?.get(1) ?: ""
-                var title = clearHtml(titleMatch?.groupValues?.get(2) ?: "")
+        var url = titleMatch?.groupValues?.get(1) ?: ""
+        var title = clearHtml(titleMatch?.groupValues?.get(2) ?: "")
                 
                 // 提取描述
     val descPattern = Regex("""<p[^>]*>(.*)</p>""", RegexOption.DOT_MATCHES_ALL)
-                val descMatch = descPattern.find(itemHtml)
-                val description = clearHtml(descMatch?.groupValues?.get(1) ?: "")
-                
-                if (title.isNotEmpty() && url.isNotEmpty()) {
+        val descMatch = descPattern.find(itemHtml)
+        val description = clearHtml(descMatch?.groupValues?.get(1) ?: "")
+        if (title.isNotEmpty() && url.isNotEmpty()) {
                     results.add(SearchResult(title, description, url))
                 }
             }
         } catch (e: Exception) {
             // 解析失败时返回空列表
         }
-        
         return results
     }
 
@@ -157,14 +152,13 @@ class QuickSearchToolAdapter : ToolAdapter {
         if (results.isEmpty()) {
             return "搜索，query」没有找到相关结果。\n建议尝试不同的关键词或检查网络连接口
         }
-
         val sb = StringBuilder()
         sb.append("🔍 搜索，query」结果：\n")
         sb.append("───────────────────────\n\n")
 
         results.forEachIndexed { index, result ->
             sb.append("${index + 1}. ${result.title}\n")
-            if (result.description.isNotEmpty()) {
+        if (result.description.isNotEmpty()) {
                 sb.append("   ${result.description.take(200)}\n")
             }
             sb.append("   ${result.url}\n\n")

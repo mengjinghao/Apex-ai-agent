@@ -28,7 +28,8 @@ import com.apex.core.tools.javascript.not
 class BackgroundServiceManager private constructor(
 private val context: Context) {
     companion object {
-        private const val TAG = "BackgroundServiceManager"        private const val NOTIFICATION_ID = 9999        private const val CHANNEL_ID = "PERMANENT_BACKGROUND_CHANNEL"        @Volatile        private var INSTANCE: BackgroundServiceManager? = null        fun getInstance(context: Context): BackgroundServiceManager {
+        private const val TAG = "BackgroundServiceManager"
+        private const val NOTIFICATION_ID = 9999        private const val CHANNEL_ID = "PERMANENT_BACKGROUND_CHANNEL"        @Volatile        private var INSTANCE: BackgroundServiceManager? = null        fun getInstance(context: Context): BackgroundServiceManager {
             return INSTANCE ?: synchronized(this) {
                 val instance = BackgroundServiceManager(context.applicationContext)                INSTANCE = instance                instance
 }
@@ -36,12 +37,14 @@ private val context: Context) {
 }
 
 }
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)    private var monitoringJob: Job? = null    private var isServiceRunning = false    fun startMonitoring() {
+        private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private var monitoringJob: Job? = null    private var isServiceRunning = false    fun startMonitoring() {
         if (monitoringJob?.isActive == true) return        monitoringJob = serviceScope.launch {
             val preferences = UserPreferencesManager.getInstance(context)            preferences.permanentBackgroundEnabled.collectLatest {
  enabled ->                AppLogger.d(TAG, "Permanent background enabled changed: �?{
 enabled
-}")                if (enabled) {
+}")
+        if (enabled) {
                     startPermanentBackgroundService()
 }
  else {
@@ -62,10 +65,10 @@ enabled
 }
 
 }
-    fun stopMonitoring() {
+        fun stopMonitoring() {
         monitoringJob?.cancel()        monitoringJob = null        stopPermanentBackgroundService()
 }
-    private fun startPermanentBackgroundService() {
+        private fun startPermanentBackgroundService() {
         if (isServiceRunning) return        val intent = Intent(context, PermanentBackgroundService::
 class.java)        try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -81,7 +84,7 @@ class.java)        try {
 }
 
 }
-    private fun stopPermanentBackgroundService() {
+        private fun stopPermanentBackgroundService() {
         if (!isServiceRunning) return        try {
             context.stopService(Intent(context, PermanentBackgroundService::
 class.java))            isServiceRunning = false            AppLogger.d(TAG, "Permanent background service stopped")
@@ -91,31 +94,37 @@ class.java))            isServiceRunning = false            AppLogger.d(TAG, "Pe
 }
 
 }
-    private fun ensureServiceRunning() {
+        private fun ensureServiceRunning() {
         if (!isServiceRunning) {
             startPermanentBackgroundService()
 }
 
 }
-    private val preferences: UserPreferencesManager        get() = UserPreferencesManager.getInstance(context)
+        private val preferences: UserPreferencesManager        get() = UserPreferencesManager.getInstance(context)
 }
 class PermanentBackgroundService : Service() {
     companion object {
-        private const val TAG = "PermanentBackgroundService"        private const val NOTIFICATION_ID = 9999        private const val CHANNEL_ID = "PERMANENT_BACKGROUND_CHANNEL"        private const val ACTION_ENABLE_ALWAYS_ON = "com.apex.action.ENABLE_ALWAYS_ON"        private const val ACTION_DISABLE_ALWAYS_ON = "com.apex.action.DISABLE_ALWAYS_ON"        @Volatile        var isRunning = java.util.concurrent.atomic.AtomicBoolean(false)
+        private const val TAG = "PermanentBackgroundService"
+        private const val NOTIFICATION_ID = 9999        private const val CHANNEL_ID = "PERMANENT_BACKGROUND_CHANNEL"
+        private const val ACTION_ENABLE_ALWAYS_ON = "com.apex.action.ENABLE_ALWAYS_ON"
+        private const val ACTION_DISABLE_ALWAYS_ON = "com.apex.action.DISABLE_ALWAYS_ON"        @Volatile        var isRunning = java.util.concurrent.atomic.AtomicBoolean(false)
 }
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)    private val mainHandler = Handler(Looper.getMainLooper())    private var keepAliveRunnable: Runnable? = null    private var isAlwaysOnEnabled = false    private val linkServicesManager by lazy {
+        private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val mainHandler = Handler(Looper.getMainLooper())
+        private var keepAliveRunnable: Runnable? = null    private var isAlwaysOnEnabled = false    private val linkServicesManager by lazy {
  LinkServicesManager.getInstance(applicationContext)
 }
-    private var linkServicesCallback: LinkServicesManager.LinkServiceCallback? = null    override fun onCreate() {
+        private var linkServicesCallback: LinkServicesManager.LinkServiceCallback? = null    override fun onCreate() {
         super.onCreate()        isRunning.set(true)        AppLogger.d(TAG, "Permanent background service created")        createNotificationChannel()        startForeground(NOTIFICATION_ID, createNotification())        observeSettings()
 }
-    private fun observeSettings() {
+        private fun observeSettings() {
         serviceScope.launch {
             val preferences = UserPreferencesManager.getInstance(applicationContext)            launch {
                 preferences.permanentBackgroundEnabled.collectLatest {
  enabled ->                    isAlwaysOnEnabled = enabled                    AppLogger.d(TAG, "Always on setting changed: �?{
 enabled
-}")                    if (!enabled) {
+}")
+        if (!enabled) {
                         stopSelfIfIdle()
 }
  else {
@@ -129,7 +138,8 @@ enabled
                 preferences.wechatClawbotEnabled.collectLatest {
  enabled ->                    AppLogger.d(TAG, "WeChat clawbot enabled: �?{
 enabled
-}")                    if (enabled) {
+}")
+        if (enabled) {
                         startLinkServices()
 }
                     updateNotification()
@@ -140,7 +150,8 @@ enabled
                 preferences.linkServicesEnabled.collectLatest {
  enabled ->                    AppLogger.d(TAG, "Link services enabled: �?{
 enabled
-}")                    if (enabled) {
+}")
+        if (enabled) {
                         startLinkServices()
 }
                     updateNotification()
@@ -151,7 +162,7 @@ enabled
 }
 
 }
-    private fun startLinkServices() {
+        private fun startLinkServices() {
         if (linkServicesCallback == null) {
             linkServicesCallback = object : LinkServicesManager.LinkServiceCallback {
                 override fun onStatusChanged(status: LinkServicesManager.LinkServiceStatus) {
@@ -175,24 +186,29 @@ command
 }
         linkServicesManager.startMonitoring()
 }
-    private fun createNotificationChannel() {
+        private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(                CHANNEL_ID,                getString(R.string.service_permanent_background),                NotificationManager.IMPORTANCE_LOW            ).apply {
                 description = getString(R.string.service_permanent_background_desc)                setShowBadge(false)
 }
-            val manager = getSystemService(NotificationManager::
+        val manager = getSystemService(NotificationManager::
 class.java)            manager.createNotificationChannel(channel)
 }
 
 }
-    private fun createNotification(): android.app.Notification {
-        val title = getString(R.string.service_permanent_background)        val contentText = buildContentText()        val pendingIntent = PendingIntent.getActivity(            this,            0,            Intent(this, MainActivity::
+        private fun createNotification(): android.app.Notification {
+        val title = getString(R.string.service_permanent_background)
+        val contentText = buildContentText()
+        val pendingIntent = PendingIntent.getActivity(            this,            0,            Intent(this, MainActivity::
 class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-},            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT        )        return NotificationCompat.Builder(this, CHANNEL_ID)            .setContentTitle(title)            .setContentText(contentText)            .setSmallIcon(android.R.drawable.ic_dialog_info)            .setContentIntent(pendingIntent)            .setPriority(NotificationCompat.PRIORITY_LOW)            .setOngoing(true)            .setOnlyAlertOnce(true)            .build()
+},            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT        )
+        return NotificationCompat.Builder(this, CHANNEL_ID)            .setContentTitle(title)            .setContentText(contentText)            .setSmallIcon(android.R.drawable.ic_dialog_info)            .setContentIntent(pendingIntent)            .setPriority(NotificationCompat.PRIORITY_LOW)            .setOngoing(true)            .setOnlyAlertOnce(true)            .build()
 }
-    private fun buildContentText(): String {
-        val preferences = UserPreferencesManager.getInstance(applicationContext)        val services = mutableListOf<String>()        if (isAlwaysOnEnabled) {
+        private fun buildContentText(): String {
+        val preferences = UserPreferencesManager.getInstance(applicationContext)
+        val services = mutableListOf<String>()
+        if (isAlwaysOnEnabled) {
             services.add(getString(R.string.service_always_on))
 }
         if (linkServicesManager.isServiceConnected()) {
@@ -205,11 +221,11 @@ class.java).apply {
 }
 
 }
-    private fun updateNotification() {
+        private fun updateNotification() {
         if (!isRunning.get()) return        val manager = getSystemService(NotificationManager::
 class.java)        manager.notify(NOTIFICATION_ID, createNotification())
 }
-    private fun ensureKeepAlive() {
+        private fun ensureKeepAlive() {
         if (!isAlwaysOnEnabled) return        keepAliveRunnable?.let {
  mainHandler.removeCallbacks(it)
 }
@@ -221,7 +237,7 @@ class.java)        manager.notify(NOTIFICATION_ID, createNotification())
 }
         mainHandler.postDelayed(keepAliveRunnable!!, 60000)
 }
-    private fun ensureAIForegroundService() {
+        private fun ensureAIForegroundService() {
         try {
             AIForegroundService.ensureRunningForExternalHttp(applicationContext)
 }
@@ -230,7 +246,7 @@ class.java)        manager.notify(NOTIFICATION_ID, createNotification())
 }
 
 }
-    private fun stopSelfIfIdle() {
+        private fun stopSelfIfIdle() {
         if (!isAlwaysOnEnabled) {
             AppLogger.d(TAG, "Always on disabled, stopping service")            stopForeground(Service.STOP_FOREGROUND_REMOVE)            stopSelf()
 }

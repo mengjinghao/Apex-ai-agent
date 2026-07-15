@@ -30,8 +30,7 @@ class StandardIntentToolExecutor(private val context: Context) {
         const val TYPE_BROADCAST = "broadcast"
         const val TYPE_SERVICE = "service"
     }
-
-    private fun applyComponentName(intent: Intent, rawComponentName: String) {
+        private fun applyComponentName(intent: Intent, rawComponentName: String) {
         val parts = rawComponentName.split("/", limit = 2)
         if (parts.size != 2) {
             return
@@ -61,7 +60,6 @@ class StandardIntentToolExecutor(private val context: Context) {
                     error = validationResult.errorMessage
             )
         }
-
         val action = tool.parameters.find { it.name == "action" }?.value
         val uri = tool.parameters.find { it.name == "uri" }?.value
         val packageName = tool.parameters.find { it.name == "package" }?.value
@@ -98,7 +96,7 @@ class StandardIntentToolExecutor(private val context: Context) {
     if (!flags.isNullOrBlank()) {
                 try {
                     val flagsJson = JSONArray(flags)
-                    var combinedFlags = 0
+        var combinedFlags = 0
                     for (i in 0 until flagsJson.length()) {
                         val flag = flagsJson.getInt(i)
                         combinedFlags = combinedFlags or flag
@@ -119,12 +117,11 @@ class StandardIntentToolExecutor(private val context: Context) {
     if (!extras.isNullOrBlank()) {
                 try {
                     val extrasJson = JSONObject(extras)
-                    val keys = extrasJson.keys()
+        val keys = extrasJson.keys()
                     while (keys.hasNext()) {
                         val key = keys.next()
-                        val value = extrasJson.get(key)
-
-                        when (value) {
+        val value = extrasJson.get(key)
+        when (value) {
                             is String -> intent.putExtra(key, value)
                             is Int -> intent.putExtra(key, value)
                             is Boolean -> intent.putExtra(key, value)
@@ -137,7 +134,7 @@ class StandardIntentToolExecutor(private val context: Context) {
                                     // Handle various array types
     if (value.length() > 0) {
                                         val firstItem = value.get(0)
-                                        when (firstItem) {
+        when (firstItem) {
                                             is String -> {
                                                 val stringArray =
                                                         Array(value.length()) { i ->
@@ -223,8 +220,7 @@ class StandardIntentToolExecutor(private val context: Context) {
                 // Bundle up the intent details for the response
     val extras = Bundle()
                 intent.extras?.let { extras.putAll(it) }
-
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = true,
                         result =
@@ -289,7 +285,6 @@ class StandardIntentToolExecutor(private val context: Context) {
                     errorMessage = "Component parameter is required when type is 'service'"
             )
         }
-
         return ToolValidationResult(valid = true)
     }
 }

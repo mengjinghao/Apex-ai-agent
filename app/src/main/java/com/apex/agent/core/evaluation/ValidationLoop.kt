@@ -34,7 +34,7 @@ data class PassKReport(
  */
 object ValidationLoop {
     private const val TAG = "ValidationLoop"
-    private const val HISTORY_FILE_NAME = "validation_history.json"
+        private const val HISTORY_FILE_NAME = "validation_history.json"
     
     // 任务验证历史缓存
     private val validationHistory = ConcurrentHashMap<String, MutableList<PassKReport>>()
@@ -47,7 +47,6 @@ object ValidationLoop {
      */
     suspend fun executeValidation(taskId: String, output: String, k: Int = 3): PassKReport = withContext(Dispatchers.IO) {
         AppLogger.i(TAG, "开始执行任�?${taskId} �?${k} 次验�?)
-
         val results = mutableListOf<ValidationResult>()
         val startTime = System.currentTimeMillis()
 
@@ -71,12 +70,10 @@ object ValidationLoop {
                 ))
             }
         }
-
         val totalDuration = System.currentTimeMillis() - startTime
         val passAtK = calculatePassAtK(results)
         val passPowK = calculatePassPowK(results)
         val averageScore = results.map { it.score }.average().toFloat()
-
         val report = PassKReport(
             k = k,
             passAtK = passAtK,
@@ -106,7 +103,7 @@ object ValidationLoop {
         if (c >= n) return 1f
         
         // 使用组合数公式计�?        // pass@k = 1 - C(n-c, k) / C(n, k)
-    val combination = calculateCombination(n - c, k) / calculateCombination(n, k)
+        val combination = calculateCombination(n - c, k) / calculateCombination(n, k)
         return (1f - combination).coerceIn(0f, 1f)
     }
 
@@ -142,7 +139,6 @@ object ValidationLoop {
             !hasDetails -> 0.6f
             else -> 0.8f + (iteration * 0.05f).coerceAtMost(0.2f) // 略有波动
         }
-        
         val details = buildString {
             appendLine("验证详情:")
             appendLine("- 内容完整�? ${if (hasContent) "�? else "�?}")
@@ -150,7 +146,6 @@ object ValidationLoop {
             appendLine("- 详细程度: ${if (hasDetails) "�? else "�?}")
             appendLine("- 评分: ${score}")
         }
-        
         val duration = System.currentTimeMillis() - startTime
         
         return ValidationResult(

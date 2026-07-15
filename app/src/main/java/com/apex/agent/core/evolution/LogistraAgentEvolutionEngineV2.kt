@@ -24,8 +24,7 @@ class LogistraAgentEvolutionEngineV2(
         private const val TAG = "LogistraEvolutionV2"
         private const val EVOLUTION_THRESHOLD = 8.0f
     }
-
-    private var iterationCount = 0
+        private var iterationCount = 0
 
     suspend fun runEvolutionPipeline(
         currentSkill: LogistraSkillSpecV2,
@@ -60,7 +59,7 @@ class LogistraAgentEvolutionEngineV2(
         // Step 3: 如果评分低于阈值，触发 LLM 变异
     val evolvedSkill = if (evaluation.score < EVOLUTION_THRESHOLD) {
             AppLogger.d(TAG, "Step 3: Score below threshold (${EVOLUTION_THRESHOLD}), triggering LLM mutation...")
-            val newSkill = llmEngine.evolveSkill(
+        val newSkill = llmEngine.evolveSkill(
                 currentSkill = currentSkill,
                 taskGoal = taskGoal,
                 executionLogs = executionLogs,
@@ -80,7 +79,6 @@ class LogistraAgentEvolutionEngineV2(
 
         // Step 5: 输出迭代信息（此处简化，实际应更新RL策略权重等）
         AppLogger.d(TAG, "=== Evolution Cycle #${iterationCount} Complete ===")
-
         return EvolutionResultV2(
             evolvedSkill = evolvedSkill,
             evaluationScore = evaluation.score,
@@ -105,7 +103,6 @@ class LogistraAgentEvolutionEngineV2(
                 parameters = params
             )
         }
-
         return LogistraSkillSpecV2(
             skillId = skillId,
             name = name,
@@ -126,8 +123,7 @@ class LogistraAgentEvolutionEngineV2(
             tags = listOf("initial", taskType)
         )
     }
-
-    fun getVersionForExecution(skillId: String): LogistraSkillSpecV2? {
+        fun getVersionForExecution(skillId: String): LogistraSkillSpecV2? {
         return versionManager.routeToVersion(skillId)
     }
 }

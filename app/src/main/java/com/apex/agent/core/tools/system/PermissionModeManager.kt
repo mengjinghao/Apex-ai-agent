@@ -42,42 +42,34 @@ class PermissionModeManager private constructor(private val context: Context) {
                 }
             }
     }
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val mutex = Mutex()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val mutex = Mutex()
 
     // 状态管�?
     private val _modeStates = MutableStateFlow<Map<PermissionMode, PermissionModeState>>(emptyMap())
-    val modeStates: StateFlow<Map<PermissionMode, PermissionModeState>> = _modeStates.asStateFlow()
-
-    private val _currentMode = MutableStateFlow<PermissionMode?>(null)
-    val currentMode: StateFlow<PermissionMode?> = _currentMode.asStateFlow()
-
-    private val _rootResult = MutableStateFlow<RootDetectionResult>(RootDetectionResult())
-    val rootResult: StateFlow<RootDetectionResult> = _rootResult.asStateFlow()
-
-    private val _shizukuResult = MutableStateFlow<ShizukuDetectionResult>(ShizukuDetectionResult())
-    val shizukuResult: StateFlow<ShizukuDetectionResult> = _shizukuResult.asStateFlow()
-
-    private val _isInitialized = MutableStateFlow(false)
-    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
-
-    private val _isChecking = MutableStateFlow(false)
-    val isChecking: StateFlow<Boolean> = _isChecking.asStateFlow()
+        val modeStates: StateFlow<Map<PermissionMode, PermissionModeState>> = _modeStates.asStateFlow()
+        private val _currentMode = MutableStateFlow<PermissionMode?>(null)
+        val currentMode: StateFlow<PermissionMode?> = _currentMode.asStateFlow()
+        private val _rootResult = MutableStateFlow<RootDetectionResult>(RootDetectionResult())
+        val rootResult: StateFlow<RootDetectionResult> = _rootResult.asStateFlow()
+        private val _shizukuResult = MutableStateFlow<ShizukuDetectionResult>(ShizukuDetectionResult())
+        val shizukuResult: StateFlow<ShizukuDetectionResult> = _shizukuResult.asStateFlow()
+        private val _isInitialized = MutableStateFlow(false)
+        val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+        private val _isChecking = MutableStateFlow(false)
+        val isChecking: StateFlow<Boolean> = _isChecking.asStateFlow()
 
     // 缓存
     private val detectionCache = ConcurrentHashMap<PermissionMode, CachedResult>()
 
     // 状态监听器
     private val stateChangeListeners = mutableSetOf<(PermissionModeState) -> Unit>()
-    private val modeChangeListeners = mutableSetOf<(PermissionMode) -> Unit>()
-
-    private data class CachedResult(
+        private val modeChangeListeners = mutableSetOf<(PermissionMode) -> Unit>()
+        private data class CachedResult(
         val state: PermissionModeState,
         val timestamp: Long
     )
-
-    private fun initialize() {
+        private fun initialize() {
         scope.launch {
             AppLogger.d(TAG, "初始化权限模式管理器...")
 
@@ -102,8 +94,7 @@ class PermissionModeManager private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun loadPreferredMode() {
+        private fun loadPreferredMode() {
         try {
             val preferredLevel = androidPermissionPreferences.getPreferredPermissionLevel()
             _currentMode.value = preferredLevel?.let { mapPermissionLevelToMode(it) }
@@ -112,8 +103,7 @@ class PermissionModeManager private constructor(private val context: Context) {
             AppLogger.e(TAG, "加载用户偏好权限模式失败", e)
         }
     }
-
-    private fun mapPermissionLevelToMode(level: AndroidPermissionLevel): PermissionMode =
+        private fun mapPermissionLevelToMode(level: AndroidPermissionLevel): PermissionMode =
         when (level) {
             AndroidPermissionLevel.STANDARD -> PermissionMode.STANDARD
             AndroidPermissionLevel.ACCESSIBILITY -> PermissionMode.ACCESSIBILITY
@@ -121,8 +111,7 @@ class PermissionModeManager private constructor(private val context: Context) {
             AndroidPermissionLevel.ADMIN -> PermissionMode.ADMIN
             AndroidPermissionLevel.ROOT -> PermissionMode.ROOT
         }
-
-    private fun mapModeToPermissionLevel(mode: PermissionMode): AndroidPermissionLevel =
+        private fun mapModeToPermissionLevel(mode: PermissionMode): AndroidPermissionLevel =
         when (mode) {
             PermissionMode.STANDARD -> AndroidPermissionLevel.STANDARD
             PermissionMode.ACCESSIBILITY -> AndroidPermissionLevel.ACCESSIBILITY
@@ -153,8 +142,7 @@ class PermissionModeManager private constructor(private val context: Context) {
                     // Root �?Shizuku 已单独检�?
                     continue
                 }
-
-                val state = checkMode(mode, forceRefresh, timestamp)
+        val state = checkMode(mode, forceRefresh, timestamp)
                 newStates[mode] = state
             }
 
@@ -178,26 +166,22 @@ class PermissionModeManager private constructor(private val context: Context) {
      */
     suspend fun checkMode(mode: PermissionMode, forceRefresh: Boolean = false): PermissionModeState {
         val timestamp = System.currentTimeMillis()
-
         if (!forceRefresh) {
             detectionCache[mode]?.let { cached ->
                 if (timestamp - cached.timestamp < DETECTION_CACHE_DURATION) {
                     AppLogger.v(TAG, "使用缓存�?${mode.displayName} 状�?)
-                    return cached.state
+        return cached.state
                 }
             }
         }
-
         return checkMode(mode, forceRefresh, timestamp)
     }
-
-    private suspend fun checkMode(
+        private suspend fun checkMode(
         mode: PermissionMode,
         forceRefresh: Boolean,
         timestamp: Long
     ): PermissionModeState {
         AppLogger.d(TAG, "检�?${mode.displayName}...")
-
         val state = when (mode) {
             PermissionMode.STANDARD -> checkStandardMode(timestamp)
             PermissionMode.ACCESSIBILITY -> checkAccessibilityMode(timestamp)
@@ -210,11 +194,9 @@ class PermissionModeManager private constructor(private val context: Context) {
         detectionCache[mode] = CachedResult(state, timestamp)
         _modeStates.update { current -> current.toMutableMap().apply { put(mode, state) } }
         notifyStateChanges(listOf(state))
-
         return state
     }
-
-    private fun checkStandardMode(timestamp: Long): PermissionModeState =
+        private fun checkStandardMode(timestamp: Long): PermissionModeState =
         PermissionModeState(
             mode = PermissionMode.STANDARD,
             isAvailable = true,
@@ -222,11 +204,9 @@ class PermissionModeManager private constructor(private val context: Context) {
             isPreferred = _currentMode.value == PermissionMode.STANDARD,
             checkTimestamp = timestamp
         )
-
-    private fun checkAccessibilityMode(timestamp: Long): PermissionModeState {
+        private fun checkAccessibilityMode(timestamp: Long): PermissionModeState {
         val isAvailable = true
         val isGranted = checkAccessibilityServiceEnabled()
-
         return PermissionModeState(
             mode = PermissionMode.ACCESSIBILITY,
             isAvailable = isAvailable,
@@ -236,11 +216,10 @@ class PermissionModeManager private constructor(private val context: Context) {
             errorMessage = if (!isGranted) "需要启用无障碍服务" else null
         )
     }
-
-    private fun checkAccessibilityServiceEnabled(): Boolean {
+        private fun checkAccessibilityServiceEnabled(): Boolean {
         return try {
             val serviceString = context.packageName + "/.accessibility.YourAccessibilityService"
-            val enabledServices = android.provider.Settings.Secure.getString(
+        val enabledServices = android.provider.Settings.Secure.getString(
                 context.contentResolver,
                 android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
             )
@@ -250,8 +229,7 @@ class PermissionModeManager private constructor(private val context: Context) {
             false
         }
     }
-
-    private fun checkDebuggerMode(timestamp: Long): PermissionModeState {
+        private fun checkDebuggerMode(timestamp: Long): PermissionModeState {
         val isAvailable = true
         val isGranted = true // 调试模式总是可用
     return PermissionModeState(
@@ -262,11 +240,9 @@ class PermissionModeManager private constructor(private val context: Context) {
             checkTimestamp = timestamp
         )
     }
-
-    private fun checkAdminMode(timestamp: Long): PermissionModeState {
+        private fun checkAdminMode(timestamp: Long): PermissionModeState {
         val isAvailable = true
         val isGranted = checkDeviceAdminEnabled()
-
         return PermissionModeState(
             mode = PermissionMode.ADMIN,
             isAvailable = isAvailable,
@@ -276,8 +252,7 @@ class PermissionModeManager private constructor(private val context: Context) {
             errorMessage = if (!isGranted) "需要启用设备管理员" else null
         )
     }
-
-    private fun checkDeviceAdminEnabled(): Boolean {
+        private fun checkDeviceAdminEnabled(): Boolean {
         return try {
             val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE)
                     as? android.app.admin.DevicePolicyManager
@@ -291,12 +266,9 @@ class PermissionModeManager private constructor(private val context: Context) {
             false
         }
     }
-
-    private fun checkShizukuMode(timestamp: Long): PermissionModeState = buildShizukuState(timestamp)
-
-    private fun checkRootMode(timestamp: Long): PermissionModeState = buildRootState(timestamp)
-
-    private fun buildShizukuState(timestamp: Long): PermissionModeState {
+        private fun checkShizukuMode(timestamp: Long): PermissionModeState = buildShizukuState(timestamp)
+        private fun checkRootMode(timestamp: Long): PermissionModeState = buildRootState(timestamp)
+        private fun buildShizukuState(timestamp: Long): PermissionModeState {
         val result = _shizukuResult.value
         return PermissionModeState(
             mode = PermissionMode.SHIZUKU,
@@ -307,8 +279,7 @@ class PermissionModeManager private constructor(private val context: Context) {
             errorMessage = result.errorMessage
         )
     }
-
-    private fun buildRootState(timestamp: Long): PermissionModeState {
+        private fun buildRootState(timestamp: Long): PermissionModeState {
         val result = _rootResult.value
         return PermissionModeState(
             mode = PermissionMode.ROOT,
@@ -331,15 +302,14 @@ class PermissionModeManager private constructor(private val context: Context) {
             timestamp - cached.detectionTimestamp < DETECTION_CACHE_DURATION
         ) {
             AppLogger.v(TAG, "使用缓存�?Root 检测结�?)
-            return cached
+        return cached
         }
 
         AppLogger.d(TAG, "检�?Root 状�?..")
-
         val result = try {
             // 使用 RootAuthorizer 检�?
     val isRooted = RootAuthorizer.isDeviceRooted()
-            val hasRootAccess = RootAuthorizer.hasRootAccess()
+        val hasRootAccess = RootAuthorizer.hasRootAccess()
 
             // 检�?Root 方案
     val rootScheme = detectRootScheme()
@@ -367,8 +337,7 @@ class PermissionModeManager private constructor(private val context: Context) {
         _rootResult.value = result
         return result
     }
-
-    private fun detectRootScheme(): RootScheme {
+        private fun detectRootScheme(): RootScheme {
         val pm = context.packageManager
 
         for (scheme in RootScheme.values()) {
@@ -376,20 +345,18 @@ class PermissionModeManager private constructor(private val context: Context) {
                 try {
                     pm.getPackageInfo(scheme.packageName, 0)
                     AppLogger.d(TAG, "检测到 Root 方案: ${scheme.displayName}")
-                    return scheme
+        return scheme
                 } catch (e: Exception) {
                     continue
                 }
             }
         }
-
         return RootScheme.UNKNOWN
     }
-
-    private fun detectSELinuxStatus(): SELinuxStatus {
+        private fun detectSELinuxStatus(): SELinuxStatus {
         return try {
             val process = Runtime.getRuntime().exec("getenforce")
-            val output = process.inputStream.bufferedReader().readText().trim()
+        val output = process.inputStream.bufferedReader().readText().trim()
             process.waitFor()
             SELinuxStatus.fromString(output)
         } catch (e: Exception) {
@@ -409,16 +376,15 @@ class PermissionModeManager private constructor(private val context: Context) {
             timestamp - cached.detectionTimestamp < DETECTION_CACHE_DURATION
         ) {
             AppLogger.v(TAG, "使用缓存�?Shizuku 检测结�?)
-            return cached
+        return cached
         }
 
         AppLogger.d(TAG, "检�?Shizuku 状�?..")
-
         val result = try {
             val isShizukuInstalled = ShizukuAuthorizer.isShizukuInstalled(context)
-            val isServiceAvailable = ShizukuAuthorizer.isShizukuServiceRunning()
-            val isGranted = ShizukuAuthorizer.hasShizukuPermission()
-            val isSuiBackend = checkIsSuiBackend()
+        val isServiceAvailable = ShizukuAuthorizer.isShizukuServiceRunning()
+        val isGranted = ShizukuAuthorizer.hasShizukuPermission()
+        val isSuiBackend = checkIsSuiBackend()
 
             ShizukuDetectionResult(
                 isAvailable = isServiceAvailable,
@@ -440,8 +406,7 @@ class PermissionModeManager private constructor(private val context: Context) {
         _shizukuResult.value = result
         return result
     }
-
-    private fun checkIsSuiBackend(): Boolean {
+        private fun checkIsSuiBackend(): Boolean {
         return try {
             val pm = context.packageManager
             val suiPackage = "rikka.sui"
@@ -461,11 +426,10 @@ class PermissionModeManager private constructor(private val context: Context) {
      */
     suspend fun switchToMode(mode: PermissionMode): Boolean = mutex.withLock {
         AppLogger.d(TAG, "切换�?${mode.displayName}...")
-
         val state = checkMode(mode, forceRefresh = true)
         if (!state.isUsable && mode != PermissionMode.STANDARD) {
             AppLogger.w(TAG, "无法切换�?${mode.displayName}: 模式不可�?)
-            return false
+        return false
         }
 
         try {
@@ -481,10 +445,10 @@ class PermissionModeManager private constructor(private val context: Context) {
 
             notifyModeChange(mode)
             AppLogger.d(TAG, "成功切换�?${mode.displayName}")
-            return true
+        return true
         } catch (e: Exception) {
             AppLogger.e(TAG, "切换�?${mode.displayName} 失败", e)
-            return false
+        return false
         }
     }
 
@@ -493,15 +457,12 @@ class PermissionModeManager private constructor(private val context: Context) {
      */
     suspend fun autoSelectBestMode(): PermissionMode? {
         checkAllModes(forceRefresh = true)
-
         val bestMode = PermissionMode.sortedByLevelDesc().firstOrNull { mode ->
             _modeStates.value[mode]?.isUsable == true
         }
-
         if (bestMode != null) {
             switchToMode(bestMode)
         }
-
         return bestMode
     }
 
@@ -558,23 +519,20 @@ class PermissionModeManager private constructor(private val context: Context) {
     fun removeModeChangeListener(listener: (PermissionMode) -> Unit) {
         modeChangeListeners.remove(listener)
     }
-
-    private fun notifyStateChanges(states: Collection<PermissionModeState>) {
+        private fun notifyStateChanges(states: Collection<PermissionModeState>) {
         states.forEach { state ->
             stateChangeListeners.forEach { it(state) }
         }
     }
-
-    private fun notifyModeChange(mode: PermissionMode) {
+        private fun notifyModeChange(mode: PermissionMode) {
         modeChangeListeners.forEach { it(mode) }
     }
-
-    private fun startAutoCheck() {
+        private fun startAutoCheck() {
         scope.launch {
             while (true) {
                 try {
                     delay(AUTO_CHECK_INTERVAL)
-                    if (!_isChecking.value) {
+        if (!_isChecking.value) {
                         checkAllModes(forceRefresh = false)
                     }
                 } catch (e: Exception) {

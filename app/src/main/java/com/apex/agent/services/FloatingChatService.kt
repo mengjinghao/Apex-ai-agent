@@ -59,14 +59,12 @@ import com.apex.core.tools.javascript.not
 
 class FloatingChatService : Service(), FloatingWindowCallback {
     private val TAG = "FloatingChatService"
-    private val binder = LocalBinder()
-
-    private val NOTIFICATION_ID = 1001
+        private val binder = LocalBinder()
+        private val NOTIFICATION_ID = 1001
     private val CHANNEL_ID = "floating_chat_channel"
-
-    private val PREF_KEY_STATUS_INDICATOR_STYLE = "status_indicator_style"
-    private val PREF_KEY_COLOR_SCHEME = "floating_color_scheme_json"
-    private val PREF_KEY_TYPOGRAPHY = "floating_typography_json"
+        private val PREF_KEY_STATUS_INDICATOR_STYLE = "status_indicator_style"
+        private val PREF_KEY_COLOR_SCHEME = "floating_color_scheme_json"
+        private val PREF_KEY_TYPOGRAPHY = "floating_typography_json"
 
     lateinit var windowState: FloatingWindowState
     private lateinit var windowManager: FloatingWindowManager
@@ -75,8 +73,8 @@ class FloatingChatService : Service(), FloatingWindowCallback {
 
     private lateinit var lifecycleOwner: ServiceLifecycleOwner
     private val chatMessages = mutableStateOf<List<ChatMessage>>(emptyList())
-    private val attachments = mutableStateOf<List<AttachmentInfo>>(emptyList())
-    private val inputProcessingState = mutableStateOf<InputProcessingState>(InputProcessingState.Idle)
+        private val attachments = mutableStateOf<List<AttachmentInfo>>(emptyList())
+        private val inputProcessingState = mutableStateOf<InputProcessingState>(InputProcessingState.Idle)
 
     // 聊天服务核心 - 整合所有业务逻辑
     private lateinit var chatCore: ChatServiceCore
@@ -84,16 +82,15 @@ class FloatingChatService : Service(), FloatingWindowCallback {
     private var lastCrashTime = 0L
     private var crashCount = 0
     private val defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-    private val customExceptionHandler =
+        private val customExceptionHandler =
             Thread.UncaughtExceptionHandler { thread, throwable ->
                 handleServiceCrash(thread, throwable)
             }
-
-    private val colorScheme = mutableStateOf<ColorScheme?>(null)
-    private val typography = mutableStateOf<Typography?>(null)
-    private val gson = Gson()
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private var hasHandledStartCommand = false
+        private val colorScheme = mutableStateOf<ColorScheme?>(null)
+        private val typography = mutableStateOf<Typography?>(null)
+        private val gson = Gson()
+        private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+        private var hasHandledStartCommand = false
 
     companion object {
         @Volatile
@@ -108,27 +105,22 @@ class FloatingChatService : Service(), FloatingWindowCallback {
         const val EXTRA_WAKE_LAUNCHED = "WAKE_LAUNCHED"
         const val EXTRA_AUTO_EXIT_AFTER_MS = "AUTO_EXIT_AFTER_MS"
         const val EXTRA_KEEP_IF_EXISTS = "KEEP_IF_EXISTS"
-
         fun getInstance(): FloatingChatService? = instance
     }
-
-    private val autoEnterVoiceChat = mutableStateOf(false)
-    private val wakeLaunched = mutableStateOf(false)
-
-    private val autoExitHandler = Handler(Looper.getMainLooper())
-    private var autoExitRunnable: Runnable? = null
+        private val autoEnterVoiceChat = mutableStateOf(false)
+        private val wakeLaunched = mutableStateOf(false)
+        private val autoExitHandler = Handler(Looper.getMainLooper())
+        private var autoExitRunnable: Runnable? = null
 
     private val wakePrefs by lazy { WakeWordPreferences(applicationContext) }
-
-    fun consumeAutoEnterVoiceChat(): Boolean {
+        fun consumeAutoEnterVoiceChat(): Boolean {
         val value = autoEnterVoiceChat.value
         if (value) {
             autoEnterVoiceChat.value = false
         }
         return value
     }
-
-    fun isWakeLaunched(): Boolean = wakeLaunched.value
+        fun isWakeLaunched(): Boolean = wakeLaunched.value
 
     private fun scheduleAutoExit(timeoutMs: Long) {
         val previous = autoExitRunnable
@@ -150,18 +142,15 @@ class FloatingChatService : Service(), FloatingWindowCallback {
 
     inner class LocalBinder : Binder() {
         private val closeCallbacks = mutableListOf<() -> Unit>()
-
         fun getService(): FloatingChatService = this@FloatingChatService
         fun getChatCore(): ChatServiceCore = chatCore
 
         fun setCloseCallback(callback: () -> Unit) {
             closeCallbacks.add(callback)
         }
-
         fun notifyClose() {
             closeCallbacks.toList().forEach { it.invoke() }
         }
-
         fun clearCallbacks() {
             closeCallbacks.clear()
         }
@@ -172,8 +161,8 @@ class FloatingChatService : Service(), FloatingWindowCallback {
     private fun handleServiceCrash(thread: Thread, throwable: Throwable) {
         try {
             AppLogger.e(TAG, "Service crashed: ${throwable.message}", throwable)
-            val currentTime = System.currentTimeMillis()
-            if (currentTime - lastCrashTime > 60000) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastCrashTime > 60000) {
                 crashCount = 0
             }
             lastCrashTime = currentTime
@@ -183,11 +172,11 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                 AppLogger.e(TAG, "Too many crashes in short time, stopping service")
                 prefs.edit().putBoolean("service_disabled_due_to_crashes", true).apply()
                 stopSelf()
-                return
+        return
             }
 
             saveState()
-            val intent = Intent(applicationContext, FloatingChatService::class.java)
+        val intent = Intent(applicationContext, FloatingChatService::class.java)
             intent.setPackage(packageName)
             startService(intent)
         } catch (e: Exception) {
@@ -217,7 +206,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
         if (prefs.getBoolean("service_disabled_due_to_crashes", false)) {
             AppLogger.w(TAG, "Service was disabled due to frequent crashes")
             stopSelf()
-            return
+        return
         }
 
         try {
@@ -282,7 +271,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                             this
                     )
             createNotificationChannel()
-            val notification = createNotification()
+        val notification = createNotification()
             ForegroundServiceCompat.startForeground(
                 service = this,
                 notificationId = NOTIFICATION_ID,
@@ -295,8 +284,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             stopSelf()
         }
     }
-
-    private fun acquireWakeLock() {
+        private fun acquireWakeLock() {
         try {
             if (wakeLock == null) {
                 val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -307,7 +295,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                         )
                 wakeLock?.setReferenceCounted(false)
             }
-            if (wakeLock?.isHeld == false) {
+        if (wakeLock?.isHeld == false) {
                 wakeLock?.acquire(10 * 60 * 1000L)
                 AppLogger.d(TAG, "WakeLock acquired")
             }
@@ -315,8 +303,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             AppLogger.e(TAG, "Error acquiring WakeLock", e)
         }
     }
-
-    private fun releaseWakeLock() {
+        private fun releaseWakeLock() {
         try {
             if (wakeLock?.isHeld == true) {
                 wakeLock?.release()
@@ -326,23 +313,21 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             AppLogger.e(TAG, "Error releasing WakeLock", e)
         }
     }
-
-    private fun createNotificationChannel() {
+        private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.floating_chat_window_title)
-            val descriptionText = getString(R.string.floating_service_description)
-            val importance = NotificationManager.IMPORTANCE_LOW
+        val descriptionText = getString(R.string.floating_service_description)
+        val importance = NotificationManager.IMPORTANCE_LOW
             val channel =
                     NotificationChannel(CHANNEL_ID, name, importance).apply {
                         description = descriptionText
                         setShowBadge(false)
                     }
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
-
-    private fun createNotification() =
+        private fun createNotification() =
             NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(android.R.drawable.ic_dialog_info)
                     .setContentTitle(getString(R.string.floating_chat_window_title))
@@ -352,8 +337,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                     .setCategory(NotificationCompat.CATEGORY_SERVICE)
                     .setContentIntent(getPendingIntent())
                     .build()
-
-    private fun getPendingIntent(): PendingIntent {
+        private fun getPendingIntent(): PendingIntent {
         val intent = packageManager.getLaunchIntentForPackage(packageName)
         return PendingIntent.getActivity(
                 this,
@@ -371,8 +355,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
 
         try {
             acquireWakeLock()
-
-            val keepIfExists = intent?.getBooleanExtra(EXTRA_KEEP_IF_EXISTS, false) == true
+        val keepIfExists = intent?.getBooleanExtra(EXTRA_KEEP_IF_EXISTS, false) == true
             val isFirstStart = !hasHandledStartCommand
             if (keepIfExists && instance != null && !isFirstStart) {
                 AppLogger.d(TAG, "Service already running; keep_if_exists=true, skip mode change")
@@ -398,24 +381,22 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                 applicationContext,
                 isFullscreenMode
             )
-
-            val autoEnterVoiceChatExtra = intent?.getBooleanExtra(EXTRA_AUTO_ENTER_VOICE_CHAT, false) == true
+        val autoEnterVoiceChatExtra = intent?.getBooleanExtra(EXTRA_AUTO_ENTER_VOICE_CHAT, false) == true
             if (autoEnterVoiceChatExtra) {
                 autoEnterVoiceChat.value = true
             }
-            val wakeLaunchedExtra = if (intent?.hasExtra(EXTRA_WAKE_LAUNCHED) == true) {
+        val wakeLaunchedExtra = if (intent?.hasExtra(EXTRA_WAKE_LAUNCHED) == true) {
                 intent.getBooleanExtra(EXTRA_WAKE_LAUNCHED, false)
             } else {
                 false
             }
-            if (intent?.hasExtra(EXTRA_WAKE_LAUNCHED) == true) {
+        if (intent?.hasExtra(EXTRA_WAKE_LAUNCHED) == true) {
                 wakeLaunched.value = wakeLaunchedExtra
             }
-
-            if (wakeLaunchedExtra) {
+        if (wakeLaunchedExtra) {
                 serviceScope.launch {
                     val enabled = wakePrefs.wakeCreateNewChatOnWakeEnabledFlow.first()
-                    if (enabled) {
+        if (enabled) {
                         val currentChatId = chatCore.currentChatId.value
                         if (currentChatId != null) {
                             var history = chatCore.chatHistory.value
@@ -425,9 +406,8 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                                 waitCount++
                                 history = chatCore.chatHistory.value
                             }
-
-                            val hasAnyUserMessage = history.any { it.sender == "user" }
-                            if (!hasAnyUserMessage) {
+        val hasAnyUserMessage = history.any { it.sender == "user" }
+        if (!hasAnyUserMessage) {
                                 AppLogger.d(
                                     TAG,
                                     "Skip auto createNewChat on wake: current chat has no user messages"
@@ -435,23 +415,20 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                                 return@launch
                             }
                         }
-
-                        val group = wakePrefs.autoNewChatGroupFlow.first().trim().ifBlank {
+        val group = wakePrefs.autoNewChatGroupFlow.first().trim().ifBlank {
                             WakeWordPreferences.DEFAULT_AUTO_NEW_CHAT_GROUP
                         }
                         chatCore.createNewChat(group = group, inheritGroupFromCurrent = false)
                     }
                 }
             }
-
-            if (intent?.hasExtra(EXTRA_AUTO_EXIT_AFTER_MS) == true) {
+        if (intent?.hasExtra(EXTRA_AUTO_EXIT_AFTER_MS) == true) {
                 val timeoutMs = intent.getLongExtra(EXTRA_AUTO_EXIT_AFTER_MS, -1L)
                 scheduleAutoExit(timeoutMs)
             } else {
                 scheduleAutoExit(null)
             }
-
-            val hasColorSchemeExtra = intent?.hasExtra("COLOR_SCHEME") == true
+        val hasColorSchemeExtra = intent?.hasExtra("COLOR_SCHEME") == true
             if (hasColorSchemeExtra) {
                 val serializableColorScheme =
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -472,7 +449,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                 }
             } else {
                 val saved = prefs.getString(PREF_KEY_COLOR_SCHEME, null)
-                if (!saved.isNullOrBlank()) {
+        if (!saved.isNullOrBlank()) {
                     try {
                         val restored = gson.fromJson(saved, SerializableColorScheme::class.java)
                         colorScheme.value = restored.toComposeColorScheme()
@@ -481,8 +458,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                     }
                 }
             }
-
-            val hasTypographyExtra = intent?.hasExtra("TYPOGRAPHY") == true
+        val hasTypographyExtra = intent?.hasExtra("TYPOGRAPHY") == true
             if (hasTypographyExtra) {
                 val serializableTypography =
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -503,7 +479,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                 }
             } else {
                 val saved = prefs.getString(PREF_KEY_TYPOGRAPHY, null)
-                if (!saved.isNullOrBlank()) {
+        if (!saved.isNullOrBlank()) {
                     try {
                         val restored = gson.fromJson(saved, SerializableTypography::class.java)
                         typography.value = restored.toComposeTypography()
@@ -512,7 +488,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                     }
                 }
             }
-            val windowShown = windowManager.show()
+        val windowShown = windowManager.show()
             sendLifecycleBroadcast(
                 if (windowShown) ACTION_FLOATING_CHAT_WINDOW_SHOWN
                 else ACTION_FLOATING_CHAT_WINDOW_SHOW_FAILED
@@ -523,8 +499,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
         }
         return START_STICKY
     }
-
-    private fun sendLifecycleBroadcast(action: String) {
+        private fun sendLifecycleBroadcast(action: String) {
         try {
             sendBroadcast(Intent(action).setPackage(packageName))
         } catch (_: Exception) {
@@ -556,8 +531,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             saveState()
         }
     }
-
-    private fun handleAttachmentRequest(request: String) {
+        private fun handleAttachmentRequest(request: String) {
         AppLogger.d(TAG, "Attachment request received: ${request}")
         serviceScope.launch {
             try {
@@ -569,8 +543,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             }
         }
     }
-
-    fun removeAttachment(filePath: String) {
+        fun removeAttachment(filePath: String) {
         AppLogger.d(TAG, "移除附件: ${filePath}")
         // 直接使用 chatCore ，AttachmentDelegate 移除附件
         chatCore.removeAttachment(filePath)
@@ -738,8 +711,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             StatusIndicatorStyle.FULLSCREEN_RAINBOW
         }
     }
-
-    fun setStatusIndicatorStyle(style: StatusIndicatorStyle) {
+        fun setStatusIndicatorStyle(style: StatusIndicatorStyle) {
         prefs.edit().putString(PREF_KEY_STATUS_INDICATOR_STYLE, style.name).apply()
         AppLogger.d(TAG, "Status indicator style set to: ${style}")
     }
@@ -755,8 +727,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             null
         }
     }
-
-    fun switchToMode(mode: FloatingMode) {
+        fun switchToMode(mode: FloatingMode) {
         windowState.currentMode.value = mode
         AppLogger.d(TAG, "Switching to mode: ${mode}")
     }

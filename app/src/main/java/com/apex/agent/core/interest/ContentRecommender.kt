@@ -39,7 +39,6 @@ class ContentRecommender(private val context: Context, private val interestAnaly
      * 为特定兴趣生成推�?    */
     private fun generateRecommendationsForInterest(interest: String): List<ContentRecommendation> {
         val recommendations = mutableListOf<ContentRecommendation>()
-        
         when (interest) {
             "技�?-> {
                 recommendations.add(ContentRecommendation(
@@ -217,7 +216,6 @@ class ContentRecommender(private val context: Context, private val interestAnaly
                 ))
             }
         }
-        
         return recommendations
     }
     
@@ -230,8 +228,7 @@ class ContentRecommender(private val context: Context, private val interestAnaly
         buildString {
             appendLine("# 为你推荐")
             appendLine()
-            
-            if (recommendations.isEmpty()) {
+        if (recommendations.isEmpty()) {
                 appendLine("暂时没有推荐内容，继续与我交流以获取个性化推荐的）
             } else {
                 recommendations.forEachIndexed { index, recommendation ->
@@ -249,7 +246,6 @@ class ContentRecommender(private val context: Context, private val interestAnaly
      */
     suspend fun generateInterestOpening(userId: String, messages: List<ChatMessage>, userProfile: HonzonUserProfile? = null): String = withContext(Dispatchers.IO) {
         val interestProfile = interestAnalyzer.analyzeInterests(messages, userProfile)
-        
         val primaryInterest = interestProfile.primaryInterest
         
         if (primaryInterest != null) {
@@ -295,8 +291,7 @@ class ContentRecommender(private val context: Context, private val interestAnaly
                     "创意表达有很多形式，你最喜欢哪种创意表达方方�?
                 )
             )
-            
-            val openingList = openings[primaryInterest] ?: openings["生活"]!!
+        val openingList = openings[primaryInterest] ?: openings["生活"]!!
             openingList.random()
         } else {
             "你好！很高兴能和你交流。最近有什么想聊的话题吗？"

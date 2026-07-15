@@ -19,8 +19,7 @@ class SkillParallelExecutorTest {
         val message: String,
         val details: Map<String, Any> = emptyMap()
     )
-
-    fun runAllTests(): List<TestResult> {
+        fun runAllTests(): List<TestResult> {
         val results = mutableListOf<TestResult>()
 
         results.add(testParallelExecution())
@@ -28,22 +27,18 @@ class SkillParallelExecutorTest {
         results.add(testResourceAllocation())
         results.add(testContextIsolation())
         results.add(testPerformanceImprovement())
-
         return results
     }
-
-    fun testParallelExecution(): TestResult {
+        fun testParallelExecution(): TestResult {
         val startTime = System.currentTimeMillis()
         var passed = false
         var message = ""
-
         val executor = SkillParallelExecutor.getInstance(
             corePoolSize = 4,
             maxPoolSize = 8,
             keepAliveMs = 60000,
             maxQueueSize = 100
         )
-
         val testLatch = CountDownLatch(5)
         val executedCount = AtomicInteger(0)
 
@@ -51,7 +46,7 @@ class SkillParallelExecutorTest {
             override suspend fun execute(task: SkillTaskQueue.SkillTask): Any? {
                 delay(100)
                 executedCount.incrementAndGet()
-                return "Result for ${task.id}"
+        return "Result for ${task.id}"
             }
         })
 
@@ -67,10 +62,8 @@ class SkillParallelExecutorTest {
             }
 
             executor.submitAll(tasks)
-
-            val completed = testLatch.await(10, TimeUnit.SECONDS)
-
-            val stats = executor.getStats()
+        val completed = testLatch.await(10, TimeUnit.SECONDS)
+        val stats = executor.getStats()
             passed = completed && executedCount.get() == 5 && stats.totalTasksCompleted >= 5
             message = if (passed) {
                 "Parallel execution test passed: ${executedCount.get()} tasks executed"
@@ -82,7 +75,6 @@ class SkillParallelExecutorTest {
         } finally {
             executor.stop()
         }
-
         return TestResult(
             testName = "testParallelExecution",
             passed = passed,
@@ -90,14 +82,11 @@ class SkillParallelExecutorTest {
             message = message
         )
     }
-
-    fun testPriorityQueue(): TestResult {
+        fun testPriorityQueue(): TestResult {
         val startTime = System.currentTimeMillis()
         var passed = false
         var message = ""
-
         val queue = SkillTaskQueue(maxQueueSize = 20, usePriorityQueue = true)
-
         val lowPriorityTask = SkillTaskQueue.SkillTask(
             id = "low-priority",
             skillName = "test",
@@ -117,7 +106,6 @@ class SkillParallelExecutorTest {
         queue.enqueue(lowPriorityTask)
         queue.enqueue(highPriorityTask)
         queue.enqueue(normalPriorityTask)
-
         val first = queue.dequeue()
         passed = first?.id == "high-priority"
 
@@ -126,7 +114,6 @@ class SkillParallelExecutorTest {
         } else {
             "Priority queue test failed: expected high-priority, got ${first?.id}"
         }
-
         return TestResult(
             testName = "testPriorityQueue",
             passed = passed,
@@ -134,23 +121,21 @@ class SkillParallelExecutorTest {
             message = message
         )
     }
-
-    fun testResourceAllocation(): TestResult {
+        fun testResourceAllocation(): TestResult {
         val startTime = System.currentTimeMillis()
         var passed = false
         var message = ""
-
         val controller = SkillResourceController.getInstance()
         controller.startMonitoring()
 
         try {
             val allocated1 = controller.allocateResources("task-1", SkillResourceController.TaskComplexity.MEDIUM)
-            val allocated2 = controller.allocateResources("task-2", SkillResourceController.TaskComplexity.HIGH)
+        val allocated2 = controller.allocateResources("task-2", SkillResourceController.TaskComplexity.HIGH)
 
             passed = allocated1 && allocated2
 
             val usage = controller.getCurrentResourceUsage()
-            val allocations = controller.getTaskAllocation("task-1")
+        val allocations = controller.getTaskAllocation("task-1")
 
             passed = passed && allocations != null && allocations.isNotEmpty()
 
@@ -167,7 +152,6 @@ class SkillParallelExecutorTest {
         } finally {
             controller.stopMonitoring()
         }
-
         return TestResult(
             testName = "testResourceAllocation",
             passed = passed,
@@ -175,16 +159,13 @@ class SkillParallelExecutorTest {
             message = message
         )
     }
-
-    fun testContextIsolation(): TestResult {
+        fun testContextIsolation(): TestResult {
         val startTime = System.currentTimeMillis()
         var passed = false
         var message = ""
-
         val context1 = SkillExecutionContext.builder()
             .setConfig(SkillExecutionContext.ContextConfig(maxConcurrentTasks = 2))
             .build()
-
         val context2 = SkillExecutionContext.builder()
             .setConfig(SkillExecutionContext.ContextConfig(maxConcurrentTasks = 4))
             .build()
@@ -221,7 +202,6 @@ class SkillParallelExecutorTest {
         } else {
             "Context isolation test failed"
         }
-
         return TestResult(
             testName = "testContextIsolation",
             passed = passed,
@@ -229,12 +209,10 @@ class SkillParallelExecutorTest {
             message = message
         )
     }
-
-    fun testPerformanceImprovement(): TestResult {
+        fun testPerformanceImprovement(): TestResult {
         val startTime = System.currentTimeMillis()
         var passed = false
         var message = ""
-
         val executor = SkillParallelExecutor.getInstance(
             corePoolSize = 4,
             maxPoolSize = 8,
@@ -245,7 +223,7 @@ class SkillParallelExecutorTest {
         executor.registerExecutor("perf-test", object : SkillParallelExecutor.TaskExecutor {
             override suspend fun execute(task: SkillTaskQueue.SkillTask): Any? {
                 delay(50)
-                return "Done"
+        return "Done"
             }
         })
 
@@ -259,22 +237,19 @@ class SkillParallelExecutorTest {
                     skillName = "perf-test"
                 )
             }
-
-            val sequentialStart = System.currentTimeMillis()
+        val sequentialStart = System.currentTimeMillis()
             tasks.forEach { task ->
                 delay(50)
             }
-            val sequentialDuration = System.currentTimeMillis() - sequentialStart
+        val sequentialDuration = System.currentTimeMillis() - sequentialStart
 
             executor.resetStats()
-
-            val parallelStart = System.currentTimeMillis()
+        val parallelStart = System.currentTimeMillis()
             executor.submitAll(tasks)
 
             Thread.sleep(2000)
-
-            val stats = executor.getStats()
-            val parallelDuration = System.currentTimeMillis() - parallelStart
+        val stats = executor.getStats()
+        val parallelDuration = System.currentTimeMillis() - parallelStart
 
             val speedup = sequentialDuration.toFloat() / parallelDuration.toFloat()
 
@@ -292,7 +267,6 @@ class SkillParallelExecutorTest {
         } finally {
             executor.stop()
         }
-
         return TestResult(
             testName = "testPerformanceImprovement",
             passed = passed,
@@ -300,8 +274,7 @@ class SkillParallelExecutorTest {
             message = message
         )
     }
-
-    fun printTestResults(results: List<TestResult>) {
+        fun printTestResults(results: List<TestResult>) {
         AppLogger.d(TAG, "=== Skill Parallel Execution Test Results ===")
         results.forEach { result ->
             val status = if (result.passed) "PASS" else "FAIL"

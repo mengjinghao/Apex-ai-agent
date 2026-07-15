@@ -59,14 +59,14 @@ data class ProfilingConfig(
 class PerformanceProfiler private constructor() {
 
     private val activeProfilers = mutableMapOf<String, MutableList<PerformanceSample>>()
-    private val completedProfilers = mutableMapOf<String, ProfilingResult>()
-    private val allSamples = CopyOnWriteArrayList<PerformanceSample>()
-    private val config = ProfilingConfig()
-    private val totalSamples = AtomicLong(0)
-    private val overheadAccumulator = CopyOnWriteArrayList<Long>()
-    private var scope: CoroutineScope? = null
+        private val completedProfilers = mutableMapOf<String, ProfilingResult>()
+        private val allSamples = CopyOnWriteArrayList<PerformanceSample>()
+        private val config = ProfilingConfig()
+        private val totalSamples = AtomicLong(0)
+        private val overheadAccumulator = CopyOnWriteArrayList<Long>()
+        private var scope: CoroutineScope? = null
     private val mutex = Mutex()
-    private val collector: TelemetryCollector = TelemetryCollector.getInstance()
+        private val collector: TelemetryCollector = TelemetryCollector.getInstance()
 
     companion object {
         @Volatile
@@ -77,15 +77,12 @@ class PerformanceProfiler private constructor() {
                 instance ?: PerformanceProfiler().also { instance = it }
             }
         }
-
         private const val MAX_OVERHEAD_SAMPLES = 100
     }
-
-    fun initialize(coroutineScope: CoroutineScope) {
+        fun initialize(coroutineScope: CoroutineScope) {
         scope = coroutineScope
     }
-
-    fun startSample(label: String, category: String, tags: Map<String, String> = emptyMap()): PerformanceSample {
+        fun startSample(label: String, category: String, tags: Map<String, String> = emptyMap()): PerformanceSample {
         val sample = PerformanceSample(
             label = label,
             category = category,
@@ -99,8 +96,7 @@ class PerformanceProfiler private constructor() {
         activeProfilers.computeIfAbsent(label) { mutableListOf() }.add(sample)
         sample
     }
-
-    fun endSample(label: String): PerformanceSample? {
+        fun endSample(label: String): PerformanceSample? {
         val now = System.nanoTime()
         val profiler = activeProfilers[label] ?: return null
         val samples = profiler
@@ -114,7 +110,6 @@ class PerformanceProfiler private constructor() {
         samples[lastIdx] = updated
         allSamples.add(updated)
         totalSamples.incrementAndGet()
-
         if (config.enableMemoryTracking) {
             val memDelta = updated.memoryAfterBytes - updated.memoryBeforeBytes
             if (memDelta > 1024 * 1024) {
@@ -122,20 +117,17 @@ class PerformanceProfiler private constructor() {
                     mapOf("delta_bytes" to memDelta, "sample" to label))
             }
         }
-
         val durationMs = updated.durationNs / 1_000_000.0
         if (durationMs > config.slowThresholdMs) {
             collector.recordPerformance("slow_operation", durationMs.toLong(),
                 mapOf("label" to label, "category" to category, "threshold_ms" to config.slowThresholdMs))
         }
-
         if (allSamples.size >= config.autoReportThreshold) {
             scope?.launch { autoReport() }
         }
         updated
     }
-
-    fun measure(label: String, category: String, block: () -> Unit): ProfilingResult {
+        fun measure(label: String, category: String, block: () -> Unit): ProfilingResult {
         val sample = startSample(label, category)
         val startMem = if (config.enableMemoryTracking) getMemoryUsage() else 0L
         try {
@@ -155,29 +147,23 @@ class PerformanceProfiler private constructor() {
         }
         getResult(label) ?: ProfilingResult(label, category, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0L, 0L)
     }
-
-    fun getResult(label: String): ProfilingResult? {
+        fun getResult(label: String): ProfilingResult? {
         val samples = allSamples.filter { it.label == label }
         if (samples.isEmpty()) return null
         computeResult(label, samples)
     }
-
-    fun getAllResults(): List<ProfilingResult> {
+        fun getAllResults(): List<ProfilingResult> {
         allSamples.groupBy { it.label }.map { (label, samples) -> computeResult(label, samples) }
     }
-
-    fun getResultsByCategory(category: String): List<ProfilingResult> {
+        fun getResultsByCategory(category: String): List<ProfilingResult> {
         allSamples.filter { it.category == category }.groupBy { it.label }
             .map { (label, samples) -> computeResult(label, samples) }
     }
-
-    fun getSamples(label: String): List<PerformanceSample> = allSamples.filter { it.label == label }
-
-    fun getSlowSamples(thresholdMs: Long = config.slowThresholdMs): List<PerformanceSample> {
+        fun getSamples(label: String): List<PerformanceSample> = allSamples.filter { it.label == label }
+        fun getSlowSamples(thresholdMs: Long = config.slowThresholdMs): List<PerformanceSample> {
         allSamples.filter { it.durationNs / 1_000_000.0 > thresholdMs }
     }
-
-    fun getSnapshot(): ProfilingSnapshot {
+        fun getSnapshot(): ProfilingSnapshot {
         val categories = allSamples.groupBy { it.category }
             .mapValues { (_, samples) -> samples.map { it.durationNs / 1_000_000.0 }.average() }
             .entries.sortedByDescending { it.value }.take(5).map { it.key to it.value }
@@ -191,12 +177,9 @@ class PerformanceProfiler private constructor() {
             slowestCategories = categories
         )
     }
-
-    fun enableMemoryTracking(enable: Boolean) { config.enableMemoryTracking }
-
-    fun setSlowThreshold(ms: Long) { config.slowThresholdMs }
-
-    fun clearSamples(label: String? = null) {
+        fun enableMemoryTracking(enable: Boolean) { config.enableMemoryTracking }
+        fun setSlowThreshold(ms: Long) { config.slowThresholdMs }
+        fun clearSamples(label: String? = null) {
         if (label != null) {
             allSamples.removeAll { it.label == label }
             activeProfilers.remove(label)
@@ -205,18 +188,15 @@ class PerformanceProfiler private constructor() {
             activeProfilers.clear()
         }
     }
-
-    fun clearCompletedResults() { completedProfilers.clear() }
-
-    fun reset() {
+        fun clearCompletedResults() { completedProfilers.clear() }
+        fun reset() {
         allSamples.clear()
         activeProfilers.clear()
         completedProfilers.clear()
         overheadAccumulator.clear()
         totalSamples.set(0)
     }
-
-    fun generateReport(): String {
+        fun generateReport(): String {
         val results = getAllResults()
         val sb = StringBuilder()
         sb.appendLine("=== Performance Profiler Report ===")
@@ -227,16 +207,14 @@ class PerformanceProfiler private constructor() {
         sb.appendLine("Slow operations (>${config.slowThresholdMs}ms): ${getSlowSamples().size}")
         sb.toString()
     }
-
-    fun exportToTelemetry() {
+        fun exportToTelemetry() {
         val results = getAllResults()
         for (r in results) {
             collector.recordPerformance("profiler_${r.category}", r.totalDurationMs.toLong(),
                 mapOf("label" to r.label, "samples" to r.sampleCount, "avg_ms" to r.averageDurationMs))
         }
     }
-
-    private fun computeResult(label: String, samples: List<PerformanceSample>): ProfilingResult {
+        private fun computeResult(label: String, samples: List<PerformanceSample>): ProfilingResult {
         val durations = samples.map { it.durationNs / 1_000_000.0 }.sorted()
         val category = samples.first().category
         val avg = if (durations.isNotEmpty()) durations.average() else 0.0
@@ -253,13 +231,11 @@ class PerformanceProfiler private constructor() {
         val maxMem = memDeltas.maxOrNull() ?: 0L
         ProfilingResult(label, category, total, avg, min, max, p50, p95, p99, samples.size, avgMem, maxMem)
     }
-
-    private fun getMemoryUsage(): Long {
+        private fun getMemoryUsage(): Long {
         val runtime = Runtime.getRuntime()
         runtime.totalMemory() - runtime.freeMemory()
     }
-
-    private suspend fun autoReport() {
+        private suspend fun autoReport() {
         val slowSamples = getSlowSamples()
         if (slowSamples.isNotEmpty()) {
             collector.recordPerformance("profiler_auto_report", slowSamples.size.toLong(),

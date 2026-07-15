@@ -78,7 +78,7 @@ fun String.isPhone(): Boolean {
 fun String.isUrl(): Boolean {
     if (isBlank()) return false
     val regex = Regex("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]")
-    return regex.matches(this)
+        return regex.matches(this)
 }
 
 /**

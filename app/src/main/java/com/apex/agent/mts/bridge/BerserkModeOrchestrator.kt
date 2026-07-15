@@ -19,16 +19,14 @@ class BerserkModeOrchestrator(
 ) {
     private val kernel get() = BurstKernel
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    private val racingContestants = mapOf(
+        private val racingContestants = mapOf(
         "read_file" to listOf("read_file", "cat", "less", "head", "tail"),
         "list_files" to listOf("list_files", "ls", "glob", "dir"),
         "capture_screenshot" to listOf("capture_screenshot", "adb_screencap", "screen_capture"),
         "visit_web" to listOf("visit_web", "http_get", "web_fetch", "curl"),
         "grep_code" to listOf("grep_code", "content_search", "ripgrep")
     )
-
-    private val fusionStrategies = mapOf(
+        private val fusionStrategies = mapOf(
         "click_element" to listOf("click_element", "tap", "long_press", "press_key", "scroll_and_click", "coordinate_click", "accessibility_click"),
         "input_text" to listOf("input_text", "set_text", "type_text", "paste_text", "adb_input", "keyboard_type"),
         "read_file" to listOf("read_file", "cat", "less", "head", "tail", "grep_code", "content_search"),
@@ -52,19 +50,15 @@ class BerserkModeOrchestrator(
         } else {
             executeWithRetry(call, spec)
         }
-
         if (result.outcome is ToolOutcome.Failure && fusionStrategies.containsKey(toolName)) {
             val fusion = executeWithFusion(call, spec)
-            if (fusion != null) return fusion
+        if (fusion != null) return fusion
         }
-
         return result
     }
-
-    private suspend fun executeWithRacing(call: ParsedToolCall, spec: ToolSpec): ExecutionResult {
+        private suspend fun executeWithRacing(call: ParsedToolCall, spec: ToolSpec): ExecutionResult {
         val startTime = System.currentTimeMillis()
         val contestants = racingContestants[spec.name] ?: return executeDefault(call)
-
         val winner = CompletableDeferred<ExecutionResult>()
         val jobs = contestants.mapNotNull { name ->
             registry.getByName(name)?.let { altSpec ->
@@ -72,7 +66,7 @@ class BerserkModeOrchestrator(
                     if (winner.isCompleted) return@async
                     try {
                         val outcome = withTimeout(15000) { invoker.invoke(altSpec, call.arguments) }
-                        if (outcome is ToolOutcome.Success) {
+        if (outcome is ToolOutcome.Success) {
                             winner.tryComplete(ExecutionResult(
                                 toolCallId = call.id,
                                 toolName = "${spec.name}[RACER:$name]",
@@ -86,14 +80,12 @@ class BerserkModeOrchestrator(
         }
 
         jobs.forEach { it.start() }
-
         return withTimeoutOrNull(30000L) { winner.await() } ?: run {
             val fallback = executeDefault(call)
             fallback
         }
     }
-
-    private suspend fun executeDefault(call: ParsedToolCall): ExecutionResult {
+        private suspend fun executeDefault(call: ParsedToolCall): ExecutionResult {
         val startTime = System.currentTimeMillis()
         return try {
             val outcome = invoker.invoke(call.toolSpec, call.arguments)
@@ -112,8 +104,7 @@ class BerserkModeOrchestrator(
             )
         }
     }
-
-    private suspend fun executeWithRetry(call: ParsedToolCall, spec: ToolSpec): ExecutionResult {
+        private suspend fun executeWithRetry(call: ParsedToolCall, spec: ToolSpec): ExecutionResult {
         val startTime = System.currentTimeMillis()
         var attempt = 0
         var lastError: Throwable? = null
@@ -124,7 +115,7 @@ class BerserkModeOrchestrator(
                 val outcome = withTimeout(Long.MAX_VALUE) {
                     invoker.invoke(spec, call.arguments)
                 }
-                return ExecutionResult(
+        return ExecutionResult(
                     toolCallId = call.id,
                     toolName = spec.name,
                     outcome = outcome,
@@ -138,7 +129,6 @@ class BerserkModeOrchestrator(
                 delay(calculateDelay(attempt))
             }
         }
-
         return ExecutionResult(
             toolCallId = call.id,
             toolName = spec.name,
@@ -147,8 +137,7 @@ class BerserkModeOrchestrator(
             retryCount = 99
         )
     }
-
-    private suspend fun executeWithFusion(call: ParsedToolCall, spec: ToolSpec): ExecutionResult? {
+        private suspend fun executeWithFusion(call: ParsedToolCall, spec: ToolSpec): ExecutionResult? {
         val startTime = System.currentTimeMillis()
         val fusions = fusionStrategies[spec.name] ?: return null
 
@@ -171,15 +160,11 @@ class BerserkModeOrchestrator(
                 }
             }
         }
-
         return results.entries.firstOrNull { it.value.outcome is ToolOutcome.Success }?.value
     }
-
-    private fun calculateDelay(attempt: Int): Long = (50L * (1 shl (attempt - 1).coerceAtMost(5))).coerceAtMost(1000L)
-
-    fun stop() { scope.cancel() }
-
-    fun toBurstTask(call: ParsedToolCall, operation: String): BurstTask = BurstTask(
+        private fun calculateDelay(attempt: Int): Long = (50L * (1 shl (attempt - 1).coerceAtMost(5))).coerceAtMost(1000L)
+        fun stop() { scope.cancel() }
+        fun toBurstTask(call: ParsedToolCall, operation: String): BurstTask = BurstTask(
         id = UUID.randomUUID().toString(),
         name = "berserk_${call.toolSpec.name}",
         description = operation,

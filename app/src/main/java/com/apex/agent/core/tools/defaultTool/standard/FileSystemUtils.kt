@@ -95,13 +95,12 @@ object FileSystemUtils {
             ZipOutputStream(FileOutputStream(destination)).use { zos ->
                 fun addFileToZip(file: File, basePath: String) {
                     val entryName = if (basePath.isBlank()) file.name else "${basePath}/${file.name}"
-                    val entry = ZipEntry(entryName)
+        val entry = ZipEntry(entryName)
                     zos.putNextEntry(entry)
-                    
-                    if (file.isFile) {
+        if (file.isFile) {
                         FileInputStream(file).use { fis ->
                             val buffer = ByteArray(1024)
-                            var length: Int
+        var length: Int
                             while (fis.read(buffer).also { length = it } > 0) {
                                 zos.write(buffer, 0, length)
                             }
@@ -117,10 +116,10 @@ object FileSystemUtils {
                 
                 addFileToZip(source, "")
             }
-            return true
+        return true
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error zipping files", e)
-            return false
+        return false
         }
     }
 
@@ -135,14 +134,13 @@ object FileSystemUtils {
                 var entry: ZipEntry?
                 while (zis.nextEntry.also { entry = it } != null) {
                     val entryFile = File(destination, entry!!.name)
-                    
-                    if (entry!!.isDirectory) {
+        if (entry!!.isDirectory) {
                         entryFile.mkdirs()
                     } else {
                         entryFile.parentFile?.mkdirs()
                         FileOutputStream(entryFile).use { fos ->
                             val buffer = ByteArray(1024)
-                            var length: Int
+        var length: Int
                             while (zis.read(buffer).also { length = it } > 0) {
                                 fos.write(buffer, 0, length)
                             }
@@ -151,10 +149,10 @@ object FileSystemUtils {
                     zis.closeEntry()
                 }
             }
-            return true
+        return true
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error unzipping files", e)
-            return false
+        return false
         }
     }
 
@@ -172,18 +170,18 @@ object FileSystemUtils {
                 context.packageName + ".fileprovider",
                 file
             )
-            val intent = Intent(Intent.ACTION_VIEW).apply {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, getMimeType(file))
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             context.startActivity(intent)
-            return true
+        return true
         } catch (e: ActivityNotFoundException) {
             AppLogger.e(TAG, "No app found to open file", e)
-            return false
+        return false
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error opening file", e)
-            return false
+        return false
         }
     }
 
@@ -195,16 +193,16 @@ object FileSystemUtils {
                 context.packageName + ".fileprovider",
                 file
             )
-            val intent = Intent(Intent.ACTION_SEND).apply {
+        val intent = Intent(Intent.ACTION_SEND).apply {
                 type = getMimeType(file)
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             context.startActivity(Intent.createChooser(intent, title))
-            return true
+        return true
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error sharing file", e)
-            return false
+        return false
         }
     }
 
@@ -217,7 +215,6 @@ object FileSystemUtils {
                 deleteFile(it)
             }
         }
-        
         return file.delete()
     }
 
@@ -235,16 +232,16 @@ object FileSystemUtils {
             FileInputStream(source).use { fis ->
                 FileOutputStream(destination).use { fos ->
                     val buffer = ByteArray(1024)
-                    var length: Int
+        var length: Int
                     while (fis.read(buffer).also { length = it } > 0) {
                         fos.write(buffer, 0, length)
                     }
                 }
             }
-            return true
+        return true
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error copying file", e)
-            return false
+        return false
         }
     }
 

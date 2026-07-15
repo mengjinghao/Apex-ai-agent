@@ -106,9 +106,8 @@ class MirrorSourceRegistry private constructor(private val context: Context) {
                 .replace("http://github.com/", "http://kkgithub.com/")
         }
     }
-
-    private val _mirrorsFlow = MutableStateFlow<List<MirrorSource>>(emptyList())
-    val mirrorsFlow: StateFlow<List<MirrorSource>> = _mirrorsFlow.asStateFlow()
+        private val _mirrorsFlow = MutableStateFlow<List<MirrorSource>>(emptyList())
+        val mirrorsFlow: StateFlow<List<MirrorSource>> = _mirrorsFlow.asStateFlow()
 
     /** 当前镜像快照（内置 + 自定义）。 */
     val mirrors: List<MirrorSource> get() = _mirrorsFlow.value
@@ -131,7 +130,7 @@ class MirrorSourceRegistry private constructor(private val context: Context) {
     suspend fun load() {
         try {
             val raw = ApexDataStore.getStringSync(context, DATA_KEY, default = "")
-            val custom = if (raw.isBlank()) {
+        val custom = if (raw.isBlank()) {
                 emptyList()
             } else {
                 runCatching {
@@ -169,11 +168,11 @@ class MirrorSourceRegistry private constructor(private val context: Context) {
         val target = current.firstOrNull { it.id == id }
         if (target == null) {
             AppLogger.w(TAG, "删除镜像失败：未找到 id=$id")
-            return
+        return
         }
         if (target.builtin) {
             AppLogger.w(TAG, "内置镜像不可删除：$id")
-            return
+        return
         }
         val customOnly = current.filter { !it.builtin && it.id != id }
         persistCustom(customOnly)
@@ -203,8 +202,7 @@ class MirrorSourceRegistry private constructor(private val context: Context) {
         persistCustom(customOnly)
         _mirrorsFlow.value = BUILTIN_MIRRORS + customOnly
     }
-
-    private suspend fun persistCustom(custom: List<MirrorSource>) {
+        private suspend fun persistCustom(custom: List<MirrorSource>) {
         val raw = json.encodeToString(ListSerializer(MirrorSource.serializer()), custom)
         ApexDataStore.putString(context, DATA_KEY, raw)
     }

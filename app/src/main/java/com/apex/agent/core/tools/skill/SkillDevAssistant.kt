@@ -23,7 +23,6 @@ class SkillDevAssistant private constructor(private val context: Context) {
 
     companion object {
         private const val TAG = "SkillDevAssistant"
-
         private val KEYWORDS = setOf(
             "function", "const", "let", "var", "if", "else", "for", "while", "return",
             "class", "interface", "type", "import", "export", "from", "async", "await",
@@ -31,7 +30,6 @@ class SkillDevAssistant private constructor(private val context: Context) {
             "undefined", "typeof", "instanceof", "in", "of", "switch", "case", "break",
             "continue", "default", "do", "delete", "void", "yield", "static", "get", "set"
         )
-
         private val SNIPPETS = mapOf(
             "func" to "function ${1:name}(${2:params}) {\n\t�?{0}\n}",
             "arrow" to "const ${1:name} = (${2:params}) => {\n\t�?{0}\n}",
@@ -124,54 +122,45 @@ class SkillDevAssistant private constructor(private val context: Context) {
         fun onPreviewUpdated(preview: PreviewResult)
         fun onError(error: String)
     }
-
-    private val config = DevServerConfig.getInstance(context)
-    private val skillManager = SkillManager.getInstance(context)
-    private val devServer = SkillDevServer.getInstance(context)
-    private val hotReloader = HotReloader.getInstance(context)
-
-    private val documents = ConcurrentHashMap<String, EditorDocument>()
-    private val listeners = CopyOnWriteArrayList<AssistantListener>()
-
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var previewJob: Job? = null
+        private val config = DevServerConfig.getInstance(context)
+        private val skillManager = SkillManager.getInstance(context)
+        private val devServer = SkillDevServer.getInstance(context)
+        private val hotReloader = HotReloader.getInstance(context)
+        private val documents = ConcurrentHashMap<String, EditorDocument>()
+        private val listeners = CopyOnWriteArrayList<AssistantListener>()
+        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        private var previewJob: Job? = null
 
     private val languageServers = ConcurrentHashMap<String, LanguageServer>()
 
     init {
         initializeLanguageServers()
     }
-
-    private fun initializeLanguageServers() {
+        private fun initializeLanguageServers() {
         languageServers["javascript"] = JSLanguageServer()
         languageServers["typescript"] = TypeScriptLanguageServer()
         languageServers["markdown"] = MarkdownLanguageServer()
     }
-
-    fun addAssistantListener(listener: AssistantListener) {
+        fun addAssistantListener(listener: AssistantListener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener)
         }
     }
-
-    fun removeAssistantListener(listener: AssistantListener) {
+        fun removeAssistantListener(listener: AssistantListener) {
         listeners.remove(listener)
     }
-
-    fun openDocument(filePath: String): EditorDocument? {
+        fun openDocument(filePath: String): EditorDocument? {
         val file = File(filePath)
         if (!file.exists()) {
             AppLogger.w(TAG, "File does not exist: ${filePath}")
-            return null
+        return null
         }
-
         val content = try {
             file.readText()
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error reading file: ${filePath}", e)
-            return null
+        return null
         }
-
         val document = EditorDocument(
             filePath = filePath,
             content = content,
@@ -180,23 +169,19 @@ class SkillDevAssistant private constructor(private val context: Context) {
 
         documents[document.id] = document
         analyzeDocument(document)
-
         return document
     }
-
-    fun getDocument(documentId: String): EditorDocument? {
+        fun getDocument(documentId: String): EditorDocument? {
         return documents[documentId]
     }
-
-    fun updateDocument(documentId: String, content: String) {
+        fun updateDocument(documentId: String, content: String) {
         documents[documentId]?.let { doc ->
             doc.content = content
             doc.isDirty = true
             analyzeDocument(doc)
         }
     }
-
-    fun saveDocument(documentId: String): Boolean {
+        fun saveDocument(documentId: String): Boolean {
         val document = documents[documentId] ?: return false
 
         return try {
@@ -210,17 +195,13 @@ class SkillDevAssistant private constructor(private val context: Context) {
             false
         }
     }
-
-    fun closeDocument(documentId: String) {
+        fun closeDocument(documentId: String) {
         documents.remove(documentId)
     }
-
-    fun getCompletions(document: EditorDocument, position: Int): List<CompletionItem> {
+        fun getCompletions(document: EditorDocument, position: Int): List<CompletionItem> {
         val completions = mutableListOf<CompletionItem>()
-
         val line = document.content.substring(0, position.coerceAtMost(document.content.length))
         val lastWord = line.substringAfterLast(" ").substringAfterLast(".")
-
         if (lastWord.isNotEmpty()) {
             KEYWORDS.filter { it.startsWith(lastWord) }.forEach { keyword ->
                 completions.add(
@@ -257,8 +238,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
         notifyCompletionsRequested(document, position, completions)
         return completions
     }
-
-    private fun extractIdentifiers(content: String, prefix: String): Set<String> {
+        private fun extractIdentifiers(content: String, prefix: String): Set<String> {
         val identifiers = mutableSetOf<String>()
         val regex = Regex("\\b[a-zA-Z_][a-zA-Z0-9_]*\\b")
         regex.findAll(content).forEach { match ->
@@ -268,14 +248,12 @@ class SkillDevAssistant private constructor(private val context: Context) {
         }
         return identifiers
     }
-
-    fun analyzeDocument(document: EditorDocument) {
+        fun analyzeDocument(document: EditorDocument) {
         scope.launch {
             try {
                 val tokens = tokenize(document)
                 notifySyntaxTokensGenerated(document, tokens)
-
-                val diagnostics = analyzeErrors(document)
+        val diagnostics = analyzeErrors(document)
                 notifyDiagnosticsGenerated(document, diagnostics)
 
                 updatePreview(document)
@@ -286,21 +264,17 @@ class SkillDevAssistant private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun tokenize(document: EditorDocument): List<SyntaxToken> {
+        private fun tokenize(document: EditorDocument): List<SyntaxToken> {
         val tokens = mutableListOf<SyntaxToken>()
         val content = document.content
         val extension = document.filePath.substringAfterLast(".", "md")
-
         when (extension) {
             "js", "ts" -> tokenizeJSTokens(content, tokens)
             "md" -> tokenizeMarkdownTokens(content, tokens)
         }
-
         return tokens
     }
-
-    private fun tokenizeJSTokens(content: String, tokens: MutableList<SyntaxToken>) {
+        private fun tokenizeJSTokens(content: String, tokens: MutableList<SyntaxToken>) {
         val patterns = listOf(
             TokenPattern(Regex("\"[^\"]*\""), TokenType.STRING),
             TokenPattern(Regex("'[^']*'"), TokenType.STRING),
@@ -313,7 +287,6 @@ class SkillDevAssistant private constructor(private val context: Context) {
             TokenPattern(Regex("[+\\-*/%=<>!&|^~?:,;.[\\]{}()]"), TokenType.OPERATOR),
             TokenPattern(Regex("\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"), TokenType.IDENTIFIER)
         )
-
         var processed = 0
 
         for (pattern in patterns) {
@@ -326,8 +299,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun tokenizeMarkdownTokens(content: String, tokens: MutableList<SyntaxToken>) {
+        private fun tokenizeMarkdownTokens(content: String, tokens: MutableList<SyntaxToken>) {
         val lines = content.split("\n")
         var index = 0
 
@@ -349,13 +321,11 @@ class SkillDevAssistant private constructor(private val context: Context) {
             index += line.length + 1
         }
     }
-
-    private fun analyzeErrors(document: EditorDocument): List<Diagnostic> {
+        private fun analyzeErrors(document: EditorDocument): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()
         val content = document.content
         val lines = content.split("\n")
         val extension = document.filePath.substringAfterLast(".", "md")
-
         when (extension) {
             "js", "ts" -> {
                 lines.forEachIndexed { index, line ->
@@ -368,11 +338,9 @@ class SkillDevAssistant private constructor(private val context: Context) {
                 }
             }
         }
-
         return diagnostics
     }
-
-    private fun analyzeJSLine(line: String, lineNumber: Int, diagnostics: MutableList<Diagnostic>) {
+        private fun analyzeJSLine(line: String, lineNumber: Int, diagnostics: MutableList<Diagnostic>) {
         if (line.contains("console.log") && line.contains("debug")) {
             diagnostics.add(
                 Diagnostic(
@@ -384,7 +352,6 @@ class SkillDevAssistant private constructor(private val context: Context) {
                 )
             )
         }
-
         val openBraces = line.count { it == '{' }
         val closeBraces = line.count { it == '}' }
         if (openBraces > 0 && closeBraces > 0 && openBraces != closeBraces) {
@@ -397,7 +364,6 @@ class SkillDevAssistant private constructor(private val context: Context) {
                 )
             )
         }
-
         if (line.contains("TODO") || line.contains("FIXME")) {
             diagnostics.add(
                 Diagnostic(
@@ -409,8 +375,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             )
         }
     }
-
-    private fun analyzeMarkdownLine(line: String, lineNumber: Int, diagnostics: MutableList<Diagnostic>) {
+        private fun analyzeMarkdownLine(line: String, lineNumber: Int, diagnostics: MutableList<Diagnostic>) {
         if (line.contains("[[") && !line.contains("]]")) {
             diagnostics.add(
                 Diagnostic(
@@ -421,7 +386,6 @@ class SkillDevAssistant private constructor(private val context: Context) {
                 )
             )
         }
-
         if (line.startsWith(" ") && !line.startsWith("  ")) {
             diagnostics.add(
                 Diagnostic(
@@ -433,19 +397,16 @@ class SkillDevAssistant private constructor(private val context: Context) {
             )
         }
     }
-
-    private fun updatePreview(document: EditorDocument) {
+        private fun updatePreview(document: EditorDocument) {
         previewJob?.cancel()
 
         previewJob = scope.launch {
             delay(config.getPreviewSettings().refreshDelayMs)
-
-            val preview = generatePreview(document)
+        val preview = generatePreview(document)
             notifyPreviewUpdated(preview)
         }
     }
-
-    private fun generatePreview(document: EditorDocument): PreviewResult {
+        private fun generatePreview(document: EditorDocument): PreviewResult {
         return when (document.filePath.substringAfterLast(".", "md")) {
             "js", "ts" -> PreviewResult(
                 type = PreviewType.JAVASCRIPT,
@@ -461,8 +422,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             )
         }
     }
-
-    private fun generateJSPreview(code: String): String {
+        private fun generateJSPreview(code: String): String {
         return buildString {
             append("<!DOCTYPE html><html><head><style>")
             append("body{font-family:monospace;padding:20px;background:#1e1e1e;color:#d4d4d4;}")
@@ -473,8 +433,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             append("</script></body></html>")
         }
     }
-
-    private fun generateMarkdownPreview(content: String): String {
+        private fun generateMarkdownPreview(content: String): String {
         return buildString {
             append("<!DOCTYPE html><html><head><style>")
             append("body{font-family:system-ui;padding:20px;max-width:800px;margin:0 auto;}")
@@ -485,8 +444,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             append("</body></html>")
         }
     }
-
-    fun getSkillStructure(skillName: String): SkillStructure? {
+        fun getSkillStructure(skillName: String): SkillStructure? {
         val skillDir = File(config.getSkillsRootDirectory(), skillName)
         if (!skillDir.exists()) return null
 
@@ -510,7 +468,6 @@ class SkillDevAssistant private constructor(private val context: Context) {
                 } else null
             ))
         }
-
         return SkillStructure(skillName, skillDir.absolutePath, structure)
     }
 
@@ -537,8 +494,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
         MARKDOWN,
         TEXT
     }
-
-    private data class TokenPattern(val regex: Regex, val type: TokenType)
+        private data class TokenPattern(val regex: Regex, val type: TokenType)
 
     abstract class LanguageServer {
         abstract fun getCompletions(document: EditorDocument, position: Int): List<CompletionItem>
@@ -574,8 +530,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             return analyzeErrors(document)
         }
     }
-
-    private fun notifyCompletionsRequested(document: EditorDocument, position: Int, completions: List<CompletionItem>) {
+        private fun notifyCompletionsRequested(document: EditorDocument, position: Int, completions: List<CompletionItem>) {
         listeners.forEach { listener ->
             runCatching {
                 listener.onCompletionsRequested(document, position, completions)
@@ -584,8 +539,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun notifyDiagnosticsGenerated(document: EditorDocument, diagnostics: List<Diagnostic>) {
+        private fun notifyDiagnosticsGenerated(document: EditorDocument, diagnostics: List<Diagnostic>) {
         listeners.forEach { listener ->
             runCatching {
                 listener.onDiagnosticsGenerated(document, diagnostics)
@@ -594,8 +548,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun notifySyntaxTokensGenerated(document: EditorDocument, tokens: List<SyntaxToken>) {
+        private fun notifySyntaxTokensGenerated(document: EditorDocument, tokens: List<SyntaxToken>) {
         listeners.forEach { listener ->
             runCatching {
                 listener.onSyntaxTokensGenerated(document, tokens)
@@ -604,8 +557,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun notifyPreviewUpdated(preview: PreviewResult) {
+        private fun notifyPreviewUpdated(preview: PreviewResult) {
         listeners.forEach { listener ->
             runCatching {
                 listener.onPreviewUpdated(preview)
@@ -614,8 +566,7 @@ class SkillDevAssistant private constructor(private val context: Context) {
             }
         }
     }
-
-    private fun notifyError(error: String) {
+        private fun notifyError(error: String) {
         listeners.forEach { listener ->
             runCatching {
                 listener.onError(error)

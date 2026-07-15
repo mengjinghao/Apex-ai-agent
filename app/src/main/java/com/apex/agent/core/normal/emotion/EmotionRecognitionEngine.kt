@@ -190,7 +190,6 @@ class EmotionRecognitionEngine {
         // 1. 关键词匹配
     val emotionScores = mutableMapOf<Emotion, Float>()
         val textLower = text.lowercase()
-
         for ((emotion, keywords) in emotionKeywords) {
             for (kw in keywords) {
                 if (textLower.contains(kw, ignoreCase = true)) {
@@ -217,7 +216,6 @@ class EmotionRecognitionEngine {
             emotionScores[targetEmotion] = (emotionScores[targetEmotion] ?: 0f) + exclamationCount * 0.3f
             cues.add(EmotionCue(CueType.PUNCTUATION, "!".repeat(exclamationCount), exclamationCount * 0.3f))
         }
-
         val questionCount = text.count { it == '?' || it == '？' }
         if (questionCount >= 2) {
             emotionScores[Emotion.CONFUSED] = (emotionScores[Emotion.CONFUSED] ?: 0f) + questionCount * 0.2f
@@ -268,7 +266,6 @@ class EmotionRecognitionEngine {
             val entry = EmotionTrackEntry(System.currentTimeMillis(), primaryEmotion, intensity.coerceIn(0f, 1f), messageId)
             tracks.computeIfAbsent(chatId) { mutableListOf() }.add(entry)
         }
-
         return EmotionAnalysis(
             primaryEmotion = primaryEmotion,
             secondaryEmotion = secondaryEmotion,
@@ -288,7 +285,6 @@ class EmotionRecognitionEngine {
         if (timeline.isEmpty()) {
             return EmotionTrack(chatId, emptyList(), Emotion.NEUTRAL, EmotionTrend.UNKNOWN, Emotion.NEUTRAL)
         }
-
         val emotionCounts = timeline.groupingBy { it.emotion }.eachCount()
         val dominantEmotion = emotionCounts.maxByOrNull { it.value }!!.key
         val averageDimensions = timeline.map { computeDimensions(it.emotion, it.intensity) }
@@ -300,9 +296,7 @@ class EmotionRecognitionEngine {
                 )
             }
         val averageEmotion = dimensionToEmotion(averageDimensions)
-
         val trend = computeTrend(timeline)
-
         return EmotionTrack(chatId, timeline, averageEmotion, trend, dominantEmotion)
     }
 
@@ -315,7 +309,6 @@ class EmotionRecognitionEngine {
         sb.append(" 用户当前情感: ${analysis.primaryEmotion}")
         if (analysis.secondaryEmotion != null) sb.append(" + ${analysis.secondaryEmotion}")
         sb.append(" (强度 ${(analysis.intensity * 100).toInt()}%, 置信度 ${(analysis.confidence * 100).toInt()}%)")
-
         val toneSnippet = analysis.suggestedResponseTone.toPromptSnippet()
         if (toneSnippet.isNotBlank()) sb.append("\n").append(toneSnippet)
 
@@ -331,7 +324,6 @@ class EmotionRecognitionEngine {
             Emotion.LONELY -> sb.append("\n[共情指导] 用户孤独感，温暖陪伴，主动关心")
             else -> {}
         }
-
         return sb.toString()
     }
 
@@ -360,8 +352,7 @@ class EmotionRecognitionEngine {
             dominance = base.third * intensity
         )
     }
-
-    private fun dimensionToEmotion(dim: EmotionDimension): Emotion {
+        private fun dimensionToEmotion(dim: EmotionDimension): Emotion {
         return when {
             dim.pleasure > 0.5f && dim.arousal > 0.5f -> Emotion.EXCITED
             dim.pleasure > 0.5f -> Emotion.HAPPY
@@ -372,8 +363,7 @@ class EmotionRecognitionEngine {
             else -> Emotion.NEUTRAL
         }
     }
-
-    private fun suggestResponseTone(emotion: Emotion, intensity: Float): ResponseTone {
+        private fun suggestResponseTone(emotion: Emotion, intensity: Float): ResponseTone {
         return when (emotion) {
             Emotion.HAPPY, Emotion.EXCITED -> ResponseTone(
                 warmth = 0.9f, formality = 0.3f, empathy = 0.6f,
@@ -417,8 +407,7 @@ class EmotionRecognitionEngine {
             )
         }
     }
-
-    private fun computeTrend(timeline: List<EmotionTrackEntry>): EmotionTrend {
+        private fun computeTrend(timeline: List<EmotionTrackEntry>): EmotionTrend {
         if (timeline.size < 2) return EmotionTrend.UNKNOWN
         val recent = timeline.takeLast(5)
         val pleasureValues = recent.map { computeDimensions(it.emotion, it.intensity).pleasure }
@@ -430,7 +419,6 @@ class EmotionRecognitionEngine {
 
         // 波动性
     val variance = pleasureValues.map { (it - pleasureValues.average()).let { d -> d * d } }.average()
-
         return when {
             variance > 0.3 -> EmotionTrend.VOLATILE
             diff > 0.2 -> EmotionTrend.IMPROVING

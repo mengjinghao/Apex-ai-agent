@@ -35,21 +35,16 @@ class SkillConfigManager private constructor(private val context: Context) {
             }
         }
     }
-
-    private val repository = ConfigRepository.getInstance(context)
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    private val _isInitialized = MutableStateFlow(false)
-    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
-
-    private val _activeSkillConfig = MutableStateFlow<SkillConfig?>(null)
-    val activeSkillConfig: StateFlow<SkillConfig?> = _activeSkillConfig.asStateFlow()
-
-    private val _configTemplates = MutableStateFlow<Map<String, List<ConfigItem>>>(emptyMap())
-    val configTemplates: StateFlow<Map<String, List<ConfigItem>>> = _configTemplates.asStateFlow()
-
-    private val _pendingChanges = MutableStateFlow<Map<String, String>>(emptyMap())
-    val pendingChanges: StateFlow<Map<String, String>> = _pendingChanges.asStateFlow()
+        private val repository = ConfigRepository.getInstance(context)
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val _isInitialized = MutableStateFlow(false)
+        val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+        private val _activeSkillConfig = MutableStateFlow<SkillConfig?>(null)
+        val activeSkillConfig: StateFlow<SkillConfig?> = _activeSkillConfig.asStateFlow()
+        private val _configTemplates = MutableStateFlow<Map<String, List<ConfigItem>>>(emptyMap())
+        val configTemplates: StateFlow<Map<String, List<ConfigItem>>> = _configTemplates.asStateFlow()
+        private val _pendingChanges = MutableStateFlow<Map<String, String>>(emptyMap())
+        val pendingChanges: StateFlow<Map<String, String>> = _pendingChanges.asStateFlow()
 
     suspend fun initialize() {
         if (_isInitialized.value) return
@@ -72,8 +67,7 @@ class SkillConfigManager private constructor(private val context: Context) {
             repository.createDefaultConfigForSkill(skillPackage)
         }
     }
-
-    fun setActiveConfig(config: SkillConfig) {
+        fun setActiveConfig(config: SkillConfig) {
         _activeSkillConfig.value = config
     }
 
@@ -104,16 +98,13 @@ class SkillConfigManager private constructor(private val context: Context) {
     suspend fun resetToDefaults(skillName: String): Boolean {
         return repository.resetConfigToDefaults(skillName)
     }
-
-    fun validateConfigItem(item: ConfigItem, value: String): ConfigValidationResult {
+        fun validateConfigItem(item: ConfigItem, value: String): ConfigValidationResult {
         if (item.required && value.isBlank()) {
             return ConfigValidationResult.INVALID_REQUIRED
         }
-
         if (value.isBlank()) {
             return ConfigValidationResult.VALID
         }
-
         when (item.type) {
             ConfigItemType.INTEGER -> {
                 if (value.toIntOrNull() == null) {
@@ -151,9 +142,9 @@ class SkillConfigManager private constructor(private val context: Context) {
 
             ConfigItemType.MULTI_SELECT -> {
                 val values = value.split(",").map { it.trim() }
-                if (item.options.isNotEmpty()) {
+        if (item.options.isNotEmpty()) {
                     val invalidValues = values.filterNot { item.options.contains(it) }
-                    if (invalidValues.isNotEmpty()) {
+        if (invalidValues.isNotEmpty()) {
                         return ConfigValidationResult.INVALID_FORMAT
                     }
                 }
@@ -170,28 +161,25 @@ class SkillConfigManager private constructor(private val context: Context) {
                     if (validation.minLength != null && value.length < validation.minLength) {
                         return ConfigValidationResult.INVALID_RANGE
                     }
-                    if (validation.maxLength != null && value.length > validation.maxLength) {
+        if (validation.maxLength != null && value.length > validation.maxLength) {
                         return ConfigValidationResult.INVALID_RANGE
                     }
-                    if (validation.pattern != null) {
+        if (validation.pattern != null) {
                         val pattern = Regex(validation.pattern)
-                        if (!pattern.matches(value)) {
+        if (!pattern.matches(value)) {
                             return ConfigValidationResult.INVALID_PATTERN
                         }
                     }
                 }
             }
         }
-
         return ConfigValidationResult.VALID
     }
-
-    fun validateConfig(config: SkillConfig): List<ConfigValidationError> {
+        fun validateConfig(config: SkillConfig): List<ConfigValidationError> {
         val errors = mutableListOf<ConfigValidationError>()
-
         for (item in config.items) {
             val result = validateConfigItem(item, item.value)
-            if (result != ConfigValidationResult.VALID) {
+        if (result != ConfigValidationResult.VALID) {
                 val message = when (result) {
                     ConfigValidationResult.INVALID_REQUIRED -> "此字段为必填�?
                     ConfigValidationResult.INVALID_FORMAT -> "格式不正�?
@@ -202,11 +190,9 @@ class SkillConfigManager private constructor(private val context: Context) {
                 errors.add(ConfigValidationError(item.key, message, result))
             }
         }
-
         return errors
     }
-
-    private fun isValidJson(value: String): Boolean {
+        private fun isValidJson(value: String): Boolean {
         return try {
             val json = kotlinx.serialization.json.Json
             json.Json.parseToJsonElement(value)
@@ -254,18 +240,15 @@ class SkillConfigManager private constructor(private val context: Context) {
     suspend fun createPresetFromCurrentConfigs(presetName: String, description: String, skillName: String): SkillConfigPreset? {
         return repository.createPresetFromCurrentConfigs(presetName, description, skillName)
     }
-
-    fun addPendingChange(key: String, value: String) {
+        fun addPendingChange(key: String, value: String) {
         _pendingChanges.value = _pendingChanges.value.toMutableMap().apply {
             put(key, value)
         }
     }
-
-    fun clearPendingChanges() {
+        fun clearPendingChanges() {
         _pendingChanges.value = emptyMap()
     }
-
-    fun getPendingChanges(): Map<String, String> {
+        fun getPendingChanges(): Map<String, String> {
         return _pendingChanges.value
     }
 
@@ -275,23 +258,21 @@ class SkillConfigManager private constructor(private val context: Context) {
 
         for ((key, value) in changes) {
             val result = updateConfigItem(skillName, key, value)
-            if (!result) {
+        if (!result) {
                 AppLogger.e(TAG, "Failed to apply pending change: ${key} = ${value}")
-                return false
+        return false
             }
         }
 
         clearPendingChanges()
         return true
     }
-
-    fun registerConfigTemplate(skillType: String, items: List<ConfigItem>) {
+        fun registerConfigTemplate(skillType: String, items: List<ConfigItem>) {
         _configTemplates.value = _configTemplates.value.toMutableMap().apply {
             put(skillType, items)
         }
     }
-
-    fun getConfigTemplate(skillType: String): List<ConfigItem>? {
+        fun getConfigTemplate(skillType: String): List<ConfigItem>? {
         return _configTemplates.value[skillType]
     }
 
@@ -303,16 +284,13 @@ class SkillConfigManager private constructor(private val context: Context) {
         repository.saveConfig(config)
         return config
     }
-
-    fun hasConfig(skillName: String): Boolean {
+        fun hasConfig(skillName: String): Boolean {
         return repository.hasConfig(skillName)
     }
-
-    fun getConfigChangeHistory(): List<com.apex.agent.data.skill.config.ConfigChange> {
+        fun getConfigChangeHistory(): List<com.apex.agent.data.skill.config.ConfigChange> {
         return repository.getRecentChanges()
     }
-
-    fun getConfigChangesForSkill(skillName: String): List<com.apex.agent.data.skill.config.ConfigChange> {
+        fun getConfigChangesForSkill(skillName: String): List<com.apex.agent.data.skill.config.ConfigChange> {
         return repository.getChangesForSkill(skillName)
     }
 }

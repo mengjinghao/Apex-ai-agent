@@ -37,21 +37,25 @@ class ActionManager(private val context: Context) {
         }
     }
 
-    // 协程作用�?   private val managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    // 协程作用�?
+    private val managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     
     // 当前活跃的监听器
     private var activeListener: ActionListener? = null
     
-    // 是否正在监听状�?   private val _isListening = MutableStateFlow(false)
-    val isListening: StateFlow<Boolean> = _isListening.asStateFlow()
+    // 是否正在监听状�?
+    private val _isListening = MutableStateFlow(false)
+        val isListening: StateFlow<Boolean> = _isListening.asStateFlow()
     
-    // 当前使用的权限级�?   private val _currentPermissionLevel = MutableStateFlow<AndroidPermissionLevel?>(null)
-    val currentPermissionLevel: StateFlow<AndroidPermissionLevel?> = _currentPermissionLevel.asStateFlow()
+    // 当前使用的权限级�?
+    private val _currentPermissionLevel = MutableStateFlow<AndroidPermissionLevel?>(null)
+        val currentPermissionLevel: StateFlow<AndroidPermissionLevel?> = _currentPermissionLevel.asStateFlow()
     
     // 事件回调集合
     private val eventCallbacks = ConcurrentHashMap<String, (ActionListener.ActionEvent) -> Unit>()
     
-    // 监听状态变化回�?   private val stateChangeCallbacks = mutableListOf<(Boolean, AndroidPermissionLevel) -> Unit>()
+    // 监听状态变化回�?
+    private val stateChangeCallbacks = mutableListOf<(Boolean, AndroidPermissionLevel) -> Unit>()
 
     /**
      * 开始使用最高可用权限级别进行UI操作监听
@@ -62,18 +66,15 @@ class ActionManager(private val context: Context) {
     ): ActionListener.ListeningResult {
         try {
             AppLogger.d(TAG, "尝试使用最高可用权限启动UI操作监听")
-            
-            val (listener, permissionStatus) = ActionListenerFactory.getHighestAvailableListener(context)
-            
-            if (!permissionStatus.granted) {
+        val (listener, permissionStatus) = ActionListenerFactory.getHighestAvailableListener(context)
+        if (!permissionStatus.granted) {
                 AppLogger.w(TAG, "最高可用权限监听器权限不足: ${permissionStatus.reason}")
-                return ActionListener.ListeningResult.failure(context.getString(R.string.action_insufficient_permission, permissionStatus.reason))
+        return ActionListener.ListeningResult.failure(context.getString(R.string.action_insufficient_permission, permissionStatus.reason))
             }
-            
-            return startListeningWithListener(listener, callback)
+        return startListeningWithListener(listener, callback)
         } catch (e: Exception) {
             AppLogger.e(TAG, "使用最高权限启动监听失败：${e.message})
-            return ActionListener.ListeningResult.failure(context.getString(R.string.admin_start_failed, e.message ?: ""))
+        return ActionListener.ListeningResult.failure(context.getString(R.string.admin_start_failed, e.message ?: ""))
         }
     }
 
@@ -87,12 +88,11 @@ class ActionManager(private val context: Context) {
     ): ActionListener.ListeningResult {
         try {
             AppLogger.d(TAG, "使用指定权限级别启动UI操作监听: ${permissionLevel}")
-            
-            val listener = ActionListenerFactory.getListener(context, permissionLevel)
-            return startListeningWithListener(listener, callback)
+        val listener = ActionListenerFactory.getListener(context, permissionLevel)
+        return startListeningWithListener(listener, callback)
         } catch (e: Exception) {
             AppLogger.e(TAG, "使用指定权限启动监听失败", e)
-            return ActionListener.ListeningResult.failure(context.getString(R.string.admin_start_failed, e.message ?: ""))
+        return ActionListener.ListeningResult.failure(context.getString(R.string.admin_start_failed, e.message ?: ""))
         }
     }
 
@@ -108,7 +108,6 @@ class ActionManager(private val context: Context) {
     if (_isListening.value) {
             stopListening()
         }
-        
         val callbackId = "primary_callback"
         eventCallbacks[callbackId] = callback
         
@@ -116,7 +115,6 @@ class ActionManager(private val context: Context) {
             // 广播事件到所有注册的回调
             eventCallbacks.values.forEach { it(event) }
         }
-        
         if (result.success) {
             activeListener = listener
             _isListening.value = true
@@ -129,7 +127,6 @@ class ActionManager(private val context: Context) {
             eventCallbacks.remove(callbackId)
             AppLogger.w(TAG, "UI操作监听启动失败: ${result.message}")
         }
-        
         return result
     }
 
@@ -142,12 +139,10 @@ class ActionManager(private val context: Context) {
             val listener = activeListener
             if (listener == null || !_isListening.value) {
                 AppLogger.d(TAG, "当前没有活跃的监听器")
-                return true
+        return true
             }
-            
-            val success = listener.stopListening()
-            
-            if (success) {
+        val success = listener.stopListening()
+        if (success) {
                 activeListener = null
                 _isListening.value = false
                 _currentPermissionLevel.value = null
@@ -159,11 +154,10 @@ class ActionManager(private val context: Context) {
             } else {
                 AppLogger.w(TAG, "停止UI操作监听失败")
             }
-            
-            return success
+        return success
         } catch (e: Exception) {
             AppLogger.e(TAG, "停止UI操作监听时出�? e)
-            return false
+        return false
         }
     }
 
@@ -217,12 +211,11 @@ class ActionManager(private val context: Context) {
      */
     suspend fun getAvailableListenersStatus(): Map<AndroidPermissionLevel, Pair<Boolean, ActionListener.PermissionStatus>> {
         val result = mutableMapOf<AndroidPermissionLevel, Pair<Boolean, ActionListener.PermissionStatus>>()
-        
         for (level in AndroidPermissionLevel.values()) {
             try {
                 val listener = ActionListenerFactory.getListener(context, level)
-                val available = listener.isAvailable()
-                val permissionStatus = listener.hasPermission()
+        val available = listener.isAvailable()
+        val permissionStatus = listener.hasPermission()
                 
                 result[level] = Pair(available, permissionStatus)
             } catch (e: Exception) {
@@ -230,7 +223,6 @@ class ActionManager(private val context: Context) {
                 result[level] = Pair(false, ActionListener.PermissionStatus.denied(context.getString(R.string.action_get_status_failed, e.message ?: "")))
             }
         }
-        
         return result
     }
 

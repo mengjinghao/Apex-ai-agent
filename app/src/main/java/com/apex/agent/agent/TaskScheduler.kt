@@ -16,28 +16,24 @@ class TaskScheduler(
     private val taskTimeoutMs: Long = 300000
 ) {
     private val _taskState = MutableStateFlow<TaskState>(TaskState.Idle)
-    val taskState: StateFlow<TaskState> = _taskState.asStateFlow()
-
-    private val agentRegistry = DynamicAgentRegistry()
-    private val taskCounter = AtomicInteger(0)
-    private val scope = CoroutineScope(SupervisorJob() + ioDispatcher.limitedParallelism(maxConcurrentTasks))
-
-    private val agentPool: MutableMap<String, SubAgent> by lazy {
+        val taskState: StateFlow<TaskState> = _taskState.asStateFlow()
+        private val agentRegistry = DynamicAgentRegistry()
+        private val taskCounter = AtomicInteger(0)
+        private val scope = CoroutineScope(SupervisorJob() + ioDispatcher.limitedParallelism(maxConcurrentTasks))
+        private val agentPool: MutableMap<String, SubAgent> by lazy {
         subAgents.associateBy { it.agentType }.toMutableMap()
     }
-    private val semaphore = Semaphore(maxConcurrentTasks)
+        private val semaphore = Semaphore(maxConcurrentTasks)
 
     init {
         subAgents.forEach { agent -> agentRegistry.registerAgent(agent) }
     }
-
-    fun registerAgent(agent: SubAgent): Boolean {
+        fun registerAgent(agent: SubAgent): Boolean {
         val result = agentRegistry.registerAgent(agent)
         if (result) agentPool[agent.agentType] = agent
         return result
     }
-
-    fun unregisterAgent(agentId: String): Boolean {
+        fun unregisterAgent(agentId: String): Boolean {
         val agent = agentRegistry.getAgent(agentId)
         if (agent != null) agentPool.remove(agent.agentType)
         return agentRegistry.unregisterAgent(agentId)
@@ -49,7 +45,6 @@ class TaskScheduler(
     ): TaskResult = withContext(scope.coroutineContext) {
         _taskState.value = TaskState.Decomposing
         val subtasks = subtaskStrategy.decompose(mainTask)
-
         if (subtasks.isEmpty()) {
             _taskState.value = TaskState.Failed("No subtasks generated")
             return@withContext TaskResult(false, emptyList(), 0, mainTask.taskId)
@@ -70,7 +65,7 @@ class TaskScheduler(
     suspend fun executeSubTasksParallel(subtasks: List<SubTask>): List<SubTaskResult> =
         withContext(scope.coroutineContext) {
             _taskState.value = TaskState.Executing(0, subtasks.size)
-            val results = executeSubTasksWithPool(subtasks)
+        val results = executeSubTasksWithPool(subtasks)
             _taskState.value = TaskState.Completed
             results
         }
@@ -78,19 +73,18 @@ class TaskScheduler(
     suspend fun executeSubTasksSequential(subtasks: List<SubTask>): List<SubTaskResult> =
         withContext(ioDispatcher) {
             _taskState.value = TaskState.Executing(0, subtasks.size)
-            val results = mutableListOf<SubTaskResult>()
-            for ((index, subtask) in subtasks.withIndex()) {
+        val results = mutableListOf<SubTaskResult>()
+        for ((index, subtask) in subtasks.withIndex()) {
                 results.add(executeSubTaskWithTimeout(subtask))
                 _taskState.value = TaskState.Executing(index + 1, subtasks.size)
             }
             _taskState.value = TaskState.Completed
             results
         }
-
-    private suspend fun executeSubTasksWithPool(subtasks: List<SubTask>): List<SubTaskResult> =
+        private suspend fun executeSubTasksWithPool(subtasks: List<SubTask>): List<SubTaskResult> =
         coroutineScope {
             val results = ConcurrentHashMap.newKeySet<SubTaskResult>()
-            val completedCount = AtomicInteger(0)
+        val completedCount = AtomicInteger(0)
 
             subtasks.map { subtask ->
                 async(scope.coroutineContext) {
@@ -105,8 +99,7 @@ class TaskScheduler(
 
             results.toList()
         }
-
-    private suspend fun executeSubTaskWithTimeout(subtask: SubTask): SubTaskResult {
+        private suspend fun executeSubTaskWithTimeout(subtask: SubTask): SubTaskResult {
         val agent = findAgentForTask(subtask) ?: return SubTaskResult(
             taskId = subtask.taskId, success = false, executionTime = 0,
             errorMessage = "No matching agent for type: ${subtask.taskType}"
@@ -119,23 +112,21 @@ class TaskScheduler(
             SubTaskResult(subtask.taskId, false, System.currentTimeMillis() - startTime, errorMessage = e.message, errorStack = e.stackTraceToString())
         }
     }
-
-    private fun findAgentForTask(subtask: SubTask): SubAgent? =
+        private fun findAgentForTask(subtask: SubTask): SubAgent? =
         agentRegistry.getAgentByType(subtask.taskType)
             ?: agentPool[subtask.taskType]
             ?: agentRegistry.getAgentByType("general")
             ?: agentPool["general"]
 
     fun getAvailableAgents(): List<SubAgent> = agentRegistry.getAllAgents()
-    fun getAgentByType(agentType: String): SubAgent? = agentRegistry.getAgentByType(agentType)
-    fun getAgentMetrics(agentId: String): AgentMetrics? = agentRegistry.getMetrics(agentId)
-    fun getAllAgentMetrics(): Map<String, AgentMetrics> = agentRegistry.getAllMetrics()
-
-    fun resetAgentMetrics(agentId: String? = null) { agentRegistry.resetMetrics(agentId) }
-    fun resetState() { _taskState.value = TaskState.Idle }
-    fun shutdown() { scope.cancel() }
-    fun getTaskCount(): Int = taskCounter.get()
-    fun generateTaskId(): String = "task_${taskCounter.incrementAndGet()}_${System.currentTimeMillis()}"
+        fun getAgentByType(agentType: String): SubAgent? = agentRegistry.getAgentByType(agentType)
+        fun getAgentMetrics(agentId: String): AgentMetrics? = agentRegistry.getMetrics(agentId)
+        fun getAllAgentMetrics(): Map<String, AgentMetrics> = agentRegistry.getAllMetrics()
+        fun resetAgentMetrics(agentId: String? = null) { agentRegistry.resetMetrics(agentId) }
+        fun resetState() { _taskState.value = TaskState.Idle }
+        fun shutdown() { scope.cancel() }
+        fun getTaskCount(): Int = taskCounter.get()
+        fun generateTaskId(): String = "task_${taskCounter.incrementAndGet()}_${System.currentTimeMillis()}"
 }
 
 class DefaultSubtaskDecompositionStrategy : SubtaskDecompositionStrategy {
@@ -175,15 +166,14 @@ class LLMBasedDecompositionStrategy(
             DefaultSubtaskDecompositionStrategy().decompose(mainTask)
         }
     }
-
-    private fun parseLlmDecomposition(result: String, mainTask: MainTask): List<SubTask> {
+        private fun parseLlmDecomposition(result: String, mainTask: MainTask): List<SubTask> {
         return try {
             val cleanResult = result.trim()
                 .removePrefix("```json").removePrefix("```")
                 .removeSuffix("```").trim()
-            val regex = """\{[^}]+\}""".toRegex()
-            val matches = regex.findAll(cleanResult).toList()
-            if (matches.isEmpty()) {
+        val regex = """\{[^}]+\}""".toRegex()
+        val matches = regex.findAll(cleanResult).toList()
+        if (matches.isEmpty()) {
                 DefaultSubtaskDecompositionStrategy().decompose(mainTask)
             } else {
                 matches.mapIndexed { index, match ->

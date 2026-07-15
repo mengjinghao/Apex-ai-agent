@@ -29,8 +29,7 @@ object SystemToolPrompts {
 - Available repositories: ${listed}
 """.trimEnd()
     }
-
-    private fun buildSafBookmarksSectionCn(safBookmarkNames: List<String>): String {
+        private fun buildSafBookmarksSectionCn(safBookmarkNames: List<String>): String {
         val names = safBookmarkNames.map { it.trim() }.filter { it.isNotEmpty() }.distinct().sorted()
         if (names.isEmpty()) return ""
         val listed = names.joinToString("�") { "repo:${it}" }
@@ -67,8 +66,7 @@ object SystemToolPrompts {
             )
         )
     )
-    
-    val basicToolsCn = SystemToolPromptCategory(
+        val basicToolsCn = SystemToolPromptCategory(
         categoryName = "可用工具",
         tools = listOf(
             ToolPrompt(
@@ -248,8 +246,7 @@ object SystemToolPrompts {
             )
         )
     )
-    
-    val fileSystemToolsCn = SystemToolPromptCategory(
+        val fileSystemToolsCn = SystemToolPromptCategory(
         categoryName = "文件系统工具",
         tools = listOf(
             ToolPrompt(
@@ -274,7 +271,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "intent",
                         type = "string",
-                        description = "可选，用户对媒�?文件的问题（用于后端识别模型�",
+                        description = "可选，用户对媒�文件的问题（用于后端识别模型�",
                         required = false
                     ),
                     ToolParameterSchema(
@@ -309,7 +306,7 @@ object SystemToolPrompts {
             ),
             ToolPrompt(
                 name = "apply_file",
-                description = "通过查找并替�?删除匹配的内容块来编辑文件�",
+                description = "通过查找并替�删除匹配的内容块来编辑文件�",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "path", type = "string", description = "文件路径", required = true),
                     ToolParameterSchema(name = "environment", type = "string", description = "可选，�?read_file �?environment", required = false),
@@ -573,8 +570,7 @@ object SystemToolPrompts {
             )
         )
     )
-    
-    val httpToolsCn = SystemToolPromptCategory(
+        val httpToolsCn = SystemToolPromptCategory(
         categoryName = "HTTP工具",
         tools = listOf(
             ToolPrompt(
@@ -629,7 +625,7 @@ object SystemToolPrompts {
                     ToolParameterSchema(
                         name = "link_number",
                         type = "integer",
-                        description = "visit_mode=follow_link 时必填。要跳转的链接编号（�?开始）",
+                        description = "visit_mode=follow_link 时必填。要跳转的链接编号（�开始）",
                         required = false
                     ),
                     
@@ -700,13 +696,13 @@ object SystemToolPrompts {
                     ToolParameterSchema(name = "retry_on_error", type = "string", description = "触发重试的错误类型JSON数组，默认[\"timeout\",\"network_error\"]", required = false, default = "[\"timeout\",\"network_error\"]"),
                     
                     // ==================== 可观测�?===================
-                    ToolParameterSchema(name = "debug_mode", type = "boolean", description = "返回完整调试日志（请�?响应头、耗时、堆栈）", required = false, default = "false"),
+                    ToolParameterSchema(name = "debug_mode", type = "boolean", description = "返回完整调试日志（请�响应头、耗时、堆栈）", required = false, default = "false"),
                     ToolParameterSchema(name = "error_screenshot", type = "boolean", description = "失败时捕获截�", required = false, default = "false"),
                     ToolParameterSchema(name = "screenshot", type = "string", description = "旧版截图参数：full | visible | JSON {\"selector\":\"...\", \"filename\":\"...\"}", required = false),
                     
                     // ==================== 缓存 ====================
                     ToolParameterSchema(name = "cache_control", type = "string", description = "缓存策略：default (默认�?| no_cache (无缓�?| force_cache (强制缓存�?| refresh_cache (刷新缓存�", required = false, default = "default"),
-                    ToolParameterSchema(name = "cache_ttl_ms", type = "integer", description = "缓存有效期（毫秒），默认300000�?分钟�", required = false, default = "300000"),
+                    ToolParameterSchema(name = "cache_ttl_ms", type = "integer", description = "缓存有效期（毫秒），默认300000�分钟�", required = false, default = "300000"),
                     
                     // ==================== 网络配置 ====================
                     ToolParameterSchema(name = "headers", type = "string", description = "可选HTTP请求头，JSON对象，例如{\"Referer\":\"...\"}", required = false),
@@ -969,8 +965,7 @@ object SystemToolPrompts {
         ),
         categoryFooter = "\nNote: The memory library and user personality profile are automatically updated by a separate system after you output the task completion marker. However, if you need to manage memories immediately or update user preferences, use the appropriate tools directly."
     )
-    
-    val memoryToolsCn = SystemToolPromptCategory(
+        val memoryToolsCn = SystemToolPromptCategory(
         categoryName = "记忆与记忆库工具",
         tools = listOf(
             ToolPrompt(
@@ -992,7 +987,7 @@ object SystemToolPrompts {
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "title", type = "string", description = "必需，字符串，记忆的精确标题", required = true),
                     ToolParameterSchema(name = "chunk_index", type = "integer", description = "可选， 整数, 读取特定编号的分�"例如3表示�"�", required = false),
-                    ToolParameterSchema(name = "chunk_range", type = "string", description = "可选，字符串，读取分块范围，格式为\"起始-结束\"，例如\"3-7\"表示�?到第7�", required = false),
+                    ToolParameterSchema(name = "chunk_range", type = "string", description = "可选，字符串，读取分块范围，格式为\"起始-结束\"，例如\"3-7\"表示�到第7�", required = false),
                     ToolParameterSchema(name = "query", type = "string", description = "可选，字符串，在文档内部搜索匹配分块。可以传自然语言问题、空格分隔的短语，或使用 `|` 分隔多个关键词，例如 `error log timeout` �?`error|timeout|retry`。在单个关键词内部，`*` 可作为模糊通配占位符，例如 `error*timeout`", required = false),
                     ToolParameterSchema(name = "limit", type = "integer", description = "可选， int >= 1, 使用 query 时最多返回多少个文档分块，默�?0", required = false, default = "20")
                 )
@@ -1193,8 +1188,7 @@ object SystemToolPrompts {
         ),
         categoryFooter = "\n注意：记忆库和用户性格档案会在你输出任务完成标志后由独立的系统自动更新。但是，如果需要立即管理记忆或更新用户偏好，请直接使用相应的工具�"
     )
-
-    private val internalToolCategoriesEn: List<SystemToolPromptCategory> = SystemToolPromptsInternal.internalToolCategoriesEn
+        private val internalToolCategoriesEn: List<SystemToolPromptCategory> = SystemToolPromptsInternal.internalToolCategoriesEn
     private val internalToolCategoriesCn: List<SystemToolPromptCategory> = SystemToolPromptsInternal.internalToolCategoriesCn
     
     /**
@@ -1213,7 +1207,6 @@ object SystemToolPrompts {
             (hasBackendImageRecognition && !chatModelHasDirectImage) ||
                 (hasBackendAudioRecognition && !chatModelHasDirectAudio) ||
                 (hasBackendVideoRecognition && !chatModelHasDirectVideo)
-
         val adjustedFileSystemTools = fileSystemTools.copy(
             tools = fileSystemTools.tools.map { tool ->
                 if (tool.name != "read_file") return@map tool
@@ -1227,8 +1220,7 @@ object SystemToolPrompts {
                         else -> true
                     }
                 }
-
-                val adjustedDescription =
+        val adjustedDescription =
                     if (shouldExposeIntent) {
                         "Read the content of a file. For media files, you can also provide an 'intent' parameter to use a backend recognition model for analysis."
                     } else {
@@ -1241,7 +1233,6 @@ object SystemToolPrompts {
                 )
             }
         )
-
         return listOf(
             basicTools,
             adjustedFileSystemTools,
@@ -1249,8 +1240,7 @@ object SystemToolPrompts {
             memoryTools
         )
     }
-
-    fun getAllCategoriesEn(
+        fun getAllCategoriesEn(
         hasBackendImageRecognition: Boolean = false,
         chatModelHasDirectImage: Boolean = false,
         hasBackendAudioRecognition: Boolean = false,
@@ -1286,7 +1276,6 @@ object SystemToolPrompts {
             (hasBackendImageRecognition && !chatModelHasDirectImage) ||
                 (hasBackendAudioRecognition && !chatModelHasDirectAudio) ||
                 (hasBackendVideoRecognition && !chatModelHasDirectVideo)
-
         val adjustedFileSystemTools = fileSystemToolsCn.copy(
             tools = fileSystemToolsCn.tools.map { tool ->
                 if (tool.name != "read_file") return@map tool
@@ -1300,8 +1289,7 @@ object SystemToolPrompts {
                         else -> true
                     }
                 }
-
-                val adjustedDescription =
+        val adjustedDescription =
                     if (shouldExposeIntent) {
                         "读取文件内容。对于媒体文件，你也可以提供 intent 参数，使用后端识别模型进行分析�"
                     } else {
@@ -1314,7 +1302,6 @@ object SystemToolPrompts {
                 )
             }
         )
-
         return listOf(
             basicToolsCn,
             adjustedFileSystemTools,
@@ -1322,8 +1309,7 @@ object SystemToolPrompts {
             memoryToolsCn
         )
     }
-
-    fun getAllCategoriesCn(
+        fun getAllCategoriesCn(
         hasBackendImageRecognition: Boolean = false,
         chatModelHasDirectImage: Boolean = false,
         hasBackendAudioRecognition: Boolean = false,
@@ -1348,8 +1334,7 @@ object SystemToolPrompts {
         val name: String,
         val description: String
     )
-
-    private fun applyToolVisibility(
+        private fun applyToolVisibility(
         categories: List<SystemToolPromptCategory>,
         toolVisibility: Map<String, Boolean>
     ): List<SystemToolPromptCategory> {
@@ -1358,21 +1343,19 @@ object SystemToolPrompts {
             val visibleTools = category.tools.filter { tool ->
                 toolVisibility[tool.name] ?: true
             }
-            if (visibleTools.isEmpty()) {
+        if (visibleTools.isEmpty()) {
                 null
             } else {
                 category.copy(tools = visibleTools)
             }
         }
     }
-
-    fun getManageableToolPrompts(useEnglish: Boolean): List<ManageableToolPrompt> {
+        fun getManageableToolPrompts(useEnglish: Boolean): List<ManageableToolPrompt> {
         val baseCategories = if (useEnglish) {
             listOf(basicTools, fileSystemTools, httpTools, memoryTools)
         } else {
             listOf(basicToolsCn, fileSystemToolsCn, httpToolsCn, memoryToolsCn)
         }
-
         return baseCategories
             .flatMap { category ->
                 category.tools.map { tool ->
@@ -1385,8 +1368,7 @@ object SystemToolPrompts {
             }
             .distinctBy { it.name }
     }
-
-    fun generateMemoryToolsPromptEn(
+        fun generateMemoryToolsPromptEn(
         toolVisibility: Map<String, Boolean> = emptyMap()
     ): String {
         return applyToolVisibility(listOf(memoryTools), toolVisibility)
@@ -1394,8 +1376,7 @@ object SystemToolPrompts {
             ?.toString()
             .orEmpty()
     }
-
-    fun generateMemoryToolsPromptCn(
+        fun generateMemoryToolsPromptCn(
         toolVisibility: Map<String, Boolean> = emptyMap()
     ): String {
         return applyToolVisibility(listOf(memoryToolsCn), toolVisibility)
@@ -1403,8 +1384,7 @@ object SystemToolPrompts {
             ?.toString()
             .orEmpty()
     }
-
-    private fun buildToolHookPayload(
+        private fun buildToolHookPayload(
         categories: List<SystemToolPromptCategory>
     ): List<Map<String, Any?>> {
         return categories.flatMap { category ->

@@ -46,8 +46,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             param.name.equals("display", ignoreCase = true)
         }
     }
-
-    private fun getDisplayArg(tool: AITool): String {
+        private fun getDisplayArg(tool: AITool): String {
         val display = tool.parameters.find { it.name.equals("display", ignoreCase = true) }?.value?.trim()
         return if (!display.isNullOrEmpty()) "-d ${display} " else ""
     }
@@ -56,12 +55,10 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     override suspend fun tap(tool: AITool): ToolResult {
         if (!hasDisplayParam(tool) && UIHierarchyManager.isAccessibilityServiceEnabled(context)) {
             AppLogger.d(TAG, "无障碍服务已启用，使用无障碍点击")
-            return super.tap(tool)
+        return super.tap(tool)
         }
-
         val x = tool.parameters.find { it.name == "x" }?.value?.toIntOrNull()
         val y = tool.parameters.find { it.name == "y" }?.value?.toIntOrNull()
-
         if (x == null || y == null) {
             return ToolResult(
                     toolName = tool.name,
@@ -77,14 +74,13 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         // 使用Shell命令执行点击
     try {
             AppLogger.d(TAG, "Attempting to tap at coordinates: (${x}, ${y}) via shell command")
-            val command = "input ${getDisplayArg(tool)}tap ${x} ${y}"
-            val result = executeUiShellCommand(command)
-
-            if (result.success) {
+        val command = "input ${getDisplayArg(tool)}tap ${x} ${y}"
+        val result = executeUiShellCommand(command)
+        if (result.success) {
                 AppLogger.d(TAG, "Tap successful at coordinates: (${x}, ${y})")
                 // 成功后主动隐藏overlay
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = true,
                         result =
@@ -100,7 +96,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 AppLogger.e(TAG, "Tap failed at coordinates: (${x}, ${y}), error: ${result.stderr}")
                 withContext(Dispatchers.Main) {
                     operationOverlay.hide() // 隐藏反馈（在主线程上执行                }
-    return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = StringResultData(""),
@@ -112,7 +108,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             AppLogger.e(TAG, "Error tapping at coordinates (${x}, ${y})", e)
             withContext(Dispatchers.Main) {
                 operationOverlay.hide() // 隐藏反馈（在主线程上执行            }
-    return ToolResult(
+        return ToolResult(
                     toolName = tool.name,
                     success = false,
                     result = StringResultData(""),
@@ -124,12 +120,10 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     override suspend fun longPress(tool: AITool): ToolResult {
         if (!hasDisplayParam(tool) && UIHierarchyManager.isAccessibilityServiceEnabled(context)) {
             AppLogger.d(TAG, "无障碍服务已启用，使用无障碍长按")
-            return super.longPress(tool)
+        return super.longPress(tool)
         }
-
         val x = tool.parameters.find { it.name == "x" }?.value?.toIntOrNull()
         val y = tool.parameters.find { it.name == "y" }?.value?.toIntOrNull()
-
         if (x == null || y == null) {
             return ToolResult(
                     toolName = tool.name,
@@ -145,12 +139,11 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             AppLogger.d(TAG, "Attempting to long press at coordinates: (${x}, ${y}) via shell command")
             // Use swipe to simulate long press
     val command = "input ${getDisplayArg(tool)}swipe ${x} ${y} ${x} ${y} 800"
-            val result = executeUiShellCommand(command)
-
-            if (result.success) {
+        val result = executeUiShellCommand(command)
+        if (result.success) {
                 AppLogger.d(TAG, "Long press successful at coordinates: (${x}, ${y})")
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = true,
                         result = UIActionResultData(
@@ -163,7 +156,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             } else {
                 AppLogger.e(TAG, "Long press failed at coordinates: (${x}, ${y}), error: ${result.stderr}")
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = StringResultData(""),
@@ -173,7 +166,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error long pressing at coordinates (${x}, ${y})", e)
             withContext(Dispatchers.Main) { operationOverlay.hide() }
-            return ToolResult(
+        return ToolResult(
                     toolName = tool.name,
                     success = false,
                     result = StringResultData(""),
@@ -186,9 +179,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     override suspend fun swipe(tool: AITool): ToolResult {
         if (!hasDisplayParam(tool) && UIHierarchyManager.isAccessibilityServiceEnabled(context)) {
             AppLogger.d(TAG, "无障碍服务已启用，使用无障碍滑动")
-            return super.swipe(tool)
+        return super.swipe(tool)
         }
-
         val startX = tool.parameters.find { it.name == "start_x" }?.value?.toIntOrNull()
         val startY = tool.parameters.find { it.name == "start_y" }?.value?.toIntOrNull()
         val endX = tool.parameters.find { it.name == "end_x" }?.value?.toIntOrNull()
@@ -211,14 +203,13 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                     TAG,
                     "Attempting to swipe from (${startX}, ${startY}) to (${endX}, ${endY}) with duration ${duration} ms via shell command"
             )
-            val command = "input ${getDisplayArg(tool)}swipe ${startX} ${startY} ${endX} ${endY} ${duration}"
-            val result = executeUiShellCommand(command)
-
-            if (result.success) {
+        val command = "input ${getDisplayArg(tool)}swipe ${startX} ${startY} ${endX} ${endY} ${duration}"
+        val result = executeUiShellCommand(command)
+        if (result.success) {
                 AppLogger.d(TAG, "Swipe successful from (${startX}, ${startY}) to (${endX}, ${endY})")
                 // 成功后主动隐藏overlay
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = true,
                         result =
@@ -233,7 +224,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 AppLogger.e(TAG, "Swipe failed: ${result.stderr}")
                 withContext(Dispatchers.Main) {
                     operationOverlay.hide() // 隐藏反馈（在主线程上执行                }
-    return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = StringResultData(""),
@@ -244,7 +235,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             AppLogger.e(TAG, "Error performing swipe", e)
             withContext(Dispatchers.Main) {
                 operationOverlay.hide() // 隐藏反馈（在主线程上执行            }
-    return ToolResult(
+        return ToolResult(
                     toolName = tool.name,
                     success = false,
                     result = StringResultData(""),
@@ -257,9 +248,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     override suspend fun clickElement(tool: AITool): ToolResult {
         if (!hasDisplayParam(tool) && UIHierarchyManager.isAccessibilityServiceEnabled(context)) {
             AppLogger.d(TAG, "无障碍服务已启用，使用无障碍点击元素")
-            return super.clickElement(tool)
+        return super.clickElement(tool)
         }
-
         val resourceId = tool.parameters.find { it.name == "resourceId" }?.value
         val className = tool.parameters.find { it.name == "className" }?.value
         val contentDesc = tool.parameters.find { it.name == "contentDesc" }?.value
@@ -282,9 +272,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             try {
                 // 解析边界坐标格式 [left,top][right,bottom]
     val boundsPattern = "\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]".toRegex()
-                val matchResult = boundsPattern.find(bounds)
-
-                if (matchResult == null || matchResult.groupValues.size < 5) {
+        val matchResult = boundsPattern.find(bounds)
+        if (matchResult == null || matchResult.groupValues.size < 5) {
                     return ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -295,9 +284,9 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
 
                 // 提取坐标
     val x1 = matchResult.groupValues[1].toInt()
-                val y1 = matchResult.groupValues[2].toInt()
-                val x2 = matchResult.groupValues[3].toInt()
-                val y2 = matchResult.groupValues[4].toInt()
+        val y1 = matchResult.groupValues[2].toInt()
+        val x2 = matchResult.groupValues[3].toInt()
+        val y2 = matchResult.groupValues[4].toInt()
 
                 // 计算中心坐标
     val centerX = (x1 + x2) / 2
@@ -319,11 +308,10 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                                                 )
                                         )
                         )
-
-                return tap(tapTool)
+        return tap(tapTool)
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Error processing bounds", e)
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = StringResultData(""),
@@ -340,9 +328,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     override suspend fun setInputText(tool: AITool): ToolResult {
         if (!hasDisplayParam(tool) && UIHierarchyManager.isAccessibilityServiceEnabled(context)) {
             AppLogger.d(TAG, "无障碍服务已启用，使用无障碍设置文本")
-            return super.setInputText(tool)
+        return super.setInputText(tool)
         }
-
         val text = tool.parameters.find { it.name == "text" }?.value ?: ""
 
         try {
@@ -354,7 +341,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             // 显示文本输入反馈（在主线程上执行            withContext(Dispatchers.Main) { operationOverlay.showTextInput(centerX, centerY, text) }
 
             // 使用KEYCODE_CLEAR清除字段，这比模拟CTRL+A和DEL更直�?           AppLogger.d(TAG, "Clearing text field with KEYCODE_CLEAR")
-    val clearCommand = "input ${getDisplayArg(tool)}keyevent KEYCODE_CLEAR"
+        val clearCommand = "input ${getDisplayArg(tool)}keyevent KEYCODE_CLEAR"
             executeUiShellCommand(clearCommand)
 
             // 短暂延迟
@@ -364,7 +351,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     if (text.isEmpty()) {
                 // 成功后主动隐藏overlay
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = true,
                         result =
@@ -389,12 +376,11 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
 
             // 执行粘贴命令
     val pasteCommand = "input ${getDisplayArg(tool)}keyevent KEYCODE_PASTE"
-            val pasteResult = executeUiShellCommand(pasteCommand)
-
-            if (pasteResult.success) {
+        val pasteResult = executeUiShellCommand(pasteCommand)
+        if (pasteResult.success) {
                 // 成功后主动隐藏overlay
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = true,
                         result =
@@ -408,7 +394,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             } else {
                 withContext(Dispatchers.Main) {
                     operationOverlay.hide() // 隐藏反馈（在主线程上执行                }
-    return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = StringResultData(""),
@@ -419,7 +405,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             AppLogger.e(TAG, "Error setting input text", e)
             withContext(Dispatchers.Main) {
                 operationOverlay.hide() // 隐藏反馈（在主线程上执行            }
-    return ToolResult(
+        return ToolResult(
                     toolName = tool.name,
                     success = false,
                     result = StringResultData(""),
@@ -441,13 +427,10 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                     error = "Missing 'key_code' parameter."
             )
         }
-
         val command = "input ${getDisplayArg(tool)}keyevent ${keyCode}"
-
         return try {
             val result = executeUiShellCommand(command)
-
-            if (result.success) {
+        if (result.success) {
                 ToolResult(
                         toolName = tool.name,
                         success = true,
@@ -481,28 +464,26 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     override suspend fun captureScreenshotToFile(tool: AITool): Pair<String?, Pair<Int, Int>?> {
         return try {
             val screenshotDir = LogistraPaths.cleanOnExitDir()
-
-            val shortName = System.currentTimeMillis().toString().takeLast(4)
-            val file = File(screenshotDir, "${shortName}.png")
+        val shortName = System.currentTimeMillis().toString().takeLast(4)
+        val file = File(screenshotDir, "${shortName}.png")
 
             // 1) Debugger 模式下优先尝？Shell 模式 (ADB) 截图
             AppLogger.d(TAG, "captureScreenshotToFile: Attempting shell screencap")
-            val command = "screencap -p ${file.absolutePath}"
-            val result = executeUiShellCommand(command)
-
-            if (result.success && file.exists()) {
+        val command = "screencap -p ${file.absolutePath}"
+        val result = executeUiShellCommand(command)
+        if (result.success && file.exists()) {
                 val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                 BitmapFactory.decodeFile(file.absolutePath, options)
-                val dimensions = if (options.outWidth > 0 && options.outHeight > 0) {
+        val dimensions = if (options.outWidth > 0 && options.outHeight > 0) {
                     Pair(options.outWidth, options.outHeight)
                 } else {
                     null
                 }
                 AppLogger.d(TAG, "captureScreenshotToFile: Shell screencap success")
-                return Pair(file.absolutePath, dimensions)
+        return Pair(file.absolutePath, dimensions)
             }
 
-            // 2) 如果 Shell 失败，作为回退尝试无障碍截�?调用父类�?
+            // 2) 如果 Shell 失败，作为回退尝试无障碍截�调用父类�?
             AppLogger.w(TAG, "captureScreenshotToFile: Shell screencap failed, falling back to accessibility")
             super.captureScreenshotToFile(tool)
         } catch (e: Exception) {
@@ -520,7 +501,6 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         if (filePath == null) {
             return Pair(null, dimensions)
         }
-
         val bitmap = BitmapFactory.decodeFile(filePath) ?: return Pair(null, dimensions)
         val resolvedDimensions = dimensions ?: Pair(bitmap.width, bitmap.height)
         return Pair(bitmap, resolvedDimensions)
@@ -530,13 +510,11 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     override suspend fun getPageInfo(tool: AITool): ToolResult {
         if (!hasDisplayParam(tool) && UIHierarchyManager.isAccessibilityServiceEnabled(context)) {
             AppLogger.d(TAG, "无障碍服务已启用，使用无障碍获取页面信息")
-            return super.getPageInfo(tool)
+        return super.getPageInfo(tool)
         }
-
         val format = tool.parameters.find { it.name == "format" }?.value ?: "xml"
         // detail kept for future use
         tool.parameters.find { it.name == "detail" }?.value ?: "summary"
-
         if (format !in listOf("xml", "json")) {
             return ToolResult(
                     toolName = tool.name,
@@ -545,11 +523,10 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                     error = "Invalid format specified. Must be 'xml' or 'json'."
             )
         }
-
         return try {
             // 获取UI数据
     val uiData = getUIDataFromShell(tool)
-            if (uiData == null) {
+        if (uiData == null) {
                 return ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -592,8 +569,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         return try {
             // 使用ADB命令获取UI dump
             AppLogger.d(TAG, "使用ADB命令获取UI数据")
-
-            val displayId = tool.parameters
+        val displayId = tool.parameters
                 .find { it.name.equals("display", ignoreCase = true) }
                 ?.value
                 ?.trim()
@@ -607,23 +583,21 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             } else {
                 executeUiShellCommand("uiautomator dump /sdcard/window_dump.xml")
             }
-
-            if (!dumpResult.success && displayId != null) {
+        if (!dumpResult.success && displayId != null) {
                 AppLogger.w(TAG, "uiautomator dump with explicit display-id failed, falling back: ${dumpResult.stderr}")
                 dumpResult = executeUiShellCommand("uiautomator dump /sdcard/window_dump.xml")
             }
-
-            if (!dumpResult.success) {
+        if (!dumpResult.success) {
                 AppLogger.e(TAG, "uiautomator dump失败: ${dumpResult.stderr}")
-                return null
+        return null
             }
             AppLogger.d(TAG, "uiautomator dump成功: ${dumpResult.stdout}")
 
             // 读取dump文件内容
     val readResult = executeUiShellCommand("cat /sdcard/window_dump.xml")
-            if (!readResult.success) {
+        if (!readResult.success) {
                 AppLogger.e(TAG, "读取UI dump文件失败: ${readResult.stderr}")
-                return null
+        return null
             }
 
             // 获取窗口信息
@@ -663,9 +637,9 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     for (command in commands) {
             try {
                 val result = executeUiShellCommand(command)
-                if (result.success && result.stdout.isNotEmpty()) {
+        if (result.success && result.stdout.isNotEmpty()) {
                     AppLogger.d(TAG, "成功获取窗口信息: ${result.stdout.take(100)}")
-                    return result.stdout
+        return result.stdout
                 }
                 // 如果命令执行失败或返回空结果，尝试下一个命�?               AppLogger.w(TAG, "窗口信息命令 '${command}' 失败或返回空结果")
             } catch (e: Exception) {
@@ -677,10 +651,10 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     try {
             val topActivityCommand =
                     "dumpsys activity activities | grep -E 'topResumedActivity|topActivity'"
-            val result = executeUiShellCommand(topActivityCommand)
-            if (result.success && result.stdout.isNotEmpty()) {
+        val result = executeUiShellCommand(topActivityCommand)
+        if (result.success && result.stdout.isNotEmpty()) {
                 AppLogger.d(TAG, "使用topActivity作为窗口信息替代: ${result.stdout.take(100)}")
-                return result.stdout
+        return result.stdout
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "获取topActivity失败", e)
@@ -705,7 +679,6 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     private fun simplifyLayoutFromXml(xml: String): SimplifiedUINode {
         val factory = XmlPullParserFactory.newInstance().apply { isNamespaceAware = false }
         val parser = factory.newPullParser().apply { setInput(StringReader(xml)) }
-
         val nodeStack = mutableListOf<UINodeShell>()
         var rootNode: UINodeShell? = null
 
@@ -714,7 +687,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 XmlPullParser.START_TAG -> {
                     if (parser.name == "node") {
                         val newNode = createNodeShell(parser)
-                        if (rootNode == null) {
+        if (rootNode == null) {
                             rootNode = newNode
                             nodeStack.add(newNode)
                         } else {
@@ -757,8 +730,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 children = children.map { it.toUINodeSimplified() }
         )
     }
-
-    private fun createNodeShell(parser: XmlPullParser): UINodeShell {
+        private fun createNodeShell(parser: XmlPullParser): UINodeShell {
         // 解析关键�?
     val className = parser.getAttributeValue(null, "class")?.substringAfterLast('.')
         val text = parser.getAttributeValue(null, "text")?.replace("&#10;", "\n")
@@ -766,7 +738,6 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         val resourceId = parser.getAttributeValue(null, "resource-id")
         val bounds = parser.getAttributeValue(null, "bounds")
         val isClickable = parser.getAttributeValue(null, "clickable") == "true"
-
         return UINodeShell(
                 className = className,
                 text = text,
@@ -793,7 +764,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 // 即使窗口信息为空，也设置默认值，确保不会返回Unknown
                 result.packageName = "android"
                 result.activityName = "ForegroundActivity"
-                return result
+        return result
             }
 
             AppLogger.d(TAG, "Window info for extraction: ${windowInfo.take(200)}")
@@ -835,9 +806,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             AppLogger.e(TAG, "Error parsing window info", e)
             // 确保即使出现异常，我们也有至少一些默认？
     if (result.packageName == null) result.packageName = "android"
-            if (result.activityName == null) result.activityName = "ForegroundActivity"
+        if (result.activityName == null) result.activityName = "ForegroundActivity"
         }
-
         return result
     }
 
@@ -855,15 +825,14 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                         // 只有包名的格式（活动将单独处理）
                         "(?:mCurrentFocus|mFocusedWindow)=.*?\\{.*?\\s+([a-zA-Z0-9_.]+)(?:/|\\s)".toRegex()
                 )
-
         for (pattern in currentFocusPatterns) {
             val match = pattern.find(windowInfo)
-            if (match != null) {
+        if (match != null) {
                 if (match.groupValues.size >= 3) {
                     // 包含包和活动的模�?                   result.packageName = match.groupValues[1]
                     result.activityName = match.groupValues[2]
                     AppLogger.d(TAG, "Extracted from mCurrentFocus pattern (full): ${pattern.pattern}")
-                    return true
+        return true
                 } else if (match.groupValues.size >= 2) {
                     // 只有包名的模�?                   result.packageName = match.groupValues[1]
                     AppLogger.d(TAG, "Extracted package from mCurrentFocus pattern: ${pattern.pattern}")
@@ -889,15 +858,14 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                         "mFocusedApp=.*?\\s+([a-zA-Z0-9_.]+)/\\.?([^\\s}]+)\\s".toRegex(),
                         // 只有包名的格�?                       "mFocusedApp=.*?\\s+([a-zA-Z0-9_.]+)(?:/|\\s)".toRegex()
                 )
-
         for (pattern in focusedAppPatterns) {
             val match = pattern.find(windowInfo)
-            if (match != null) {
+        if (match != null) {
                 if (match.groupValues.size >= 3) {
                     // 包含包和活动的完全匹�?                   result.packageName = match.groupValues[1]
                     result.activityName = match.groupValues[2]
                     AppLogger.d(TAG, "Extracted from mFocusedApp pattern (full): ${pattern.pattern}")
-                    return true
+        return true
                 } else if (match.groupValues.size >= 2) {
                     // 只有包的部分匹配
                     result.packageName = match.groupValues[1]
@@ -920,14 +888,13 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                             "\\{.*?\\s+([a-zA-Z0-9_.]+\\.home)/".toRegex(),
                             "\\{.*?\\s+Launcher\\}".toRegex()
                     )
-
-            for (pattern in launcherPatterns) {
+        for (pattern in launcherPatterns) {
                 val match = pattern.find(windowInfo)
-                if (match != null && match.groupValues.size >= 2) {
+        if (match != null && match.groupValues.size >= 2) {
                     result.packageName = match.groupValues[1]
                     result.activityName = "Launcher"
                     AppLogger.d(TAG, "Extracted launcher info")
-                    return true
+        return true
                 }
             }
 
@@ -936,7 +903,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             result.packageName = "com.android.launcher3"
             result.activityName = "Launcher"
             AppLogger.d(TAG, "Using default launcher info")
-            return true
+        return true
         }
         return false
     }
@@ -953,14 +920,13 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                         "topResumedActivity=ComponentInfo\\{([a-zA-Z0-9_.]+)/\\.?([^}]+)\\}".toRegex(),
                         "ResumedActivity:\\s+\\{([a-zA-Z0-9_.]+)/\\.?([^\\s}]+)".toRegex()
                 )
-
         for (pattern in topActivityPatterns) {
             val match = pattern.find(windowInfo)
-            if (match != null && match.groupValues.size >= 3) {
+        if (match != null && match.groupValues.size >= 3) {
                 result.packageName = match.groupValues[1]
                 result.activityName = match.groupValues[2]
                 AppLogger.d(TAG, "Extracted from topActivity pattern: ${pattern.pattern}")
-                return true
+        return true
             }
         }
 
@@ -971,9 +937,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             result.packageName = recentMatch.groupValues[1]
             result.activityName = recentMatch.groupValues[2]
             AppLogger.d(TAG, "Extracted from Recent tasks pattern")
-            return true
+        return true
         }
-
         return false
     }
 
@@ -993,10 +958,9 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                             "\\s([a-zA-Z][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){2,})\\s".toRegex(), // com.example.app (空格�?
                             "([a-zA-Z][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){2,})".toRegex() // 只查找任何包名类似的名称
                     )
-
-            for (pattern in packagePatterns) {
+        for (pattern in packagePatterns) {
                 val match = pattern.find(windowInfo)
-                if (match != null && match.groupValues.size >= 2) {
+        if (match != null && match.groupValues.size >= 2) {
                     val potentialPackage = match.groupValues[1]
                     // 验证这看起来像一个真实的包（避免匹配随机字符串）
     if (potentialPackage.split(".").size >= 3 &&
@@ -1023,10 +987,9 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                             // /MainActivity
                             "/([^\\s/}]+)".toRegex(), // 斜杠后的任何�?                           "\\.([A-Z][a-zA-Z0-9_]+)".toRegex() // .MainActivity
                     )
-
-            for (pattern in activityPatterns) {
+        for (pattern in activityPatterns) {
                 val match = pattern.find(windowInfo)
-                if (match != null && match.groupValues.size >= 2) {
+        if (match != null && match.groupValues.size >= 2) {
                     val activityName = match.groupValues[1]
                     // 验证它看起来像一个活动名称（以大写字母开头）
     if (activityName.isNotEmpty() &&
@@ -1047,7 +1010,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     if (result.packageName != null && result.activityName == null) {
             // 尝试根据包猜测主活动名称
     val packageParts = result.packageName!!.split(".")
-            if (packageParts.isNotEmpty()) {
+        if (packageParts.isNotEmpty()) {
                 val lastPart = packageParts.last().replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString() }
                 result.activityName = "${lastPart}Activity"
                 AppLogger.d(TAG, "Guessed activity name from package: ${result.activityName}")
@@ -1064,7 +1027,6 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     /** 使用uiautomator点击元素 */
     private suspend fun clickElementWithUiautomator(tool: AITool): ToolResult {
         AppLogger.d(TAG, "Using uiautomator to click element")
-
         val resourceId = tool.parameters.find { it.name == "resourceId" }?.value
         val className = tool.parameters.find { it.name == "className" }?.value
         val contentDesc = tool.parameters.find { it.name == "contentDesc" }?.value
@@ -1075,10 +1037,9 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         try {
             // 先尝试获取UI dump
             AppLogger.d(TAG, "Dumping UI hierarchy to find element")
-            val dumpCommand = "uiautomator dump /sdcard/window_dump.xml"
-            val result = executeUiShellCommand(dumpCommand)
-
-            if (!result.success) {
+        val dumpCommand = "uiautomator dump /sdcard/window_dump.xml"
+        val result = executeUiShellCommand(dumpCommand)
+        if (!result.success) {
                 return ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -1089,9 +1050,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
 
             // 读取dump文件
     val readCommand = "cat /sdcard/window_dump.xml"
-            val readResult = executeUiShellCommand(readCommand)
-
-            if (!readResult.success) {
+        val readResult = executeUiShellCommand(readCommand)
+        if (!readResult.success) {
                 return ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -1099,8 +1059,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                         error = "Failed to read UI dump: ${readResult.stderr ?: "Unknown error"}"
                 )
             }
-
-            val xml = readResult.stdout
+        val xml = readResult.stdout
 
             // 使用XML Parser查找匹配的元素（取代有问题的正则方式�?
     val hasSelectors = resourceId != null || className != null || contentDesc != null
@@ -1114,21 +1073,20 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             }
 
             // 用XmlPullParser逐节点匹配，避免正则跨节点匹配的问题
-            data class MatchedNode(val bounds: String)
-            val matchingNodes = mutableListOf<MatchedNode>()
+    data class MatchedNode(val bounds: String)
+        val matchingNodes = mutableListOf<MatchedNode>()
 
             try {
                 val factory = XmlPullParserFactory.newInstance().apply { isNamespaceAware = false }
-                val parser = factory.newPullParser().apply { setInput(StringReader(xml)) }
+        val parser = factory.newPullParser().apply { setInput(StringReader(xml)) }
 
                 while (parser.eventType != XmlPullParser.END_DOCUMENT) {
                     if (parser.eventType == XmlPullParser.START_TAG && parser.name == "node") {
                         val actualId = parser.getAttributeValue(null, "resource-id")
-                        val actualClass = parser.getAttributeValue(null, "class")
-                        val actualDesc = parser.getAttributeValue(null, "content-desc")
-                        val actualBounds = parser.getAttributeValue(null, "bounds")
-
-                        var matches = true
+        val actualClass = parser.getAttributeValue(null, "class")
+        val actualDesc = parser.getAttributeValue(null, "content-desc")
+        val actualBounds = parser.getAttributeValue(null, "bounds")
+        var matches = true
 
                         if (resourceId != null) {
                             if (actualId == null) {
@@ -1140,8 +1098,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                                 matches = actualId == resourceId || actualId.endsWith(":id/${resourceId}")
                             }
                         }
-
-                        if (matches && className != null) {
+        if (matches && className != null) {
                             if (actualClass == null) {
                                 matches = false
                             } else if (partialMatch) {
@@ -1151,8 +1108,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                                 matches = actualClass == className || actualClass.endsWith(".${className}")
                             }
                         }
-
-                        if (matches && contentDesc != null) {
+        if (matches && contentDesc != null) {
                             if (actualDesc == null) {
                                 matches = false
                             } else if (partialMatch) {
@@ -1161,8 +1117,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                                 matches = actualDesc.equals(contentDesc, ignoreCase = true)
                             }
                         }
-
-                        if (matches) {
+        if (matches) {
                             matchingNodes.add(MatchedNode(bounds = actualBounds))
                         }
                     }
@@ -1170,15 +1125,14 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 }
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Error parsing UI XML", e)
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = StringResultData(""),
                         error = "Failed to parse UI hierarchy XML: ${e.message}"
                 )
             }
-
-            if (matchingNodes.isEmpty()) {
+        if (matchingNodes.isEmpty()) {
                 return ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -1186,8 +1140,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                         error = "No matching element found."
                 )
             }
-
-            if (index < 0 || index >= matchingNodes.size) {
+        if (index < 0 || index >= matchingNodes.size) {
                 return ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -1210,8 +1163,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
 
             // 提取边界坐标
     val boundsPattern = "\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]".toRegex()
-            val boundsMatch = boundsPattern.find(nodeBounds)
-            if (boundsMatch == null || boundsMatch.groupValues.size < 5) {
+        val boundsMatch = boundsPattern.find(nodeBounds)
+        if (boundsMatch == null || boundsMatch.groupValues.size < 5) {
                 return ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -1222,34 +1175,32 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
 
             // 提取坐标
     val x1 = boundsMatch.groupValues[1].toInt()
-            val y1 = boundsMatch.groupValues[2].toInt()
-            val x2 = boundsMatch.groupValues[3].toInt()
-            val y2 = boundsMatch.groupValues[4].toInt()
+        val y1 = boundsMatch.groupValues[2].toInt()
+        val x2 = boundsMatch.groupValues[3].toInt()
+        val y2 = boundsMatch.groupValues[4].toInt()
 
             // 计算中心坐标
     val centerX = (x1 + x2) / 2
             val centerY = (y1 + y2) / 2
 
             // 执行点击（在主线程上显示反馈�?           withContext(Dispatchers.Main) { operationOverlay.showTap(centerX, centerY) }
-    val tapCommand = "input tap ${centerX} ${centerY}"
-            val tapResult = executeUiShellCommand(tapCommand)
-
-            if (tapResult.success) {
+        val tapCommand = "input tap ${centerX} ${centerY}"
+        val tapResult = executeUiShellCommand(tapCommand)
+        if (tapResult.success) {
                 val identifierDescription =
                         when {
                             resourceId != null -> " with resource ID: ${resourceId}"
                             contentDesc != null -> " with content description: ${contentDesc}"
                             else -> " with class name: ${className}"
                         }
-
-                val matchCount =
+        val matchCount =
                         if (matchingNodes.size > 1) {
                             " (index ${index} of ${matchingNodes.size} matches)"
                         } else ""
 
                 // 成功后主动隐藏overlay
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = true,
                         result =
@@ -1266,7 +1217,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 withContext(Dispatchers.Main) {
                     operationOverlay.hide()
                 }
-                return ToolResult(
+        return ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = StringResultData(""),
@@ -1278,7 +1229,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             withContext(Dispatchers.Main) {
                 operationOverlay.hide()
             }
-            return ToolResult(
+        return ToolResult(
                     toolName = tool.name,
                     success = false,
                     result = StringResultData(""),

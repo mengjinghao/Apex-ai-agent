@@ -89,7 +89,6 @@ class BehaviorAnalysisManager private constructor(
      * 预测用户的下一次活跃时�?    */
     suspend fun predictNextActiveTime(userId: String, messages: List<ChatMessage>): String = withContext(Dispatchers.IO) {
         val profile = analyzeUserBehavior(userId, messages)
-        
         when (profile.usageTimePattern) {
             "上午" -> "预计下次活跃时间：明天上�?
             "下午" -> "预计下次活跃时间：今天下�?
@@ -136,7 +135,6 @@ class BehaviorAnalysisManager private constructor(
      * 获取用户活跃度等着     */
     suspend fun getActivityLevel(userId: String, messages: List<ChatMessage>): String = withContext(Dispatchers.IO) {
         val profile = analyzeUserBehavior(userId, messages)
-        
         when {
             profile.messageCount > 100 -> "高活�?
             profile.messageCount > 50 -> "中等活跃"

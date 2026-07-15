@@ -28,8 +28,8 @@ interface Plugin : ApexPlugin {
 
 object PluginRegistry {
     private const val TAG = "PluginRegistry"
-    private val plugins = CopyOnWriteArrayList<ApexPlugin>()
-    private val installedPluginIds = ConcurrentHashMap.newKeySet<String>()
+        private val plugins = CopyOnWriteArrayList<ApexPlugin>()
+        private val installedPluginIds = ConcurrentHashMap.newKeySet<String>()
 
     @Volatile
     private var builtinsInitialized = false
@@ -92,14 +92,11 @@ object PluginRegistry {
         AppLogger.d(TAG, "已卸载插件: $pluginId")
         return true
     }
-
-    fun isInstalled(pluginId: String): Boolean = installedPluginIds.contains(pluginId)
-
-    fun pluginCount(): Int = installedPluginIds.size
+        fun isInstalled(pluginId: String): Boolean = installedPluginIds.contains(pluginId)
+        fun pluginCount(): Int = installedPluginIds.size
 
     fun getAllPlugins(): List<ApexPlugin> = plugins.toList()
-
-    fun getPlugin(id: String): ApexPlugin? = plugins.find { it.id == id }
+        fun getPlugin(id: String): ApexPlugin? = plugins.find { it.id == id }
 
     @Synchronized
     fun clear() {

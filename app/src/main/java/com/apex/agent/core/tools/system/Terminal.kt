@@ -38,14 +38,13 @@ class Terminal private constructor(private val context: Context) {
                 INSTANCE ?: Terminal(context.applicationContext).also { INSTANCE = it }
             }
         }
-
         private const val TAG = "Terminal"
     }
+        private val terminalManager = TerminalManager.getInstance(context)
+        private val scope = CoroutineScope(Dispatchers.Main)
 
-    private val terminalManager = TerminalManager.getInstance(context)
-    private val scope = CoroutineScope(Dispatchers.Main)
-
-    // ，TerminalManager 暴露状态和事件�?   val commandEvents: SharedFlow<CommandExecutionEvent> = terminalManager.commandExecutionEvents
+    // ，TerminalManager 暴露状态和事件�?
+    val commandEvents: SharedFlow<CommandExecutionEvent> = terminalManager.commandExecutionEvents
     val directoryEvents: SharedFlow<SessionDirectoryEvent> = terminalManager.directoryChangeEvents
     val terminalState: StateFlow<TerminalState> = terminalManager.terminalState
     val sessions = terminalManager.sessions
@@ -100,7 +99,6 @@ class Terminal private constructor(private val context: Context) {
         
         // 生成命令ID
     val commandId = java.util.UUID.randomUUID().toString()
-        
         val collectorReady = CompletableDeferred<Unit>()
         
         // 先开始订阅事件流，然后再发送命�?
@@ -113,7 +111,7 @@ class Terminal private constructor(private val context: Context) {
                     } else {
                         output.append(event.outputChunk)
                     }
-                    if (event.isCompleted) {
+        if (event.isCompleted) {
                         deferred.complete(completionOutput?.takeIf { it.isNotEmpty() } ?: output.toString())
                     }
                 }
@@ -122,10 +120,9 @@ class Terminal private constructor(private val context: Context) {
         // 等待收集器准备就�?       collectorReady.await()
         
         // 直接向指定会话发送命令，不切换当前会�?       terminalManager.sendCommandToSession(sessionId, command, commandId)
-    val result = deferred.await()
+        val result = deferred.await()
         
         job.cancel()
-        
         return result
     }
 
@@ -148,9 +145,8 @@ class Terminal private constructor(private val context: Context) {
     fun executeCommandFlow(sessionId: String, command: String): Flow<CommandExecutionEvent> {
         return channelFlow {
             val commandId = UUID.randomUUID().toString()
-            val collectorReady = CompletableDeferred<Unit>()
-
-            val collectorJob = launch {
+        val collectorReady = CompletableDeferred<Unit>()
+        val collectorJob = launch {
                 commandEvents
                     .filter { it.sessionId == sessionId && it.commandId == commandId }
                     .onStart { collectorReady.complete(Unit) }

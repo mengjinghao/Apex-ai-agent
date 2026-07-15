@@ -37,7 +37,8 @@ class ChatServiceCore(
         private const val TAG = "ChatServiceCore"
     }
 
-    // EnhancedAIService 实例（全局单例�?   private var enhancedAiService: EnhancedAIService? = null
+    // EnhancedAIService 实例（全局单例�?
+    private var enhancedAiService: EnhancedAIService? = null
 
     // 委托实例
     private lateinit var messageProcessingDelegate: MessageProcessingDelegate
@@ -48,9 +49,11 @@ class ChatServiceCore(
     private lateinit var uiStateDelegate: UiStateDelegate
     private lateinit var messageCoordinationDelegate: MessageCoordinationDelegate
 
-    // 初始化状�?   private var initialized = false
+    // 初始化状�?
+    private var initialized = false
 
-    // 回调：当 EnhancedAIService 初始化或更新�?   private var onEnhancedAiServiceReady: ((EnhancedAIService) -> Unit)? = null
+    // 回调：当 EnhancedAIService 初始化或更新�?
+    private var onEnhancedAiServiceReady: ((EnhancedAIService) -> Unit)? = null
     
     // 额外，onTurnComplete 回调（用于悬浮窗通知应用等场景）
     private var additionalOnTurnComplete: ((String?, Int, Int, Int) -> Unit)? = null
@@ -60,8 +63,7 @@ class ChatServiceCore(
         AppLogger.d(TAG, "ChatServiceCore 初始�?
         initializeDelegates()
     }
-    
-    private fun initializeDelegates() {
+        private fun initializeDelegates() {
         // 初始，UI 状态委�?       uiStateDelegate = UiStateDelegate()
         
         // 初始，API 配置委托
@@ -104,7 +106,7 @@ class ChatServiceCore(
             },
             getChatStatistics = {
                 val (inputTokens, outputTokens) = tokenStatisticsDelegate.getCumulativeTokenCounts()
-                val windowSize = tokenStatisticsDelegate.getLastCurrentWindowSize()
+        val windowSize = tokenStatisticsDelegate.getLastCurrentWindowSize()
                 Triple(inputTokens, outputTokens, windowSize)
             },
             onScrollToBottom = {
@@ -115,7 +117,7 @@ class ChatServiceCore(
         coroutineScope.launch {
             chatHistoryDelegate.currentChatId.collect { chatId ->
                 tokenStatisticsDelegate.setActiveChatId(chatId)
-                if (chatId != null) {
+        if (chatId != null) {
                     tokenStatisticsDelegate.bindChatService(
                         chatId,
                         EnhancedAIService.getChatInstance(context, chatId)
@@ -134,7 +136,7 @@ class ChatServiceCore(
             },
             saveCurrentChat = {
                 val (inputTokens, outputTokens) = tokenStatisticsDelegate.getCumulativeTokenCounts()
-                val windowSize = tokenStatisticsDelegate.getLastCurrentWindowSize()
+        val windowSize = tokenStatisticsDelegate.getLastCurrentWindowSize()
                 chatHistoryDelegate.saveCurrentChat(inputTokens, outputTokens, windowSize)
             },
             showErrorMessage = { error ->
@@ -146,8 +148,8 @@ class ChatServiceCore(
             },
             onTurnComplete = { chatId, service, nextWindowSize ->
                 tokenStatisticsDelegate.updateCumulativeStatistics(chatId, service)
-                val (inputTokens, outputTokens) = tokenStatisticsDelegate.getCumulativeTokenCounts(chatId)
-                val windowSize = nextWindowSize ?: tokenStatisticsDelegate.getLastCurrentWindowSize(chatId)
+        val (inputTokens, outputTokens) = tokenStatisticsDelegate.getCumulativeTokenCounts(chatId)
+        val windowSize = nextWindowSize ?: tokenStatisticsDelegate.getLastCurrentWindowSize(chatId)
                 tokenStatisticsDelegate.setTokenCounts(chatId, inputTokens, outputTokens, windowSize)
                 chatHistoryDelegate.saveCurrentChat(inputTokens, outputTokens, windowSize, chatIdOverride = chatId)
                 additionalOnTurnComplete?.invoke(chatId, inputTokens, outputTokens, windowSize)
@@ -226,8 +228,7 @@ class ChatServiceCore(
             messageProcessingDelegate.cancelMessage(chatId)
         }
     }
-
-    fun cancelMessage(chatId: String) {
+        fun cancelMessage(chatId: String) {
         messageCoordinationDelegate.cancelSummaryForChat(chatId)
         messageProcessingDelegate.cancelMessage(chatId)
     }
@@ -236,8 +237,7 @@ class ChatServiceCore(
     fun updateUserMessage(message: String) {
         messageProcessingDelegate.updateUserMessage(message)
     }
-
-    fun getResponseStream(chatId: String): SharedStream<String>? {
+        fun getResponseStream(chatId: String): SharedStream<String>? {
         return messageProcessingDelegate.getResponseStream(chatId)
     }
 
@@ -447,15 +447,13 @@ class ChatServiceCore(
     fun setAdditionalOnTurnComplete(callback: ((chatId: String?, inputTokens: Int, outputTokens: Int, windowSize: Int) -> Unit)) {
         additionalOnTurnComplete = callback
     }
-
-    fun setUiBridge(uiBridge: ChatServiceUiBridge) {
+        fun setUiBridge(uiBridge: ChatServiceUiBridge) {
         this.uiBridge = uiBridge
         if (::messageCoordinationDelegate.isInitialized) {
             messageCoordinationDelegate.setUiBridge(uiBridge)
         }
     }
-
-    fun setSpeakMessageHandler(handler: (String, Boolean) -> Unit) {
+        fun setSpeakMessageHandler(handler: (String, Boolean) -> Unit) {
         if (::messageProcessingDelegate.isInitialized) {
             messageProcessingDelegate.setSpeakMessageHandler(handler)
         }

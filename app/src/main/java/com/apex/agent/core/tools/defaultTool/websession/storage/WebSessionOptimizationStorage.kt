@@ -28,8 +28,7 @@ internal class WebSessionOptimizationStorage private constructor(
     private val prefs: SharedPreferences by lazy {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
-
-    private val json = Json {
+        private val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
     }

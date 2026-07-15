@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit
  */
 class ExternalApiToolAdapter : ToolAdapter {
 
-    // 配置化的HTTP客户�?   private val client: OkHttpClient by lazy {
+    // 配置化的HTTP客户�?
+    private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -33,7 +34,7 @@ class ExternalApiToolAdapter : ToolAdapter {
     
     // 请求缓存
     private val requestCache = ConcurrentHashMap<String, CachedResponse>()
-    private val MAX_CACHE_SIZE = 100
+        private val MAX_CACHE_SIZE = 100
     private val CACHE_EXPIRE_TIME = 10 * 60 * 1000L // 10分钟
     override fun getName(): String {
         return "external_api"
@@ -53,7 +54,6 @@ class ExternalApiToolAdapter : ToolAdapter {
             content = "错误：缺少url参数",
             size = 0
         )
-
         val method = parameters["method"] as? String ?: "GET"
         val headers = parameters["headers"] as? Map<String, String> ?: emptyMap()
         val body = parameters["body"] as? String
@@ -70,8 +70,7 @@ class ExternalApiToolAdapter : ToolAdapter {
             } else {
                 null
             }
-
-            if (useCache && cacheKey != null) {
+        if (useCache && cacheKey != null) {
                 requestCache[cacheKey]?.let { cached ->
                     if (System.currentTimeMillis() - cached.timestamp < CACHE_EXPIRE_TIME) {
                         return@withContext cached.response.copy(
@@ -136,8 +135,7 @@ class ExternalApiToolAdapter : ToolAdapter {
     override fun isAvailable(): Boolean {
         return true
     }
-
-    private suspend fun executeWithRetry(
+        private suspend fun executeWithRetry(
         url: String,
         method: String,
         headers: Map<String, String>,
@@ -177,15 +175,13 @@ class ExternalApiToolAdapter : ToolAdapter {
                 } else {
                     requestBuilder.method(method.uppercase(), null)
                 }.build()
-
-                val response = customClient.newCall(request).execute()
-                val responseBody = response.body?.string() ?: ""
-                val responseHeaders = mutableMapOf<String, String>()
+        val response = customClient.newCall(request).execute()
+        val responseBody = response.body?.string() ?: ""
+        val responseHeaders = mutableMapOf<String, String>()
                 response.headers.forEach { (name, value) ->
                     responseHeaders[name] = value
                 }
-
-                val responseContentType = response.header("Content-Type") ?: "text/plain"
+        val responseContentType = response.header("Content-Type") ?: "text/plain"
 
                 // 检查是否需要重试（仅对5xx错误和网络错误）
     if (response.code in 500..599 && retryCount < maxRetries) {
@@ -219,10 +215,9 @@ class ExternalApiToolAdapter : ToolAdapter {
         }
 
         // 如果所有重试都失败
-        throw lastException ?: IOException("请求失败")
+    throw lastException ?: IOException("请求失败")
     }
-
-    private data class CachedResponse(
+        private data class CachedResponse(
         val response: HttpResponseData,
         val timestamp: Long
     )

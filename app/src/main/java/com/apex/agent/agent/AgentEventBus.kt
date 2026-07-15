@@ -158,8 +158,7 @@ class EventSubscription(
             onCancel()
         }
     }
-
-    val isActive: Boolean get() = !cancelled
+        val isActive: Boolean get() = !cancelled
 }
 
 /**
@@ -203,7 +202,7 @@ class AgentEventBus(
         replay = 0,
         extraBufferCapacity = 512
     )
-    val events: SharedFlow<AgentEvent> = _events.asSharedFlow()
+        val events: SharedFlow<AgentEvent> = _events.asSharedFlow()
 
     /** 事件历史（用于回放）。 */
     private val eventHistory: ConcurrentLinkedQueue<AgentEvent> = ConcurrentLinkedQueue()

@@ -41,7 +41,8 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
         private const val TAG = "RootShellExecutor"
         private var rootAvailable: Boolean? = null
         
-        // 伴生对象静态初始化，确保Shell只初始化一       init {
+        // 伴生对象静态初始化，确保Shell只初始化一
+    init {
             // 配置 libsu 的全局设置
             Shell.enableVerboseLogging = true
             Shell.setDefaultBuilder(Shell.Builder.create()
@@ -70,32 +71,26 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
         refreshExecSuCommandFromPreferences()
         AppLogger.d(TAG, "Root 命令执行模式设置 ${if(useExec) "exec模式" else "libsu模式"}")
     }
-
-    fun setExecSuCommand(command: String) {
+        fun setExecSuCommand(command: String) {
         suCommand = normalizeSuCommand(command)
         AppLogger.d(TAG, "Root exec su 命令设置 ${suCommand}")
     }
-
-    private fun normalizeSuCommand(command: String): String {
+        private fun normalizeSuCommand(command: String): String {
         val normalized = command?.trim().orEmpty()
         return normalized.ifEmpty { AndroidPermissionPreferences.DEFAULT_SU_COMMAND }
     }
-
-    private fun parseCommandTokens(command: String): List<String> {
+        private fun parseCommandTokens(command: String): List<String> {
         val normalized = normalizeSuCommand(command)
         return normalized.split(Regex("\\s+")).filter { it.isNotEmpty() }
     }
-
-    private fun buildSuExecCommand(command: String): Array<String> {
+        private fun buildSuExecCommand(command: String): Array<String> {
         val tokens = parseCommandTokens(suCommand)
         return (tokens + listOf("-c", command)).toTypedArray()
     }
-
-    private fun buildSuInteractiveCommand(): Array<String> {
+        private fun buildSuInteractiveCommand(): Array<String> {
         return parseCommandTokens(suCommand).toTypedArray()
     }
-
-    private fun refreshExecSuCommandFromPreferences() {
+        private fun refreshExecSuCommandFromPreferences() {
         try {
             val mode = androidPermissionPreferences.getRootExecutionMode()
             suCommand = if (mode == RootCommandExecutionMode.FORCE_EXEC) {
@@ -108,15 +103,14 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
             suCommand = AndroidPermissionPreferences.DEFAULT_SU_COMMAND
         }
     }
-
-    private fun applyExecutionModePreferenceOverride() {
+        private fun applyExecutionModePreferenceOverride() {
         try {
             when (androidPermissionPreferences.getRootExecutionMode()) {
                 RootCommandExecutionMode.FORCE_EXEC -> useExecMode = true
                 RootCommandExecutionMode.FORCE_LIBSU -> useExecMode = false
                 RootCommandExecutionMode.AUTO -> Unit
             }
-            if (useExecMode) {
+        if (useExecMode) {
                 refreshExecSuCommandFromPreferences()
             }
         } catch (e: Exception) {
@@ -138,7 +132,7 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
             // 如果已经检测过，直接返回缓存结果，避免每次重复检
     if (rootAvailable != null) {
                 // 使用更轻量的日志级别，使用缓存的Root结果                AppLogger.v(TAG, "使用缓存的Root结果: ${rootAvailable}")
-    return rootAvailable ?: false
+        return rootAvailable ?: false
             }
 
             // 使用 libsu 检root 权限
@@ -150,7 +144,7 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
     if (previousValue != hasRoot) {
                 AppLogger.d(TAG, "Root 检测结 ${hasRoot}")
             }
-            return hasRoot
+        return hasRoot
         } catch (e: Exception) {
             AppLogger.e(TAG, "检测Root权限时出, e)
             rootAvailable = false
@@ -167,36 +161,34 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
             val process = Runtime.getRuntime().exec(buildSuExecCommand("id"))
             process.inputStream.bufferedReader().use { reader ->
                 val output = StringBuilder()
-                var line: String?
+        var line: String?
                 
                 while (reader.readLine().also { line = it } != null) {
                     output.append(line)
                 }
-                
-                val exitCode = process.waitFor()
-                val result = output.toString().trim()
-                
-                val available = exitCode == 0 && result.contains("uid=0")
+        val exitCode = process.waitFor()
+        val result = output.toString().trim()
+        val available = exitCode == 0 && result.contains("uid=0")
                 AppLogger.d(TAG, "exec su 可用性检 ${available} (输出${result}, 退出码: ${exitCode})")
-                return available
+        return available
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "exec su 可用性检测失, e)
-            return false
+        return false
         }
     }
 
     override fun hasPermission(): ShellExecutor.PermissionStatus {
         try {
             val available = isAvailable()
-            return if (available) {
+        return if (available) {
                 ShellExecutor.PermissionStatus.granted()
             } else {
                 ShellExecutor.PermissionStatus.denied("Root access not available on this device")
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "检测Root权限状态时出错", e)
-            return ShellExecutor.PermissionStatus.denied("Error checking root permission: ${e.message}")
+        return ShellExecutor.PermissionStatus.denied("Error checking root permission: ${e.message}")
         }
     }
 
@@ -209,7 +201,7 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
                 refreshExecSuCommandFromPreferences()
                 rootAvailable = checkExecSuAvailable()
                 AppLogger.d(TAG, "使用exec模式初始Root 状 ${rootAvailable}")
-                return
+        return
             }
             
             // 初始libsu ?Shell 实例
@@ -228,8 +220,7 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
             // Root权限无法通过代码请求，只能提示用�?
     val hasRoot = isAvailable()
             onResult(hasRoot)
-
-            if (!hasRoot) {
+        if (!hasRoot) {
                 AppLogger.d(TAG, "无法以请求方式获得Root权限")
             }
         } catch (e: Exception) {
@@ -247,7 +238,6 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
         // 检查命令是否是run-as格式
     val runAsPattern = """run-as\s+(\S+)\s+sh\s+-c\s+['"](.+)['"]""".toRegex()
         val match = runAsPattern.find(command)
-        
         return if (match != null) {
             // 获取内部命令
     val innerCommand = match.groupValues[2]
@@ -266,18 +256,18 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
     private fun ensureShellLauncherInstalled(): String {
         return try {
             val launcherName = "apex_shell_exec"
-            val baseDir = File(context.filesDir, "bin")
-            if (!baseDir.exists()) {
+        val baseDir = File(context.filesDir, "bin")
+        if (!baseDir.exists()) {
                 baseDir.mkdirs()
             }
-            val outFile = File(baseDir, launcherName)
+        val outFile = File(baseDir, launcherName)
 
             context.assets.open(launcherName).use { input ->
                 FileOutputStream(outFile).use { output ->
                     val buffer = ByteArray(8 * 1024)
                     while (true) {
                         val read = input.read(buffer)
-                        if (read <= 0) break
+        if (read <= 0) break
                         output.write(buffer, 0, read)
                     }
                     output.flush()
@@ -305,16 +295,15 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
 
                 // 执行 su -c 命令
     val process = Runtime.getRuntime().exec(buildSuExecCommand(command))
-                
-                var stdoutStr = ""
-                var stderrStr = ""
-                var exitCode = -1
+        var stdoutStr = ""
+        var stderrStr = ""
+        var exitCode = -1
                 
                 try {
                     // 读取标准输出
                     process.inputStream.bufferedReader().use { stdoutReader ->
                         val stdout = StringBuilder()
-                        var line: String?
+        var line: String?
                         while (stdoutReader.readLine().also { line = it } != null) {
                             stdout.append(line).append("\n")
                         }
@@ -324,7 +313,7 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
                     // 读取标准错误
                     process.errorStream.bufferedReader().use { stderrReader ->
                         val stderr = StringBuilder()
-                        var line: String?
+        var line: String?
                         while (stderrReader.readLine().also { line = it } != null) {
                             stderr.append(line).append("\n")
                         }
@@ -338,10 +327,10 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
                 }
                 
                 AppLogger.d(TAG, "exec执行完成，退出码: ${exitCode}")
-                if (stdoutStr.isNotEmpty()) {
+        if (stdoutStr.isNotEmpty()) {
                     AppLogger.v(TAG, "标准输出${stdoutStr}")
                 }
-                if (stderrStr.isNotEmpty()) {
+        if (stderrStr.isNotEmpty()) {
                     AppLogger.v(TAG, "标准错误: ${stderrStr}")
                 }
                 
@@ -370,20 +359,17 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
             withContext(Dispatchers.IO) {
                 try {
                     applyExecutionModePreferenceOverride()
-
-                    val permStatus = hasPermission()
-                    if (!permStatus.granted) {
+        val permStatus = hasPermission()
+        if (!permStatus.granted) {
                         return@withContext ShellExecutor.CommandResult(false, "", permStatus.reason)
                     }
-
-                    val actualCommand = extractActualCommand(command)
+        val actualCommand = extractActualCommand(command)
 
                     return@withContext when (identity) {
                         ShellIdentity.SHELL -> {
                             AppLogger.d(TAG, "使用shell身份执行命令: ${actualCommand} (原始命令: ${command})")
-
-                            val launcherPath = ensureShellLauncherInstalled()
-                            if (launcherPath.isEmpty()) {
+        val launcherPath = ensureShellLauncherInstalled()
+        if (launcherPath.isEmpty()) {
                                 ShellExecutor.CommandResult(
                                     false,
                                     "",
@@ -393,17 +379,16 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
                             } else {
                                 if (useExecMode) {
                                     val fullCmd = "${launcherPath} ${actualCommand}"
-                                    val process = Runtime.getRuntime().exec(buildSuExecCommand(fullCmd))
-
-                                    var stdoutStr = ""
-                                    var stderrStr = ""
-                                    var exitCode = -1
+        val process = Runtime.getRuntime().exec(buildSuExecCommand(fullCmd))
+        var stdoutStr = ""
+        var stderrStr = ""
+        var exitCode = -1
                                     
                                     try {
                                         // 读取标准输出
                                         process.inputStream.bufferedReader().use { stdoutReader ->
                                             val stdout = StringBuilder()
-                                            var line: String?
+        var line: String?
                                             while (stdoutReader.readLine().also { line = it } != null) {
                                                 stdout.append(line).append("\n")
                                             }
@@ -413,7 +398,7 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
                                         // 读取标准错误
                                         process.errorStream.bufferedReader().use { stderrReader ->
                                             val stderr = StringBuilder()
-                                            var line: String?
+        var line: String?
                                             while (stderrReader.readLine().also { line = it } != null) {
                                                 stderr.append(line).append("\n")
                                             }
@@ -426,10 +411,10 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
                                     }
 
                                     AppLogger.d(TAG, "shell launcher命令(exec)执行完成，退出码: ${exitCode}")
-                                    if (stdoutStr.isNotEmpty()) {
+        if (stdoutStr.isNotEmpty()) {
                                         AppLogger.v(TAG, "标准输出${stdoutStr}")
                                     }
-                                    if (stderrStr.isNotEmpty()) {
+        if (stderrStr.isNotEmpty()) {
                                         AppLogger.v(TAG, "标准错误: ${stderrStr}")
                                     }
 
@@ -441,17 +426,16 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
                                     )
                                 } else {
                                     val shellCommand = "${launcherPath} ${actualCommand}"
-                                    val shellResult = Shell.cmd(shellCommand).exec()
-
-                                    val stdout = shellResult.out.joinToString("\n")
-                                    val stderr = shellResult.err.joinToString("\n")
-                                    val exitCode = shellResult.code
+        val shellResult = Shell.cmd(shellCommand).exec()
+        val stdout = shellResult.out.joinToString("\n")
+        val stderr = shellResult.err.joinToString("\n")
+        val exitCode = shellResult.code
 
                                     AppLogger.d(TAG, "shell launcher命令(libsu)执行完成，退出码: ${exitCode}")
-                                    if (stdout.isNotEmpty()) {
+        if (stdout.isNotEmpty()) {
                                         AppLogger.v(TAG, "标准输出${stdout}")
                                     }
-                                    if (stderr.isNotEmpty()) {
+        if (stderr.isNotEmpty()) {
                                         AppLogger.v(TAG, "标准错误: ${stderr}")
                                     }
 
@@ -470,11 +454,10 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
                                 executeCommandWithExec(actualCommand)
                             } else {
                                 AppLogger.d(TAG, "执行Root命令: ${actualCommand} (原始命令: ${command})")
-                                val shellResult = Shell.cmd(actualCommand).exec()
-
-                                val stdout = shellResult.out.joinToString("\n")
-                                val stderr = shellResult.err.joinToString("\n")
-                                val exitCode = shellResult.code
+        val shellResult = Shell.cmd(actualCommand).exec()
+        val stdout = shellResult.out.joinToString("\n")
+        val stderr = shellResult.err.joinToString("\n")
+        val exitCode = shellResult.code
 
                                 ShellExecutor.CommandResult(
                                     exitCode == 0,
@@ -498,11 +481,9 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
 
     override suspend fun startProcess(command: String): ShellProcess {
         applyExecutionModePreferenceOverride()
-
         if (!hasPermission().granted) {
             throw SecurityException("Root permission not granted.")
         }
-        
         return if (useExecMode) {
             ExecRootShellProcess(command, buildSuInteractiveCommand())
         } else {
@@ -515,26 +496,24 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
  * 使用 libsu 实现ShellProcess */
 private class LibSuShellProcess(command: String) : ShellProcess {
     private val stdoutChannel = Channel<String>(capacity = 256, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    private val stderrChannel = Channel<String>(capacity = 256, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-
-    private val stdoutCallbackList = object : CallbackList<String>() {
+        private val stderrChannel = Channel<String>(capacity = 256, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        private val stdoutCallbackList = object : CallbackList<String>() {
         override fun onAddElement(s: String) {
             stdoutChannel.trySend(s)
-            if (size > 2048) clear()
+        if (size > 2048) clear()
         }
     }
-    private val stderrCallbackList = object : CallbackList<String>() {
+        private val stderrCallbackList = object : CallbackList<String>() {
         override fun onAddElement(s: String) {
             stderrChannel.trySend(s)
-            if (size > 2048) clear()
+        if (size > 2048) clear()
         }
     }
 
     // Execute the job asynchronously - enqueue() returns a Future in v6.0.0
     private val future: java.util.concurrent.Future<Shell.Result> =
         Shell.cmd(command).to(stdoutCallbackList, stderrCallbackList).enqueue()
-
-    private val closeJob: Job = CoroutineScope(Dispatchers.IO).launch {
+        private val closeJob: Job = CoroutineScope(Dispatchers.IO).launch {
         try {
             future.get()
         } catch (e: Exception) {

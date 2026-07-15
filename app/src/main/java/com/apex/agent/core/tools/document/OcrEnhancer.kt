@@ -24,18 +24,17 @@ import kotlin.coroutines.resume
 class OcrEnhancer {
 
     private val defaultRecognizer: TextRecognizer = TextRecognition.getClient()
-    private val chineseRecognizer: TextRecognizer = ChineseTextRecognizer.getClient()
-    private val japaneseRecognizer: TextRecognizer = JapaneseTextRecognizer.getClient()
-    private val koreanRecognizer: TextRecognizer = KoreanTextRecognizer.getClient()
-    private val devanagariRecognizer: TextRecognizer = DevanagariTextRecognizer.getClient()
+        private val chineseRecognizer: TextRecognizer = ChineseTextRecognizer.getClient()
+        private val japaneseRecognizer: TextRecognizer = JapaneseTextRecognizer.getClient()
+        private val koreanRecognizer: TextRecognizer = KoreanTextRecognizer.getClient()
+        private val devanagariRecognizer: TextRecognizer = DevanagariTextRecognizer.getClient()
 
     suspend fun recognizeText(imageData: ByteArray): OcrResult = withContext(Dispatchers.IO) {
         try {
             val bitmap = ByteArrayInputStream(imageData).use { BitmapFactory.decodeStream(it) }
                 ?: return@withContext OcrResult("", 0f, emptyList(), "auto")
-
-            val inputImage = InputImage.fromBitmap(bitmap, 0)
-            val result = processTextRecognition(inputImage)
+        val inputImage = InputImage.fromBitmap(bitmap, 0)
+        val result = processTextRecognition(inputImage)
 
             bitmap.recycle()
 
@@ -66,12 +65,10 @@ class OcrEnhancer {
         try {
             val bitmap = ByteArrayInputStream(imageData).use { BitmapFactory.decodeStream(it) }
                 ?: return@withContext TableOcrResult(emptyList(), 0f, "")
-
-            val inputImage = InputImage.fromBitmap(bitmap, 0)
-            val result = processTextRecognition(inputImage)
-
-            val tables = detectTables(result)
-            val fullText = result.text
+        val inputImage = InputImage.fromBitmap(bitmap, 0)
+        val result = processTextRecognition(inputImage)
+        val tables = detectTables(result)
+        val fullText = result.text
 
             bitmap.recycle()
 
@@ -89,15 +86,13 @@ class OcrEnhancer {
         try {
             val bitmap = ByteArrayInputStream(imageData).use { BitmapFactory.decodeStream(it) }
                 ?: return@withContext HandwritingResult("", 0f, emptyList())
-
-            val enhancedImage = enhanceImage(imageData)
-            val enhancedBitmap = ByteArrayInputStream(enhancedImage).use { BitmapFactory.decodeStream(it) }
+        val enhancedImage = enhanceImage(imageData)
+        val enhancedBitmap = ByteArrayInputStream(enhancedImage).use { BitmapFactory.decodeStream(it) }
                 ?: bitmap
 
             val inputImage = InputImage.fromBitmap(enhancedBitmap, 0)
-            val recognitionResult = processTextRecognition(inputImage)
-
-            val words = mutableListOf<HandwritingWord>()
+        val recognitionResult = processTextRecognition(inputImage)
+        val words = mutableListOf<HandwritingWord>()
             recognitionResult.textBlocks.forEach { block ->
                 block.boundingBox?.let { box ->
                     words.add(
@@ -114,8 +109,7 @@ class OcrEnhancer {
                     )
                 }
             }
-
-            if (enhancedBitmap != bitmap) {
+        if (enhancedBitmap != bitmap) {
                 enhancedBitmap.recycle()
             }
             bitmap.recycle()
@@ -145,15 +139,13 @@ class OcrEnhancer {
                     0f, 0f, 0f, 1f, 0f
                 )
             )
-
-            val outputBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(outputBitmap)
-            val paint = Paint().apply {
+        val outputBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(outputBitmap)
+        val paint = Paint().apply {
                 colorFilter = ColorMatrixColorFilter(colorMatrix)
             }
             canvas.drawBitmap(bitmap, 0f, 0f, paint)
-
-            val outputStream = ByteArrayOutputStream()
+        val outputStream = ByteArrayOutputStream()
             outputBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
 
             bitmap.recycle()
@@ -164,8 +156,7 @@ class OcrEnhancer {
             imageData
         }
     }
-
-    private suspend fun processTextRecognition(inputImage: InputImage): com.google.mlkit.vision.text.Text {
+        private suspend fun processTextRecognition(inputImage: InputImage): com.google.mlkit.vision.text.Text {
         return suspendCancellableCoroutine { continuation ->
             defaultRecognizer.process(inputImage)
                 .addOnSuccessListener { text ->
@@ -176,8 +167,7 @@ class OcrEnhancer {
                 }
         }
     }
-
-    private fun detectLanguage(text: String): String {
+        private fun detectLanguage(text: String): String {
         return when {
             text.any { it in '\u4E00'..'\u9FFF' } -> "zh"
             text.any { it in '\u3040'..'\u309F' || it in '\u30A0'..'\u30FF' } -> "ja"
@@ -186,8 +176,7 @@ class OcrEnhancer {
             else -> "auto"
         }
     }
-
-    private fun detectTables(result: com.google.mlkit.vision.text.Text): List<List<List<String>>> {
+        private fun detectTables(result: com.google.mlkit.vision.text.Text): List<List<List<String>>> {
         val tables = mutableListOf<List<List<String>>>()
         val blocks = result.textBlocks
 
@@ -202,27 +191,22 @@ class OcrEnhancer {
             val nextBox = sortedBlocks.getOrNull(index + 1)?.boundingBox
 
             currentRow.add(block)
-
-            if (nextBox == null || (currentBox != null && nextBox != null && kotlin.math.abs(currentBox.top - nextBox.top) > currentBox.height / 2)) {
+        if (nextBox == null || (currentBox != null && nextBox != null && kotlin.math.abs(currentBox.top - nextBox.top) > currentBox.height / 2)) {
                 val sortedCells = currentRow.sortedBy { it.boundingBox?.left ?: 0 }
                 rows.add(sortedCells.map { it.text })
                 currentRow = mutableListOf()
             }
         }
-
         if (currentRow.isNotEmpty()) {
             val sortedCells = currentRow.sortedBy { it.boundingBox?.left ?: 0 }
             rows.add(sortedCells.map { it.text })
         }
-
         if (rows.isNotEmpty()) {
             tables.add(rows)
         }
-
         return tables
     }
-
-    fun close() {
+        fun close() {
         defaultRecognizer.close()
         chineseRecognizer.close()
         japaneseRecognizer.close()

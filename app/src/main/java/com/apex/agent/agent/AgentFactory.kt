@@ -94,7 +94,7 @@ object AgentFactoryRegistry {
     fun autoDiscover() {
         try {
             val loader = ServiceLoader.load(AgentFactory::class.java)
-            for (factory in loader) {
+        for (factory in loader) {
                 register(factory)
             }
         } catch (_: Exception) {
@@ -139,7 +139,7 @@ class BuiltinAgentFactory : AgentFactory {
 object AgentPool {
 
     private val pool = ConcurrentHashMap<String, SubAgent>()
-    private val refCount = ConcurrentHashMap<String, Int>()
+        private val refCount = ConcurrentHashMap<String, Int>()
 
     /**
      * 获取或创建 Agent。

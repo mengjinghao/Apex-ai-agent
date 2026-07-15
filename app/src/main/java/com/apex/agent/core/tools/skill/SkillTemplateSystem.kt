@@ -127,16 +127,13 @@ class SkillTemplateSystem private constructor(private val context: Context) {
 
     // ========== 状�?==========
     private val _builtInTemplates = MutableStateFlow<List<SkillTemplate>>(emptyList())
-    val builtInTemplates: StateFlow<List<SkillTemplate>> = _builtInTemplates.asStateFlow()
-
-    private val _userTemplates = MutableStateFlow<List<SkillTemplate>>(emptyList())
-    val userTemplates: StateFlow<List<SkillTemplate>> = _userTemplates.asStateFlow()
-
-    private val _allTemplates = MutableStateFlow<List<SkillTemplate>>(emptyList())
-    val allTemplates: StateFlow<List<SkillTemplate>> = _allTemplates.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+        val builtInTemplates: StateFlow<List<SkillTemplate>> = _builtInTemplates.asStateFlow()
+        private val _userTemplates = MutableStateFlow<List<SkillTemplate>>(emptyList())
+        val userTemplates: StateFlow<List<SkillTemplate>> = _userTemplates.asStateFlow()
+        private val _allTemplates = MutableStateFlow<List<SkillTemplate>>(emptyList())
+        val allTemplates: StateFlow<List<SkillTemplate>> = _allTemplates.asStateFlow()
+        private val _isLoading = MutableStateFlow(false)
+        val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     // ========== 内置模板 ==========
     private val builtInTemplateList = listOf(
@@ -178,8 +175,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         _builtInTemplates.value = builtInTemplateList
         updateAllTemplates()
     }
-
-    private fun updateAllTemplates() {
+        private fun updateAllTemplates() {
         _allTemplates.value = builtInTemplateList + _userTemplates.value
     }
 
@@ -220,8 +216,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.INTERMEDIATE,
         estimatedTime = "10分钟"
     )
-
-    private fun createScheduledTaskTemplate() = SkillTemplate(
+        private fun createScheduledTaskTemplate() = SkillTemplate(
         id = "template_scheduled_task",
         name = "定时任务",
         description = "按照设定的时间间隔或特定时间执行的任务模�",
@@ -250,8 +245,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.BEGINNER,
         estimatedTime = "5分钟"
     )
-
-    private fun createEventTriggerTemplate() = SkillTemplate(
+        private fun createEventTriggerTemplate() = SkillTemplate(
         id = "template_event_trigger",
         name = "事件触发",
         description = "当特定事件发生时自动执行相应操作",
@@ -281,8 +275,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.INTERMEDIATE,
         estimatedTime = "15分钟"
     )
-
-    private fun createDataTransformTemplate() = SkillTemplate(
+        private fun createDataTransformTemplate() = SkillTemplate(
         id = "template_data_transform",
         name = "数据转换",
         description = "对数据进行提取、转换、处理的模板",
@@ -312,8 +305,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.INTERMEDIATE,
         estimatedTime = "10分钟"
     )
-
-    private fun createFileProcessorTemplate() = SkillTemplate(
+        private fun createFileProcessorTemplate() = SkillTemplate(
         id = "template_file_processor",
         name = "文件处理�",
         description = "读取、处理和写入文件的模�",
@@ -341,8 +333,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.BEGINNER,
         estimatedTime = "5分钟"
     )
-
-    private fun createJsonParserTemplate() = SkillTemplate(
+        private fun createJsonParserTemplate() = SkillTemplate(
         id = "template_json_parser",
         name = "JSON 解析�",
         description = "解析和提�?JSON 数据",
@@ -371,8 +362,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.BEGINNER,
         estimatedTime = "5分钟"
     )
-
-    private fun createHttpRequestTemplate() = SkillTemplate(
+        private fun createHttpRequestTemplate() = SkillTemplate(
         id = "template_http_request",
         name = "HTTP 请求",
         description = "发�?HTTP 请求并处理响�",
@@ -403,8 +393,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.INTERMEDIATE,
         estimatedTime = "10分钟"
     )
-
-    private fun createWebhookTemplate() = SkillTemplate(
+        private fun createWebhookTemplate() = SkillTemplate(
         id = "template_webhook",
         name = "Webhook 处理",
         description = "接收和处�?Webhook 请求的模�",
@@ -413,7 +402,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         variables = listOf(
             TemplateVariable("webhookPath", "Webhook 路径", "Webhook 端点路径", VariableType.STRING),
             TemplateVariable("allowedMethods", "允许的方�?, "接受�"HTTP 方法", VariableType.MULTI_SELECT, options = listOf("GET", "POST", "PUT", "DELETE")),
-            TemplateVariable("verifyToken", "验证令牌", "用于验证请求的令�?可选）", VariableType.STRING, required = false),
+            TemplateVariable("verifyToken", "验证令牌", "用于验证请求的令�可选）", VariableType.STRING, required = false),
             TemplateVariable("responseType", "响应类型", "返回的响应类�", VariableType.SELECT, options = listOf("json", "text", "redirect"), required = false)
         ),
         workflow = TemplateWorkflow(
@@ -434,8 +423,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.ADVANCED,
         estimatedTime = "20分钟"
     )
-
-    private fun createApiClientTemplate() = SkillTemplate(
+        private fun createApiClientTemplate() = SkillTemplate(
         id = "template_api_client",
         name = "API 客户�",
         description = "构建 API 客户端的模板，支持认证和错误重试",
@@ -469,8 +457,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.ADVANCED,
         estimatedTime = "30分钟"
     )
-
-    private fun createBackupTemplate() = SkillTemplate(
+        private fun createBackupTemplate() = SkillTemplate(
         id = "template_backup",
         name = "备份工具",
         description = "对文件或目录进行备份的模�",
@@ -503,8 +490,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.INTERMEDIATE,
         estimatedTime = "15分钟"
     )
-
-    private fun createFileOrganizerTemplate() = SkillTemplate(
+        private fun createFileOrganizerTemplate() = SkillTemplate(
         id = "template_file_organizer",
         name = "文件整理",
         description = "根据规则自动整理文件的模�",
@@ -534,8 +520,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.BEGINNER,
         estimatedTime = "10分钟"
     )
-
-    private fun createBatchRenameTemplate() = SkillTemplate(
+        private fun createBatchRenameTemplate() = SkillTemplate(
         id = "template_batch_rename",
         name = "批量重命�",
         description = "批量重命名文件的模板",
@@ -566,15 +551,14 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.BEGINNER,
         estimatedTime = "5分钟"
     )
-
-    private fun createSystemMonitorTemplate() = SkillTemplate(
+        private fun createSystemMonitorTemplate() = SkillTemplate(
         id = "template_system_monitor",
         name = "系统监控",
         description = "监控系统状态并在异常时通知",
         category = TemplateCategory.SYSTEM,
         tags = listOf("monitor", "system", "cpu", "memory", "notification"),
         variables = listOf(
-            TemplateVariable("monitorInterval", "监控间隔", "状态检查间�?秒）", VariableType.NUMBER, defaultValue = "60"),
+            TemplateVariable("monitorInterval", "监控间隔", "状态检查间�秒）", VariableType.NUMBER, defaultValue = "60"),
             TemplateVariable("cpuThreshold", "CPU 阈�?, "CPU 使用率告警阈�"%)", VariableType.NUMBER, defaultValue = "80"),
             TemplateVariable("memoryThreshold", "内存阈�?, "内存使用率告警阈�"%)", VariableType.NUMBER, defaultValue = "85"),
             TemplateVariable("batteryThreshold", "电池阈�?, "电池电量告警阈�"%)", VariableType.NUMBER, required = false),
@@ -600,8 +584,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.INTERMEDIATE,
         estimatedTime = "15分钟"
     )
-
-    private fun createLogAnalyzerTemplate() = SkillTemplate(
+        private fun createLogAnalyzerTemplate() = SkillTemplate(
         id = "template_log_analyzer",
         name = "日志分析",
         description = "分析日志文件并提取关键信�",
@@ -631,8 +614,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.INTERMEDIATE,
         estimatedTime = "20分钟"
     )
-
-    private fun createCodeGeneratorTemplate() = SkillTemplate(
+        private fun createCodeGeneratorTemplate() = SkillTemplate(
         id = "template_code_generator",
         name = "代码生成�",
         description = "根据模板生成代码文件",
@@ -663,8 +645,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.INTERMEDIATE,
         estimatedTime = "10分钟"
     )
-
-    private fun createGitHelperTemplate() = SkillTemplate(
+        private fun createGitHelperTemplate() = SkillTemplate(
         id = "template_git_helper",
         name = "Git 助手",
         description = "常用 Git 操作辅助工具",
@@ -692,8 +673,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.BEGINNER,
         estimatedTime = "5分钟"
     )
-
-    private fun createBuildAutomationTemplate() = SkillTemplate(
+        private fun createBuildAutomationTemplate() = SkillTemplate(
         id = "template_build_automation",
         name = "构建自动�",
         description = "自动化项目构建流�",
@@ -727,8 +707,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.ADVANCED,
         estimatedTime = "30分钟"
     )
-
-    private fun createNotificationTemplate() = SkillTemplate(
+        private fun createNotificationTemplate() = SkillTemplate(
         id = "template_notification",
         name = "通知发�",
         description = "发送各种类型通知的模�",
@@ -760,8 +739,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         difficulty = Difficulty.BEGINNER,
         estimatedTime = "5分钟"
     )
-
-    private fun createEmailHelperTemplate() = SkillTemplate(
+        private fun createEmailHelperTemplate() = SkillTemplate(
         id = "template_email_helper",
         name = "邮件助手",
         description = "发送和管理邮件的模�",
@@ -803,15 +781,14 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         _isLoading.value = true
         try {
             val templatesDir = File(context.filesDir, USER_TEMPLATES_DIR)
-            if (!templatesDir.exists()) {
+        if (!templatesDir.exists()) {
                 templatesDir.mkdirs()
             }
-
-            val templates = mutableListOf<SkillTemplate>()
+        val templates = mutableListOf<SkillTemplate>()
             templatesDir.listFiles()?.filter { it.extension == "json" }?.forEach { file ->
                 try {
                     val json = file.readText()
-                    val template = Json.decodeFromString<SkillTemplate>(json)
+        val template = Json.decodeFromString<SkillTemplate>(json)
                     templates.add(template)
                 } catch (e: Exception) {
                     AppLogger.e(TAG, "Failed to load user template: ${file.name}", e)
@@ -824,16 +801,13 @@ class SkillTemplateSystem private constructor(private val context: Context) {
             _isLoading.value = false
         }
     }
-
-    fun getTemplateById(id: String): SkillTemplate? {
+        fun getTemplateById(id: String): SkillTemplate? {
         return _allTemplates.value.find { it.id == id }
     }
-
-    fun getTemplatesByCategory(category: TemplateCategory): List<SkillTemplate> {
+        fun getTemplatesByCategory(category: TemplateCategory): List<SkillTemplate> {
         return _allTemplates.value.filter { it.category == category }
     }
-
-    fun searchTemplates(query: String): List<SkillTemplate> {
+        fun searchTemplates(query: String): List<SkillTemplate> {
         val lowerQuery = query.lowercase()
         return _allTemplates.value.filter { template ->
             template.name.lowercase().contains(lowerQuery) ||
@@ -845,13 +819,12 @@ class SkillTemplateSystem private constructor(private val context: Context) {
     suspend fun saveUserTemplate(template: SkillTemplate): Result<SkillTemplate> = withContext(Dispatchers.IO) {
         try {
             val templatesDir = File(context.filesDir, USER_TEMPLATES_DIR)
-            if (!templatesDir.exists()) {
+        if (!templatesDir.exists()) {
                 templatesDir.mkdirs()
             }
-
-            val fileName = "${template.id}.json"
-            val file = File(templatesDir, fileName)
-            val json = Json.encodeToString(template)
+        val fileName = "${template.id}.json"
+        val file = File(templatesDir, fileName)
+        val json = Json.encodeToString(template)
             file.writeText(json)
 
             loadUserTemplates()
@@ -865,10 +838,9 @@ class SkillTemplateSystem private constructor(private val context: Context) {
     suspend fun deleteUserTemplate(templateId: String): Boolean = withContext(Dispatchers.IO) {
         try {
             val templatesDir = File(context.filesDir, USER_TEMPLATES_DIR)
-            val file = File(templatesDir, "${templateId}.json")
-            val result = file.delete()
-
-            if (result) {
+        val file = File(templatesDir, "${templateId}.json")
+        val result = file.delete()
+        if (result) {
                 loadUserTemplates()
             }
             result
@@ -893,13 +865,11 @@ class SkillTemplateSystem private constructor(private val context: Context) {
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                 "logistra/skills"
             )
-
-            if (!skillsDir.exists()) {
+        if (!skillsDir.exists()) {
                 skillsDir.mkdirs()
             }
-
-            val skillDirectory = File(skillsDir, finalSkillName)
-            if (skillDirectory.exists()) {
+        val skillDirectory = File(skillsDir, finalSkillName)
+        if (skillDirectory.exists()) {
                 return@withContext Result.failure(Exception("Skill directory already exists: ${finalSkillName}"))
             }
             skillDirectory.mkdirs()
@@ -920,10 +890,10 @@ class SkillTemplateSystem private constructor(private val context: Context) {
             // 生成配置文件
             template.files.forEach { templateFile ->
                 val filePath = templateFile.path.replace("{{skillName}}", finalSkillName)
-                val file = File(skillDirectory, filePath)
+        val file = File(skillDirectory, filePath)
                 file.parentFile?.mkdirs()
                 file.writeText(templateFile.content)
-                if (templateFile.isExecutable) {
+        if (templateFile.isExecutable) {
                     file.setExecutable(true)
                 }
             }
@@ -931,8 +901,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
             // 生成 README.md
     val readmeContent = buildReadme(template, finalSkillName)
             File(skillDirectory, "README.md").writeText(readmeContent)
-
-            val result = SkillCreationResult(
+        val result = SkillCreationResult(
                 skillName = finalSkillName,
                 skillDirectory = skillDirectory,
                 templateId = template.id,
@@ -945,8 +914,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
             Result.failure(e)
         }
     }
-
-    private fun replaceVariables(template: SkillTemplate, variables: Map<String, String>): Map<String, String> {
+        private fun replaceVariables(template: SkillTemplate, variables: Map<String, String>): Map<String, String> {
         val result = mutableMapOf<String, String>()
         template.variables.forEach { variable ->
             val value = variables[variable.name] ?: variable.defaultValue ?: ""
@@ -954,8 +922,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         }
         return result
     }
-
-    private fun buildSkillMd(template: SkillTemplate, skillName: String, variables: Map<String, String>): String {
+        private fun buildSkillMd(template: SkillTemplate, skillName: String, variables: Map<String, String>): String {
         val sb = StringBuilder()
         sb.appendLine("---")
         sb.appendLine("name: ${skillName}")
@@ -963,7 +930,6 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         sb.appendLine("version: 1.0.0")
         sb.appendLine("author: ${template.author}")
         sb.appendLine("created_from: ${template.id}")
-
         if (template.permissions.isNotEmpty()) {
             sb.appendLine("permissions:")
             template.permissions.forEach { perm ->
@@ -997,11 +963,9 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         } else {
             sb.appendLine("此模板不包含预定义工作流程�")
         }
-
         return sb.toString()
     }
-
-    private fun buildWorkflowJson(workflow: TemplateWorkflow, variables: Map<String, String>): String {
+        private fun buildWorkflowJson(workflow: TemplateWorkflow, variables: Map<String, String>): String {
         val nodes = workflow.nodes.mapIndexed { index, templateNode ->
             val configReplaced = templateNode.configTemplate.mapValues { (_, value) ->
                 replaceVariablePlaceholders(value, variables)
@@ -1038,7 +1002,6 @@ class SkillTemplateSystem private constructor(private val context: Context) {
                 )
             )
         }
-
         val connections = workflow.connections.map { conn ->
             WorkflowConnection(
                 sourceNodeId = "node_${conn.fromNode}",
@@ -1046,25 +1009,21 @@ class SkillTemplateSystem private constructor(private val context: Context) {
                 condition = ConnectionCondition.fromString(conn.condition)
             )
         }
-
         val definition = WorkflowDefinition(
             name = "Template Workflow",
             nodes = nodes,
             connections = connections
         )
-
         return Json.encodeToString(definition)
     }
-
-    private fun replaceVariablePlaceholders(text: String, variables: Map<String, String>): String {
+        private fun replaceVariablePlaceholders(text: String, variables: Map<String, String>): String {
         var result = text
         variables.forEach { (key, value) ->
             result = result.replace("{{${key}}}", value)
         }
         return result
     }
-
-    private fun buildReadme(template: SkillTemplate, skillName: String): String {
+        private fun buildReadme(template: SkillTemplate, skillName: String): String {
         val sb = StringBuilder()
         sb.appendLine("# ${skillName}")
         sb.appendLine()
@@ -1099,7 +1058,6 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         sb.appendLine("---")
         sb.appendLine()
         sb.appendLine("*此文件由 Skill 模板系统自动生成*")
-
         return sb.toString()
     }
 
@@ -1109,8 +1067,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         val templateId: String,
         val variables: Map<String, String>
     )
-
-    fun getBuiltInTemplateCount(): Int = builtInTemplateList.size
+        fun getBuiltInTemplateCount(): Int = builtInTemplateList.size
 
     fun getUserTemplateCount(): Int = _userTemplates.value.size
 
@@ -1126,8 +1083,7 @@ class SkillTemplateSystem private constructor(private val context: Context) {
         TemplateCategory.DEVELOPMENT to "开�",
         TemplateCategory.CUSTOM to "自定�"
     )
-
-    fun getDifficultyDisplayNames(): Map<Difficulty, String> = mapOf(
+        fun getDifficultyDisplayNames(): Map<Difficulty, String> = mapOf(
         Difficulty.BEGINNER to "入门",
         Difficulty.INTERMEDIATE to "进阶",
         Difficulty.ADVANCED to "高级",

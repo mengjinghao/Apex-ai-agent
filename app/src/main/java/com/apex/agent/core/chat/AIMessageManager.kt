@@ -68,11 +68,9 @@ object AIMessageManager {
 
     // 使用独立的协程作用域，确保AI操作的生命周期独立于任何特定的ViewModel
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    private const val DEFAULT_CHAT_KEY = "__DEFAULT_CHAT__"
-
-    private val activeEnhancedAiServiceByChatId = ConcurrentHashMap<String, EnhancedAIService>()
-    private val activeMessageProcessingControllerByChatId = ConcurrentHashMap<String, MessageProcessingController>()
+        private const val DEFAULT_CHAT_KEY = "__DEFAULT_CHAT__"
+        private val activeEnhancedAiServiceByChatId = ConcurrentHashMap<String, EnhancedAIService>()
+        private val activeMessageProcessingControllerByChatId = ConcurrentHashMap<String, MessageProcessingController>()
 
     @Volatile private var lastActiveChatKey: String = DEFAULT_CHAT_KEY
 
@@ -80,8 +78,7 @@ object AIMessageManager {
         val packageName: String,
         val count: Int
     )
-
-    private lateinit var toolHandler: AIToolHandler
+        private lateinit var toolHandler: AIToolHandler
     private lateinit var packageManager: PackageManager
     private lateinit var appContext: Context  // 使用 applicationContext 避免内存泄漏
     private lateinit var apiPreferences: ApiPreferences
@@ -93,8 +90,7 @@ object AIMessageManager {
         packageManager = PackageManager.getInstance(appContext, toolHandler)
         apiPreferences = ApiPreferences.getInstance(appContext)
     }
-    
-    fun cleanup() {
+        fun cleanup() {
         scope.cancel()
         activeEnhancedAiServiceByChatId.clear()
         activeMessageProcessingControllerByChatId.clear()
@@ -142,9 +138,8 @@ object AIMessageManager {
                 .replace(Regex("<[^>]*>"), "") // 移除XML标签
                 .trim()
                 .let { if (it.length > 100) it.take(100) + "..." else it }
-
-            val roleName = message.roleName ?: if (message.sender == "ai") "AI" else context.getString(R.string.ai_message_user)
-            val instruction = context.getString(R.string.ai_message_replying_to_previous)
+        val roleName = message.roleName ?: if (message.sender == "ai") "AI" else context.getString(R.string.ai_message_user)
+        val instruction = context.getString(R.string.ai_message_replying_to_previous)
             "<reply_to sender=\"${roleName}\" timestamp=\"${message.timestamp}\">${instruction}\"${cleanContent}\"</reply_to>"
         } ?: ""
         logMessageTiming(
@@ -190,7 +185,7 @@ object AIMessageManager {
                             append("id=\"${attachment.filePath}\" ")
                             append("filename=\"${attachment.fileName}\" ")
                             append("type=\"${attachment.mimeType}\"")
-                            if (attachment.fileSize > 0) {
+        if (attachment.fileSize > 0) {
                                 append(" size=\"${attachment.fileSize}\"")
                             }
                         }
@@ -199,17 +194,17 @@ object AIMessageManager {
                 } else if (enableDirectAudioProcessing && attachment.mimeType.startsWith("audio/", ignoreCase = true)) {
                     try {
                         val audioId = MediaPoolManager.addMedia(attachment.filePath, attachment.mimeType)
-                        if (audioId == "error") {
+        if (audioId == "error") {
                             throw IllegalStateException("addMedia returned error")
                         }
                         MediaLinkBuilder.audio(context, audioId)
                     } catch (e: Exception) {
                         AppLogger.e(TAG, "添加音频到池失败: ${attachment.filePath}", e)
-                        val attributes = buildString {
+        val attributes = buildString {
                             append("id=\"${attachment.filePath}\" ")
                             append("filename=\"${attachment.fileName}\" ")
                             append("type=\"${attachment.mimeType}\"")
-                            if (attachment.fileSize > 0) {
+        if (attachment.fileSize > 0) {
                                 append(" size=\"${attachment.fileSize}\"")
                             }
                         }
@@ -218,17 +213,17 @@ object AIMessageManager {
                 } else if (enableDirectVideoProcessing && attachment.mimeType.startsWith("video/", ignoreCase = true)) {
                     try {
                         val videoId = MediaPoolManager.addMedia(attachment.filePath, attachment.mimeType)
-                        if (videoId == "error") {
+        if (videoId == "error") {
                             throw IllegalStateException("addMedia returned error")
                         }
                         MediaLinkBuilder.video(context, videoId)
                     } catch (e: Exception) {
                         AppLogger.e(TAG, "添加视频到池失败: ${attachment.filePath}", e)
-                        val attributes = buildString {
+        val attributes = buildString {
                             append("id=\"${attachment.filePath}\" ")
                             append("filename=\"${attachment.fileName}\" ")
                             append("type=\"${attachment.mimeType}\"")
-                            if (attachment.fileSize > 0) {
+        if (attachment.fileSize > 0) {
                                 append(" size=\"${attachment.fileSize}\"")
                             }
                         }
@@ -240,7 +235,7 @@ object AIMessageManager {
                         append("id=\"${attachment.filePath}\" ")
                         append("filename=\"${attachment.fileName}\" ")
                         append("type=\"${attachment.mimeType}\"")
-                        if (attachment.fileSize > 0) {
+        if (attachment.fileSize > 0) {
                             append(" size=\"${attachment.fileSize}\"")
                         }
                     }
@@ -314,32 +309,29 @@ object AIMessageManager {
         )
         if (splitHistoryByRole && !currentRoleName.isNullOrBlank()) {
             val assistantCount = memory.count { it.kind == PromptTurnKind.ASSISTANT }
-            val userCount = memory.count { it.kind == PromptTurnKind.USER }
+        val userCount = memory.count { it.kind == PromptTurnKind.USER }
             AppLogger.d(
                 TAG,
                 "按角色拆解历�?role=${currentRoleName}, assistant=${assistantCount}, user=${userCount}, total=${memory.size}"
             )
         }
-
         return withContext(Dispatchers.IO) {
             val limitHistoryStartTime = messageTimingNow()
-            val maxImageHistoryUserTurns = apiPreferences.maxImageHistoryUserTurnsFlow.first()
-            val maxMediaHistoryUserTurns = apiPreferences.maxMediaHistoryUserTurnsFlow.first()
-
-            val memoryAfterImageLimit = limitImageLinksInChatHistory(memory, maxImageHistoryUserTurns)
-            val memoryForRequest = limitMediaLinksInChatHistory(memoryAfterImageLimit, maxMediaHistoryUserTurns)
-            val beforeImageLinkCount = memory.count { MediaLinkParser.hasImageLinks(it.content) }
-            val afterImageLinkCount = memoryForRequest.count { MediaLinkParser.hasImageLinks(it.content) }
-            if (beforeImageLinkCount != afterImageLinkCount) {
+        val maxImageHistoryUserTurns = apiPreferences.maxImageHistoryUserTurnsFlow.first()
+        val maxMediaHistoryUserTurns = apiPreferences.maxMediaHistoryUserTurnsFlow.first()
+        val memoryAfterImageLimit = limitImageLinksInChatHistory(memory, maxImageHistoryUserTurns)
+        val memoryForRequest = limitMediaLinksInChatHistory(memoryAfterImageLimit, maxMediaHistoryUserTurns)
+        val beforeImageLinkCount = memory.count { MediaLinkParser.hasImageLinks(it.content) }
+        val afterImageLinkCount = memoryForRequest.count { MediaLinkParser.hasImageLinks(it.content) }
+        if (beforeImageLinkCount != afterImageLinkCount) {
                 AppLogger.d(
                     TAG,
                     "历史图片裁剪生效: limit=${maxImageHistoryUserTurns}, before=${beforeImageLinkCount}, after=${afterImageLinkCount}"
                 )
             }
-
-            val beforeMediaLinkCount = memory.count { MediaLinkParser.hasMediaLinks(it.content) }
-            val afterMediaLinkCount = memoryForRequest.count { MediaLinkParser.hasMediaLinks(it.content) }
-            if (beforeMediaLinkCount != afterMediaLinkCount) {
+        val beforeMediaLinkCount = memory.count { MediaLinkParser.hasMediaLinks(it.content) }
+        val afterMediaLinkCount = memoryForRequest.count { MediaLinkParser.hasMediaLinks(it.content) }
+        if (beforeMediaLinkCount != afterMediaLinkCount) {
                 AppLogger.d(
                     TAG,
                     "历史音视频裁剪生�?limit=${maxMediaHistoryUserTurns}, before=${beforeMediaLinkCount}, after=${afterMediaLinkCount}"
@@ -350,9 +342,8 @@ object AIMessageManager {
                 startTimeMs = limitHistoryStartTime,
                 details = "chatKey=${chatKey}, before=${memory.size}, after=${memoryForRequest.size}, imageLimit=${maxImageHistoryUserTurns}, mediaLimit=${maxMediaHistoryUserTurns}"
             )
-
-            val matchPluginStartTime = messageTimingNow()
-            val pluginExecution = MessageProcessingPluginRegistry.createExecutionIfMatched(
+        val matchPluginStartTime = messageTimingNow()
+        val pluginExecution = MessageProcessingPluginRegistry.createExecutionIfMatched(
                 params = MessageProcessingHookParams(
                     context = context,
                     enhancedAIService = enhancedAiService,
@@ -369,7 +360,7 @@ object AIMessageManager {
                 startTimeMs = matchPluginStartTime,
                 details = "chatKey=${chatKey}, matched=${pluginExecution != null}"
             )
-            if (pluginExecution != null) {
+        if (pluginExecution != null) {
                 activeMessageProcessingControllerByChatId[chatKey] = pluginExecution.controller
                 AppLogger.d(TAG, "消息处理插件已接管消息处理）
                 val pluginStream = pluginExecution.stream.share(
@@ -392,8 +383,8 @@ object AIMessageManager {
 
             // 获取流式输出设置
     val readStreamSettingStartTime = messageTimingNow()
-            val disableStreamOutput = apiPreferences.disableStreamOutputFlow.first()
-            val enableStream = !disableStreamOutput
+        val disableStreamOutput = apiPreferences.disableStreamOutputFlow.first()
+        val enableStream = !disableStreamOutput
             logMessageTiming(
                 stage = "sendMessage.readStreamSetting",
                 startTimeMs = readStreamSettingStartTime,
@@ -402,7 +393,7 @@ object AIMessageManager {
 
             // 使用普通模�?
     val prepareRequestStartTime = messageTimingNow()
-            val responseStream = enhancedAiService.sendMessage(
+        val responseStream = enhancedAiService.sendMessage(
                 message = messageContent,
                 chatId = chatId,
                 chatHistory = memoryForRequest, // Correct parameter name is chatHistory
@@ -477,7 +468,6 @@ object AIMessageManager {
         val memoryAfterImageLimit = limitImageLinksInChatHistory(memory, maxImageHistoryUserTurns)
         val memoryForRequest =
             limitMediaLinksInChatHistory(memoryAfterImageLimit, maxMediaHistoryUserTurns)
-
         val windowSize =
             enhancedAiService.estimateRequestWindowFromMemory(
                 message = messageContent,
@@ -498,22 +488,19 @@ object AIMessageManager {
             )
         return windowSize
     }
-
-    private fun limitMediaLinksInChatHistory(
+        private fun limitMediaLinksInChatHistory(
         history: List<PromptTurn>,
         keepLastUserMediaTurns: Int
     ): List<PromptTurn> {
         val limit = keepLastUserMediaTurns.coerceAtLeast(0)
         val totalUserTurns = history.count { it.kind == PromptTurnKind.USER }
         val keepFromTurn = (totalUserTurns - limit).coerceAtLeast(0)
-
         var currentUserTurnIndex = -1
         return history.map { turn ->
             if (turn.kind == PromptTurnKind.USER) {
                 currentUserTurnIndex += 1
             }
-
-            val shouldKeepMedia = limit > 0 && currentUserTurnIndex >= keepFromTurn
+        val shouldKeepMedia = limit > 0 && currentUserTurnIndex >= keepFromTurn
             if (!shouldKeepMedia && MediaLinkParser.hasMediaLinks(turn.content)) {
                 val removed = MediaLinkParser.removeMediaLinks(turn.content).trim()
                 turn.copy(content = removed.ifBlank { context.getString(R.string.ai_message_media_omitted) })
@@ -522,22 +509,19 @@ object AIMessageManager {
             }
         }
     }
-
-    private fun limitImageLinksInChatHistory(
+        private fun limitImageLinksInChatHistory(
         history: List<PromptTurn>,
         keepLastUserImageTurns: Int
     ): List<PromptTurn> {
         val limit = keepLastUserImageTurns.coerceAtLeast(0)
         val totalUserTurns = history.count { it.kind == PromptTurnKind.USER }
         val keepFromTurn = (totalUserTurns - limit).coerceAtLeast(0)
-
         var currentUserTurnIndex = -1
         return history.map { turn ->
             if (turn.kind == PromptTurnKind.USER) {
                 currentUserTurnIndex += 1
             }
-
-            val shouldKeepImages = limit > 0 && currentUserTurnIndex >= keepFromTurn
+        val shouldKeepImages = limit > 0 && currentUserTurnIndex >= keepFromTurn
             if (!shouldKeepImages && MediaLinkParser.hasImageLinks(turn.content)) {
                 val removed = MediaLinkParser.removeImageLinks(turn.content).trim()
                 turn.copy(content = removed.ifBlank { context.getString(R.string.ai_message_image_omitted) })
@@ -552,8 +536,7 @@ object AIMessageManager {
     fun cancelCurrentOperation() {
         cancelOperation(lastActiveChatKey)
     }
-
-    fun cancelOperation(chatId: String) {
+        fun cancelOperation(chatId: String) {
         val chatKey = chatId.ifBlank { DEFAULT_CHAT_KEY }
         AppLogger.d(TAG, "请求取消AI操作: chatId=${chatKey}")
 
@@ -566,7 +549,6 @@ object AIMessageManager {
             AppLogger.d(TAG, "正在取消 EnhancedAIService 对话: chatId=${chatKey}")
             it.cancelConversation()
         }
-
         if (chatId.isNotBlank()) {
             runCatching {
                 packageManager.cancelToolPkgExecutionsForChat(chatKey, "User cancelled")
@@ -577,8 +559,7 @@ object AIMessageManager {
 
         AppLogger.d(TAG, "AI操作取消请求已发�?chatId=${chatKey}")
     }
-
-    fun cancelAllOperations() {
+        fun cancelAllOperations() {
         AppLogger.d(TAG, "请求取消所有AI操作...")
         val keys = (activeEnhancedAiServiceByChatId.keys + activeMessageProcessingControllerByChatId.keys).toSet()
         keys.forEach { cancelOperation(it) }
@@ -602,12 +583,10 @@ object AIMessageManager {
             else -> messages.subList(lastSummaryIndex + 1, messages.size)
                 .filter { it.sender == "user" || it.sender == "ai" }
         }
-
         if (messagesToSummarize.isEmpty()) {
             AppLogger.d(TAG, "没有新消息需要总结")
-            return null
+        return null
         }
-
         val memoryTagRegex = Regex("<memory>.*?</memory>", RegexOption.DOT_MATCHES_ALL)
         val conversationReviewEntries = mutableListOf<Pair<String, String>>()
         fun normalizeForReview(text: String): String {
@@ -617,40 +596,37 @@ object AIMessageManager {
                 .replace(Regex("\\s+"), " ")
                 .trim()
         }
-
         fun condenseHeadTail(text: String, headChars: Int, tailChars: Int): String {
             val normalized = normalizeForReview(text)
-            val head = headChars.coerceAtLeast(0)
-            val tail = tailChars.coerceAtLeast(0)
-            val minTotal = head + tail
+        val head = headChars.coerceAtLeast(0)
+        val tail = tailChars.coerceAtLeast(0)
+        val minTotal = head + tail
             if (normalized.length <= minTotal + 3) return normalized
             if (head == 0 && tail == 0) return "..."
-            if (head == 0) return "..." + normalized.takeLast(tail)
-            if (tail == 0) return normalized.take(head) + "..."
-            return normalized.take(head) + "..." + normalized.takeLast(tail)
+        if (head == 0) return "..." + normalized.takeLast(tail)
+        if (tail == 0) return normalized.take(head) + "..."
+        return normalized.take(head) + "..." + normalized.takeLast(tail)
         }
-
         fun stripMediaLinksForAssistant(text: String): String {
             var cleaned = text
             val removedImages = MediaLinkParser.hasImageLinks(cleaned)
-            if (removedImages) {
+        if (removedImages) {
                 cleaned = MediaLinkParser.removeImageLinks(cleaned)
             }
-            val removedMedia = MediaLinkParser.hasMediaLinks(cleaned)
-            if (removedMedia) {
+        val removedMedia = MediaLinkParser.hasMediaLinks(cleaned)
+        if (removedMedia) {
                 cleaned = MediaLinkParser.removeMediaLinks(cleaned)
             }
             cleaned = cleaned.trim()
-            if (cleaned.isBlank()) {
+        if (cleaned.isBlank()) {
                 return when {
                     removedImages -> context.getString(R.string.ai_message_image_omitted)
                     removedMedia -> context.getString(R.string.ai_message_media_omitted)
                     else -> ""
                 }
             }
-            return cleaned
+        return cleaned
         }
-
         fun pruneUserMessageForReview(text: String): String {
             val removedLargeTags = text
                 .replace(
@@ -665,31 +641,28 @@ object AIMessageManager {
                     Regex("<reply_to[\\s\\S]*?</reply_to>", RegexOption.DOT_MATCHES_ALL),
                     context.getString(R.string.ai_message_reply_omitted)
                 )
-
-            return ChatMarkupRegex.toolResultTagWithAttrs.replace(removedLargeTags) { mr ->
+        return ChatMarkupRegex.toolResultTagWithAttrs.replace(removedLargeTags) { mr ->
                 val attrs = mr.groupValues.getOrNull(2) ?: ""
-                val name = ChatMarkupRegex.nameAttr
+        val name = ChatMarkupRegex.nameAttr
                     .find(attrs)
                     ?.groupValues
                     ?.getOrNull(1)
                     ?.ifBlank { null }
-                if (name != null) {
+        if (name != null) {
                     context.getString(R.string.ai_message_tool_result_omitted, name)
                 } else {
                     context.getString(R.string.ai_message_tool_result_omitted_short)
                 }
             }
         }
-
         fun condenseUserForReview(text: String): String {
             val pruned = pruneUserMessageForReview(text)
-            return condenseHeadTail(pruned, headChars = 60, tailChars = 20)
+        return condenseHeadTail(pruned, headChars = 60, tailChars = 20)
         }
-
         fun condenseAssistantForReview(text: String): String {
             val cleaned = ChatUtils.removeThinkingContent(text)
-            val normalized = normalizeForReview(cleaned)
-            if (normalized.isBlank()) return "[Empty]"
+        val normalized = normalizeForReview(cleaned)
+        if (normalized.isBlank()) return "[Empty]"
 
             data class Segment(
                 val kind: String,
@@ -697,67 +670,62 @@ object AIMessageManager {
                 val toolName: String? = null,
                 val status: String? = null
             )
-
-            val blockRegex = ChatMarkupRegex.toolOrToolResultBlock
+        val blockRegex = ChatMarkupRegex.toolOrToolResultBlock
             val nameAttrRegex = ChatMarkupRegex.nameAttr
             val statusAttrRegex = ChatMarkupRegex.statusAttr
 
             val segments = mutableListOf<Segment>()
-            var lastEnd = 0
+        var lastEnd = 0
             for (m in blockRegex.findAll(normalized)) {
                 val start = m.range.first
                 val endExclusive = m.range.last + 1
                 if (start > lastEnd) {
                     segments.add(Segment(kind = "text", raw = normalized.substring(lastEnd, start)))
                 }
-
-                val block = m.value
+        val block = m.value
                 val tagName =
                     ChatMarkupRegex.normalizeToolLikeTagName(
                         ChatMarkupRegex.extractOpeningTagName(block)
                     )
-                if (tagName == "tool") {
+        if (tagName == "tool") {
                     val toolName =
                         nameAttrRegex.find(block)?.groupValues?.getOrNull(1)?.ifBlank { null } ?: "tool"
                     segments.add(Segment(kind = "tool", raw = block, toolName = toolName))
                 } else {
                     val toolName =
                         nameAttrRegex.find(block)?.groupValues?.getOrNull(1)?.ifBlank { null } ?: "tool"
-                    val status = statusAttrRegex.find(block)?.groupValues?.getOrNull(1)?.ifBlank { null }
+        val status = statusAttrRegex.find(block)?.groupValues?.getOrNull(1)?.ifBlank { null }
                     segments.add(Segment(kind = "tool_result", raw = block, toolName = toolName, status = status))
                 }
 
                 lastEnd = endExclusive
             }
-            if (lastEnd < normalized.length) {
+        if (lastEnd < normalized.length) {
                 segments.add(Segment(kind = "text", raw = normalized.substring(lastEnd)))
             }
-
-            val cleanedSegments = segments
+        val cleanedSegments = segments
                 .mapNotNull { seg ->
                     when (seg.kind) {
                         "text" -> {
                             val stripped = seg.raw.replace(Regex("<[^>]*>"), " ").trim()
-                            if (stripped.isBlank()) null else seg.copy(raw = stripped)
+        if (stripped.isBlank()) null else seg.copy(raw = stripped)
                         }
                         else -> seg
                     }
                 }
                 .toMutableList()
-
-            val maxSegments = 13
+        val maxSegments = 13
             if (cleanedSegments.size > maxSegments) {
                 val head = cleanedSegments.take(6)
-                val tail = cleanedSegments.takeLast(5)
-                val omitted = (cleanedSegments.size - head.size - tail.size).coerceAtLeast(0)
+        val tail = cleanedSegments.takeLast(5)
+        val omitted = (cleanedSegments.size - head.size - tail.size).coerceAtLeast(0)
                 cleanedSegments.clear()
                 cleanedSegments.addAll(head)
                 cleanedSegments.add(Segment(kind = "text", raw = context.getString(R.string.ai_message_omitted_segment, omitted) ) )
                 cleanedSegments.addAll(tail)
             }
-
-            val lastTextIndex = cleanedSegments.indexOfLast { it.kind == "text" }
-            val parts = cleanedSegments.mapIndexedNotNull { index, seg ->
+        val lastTextIndex = cleanedSegments.indexOfLast { it.kind == "text" }
+        val parts = cleanedSegments.mapIndexedNotNull { index, seg ->
                 when (seg.kind) {
                     "text" -> {
                         val headChars = if (index == lastTextIndex) 60 else 24
@@ -767,14 +735,14 @@ object AIMessageManager {
                     "tool" -> context.getString(R.string.ai_message_tool_start, seg.toolName ?: "tool")
                     "tool_result" -> {
                         val s = seg.status?.lowercase()
-                        val statusText = when {
+        val statusText = when {
                             s == null -> ""
                             s == "success" -> context.getString(R.string.ai_message_success)
                             s == "error" -> context.getString(R.string.ai_message_failure)
                             else -> s
                         }
-                        val name = seg.toolName ?: "tool"
-                        if (statusText.isBlank()) {
+        val name = seg.toolName ?: "tool"
+        if (statusText.isBlank()) {
                             context.getString(R.string.ai_message_result_omitted, name)
                         } else {
                             context.getString(R.string.ai_message_result_omitted_with_status, name, statusText)
@@ -783,9 +751,8 @@ object AIMessageManager {
                     else -> null
                 }
             }
-
-            val combined = parts.joinToString(" ").trim()
-            return if (combined.isBlank()) "[Empty]" else combined
+        val combined = parts.joinToString(" ").trim()
+        return if (combined.isBlank()) "[Empty]" else combined
         }
 
         // 群聊模式：将消息打包成多角色格式
@@ -803,23 +770,20 @@ object AIMessageManager {
     val withoutThinking = ChatUtils.removeThinkingContent(message.content)
                         stripMediaLinksForAssistant(withoutThinking)
                     }
-
-                    if (cleanedContent.isNotBlank()) {
+        if (cleanedContent.isNotBlank()) {
                         val displayContent = if (message.sender == "assistant") {
                             condenseAssistantForReview(cleanedContent)
                         } else {
                             condenseUserForReview(cleanedContent)
                         }
-
-                        val speakerLabel = if (message.sender == "user") {
+        val speakerLabel = if (message.sender == "user") {
                             "user"
                         } else {
                             message.roleName?.takeIf { it.isNotBlank() } ?: "AI"
                         }
 
                         conversationReviewEntries.add(speakerLabel to displayContent)
-
-                        if (isNotEmpty()) append(" ")
+        if (isNotEmpty()) append(" ")
                         append("${speakerLabel}: ${cleanedContent}")
                     }
                 }
@@ -829,45 +793,43 @@ object AIMessageManager {
             // 非群聊模式：保持原有逻辑
             messagesToSummarize.mapIndexed { index, message ->
                 val role = if (message.sender == "user") "user" else "assistant"
-                val cleanedContent = if (role == "user") {
+        val cleanedContent = if (role == "user") {
                     stripMediaLinksForAssistant(
                         message.content.replace(memoryTagRegex, "").trim()
                     )
                 } else {
                     stripMediaLinksForAssistant(message.content)
                 }
-                if (cleanedContent.isNotBlank()) {
+        if (cleanedContent.isNotBlank()) {
                     val displayContent =
                         if (role == "assistant") condenseAssistantForReview(cleanedContent) else condenseUserForReview(cleanedContent)
-                    val speakerLabel =
+        val speakerLabel =
                         if (message.sender == "user") {
                             "user"
                         } else {
                             val roleName = message.roleName?.takeIf { it.isNotBlank() }
-                            if (roleName != null) roleName else "AI"
+        if (roleName != null) roleName else "AI"
                         }
                     conversationReviewEntries.add(speakerLabel to displayContent)
                 }
                 Pair(role, "#${index + 1}: ${cleanedContent}")
             }
         }
-
         return try {
             AppLogger.d(TAG, "开始使用AI生成对话总结：总结 ${messagesToSummarize.size} 条消�?
             val summary = enhancedAiService.generateSummary(conversationToSummarize, previousSummary)
             AppLogger.d(TAG, "AI生成总结完成: ${summary.take(50)}...")
-
-            if (summary.isBlank()) {
+        if (summary.isBlank()) {
                 AppLogger.e(TAG, "AI生成的总结内容为空，放弃本次总结")
                 null
             } else {
                 // 如果是自动续写，在总结消息尾部添加续写提示
     val trimmedSummary = summary.trim()
-                val useEnglish = LocaleUtils.getCurrentLanguage(context).lowercase().startsWith("en")
-                val packageWarmupBlock = buildPackageWarmupBlock(messagesToSummarize, useEnglish)
-                val summaryWithQuotes = buildString {
+        val useEnglish = LocaleUtils.getCurrentLanguage(context).lowercase().startsWith("en")
+        val packageWarmupBlock = buildPackageWarmupBlock(messagesToSummarize, useEnglish)
+        val summaryWithQuotes = buildString {
                     append(trimmedSummary)
-                    if (conversationReviewEntries.isNotEmpty()) {
+        if (conversationReviewEntries.isNotEmpty()) {
                         append(context.getString(R.string.ai_message_dialogue_review))
                         conversationReviewEntries.forEach { (speaker, content) ->
                             append("- ")
@@ -877,13 +839,12 @@ object AIMessageManager {
                             append("\n")
                         }
                     }
-                    if (packageWarmupBlock.isNotBlank()) {
+        if (packageWarmupBlock.isNotBlank()) {
                         append("\n\n")
                         append(packageWarmupBlock)
                     }
                 }.trimEnd()
-
-                val finalSummary = if (autoContinue) {
+        val finalSummary = if (autoContinue) {
                     context.getString(R.string.ai_message_continue_task_if_complete, summaryWithQuotes)
                 } else {
                     summaryWithQuotes
@@ -901,17 +862,15 @@ object AIMessageManager {
                 throw e
             }
             AppLogger.e(TAG, "AI生成总结过程中发生异常， e)
-            throw e
+        throw e
         }
     }
-
-    private suspend fun buildPackageWarmupBlock(
+        private suspend fun buildPackageWarmupBlock(
         messagesToSummarize: List<ChatMessage>,
         useEnglish: Boolean
     ): String {
         val title = if (useEnglish) "[Package Warmup]" else "【工具包预热�?
         val topPackages = extractTopPackageUsages(messagesToSummarize, limit = 2)
-
         if (topPackages.isEmpty()) {
             val emptyMessage =
                 if (useEnglish) {
@@ -919,16 +878,14 @@ object AIMessageManager {
                 } else {
                     "本次摘要范围内未检测到包工具调用，因此未进行工具包预热�?
                 }
-            return "${title}\n${emptyMessage}"
+        return "${title}\n${emptyMessage}"
         }
-
         val intro =
             if (useEnglish) {
                 "The following high-frequency packages were automatically activated from the summarized tool usage, and their use_package results are attached for the next-turn warmup."
             } else {
                 "以下根据本次摘要范围内的工具使用频次，自动激活了最高频的工具包，并附上 use_package 的返回结果，供下一轮预热，
             }
-
         val body = withContext(Dispatchers.IO) {
             val packageManager = toolHandler.getOrCreatePackageManager()
             buildString {
@@ -951,27 +908,24 @@ object AIMessageManager {
                                     "use_package 返回为空�?
                                 }
                             }
-
-                    if (useEnglish) {
+        if (useEnglish) {
                         appendLine("${index + 1}. Package ${stat.packageName} (${stat.count} hits)")
                     } else {
                         appendLine("${index + 1}. �?{stat.packageName}（命�?{stat.count} 次）")
                     }
                     appendLine(indentBlock(resultText, "   "))
-                    if (index != topPackages.lastIndex) {
+        if (index != topPackages.lastIndex) {
                         appendLine()
                     }
                 }
             }.trimEnd()
         }
-
         return buildString {
             appendLine(title)
             append(body)
         }.trimEnd()
     }
-
-    private fun extractTopPackageUsages(
+        private fun extractTopPackageUsages(
         messagesToSummarize: List<ChatMessage>,
         limit: Int
     ): List<PackageUsageStat> {
@@ -983,22 +937,19 @@ object AIMessageManager {
             var count: Int,
             val firstSeenOrder: Int
         )
-
         val packageUsage = linkedMapOf<String, PackageUsageCounter>()
         var nextOrder = 0
 
         fun recordPackageUsage(toolName: String) {
             val normalizedToolName = toolName.trim()
-            if (normalizedToolName.isBlank() || !normalizedToolName.contains(':')) {
+        if (normalizedToolName.isBlank() || !normalizedToolName.contains(':')) {
                 return
             }
-
-            val packageName = normalizedToolName.substringBefore(':').trim()
-            if (packageName.isBlank()) {
+        val packageName = normalizedToolName.substringBefore(':').trim()
+        if (packageName.isBlank()) {
                 return
             }
-
-            val existing = packageUsage[packageName]
+        val existing = packageUsage[packageName]
             if (existing == null) {
                 packageUsage[packageName] = PackageUsageCounter(count = 1, firstSeenOrder = nextOrder)
                 nextOrder += 1
@@ -1014,9 +965,8 @@ object AIMessageManager {
                 val content = ChatUtils.removeThinkingContent(message.content)
                 ChatMarkupRegex.toolCallPattern.findAll(content).forEach { match ->
                     val toolName = match.groupValues.getOrNull(2).orEmpty().trim()
-                    val toolBody = match.groupValues.getOrNull(3).orEmpty()
-
-                    when {
+        val toolBody = match.groupValues.getOrNull(3).orEmpty()
+        when {
                         toolName == "package_proxy" -> {
                             val proxiedToolName =
                                 ChatMarkupRegex.toolParamPattern
@@ -1033,7 +983,6 @@ object AIMessageManager {
                     }
                 }
             }
-
         return packageUsage.entries
             .sortedWith(
                 compareByDescending<Map.Entry<String, PackageUsageCounter>> { it.value.count }
@@ -1047,8 +996,7 @@ object AIMessageManager {
                 )
             }
     }
-
-    private fun indentBlock(text: String, prefix: String): String {
+        private fun indentBlock(text: String, prefix: String): String {
         return text
             .lines()
             .joinToString("\n") { line ->
@@ -1080,25 +1028,24 @@ object AIMessageManager {
         // 检查Token阈，
     if (maxTokens > 0) {
             val usageRatio = currentTokens.toDouble() / maxTokens.toDouble()
-            if (usageRatio >= tokenUsageThreshold) {
+        if (usageRatio >= tokenUsageThreshold) {
                 AppLogger.d(TAG, "Token usage (${usageRatio}) exceeds threshold (${tokenUsageThreshold}). Triggering summary.")
-                return true
+        return true
             }
         }
 
         // 检查消息条数阈值（如果启用�?
     if (enableSummaryByMessageCount) {
             val lastSummaryIndex = messages.indexOfLast { it.sender == "summary" }
-            val relevantMessages = if (lastSummaryIndex != -1) {
+        val relevantMessages = if (lastSummaryIndex != -1) {
                 messages.subList(lastSummaryIndex + 1, messages.size)
             } else {
                 messages
             }
-            val userAiMessagesSinceLastSummary = relevantMessages.count { it.sender == "user"}
-
-            if (userAiMessagesSinceLastSummary >= summaryMessageCountThreshold) {
+        val userAiMessagesSinceLastSummary = relevantMessages.count { it.sender == "user"}
+        if (userAiMessagesSinceLastSummary >= summaryMessageCountThreshold) {
                 AppLogger.d(TAG, "自上次总结后新消息数量达到阈，(${userAiMessagesSinceLastSummary})，生成总结.")
-                return true
+        return true
             }
         }
 
@@ -1131,7 +1078,7 @@ object AIMessageManager {
         // 3. 辅助函数：移除状态标�?
     fun removeStatusTags(text: String): String {
             val noStatus = ChatMarkupRegex.statusTag.replace(text, " ")
-            return ChatMarkupRegex.statusSelfClosingTag.replace(noStatus, " ").trim()
+        return ChatMarkupRegex.statusSelfClosingTag.replace(noStatus, " ").trim()
         }
 
         // 4. 处理每条消息
@@ -1167,8 +1114,7 @@ object AIMessageManager {
         )
         return processedMessages
     }
-
-    private fun processAiMessage(
+        private fun processAiMessage(
         message: ChatMessage,
         isRoleScopedMode: Boolean,
         targetRoleName: String,
@@ -1197,8 +1143,8 @@ object AIMessageManager {
         } else {
             // 其他角色的消息：转换，user 消息，添加角色标�?
     val roleLabel = if (messageRoleName.isNotBlank()) messageRoleName else "unknown"
-            val bridgedContent = removeStatusTags(cleanedContent)
-            if (bridgedContent.isBlank()) {
+        val bridgedContent = removeStatusTags(cleanedContent)
+        if (bridgedContent.isBlank()) {
                 null
             } else {
                 PromptTurn(
@@ -1208,8 +1154,7 @@ object AIMessageManager {
             }
         }
     }
-
-    private fun processUserMessage(
+        private fun processUserMessage(
         message: ChatMessage,
         isRoleScopedMode: Boolean,
         groupOrchestrationMode: Boolean
@@ -1219,7 +1164,7 @@ object AIMessageManager {
         // 群组编排模式 + 角色隔离模式：给用户消息添加 [From user] 前缀
     if (groupOrchestrationMode && isRoleScopedMode) {
             val trimmed = baseContent.trim()
-            return when {
+        return when {
                 trimmed.isBlank() ->
                     PromptTurn(kind = PromptTurnKind.USER, content = baseContent)
                 trimmed.startsWith("[From user]") ->

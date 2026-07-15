@@ -143,8 +143,7 @@ class MemeModeEngine(
 ) {
 
     private val memeDatabase = ConcurrentHashMap<String, Meme>()
-    private val usageStats = ConcurrentHashMap<String, Int>()  // memeId -> 使用次数
-
+        private val usageStats = ConcurrentHashMap<String, Int>()  // memeId -> 使用次数
     init {
         registerBuiltinMemes()
     }
@@ -182,15 +181,13 @@ class MemeModeEngine(
         if (!config.enabled || !config.autoDetectUserMeme) {
             return MemeDetectionResult(emptyList(), 0, 0f, MemeResponseTone(false, 0f, emptySet(), "玩梗关闭"))
         }
-
         val detected = mutableListOf<DetectedMeme>()
         val textLower = text.lowercase()
-
         for (meme in memeDatabase.values) {
             if (meme.id in config.blockedMemes) continue
             for (keyword in meme.keywords) {
                 val idx = textLower.indexOf(keyword.lowercase())
-                if (idx >= 0) {
+        if (idx >= 0) {
                     val context = text.substring(
                         (idx - 10).coerceAtLeast(0),
                         (idx + keyword.length + 10).coerceAtMost(text.length)
@@ -200,10 +197,8 @@ class MemeModeEngine(
                 }
             }
         }
-
         val density = if (text.isNotEmpty()) detected.size.toFloat() / (text.length / 10).coerceAtLeast(1) else 0f
         val tone = decideResponseTone(detected, density)
-
         return MemeDetectionResult(detected, detected.size, density, tone)
     }
 
@@ -218,23 +213,19 @@ class MemeModeEngine(
         if (!config.enabled || !config.respondWithMeme) {
             return MemeGenerationResult(baseResponse, emptyList(), 1f)
         }
-
         val detection = detect(userMessage)
         if (!detection.suggestedResponseTone.useMeme) {
             return MemeGenerationResult(baseResponse, emptyList(), 1f)
         }
-
         val candidates = selectCandidateMemes(detection, scene)
         if (candidates.isEmpty()) {
             return MemeGenerationResult(baseResponse, emptyList(), 0.8f)
         }
-
         val usedMemes = candidates.take(config.maxMemesPerResponse)
         val enhanced = injectMemes(baseResponse, usedMemes, detection.suggestedResponseTone.memeDensity)
 
         // 更新使用统计
         usedMemes.forEach { usageStats[it.id] = (usageStats[it.id] ?: 0) + 1 }
-
         return MemeGenerationResult(
             content = enhanced,
             usedMemes = usedMemes,
@@ -248,12 +239,10 @@ class MemeModeEngine(
      */
     fun generateMemePrompt(userMessage: String, scene: String): String {
         if (!config.enabled) return ""
-
         val detection = detect(userMessage)
         val sb = StringBuilder()
 
         sb.append("[玩梗模式: ${config.intensity}]")
-
         if (detection.totalMemes > 0) {
             sb.appendLine()
             sb.append("用户使用了 ${detection.totalMemes} 个梗:")
@@ -261,12 +250,11 @@ class MemeModeEngine(
                 sb.appendLine("- ${dm.meme.name}: ${dm.meme.description}")
             }
         }
-
         if (detection.suggestedResponseTone.useMeme) {
             sb.appendLine()
             sb.append("建议回复梗密度: ${(detection.suggestedResponseTone.memeDensity * 100).toInt()}%")
             sb.append("建议梗类型: ${detection.suggestedResponseTone.types.joinToString { it.name }}")
-            if (detection.suggestedResponseTone.reason.isNotBlank()) {
+        if (detection.suggestedResponseTone.reason.isNotBlank()) {
                 sb.appendLine()
                 sb.append("原因: ${detection.suggestedResponseTone.reason}")
             }
@@ -281,7 +269,6 @@ class MemeModeEngine(
             .filter { it.id !in config.blockedMemes }
             .sortedByDescending { it.popularity }
             .take(5)
-
         if (availableMemes.isNotEmpty()) {
             sb.appendLine()
             sb.append("可用梗参考:")
@@ -289,7 +276,6 @@ class MemeModeEngine(
                 sb.appendLine("- ${m.name}: ${m.example}")
             }
         }
-
         return sb.toString()
     }
 
@@ -366,14 +352,14 @@ class MemeModeEngine(
         // 如果用户用了梗，鼓励回应
     if (detected.isNotEmpty()) {
             val types = detected.map { it.meme.type }.toSet()
-            val intensity = when (config.intensity) {
+        val intensity = when (config.intensity) {
                 MemeIntensity.SUBTLE -> 0.1f
                 MemeIntensity.BALANCED -> 0.3f
                 MemeIntensity.ENTHUSIASTIC -> 0.5f
                 MemeIntensity.MAXIMUM -> 0.8f
                 MemeIntensity.OFF -> 0f
             }
-            return MemeResponseTone(
+        return MemeResponseTone(
                 useMeme = true,
                 memeDensity = intensity,
                 types = types,
@@ -390,8 +376,7 @@ class MemeModeEngine(
             MemeIntensity.OFF -> MemeResponseTone(false, 0f, emptySet(), "关闭")
         }
     }
-
-    private fun selectCandidateMemes(detection: MemeDetectionResult, scene: String): List<Meme> {
+        private fun selectCandidateMemes(detection: MemeDetectionResult, scene: String): List<Meme> {
         val appropriateTypes = detection.suggestedResponseTone.types
         return memeDatabase.values
             .filter { it.type in appropriateTypes }
@@ -402,8 +387,7 @@ class MemeModeEngine(
             .sortedByDescending { it.popularity }
             .toList()
     }
-
-    private fun injectMemes(response: String, memes: List<Meme>, density: Float): String {
+        private fun injectMemes(response: String, memes: List<Meme>, density: Float): String {
         if (memes.isEmpty()) return response
 
         var result = response
@@ -415,18 +399,16 @@ class MemeModeEngine(
     if (memes.size >= 1) {
                 result = "${memePhrases[0]} $result"
             }
-            if (memes.size >= 2) {
+        if (memes.size >= 2) {
                 result = "$result ${memePhrases[1]}"
             }
         } else {
             // 低密度：只在结尾加一个
             result = "$result ${memePhrases.first()}"
         }
-
         return result
     }
-
-    private fun generateAlternatives(response: String, candidates: List<Meme>, used: List<Meme>): List<String> {
+        private fun generateAlternatives(response: String, candidates: List<Meme>, used: List<Meme>): List<String> {
         val alternatives = mutableListOf<String>()
         val unused = candidates.filter { it.id !in used.map { m -> m.id } }.take(3)
         for (meme in unused) {
@@ -530,7 +512,7 @@ class MemeModeEngine(
         // 2. 本地没有，网络搜索
     if (webSearchEnabled) {
             val wiki = lookupMemeOnline(query)
-            if (wiki.success) {
+        if (wiki.success) {
                 return buildString {
                     appendLine("【${wiki.name}】（来源: ${wiki.source}）")
                     appendLine(wiki.definition)
@@ -539,19 +521,18 @@ class MemeModeEngine(
 
             // 3. 百科没有，用搜索结果
     val search = searchMemeOnline(query)
-            if (search.success && search.items.isNotEmpty()) {
+        if (search.success && search.items.isNotEmpty()) {
                 return buildString {
                     appendLine("【$query】（网络搜索结果）")
                     search.items.take(3).forEach { item ->
                         appendLine("- ${item.title}")
-                        if (item.snippet.isNotBlank()) {
+        if (item.snippet.isNotBlank()) {
                             appendLine("  ${item.snippet.take(150)}")
                         }
                     }
                 }
             }
         }
-
         return "未找到「$query」的解释"
     }
 

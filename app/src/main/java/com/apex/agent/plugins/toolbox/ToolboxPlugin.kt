@@ -63,7 +63,6 @@ private object ToolPkgAppLifecycleHookPlugin : AppLifecycleHookPlugin {
                 AIToolHandler.getInstance(context)
             )
         val hooks = hooksByEvent[event.wireName.trim().lowercase()].orEmpty()
-
         for (hook in hooks) {
             val result =
                 withContext(Dispatchers.IO) {
@@ -88,13 +87,12 @@ private object ToolPkgAppLifecycleHookPlugin : AppLifecycleHookPlugin {
             }
         }
     }
-
-    fun syncToolPkgRegistrations(activeContainers: List<ToolPkgContainerRuntime>) {
+        fun syncToolPkgRegistrations(activeContainers: List<ToolPkgContainerRuntime>) {
         hooksByEvent =
             activeContainers.flatMap { runtime ->
                 runtime.appLifecycleHooks.mapNotNull { hook ->
                     val normalizedEvent = hook.event.trim().lowercase()
-                    if (normalizedEvent.isBlank()) {
+        if (normalizedEvent.isBlank()) {
                         null
                     } else {
                         ToolPkgAppLifecycleHookRegistration(
@@ -121,8 +119,8 @@ private object ToolPkgAppLifecycleHookPlugin : AppLifecycleHookPlugin {
 
 object ToolboxPlugin : ApexPlugin {
     override val id: String = "builtin.toolbox"
-    private val installed = AtomicBoolean(false)
-    private val runtimeChangeListener =
+        private val installed = AtomicBoolean(false)
+        private val runtimeChangeListener =
         PackageManager.ToolPkgRuntimeChangeListener {
             val context = ApexApplication.instance.applicationContext
             val packageManager = PackageManager.getInstance(context, AIToolHandler.getInstance(context))
@@ -137,7 +135,6 @@ object ToolboxPlugin : ApexPlugin {
         }
         ToolboxScriptPluginRegistry.register(ToolPkgToolboxScriptPlugin)
         AppLifecycleHookPluginRegistry.register(ToolPkgAppLifecycleHookPlugin)
-
         val context = ApexApplication.instance.applicationContext
         val packageManager = PackageManager.getInstance(context, AIToolHandler.getInstance(context))
         packageManager.addToolPkgRuntimeChangeListener(runtimeChangeListener)

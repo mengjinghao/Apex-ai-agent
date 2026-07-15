@@ -18,27 +18,23 @@ object ExternalChatResponseSanitizer {
         if (returnToolStatus) {
             return raw
         }
-
         val sanitized = StringBuilder()
         collectSanitizedGroups(raw.charStream().splitBy(listOf(StreamXmlPlugin()))) { chunk ->
             sanitized.append(chunk)
         }
         return sanitizeResidualWhitespace(sanitized.toString())
     }
-
-    fun sanitizeStream(rawStream: Stream<String>, returnToolStatus: Boolean): Stream<String> {
+        fun sanitizeStream(rawStream: Stream<String>, returnToolStatus: Boolean): Stream<String> {
         if (returnToolStatus) {
             return rawStream
         }
-
         return stream {
             collectSanitizedGroups(rawStream.splitBy(listOf(StreamXmlPlugin()))) { chunk ->
                 emit(chunk)
             }
         }
     }
-
-    private suspend fun collectSanitizedGroups(
+        private suspend fun collectSanitizedGroups(
         groups: Stream<StreamGroup<StreamPlugin?>>,
         emitChunk: suspend (String) -> Unit
     ) {
@@ -47,8 +43,8 @@ object ExternalChatResponseSanitizer {
                 is StreamXmlPlugin -> {
                     val xmlContent = StringBuilder()
                     group.stream.collect { piece -> xmlContent.append(piece) }
-                    val xml = xmlContent.toString()
-                    if (!shouldStripXmlGroup(xml)) {
+        val xml = xmlContent.toString()
+        if (!shouldStripXmlGroup(xml)) {
                         emitChunk(xml)
                     }
                 }
@@ -65,8 +61,8 @@ object ExternalChatResponseSanitizer {
 
                     group.stream.collect { piece ->
                         textBuffer.append(piece)
-                        val lastChar = piece.lastOrNull()
-                        if (
+        val lastChar = piece.lastOrNull()
+        if (
                             textBuffer.length >= TEXT_BATCH_FLUSH_SIZE ||
                                 lastChar == '\n' ||
                                 lastChar == '\r' ||
@@ -84,16 +80,14 @@ object ExternalChatResponseSanitizer {
             }
         }
     }
-
-    private fun shouldStripXmlGroup(xml: String): Boolean {
+        private fun shouldStripXmlGroup(xml: String): Boolean {
         val normalizedTagName =
             ChatMarkupRegex.normalizeToolLikeTagName(ChatMarkupRegex.extractOpeningTagName(xml))
         return normalizedTagName == "status" ||
             normalizedTagName == "tool" ||
             normalizedTagName == "tool_result"
     }
-
-    private fun sanitizeResidualWhitespace(content: String): String? {
+        private fun sanitizeResidualWhitespace(content: String): String? {
         val normalized =
             content
                 .replace("\r\n", "\n")
@@ -103,8 +97,7 @@ object ExternalChatResponseSanitizer {
                 .trim()
         return normalized.takeIf { it.isNotBlank() }
     }
-
-    private fun isNaturalFlushBoundary(lastChar: Char): Boolean {
+        private fun isNaturalFlushBoundary(lastChar: Char): Boolean {
         return lastChar in
             setOf('�? '�? '�? '�? '�? '�? '.', ',', '!', '?', ';', ':')
     }

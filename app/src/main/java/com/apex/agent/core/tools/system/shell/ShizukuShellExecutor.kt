@@ -22,8 +22,7 @@ class ShizukuShellExecutor(private val context: Context) : ShellExecutor {
     companion object {
         private const val TAG = "ShizukuShellExecutor"
     }
-
-    private var isInitialized = false
+        private var isInitialized = false
     private var cachedPermissionStatus: ShellExecutor.PermissionStatus? = null
     private var lastPermissionCheckTime = 0L
     private const val PERMISSION_CACHE_TTL = 10000L
@@ -40,11 +39,9 @@ class ShizukuShellExecutor(private val context: Context) : ShellExecutor {
 
     override fun hasPermission(): ShellExecutor.PermissionStatus {
         val now = System.currentTimeMillis()
-
         if (now - lastPermissionCheckTime < PERMISSION_CACHE_TTL && cachedPermissionStatus != null) {
             return cachedPermissionStatus!!
         }
-
         val status = try {
             when {
                 !isAvailable() -> ShellExecutor.PermissionStatus.denied("Shizuku 服务未运�?)
@@ -77,9 +74,8 @@ class ShizukuShellExecutor(private val context: Context) : ShellExecutor {
         identity: ShellIdentity
     ): ShellExecutor.CommandResult = withContext(Dispatchers.IO) {
             AppLogger.d(TAG, "执行 Shizuku 命令: ${command}")
-
-            val permStatus = hasPermission()
-            if (!permStatus.granted) {
+        val permStatus = hasPermission()
+        if (!permStatus.granted) {
                 return@withContext ShellExecutor.CommandResult(
                     success = false,
                     stdout = "",
@@ -102,15 +98,13 @@ class ShizukuShellExecutor(private val context: Context) : ShellExecutor {
                 )
             }
         }
-
-    private fun executeShizukuCommand(command: String): ShellExecutor.CommandResult {
+        private fun executeShizukuCommand(command: String): ShellExecutor.CommandResult {
         return try {
             val builder = Shizuku.newProcessBuilder(arrayOf("sh", "-c", command))
-            val process = builder.start()
-
-            val stdout = process.inputStream.bufferedReader().readText()
-            val stderr = process.errorStream.bufferedReader().readText()
-            val exitCode = process.waitFor()
+        val process = builder.start()
+        val stdout = process.inputStream.bufferedReader().readText()
+        val stderr = process.errorStream.bufferedReader().readText()
+        val exitCode = process.waitFor()
 
             ShellExecutor.CommandResult(
                 success = exitCode == 0,
@@ -141,15 +135,13 @@ private class ShizukuShellProcess(
     companion object {
         private const val TAG = "ShizukuShellProcess"
     }
-
-    private var process: Process? = null
+        private var process: Process? = null
     private var destroyed = false
 
     init {
         startProcess()
     }
-
-    private fun startProcess() {
+        private fun startProcess() {
         try {
             val builder = Shizuku.newProcessBuilder(arrayOf("sh", "-c", command))
             process = builder.start()

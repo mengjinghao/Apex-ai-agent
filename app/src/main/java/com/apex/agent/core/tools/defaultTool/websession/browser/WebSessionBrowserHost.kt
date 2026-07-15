@@ -78,11 +78,9 @@ internal class WebSessionBrowserHost(
         fun onConfirmExternalOpen(requestId: String)
         fun onCancelExternalOpen(requestId: String)
     }
-
-    private val windowManager = appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        private val windowManager = appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val webViewHost = WebSessionWebViewHost()
-
-    private var rootView: DeceptiveMinimizedLayout? = null
+        private var rootView: DeceptiveMinimizedLayout? = null
     private var composeView: ComposeView? = null
     private var overlayParams: WindowManager.LayoutParams? = null
     private var overlayLifecycleOwner: WebSessionOverlayLifecycleOwner? = null
@@ -93,28 +91,25 @@ internal class WebSessionBrowserHost(
 
     private var isExpanded: Boolean = false
     private var hostState by mutableStateOf(WebSessionBrowserHostState())
-    fun ensureCreated(initialExpanded: Boolean = false) {
+        fun ensureCreated(initialExpanded: Boolean = false) {
         if (rootView != null) {
             if (isExpanded != initialExpanded) {
                 setExpanded(initialExpanded)
             }
-            return
+        return
         }
-
         val lifecycleOwner =
             WebSessionOverlayLifecycleOwner().apply {
                 handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
                 handleLifecycleEvent(Lifecycle.Event.ON_START)
                 handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
             }
-
         val root =
             DeceptiveMinimizedLayout(appContext).apply {
                 setBackgroundColor(AndroidColor.TRANSPARENT)
                 setOnClickListener {}
             }
         installViewTreeOwners(root, lifecycleOwner)
-
         val compose =
             ComposeView(appContext).apply {
                 setBackgroundColor(AndroidColor.TRANSPARENT)
@@ -123,8 +118,8 @@ internal class WebSessionBrowserHost(
                 installViewTreeOwners(this, lifecycleOwner)
                 setContent {
                     val bookmarks by store.bookmarksFlow.collectAsState(initial = emptyList())
-                    val history by store.historyFlow.collectAsState(initial = emptyList())
-                    val userscriptUiState by userscriptStore.state.collectAsState()
+        val history by store.historyFlow.collectAsState(initial = emptyList())
+        val userscriptUiState by userscriptStore.state.collectAsState()
 
                     WebSessionFloatingTheme {
                         WebSessionBrowserScreen(
@@ -190,8 +185,7 @@ internal class WebSessionBrowserHost(
         windowManager.addView(root, overlayParams)
         setExpanded(initialExpanded)
     }
-
-    fun destroy() {
+        fun destroy() {
         hideIndicator()
         overlayLifecycleOwner?.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
         overlayLifecycleOwner?.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -211,8 +205,7 @@ internal class WebSessionBrowserHost(
         indicatorParams = null
         webViewHost.clear()
     }
-
-    fun updateHostProjection(
+        fun updateHostProjection(
         browserState: WebSessionBrowserState,
         downloadUiState: BrowserDownloadUiState,
         externalOpenPrompt: ExternalOpenPromptState?
@@ -234,12 +227,10 @@ internal class WebSessionBrowserHost(
             )
         updateIndicatorLayoutForCurrentState()
     }
-
-    fun attachActiveWebView(webView: WebView) {
+        fun attachActiveWebView(webView: WebView) {
         webViewHost.setActiveWebView(webView)
     }
-
-    fun isExpanded(): Boolean = isExpanded
+        fun isExpanded(): Boolean = isExpanded
 
     fun setViewportSize(width: Int, height: Int) {
         updateHostState {
@@ -249,22 +240,18 @@ internal class WebSessionBrowserHost(
             )
         }
     }
-
-    fun clearViewportSizeOverride() {
+        fun clearViewportSizeOverride() {
         updateHostState { it.copy(viewportWidthPx = null, viewportHeightPx = null) }
     }
-
-    fun currentViewportSize(): Pair<Int, Int> {
+        fun currentViewportSize(): Pair<Int, Int> {
         val metrics = appContext.resources.displayMetrics
         val width = hostState.viewportWidthPx ?: metrics.widthPixels
         val height = hostState.viewportHeightPx ?: metrics.heightPixels
         return width to height
     }
-
-    fun currentBrowserAreaSize(): Pair<Int, Int> =
+        fun currentBrowserAreaSize(): Pair<Int, Int> =
         hostState.browserAreaWidthPx.coerceAtLeast(0) to hostState.browserAreaHeightPx.coerceAtLeast(0)
-
-    fun setExpanded(expanded: Boolean) {
+        fun setExpanded(expanded: Boolean) {
         val params = overlayParams ?: return
         val root = rootView ?: return
         val compose = composeView ?: return
@@ -280,7 +267,6 @@ internal class WebSessionBrowserHost(
                     urlDraft = hostState.browserState.currentUrl
                 )
             }
-
         if (expanded) {
             root.descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
             root.setMinimizedMeasure(false)
@@ -324,8 +310,7 @@ internal class WebSessionBrowserHost(
         }
         updateIndicatorLayoutForCurrentState()
     }
-
-    private fun applyExpandedLayoutParams(params: WindowManager.LayoutParams) {
+        private fun applyExpandedLayoutParams(params: WindowManager.LayoutParams) {
         params.width = WindowManager.LayoutParams.MATCH_PARENT
         params.height = WindowManager.LayoutParams.MATCH_PARENT
         params.gravity = Gravity.CENTER
@@ -334,12 +319,10 @@ internal class WebSessionBrowserHost(
         params.flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
         params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
     }
-
-    fun showSheet(route: WebSessionBrowserSheetRoute) {
+        fun showSheet(route: WebSessionBrowserSheetRoute) {
         updateHostState { it.copy(sheetRoute = route) }
     }
-
-    private fun updateHostState(transform: (WebSessionBrowserHostState) -> WebSessionBrowserHostState) {
+        private fun updateHostState(transform: (WebSessionBrowserHostState) -> WebSessionBrowserHostState) {
         val updated = transform(hostState)
         if (updated == hostState) {
             return
@@ -357,8 +340,7 @@ internal class WebSessionBrowserHost(
             }
         }
     }
-
-    fun syncIndicatorWithMinimizedWindow() {
+        fun syncIndicatorWithMinimizedWindow() {
         if (isExpanded) {
             return
         }
@@ -374,21 +356,17 @@ internal class WebSessionBrowserHost(
             windowManager.updateViewLayout(root, params)
         }
     }
-
-    private fun showIndicator() {
+        private fun showIndicator() {
         if (indicatorView != null) {
             return
         }
-
         val lifecycleOwner =
             WebSessionOverlayLifecycleOwner().apply {
                 handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
                 handleLifecycleEvent(Lifecycle.Event.ON_START)
                 handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
             }
-
         val params = indicatorParams ?: createIndicatorLayoutParams().also { indicatorParams = it }
-
         val indicator =
             ComposeView(appContext).apply {
                 setBackgroundColor(AndroidColor.TRANSPARENT)
@@ -415,8 +393,7 @@ internal class WebSessionBrowserHost(
         indicatorView = indicator
         windowManager.addView(indicator, params)
     }
-
-    private fun hideIndicator() {
+        private fun hideIndicator() {
         val view = indicatorView ?: return
         indicatorLifecycleOwner?.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
         indicatorLifecycleOwner?.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -428,8 +405,7 @@ internal class WebSessionBrowserHost(
         indicatorView = null
         indicatorLifecycleOwner = null
     }
-
-    private fun moveIndicatorBy(dx: Int, dy: Int) {
+        private fun moveIndicatorBy(dx: Int, dy: Int) {
         val indicator = indicatorView ?: return
         val params = indicatorParams ?: return
         val maxX = (appContext.resources.displayMetrics.widthPixels - params.width).coerceAtLeast(0)
@@ -441,8 +417,7 @@ internal class WebSessionBrowserHost(
         windowManager.updateViewLayout(indicator, params)
         syncIndicatorWithMinimizedWindow()
     }
-
-    private fun updateIndicatorLayoutForCurrentState() {
+        private fun updateIndicatorLayoutForCurrentState() {
         if (isExpanded) {
             return
         }
@@ -461,8 +436,7 @@ internal class WebSessionBrowserHost(
         }
         syncIndicatorWithMinimizedWindow()
     }
-
-    private fun installViewTreeOwners(
+        private fun installViewTreeOwners(
         view: View,
         lifecycleOwner: WebSessionOverlayLifecycleOwner
     ) {
@@ -470,8 +444,7 @@ internal class WebSessionBrowserHost(
         view.setViewTreeViewModelStoreOwner(lifecycleOwner)
         view.setViewTreeSavedStateRegistryOwner(lifecycleOwner)
     }
-
-    private fun createOverlayLayoutParams(expanded: Boolean): WindowManager.LayoutParams {
+        private fun createOverlayLayoutParams(expanded: Boolean): WindowManager.LayoutParams {
         val type =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -479,7 +452,6 @@ internal class WebSessionBrowserHost(
                 @Suppress("DEPRECATION")
                 WindowManager.LayoutParams.TYPE_PHONE
             }
-
         return if (expanded) {
             WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -509,8 +481,7 @@ internal class WebSessionBrowserHost(
             }
         }
     }
-
-    private fun createIndicatorLayoutParams(): WindowManager.LayoutParams {
+        private fun createIndicatorLayoutParams(): WindowManager.LayoutParams {
         val type =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -518,7 +489,6 @@ internal class WebSessionBrowserHost(
                 @Suppress("DEPRECATION")
                 WindowManager.LayoutParams.TYPE_PHONE
             }
-
         return WindowManager.LayoutParams(
             indicatorWidthPx(),
             indicatorHeightPx(),
@@ -533,22 +503,19 @@ internal class WebSessionBrowserHost(
             y = dp(16)
         }
     }
-
-    private fun indicatorWidthPx(): Int =
+        private fun indicatorWidthPx(): Int =
         if (hostState.externalOpenPrompt != null) {
             dp(248)
         } else {
             dp(40).coerceAtLeast(1)
         }
-
-    private fun indicatorHeightPx(): Int =
+        private fun indicatorHeightPx(): Int =
         if (hostState.externalOpenPrompt != null) {
             dp(86)
         } else {
             dp(40).coerceAtLeast(1)
         }
-
-    private fun dp(value: Int): Int =
+        private fun dp(value: Int): Int =
         (value * appContext.resources.displayMetrics.density).roundToInt()
 }
 
@@ -557,8 +524,8 @@ private class WebSessionOverlayLifecycleOwner :
     ViewModelStoreOwner,
     SavedStateRegistryOwner {
     private val lifecycleRegistry = LifecycleRegistry(this)
-    private val viewModelStoreField = ViewModelStore()
-    private val savedStateRegistryController = SavedStateRegistryController.create(this)
+        private val viewModelStoreField = ViewModelStore()
+        private val savedStateRegistryController = SavedStateRegistryController.create(this)
 
     init {
         if (Looper.myLooper() == Looper.getMainLooper()) {
@@ -595,8 +562,7 @@ private class DeceptiveMinimizedLayout(context: Context) : FrameLayout(context) 
         clipChildren = false
         clipToPadding = false
     }
-
-    fun setMinimizedMeasure(enabled: Boolean, fakeWidth: Int = fakeWidthPx, fakeHeight: Int = fakeHeightPx) {
+        fun setMinimizedMeasure(enabled: Boolean, fakeWidth: Int = fakeWidthPx, fakeHeight: Int = fakeHeightPx) {
         minimizedMeasureEnabled = enabled
         fakeWidthPx = fakeWidth.coerceAtLeast(1)
         fakeHeightPx = fakeHeight.coerceAtLeast(1)
@@ -606,14 +572,12 @@ private class DeceptiveMinimizedLayout(context: Context) : FrameLayout(context) 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (!minimizedMeasureEnabled) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-            return
+        return
         }
-
         val childWidthSpec =
             View.MeasureSpec.makeMeasureSpec(fakeWidthPx, View.MeasureSpec.EXACTLY)
         val childHeightSpec =
             View.MeasureSpec.makeMeasureSpec(fakeHeightPx, View.MeasureSpec.EXACTLY)
-
         for (i in 0 until childCount) {
             getChildAt(i).measure(childWidthSpec, childHeightSpec)
         }
@@ -624,9 +588,8 @@ private class DeceptiveMinimizedLayout(context: Context) : FrameLayout(context) 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         if (!minimizedMeasureEnabled) {
             super.onLayout(changed, left, top, right, bottom)
-            return
+        return
         }
-
         for (i in 0 until childCount) {
             getChildAt(i).layout(0, 0, fakeWidthPx, fakeHeightPx)
         }

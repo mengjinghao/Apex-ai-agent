@@ -82,16 +82,16 @@ object SmartModelRouter {
     ): RoutingDecision? {
         if (availableModels.isEmpty()) {
             AppLogger.w(TAG, "无可用模型，跳过路由")
-            return null
+        return null
         }
         // 用户手动选择preferredProvider，跳过自动路由
     if (request.preferredProvider != null) {
             val manualConfig = availableModels.find {
                 it.provider == request.preferredProvider
             }
-            if (manualConfig != null) {
+        if (manualConfig != null) {
                 AppLogger.i(TAG, "用户手动选择模型: ${manualConfig.provider}, 跳过自动路由")
-                return RoutingDecision(
+        return RoutingDecision(
                     selectedTier = configToTier(manualConfig),
                     reason = "用户手动选择: ${manualConfig.provider.displayName}",
                     estimatedCost = 0f,
@@ -120,7 +120,7 @@ object SmartModelRouter {
             }
         if (tiers.isEmpty()) {
             AppLogger.w(TAG, "无已启用的模型可用")
-            return null
+        return null
         }
         // 对候选模型评分并选择最优
     val scored = tiers.map {
@@ -195,9 +195,9 @@ object SmartModelRouter {
             score += TIER_MATCH_SCORE
         } else {
             val tierOrder = listOf("lightweight", "standard", "capable", "powerful")
-            val targetIdx = tierOrder.indexOf(targetTierName)
-            val currentIdx = tierOrder.indexOf(tier.tier)
-            if (targetIdx >= 0 && currentIdx >= 0) {
+        val targetIdx = tierOrder.indexOf(targetTierName)
+        val currentIdx = tierOrder.indexOf(tier.tier)
+        if (targetIdx >= 0 && currentIdx >= 0) {
                 score -= abs(currentIdx - targetIdx) * TIER_MISMATCH_PENALTY_PER_LEVEL
             }
         }

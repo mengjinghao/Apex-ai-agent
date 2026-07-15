@@ -44,26 +44,23 @@ class SafFileSystemTools(
         val env = environment?.trim().orEmpty()
         return if (env.isBlank()) "repo" else env
     }
-
-    private fun extractSafBookmarkNameOrNull(environment: String): String? {
+        private fun extractSafBookmarkNameOrNull(environment: String): String? {
         val env = environment ?: return null
         val trimmed = env.trim()
         if (!trimmed.startsWith("repo:", ignoreCase = true)) return null
         return trimmed.removePrefix("repo:").trim().takeIf { it.isNotEmpty() }
     }
-
-    private fun normalizeAbsolutePath(path: String): String {
+        private fun normalizeAbsolutePath(path: String): String {
         var p = path.trim()
         if (p.isEmpty()) return "/"
         if (!p.startsWith("/")) p = "/${p}"
         // Remove trailing slash (except root)
-    if (p.length > 1 && p.endsWith('/')) p = p.dropLast(1)
+        if (p.length > 1 && p.endsWith('/')) p = p.dropLast(1)
         // Collapse multiple slashes
         while (p.contains("//")) p = p.replace("//", "/")
-    return p
+        return p
     }
-
-    private suspend fun resolveTreeUriFromEnvironment(environment: String): Uri? {
+        private suspend fun resolveTreeUriFromEnvironment(environment: String): Uri? {
         val name = extractSafBookmarkNameOrNull(environment) ?: return null
         val bookmarks = apiPreferences.safBookmarksFlow.first()
         val matched = bookmarks.firstOrNull { it.name == name }
@@ -71,27 +68,23 @@ class SafFileSystemTools(
             ?: return null
         return runCatching { Uri.parse(matched.uri) }.getOrNull()
     }
-
-    private suspend fun resolveSafPathToDocumentUriOrNull(path: String, environment: String): Uri? {
+        private suspend fun resolveSafPathToDocumentUriOrNull(path: String, environment: String): Uri? {
         // Already a content uri
     if (isContentUri(path)) return runCatching { Uri.parse(path) }.getOrNull()
-
         val treeUri = resolveTreeUriFromEnvironment(environment) ?: return null
         val authority = treeUri.authority ?: return null
         val treeId = runCatching { DocumentsContract.getTreeDocumentId(treeUri) }.getOrNull() ?: return null
         val baseTreeUri = DocumentsContract.buildTreeDocumentUri(authority, treeId)
-
         val abs = normalizeAbsolutePath(path)
         if (abs == "/") {
             val rootDocUri = DocumentsContract.buildDocumentUriUsingTree(baseTreeUri, treeId)
-            return rootDocUri
+        return rootDocUri
         }
-
         var currentDocId = treeId
         val segments = abs.trim('/').split('/').filter { it.isNotEmpty() }
         for (seg in segments) {
             val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(baseTreeUri, currentDocId)
-            val cursor = contentResolver.query(
+        val cursor = contentResolver.query(
                 childrenUri,
                 arrayOf(
                     DocumentsContract.Document.COLUMN_DOCUMENT_ID,
@@ -105,7 +98,7 @@ class SafFileSystemTools(
             var nextDocId: String? = null
             cursor.use {
                 val idIdx = it.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-                val nameIdx = it.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+        val nameIdx = it.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
                 while (it.moveToNext()) {
                     val n = if (nameIdx >= 0 && !it.isNull(nameIdx)) it.getString(nameIdx) else null
                     if (n == seg) {
@@ -114,15 +107,12 @@ class SafFileSystemTools(
                     }
                 }
             }
-
-            val found = nextDocId ?: return null
+        val found = nextDocId ?: return null
             currentDocId = found
         }
-
         return DocumentsContract.buildDocumentUriUsingTree(baseTreeUri, currentDocId)
     }
-
-    private fun splitParentAndNameForAbsolutePath(path: String): Pair<String, String>? {
+        private fun splitParentAndNameForAbsolutePath(path: String): Pair<String, String>? {
         val abs = normalizeAbsolutePath(path)
         if (abs == "/") return null
         val parent = abs.substringBeforeLast('/', missingDelimiterValue = "")
@@ -131,8 +121,7 @@ class SafFileSystemTools(
         val parentPath = if (parent.isBlank()) "/" else parent
         return parentPath to name
     }
-
-    private fun splitSyntheticChildPath(path: String): Pair<String, String>? {
+        private fun splitSyntheticChildPath(path: String): Pair<String, String>? {
         val idx = path.lastIndexOf('/')
         if (idx <= 0 || idx >= path.length - 1) return null
         val parent = path.substring(0, idx)
@@ -159,9 +148,8 @@ class SafFileSystemTools(
         return withContext(Dispatchers.IO) {
             try {
                 val decoded = android.util.Base64.decode(base64Content, android.util.Base64.DEFAULT)
-
-                val synthetic = splitSyntheticChildPath(path)
-                val targetUri: Uri = if (synthetic != null) {
+        val synthetic = splitSyntheticChildPath(path)
+        val targetUri: Uri = if (synthetic != null) {
                     val (parentStr, name) = synthetic
                     val parentUri = resolveSafPathToDocumentUriOrNull(parentStr, environment)
                         ?: return@withContext ToolResult(
@@ -170,7 +158,7 @@ class SafFileSystemTools(
                             result = FileOperationData(operation = "write_binary", env = envLabel, path = path, successful = false, details = "Invalid repository path"),
                             error = "Invalid repository path: ${parentStr}"
                         )
-                    val created = createChildDocumentOrNull(parentUri, name, "application/octet-stream")
+        val created = createChildDocumentOrNull(parentUri, name, "application/octet-stream")
                         ?: return@withContext ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -182,7 +170,7 @@ class SafFileSystemTools(
                     resolveSafPathToDocumentUriOrNull(path, environment)
                         ?: run {
                             val parts = splitParentAndNameForAbsolutePath(path)
-                            if (parts != null && extractSafBookmarkNameOrNull(environment) != null) {
+        if (parts != null && extractSafBookmarkNameOrNull(environment) != null) {
                                 val (parentPath, name) = parts
                                 val parentUri = resolveSafPathToDocumentUriOrNull(parentPath, environment)
                                     ?: return@withContext ToolResult(
@@ -209,8 +197,7 @@ class SafFileSystemTools(
                             error = "Invalid repository path: ${path}"
                         )
                 }
-
-                val output = openOutputStreamOrNull(targetUri, "w")
+        val output = openOutputStreamOrNull(targetUri, "w")
                     ?: return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -243,7 +230,6 @@ class SafFileSystemTools(
         val recursive = tool.parameters.find { it.name == "recursive" }?.value?.toBoolean() ?: true
         val environment = tool.parameters.find { it.name == "environment" }?.value
         val envLabel = resolveEnvLabel(environment)
-
         if (sourcePath.isBlank() || destPath.isBlank()) {
             return ToolResult(
                 toolName = tool.name,
@@ -262,19 +248,18 @@ class SafFileSystemTools(
                 error = "Repository copy requires at least one content:// path"
             )
         }
-
         return withContext(Dispatchers.IO) {
             try {
                 if (sourceIsContent && !destIsContent) {
                     val sourceUri = Uri.parse(sourcePath)
-                    val sourceDocUri = resolveSourceDocumentUriOrNull(sourcePath)
+        val sourceDocUri = resolveSourceDocumentUriOrNull(sourcePath)
                         ?: return@withContext ToolResult(
                             toolName = tool.name,
                             success = false,
                             result = FileOperationData(operation = "copy", env = envLabel, path = sourcePath, successful = false, details = "Invalid source uri"),
                             error = "Invalid source uri: ${sourcePath}"
                         )
-                    if (isDirectoryUri(sourceUri)) {
+        if (isDirectoryUri(sourceUri)) {
                         return@withContext ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -282,8 +267,7 @@ class SafFileSystemTools(
                             error = "Copy directory from repository to local is not supported"
                         )
                     }
-
-                    val destFile = java.io.File(destPath)
+        val destFile = java.io.File(destPath)
                     destFile.parentFile?.mkdirs()
                     openInputStreamOrNull(sourceDocUri).use { input ->
                         if (input == null) throw IllegalStateException("Failed to open input stream")
@@ -291,7 +275,7 @@ class SafFileSystemTools(
                             val buffer = ByteArray(64 * 1024)
                             while (true) {
                                 val read = input.read(buffer)
-                                if (read <= 0) break
+        if (read <= 0) break
                                 output.write(buffer, 0, read)
                             }
                             output.flush()
@@ -305,10 +289,9 @@ class SafFileSystemTools(
                         error = ""
                     )
                 }
-
-                if (!sourceIsContent && destIsContent) {
+        if (!sourceIsContent && destIsContent) {
                     val sourceFile = java.io.File(sourcePath)
-                    if (!sourceFile.exists()) {
+        if (!sourceFile.exists()) {
                         return@withContext ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -316,7 +299,7 @@ class SafFileSystemTools(
                             error = "Source path does not exist: ${sourcePath}"
                         )
                     }
-                    if (sourceFile.isDirectory) {
+        if (sourceFile.isDirectory) {
                         return@withContext ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -324,11 +307,10 @@ class SafFileSystemTools(
                             error = "Copy directory from local to repository is not supported"
                         )
                     }
-
-                    val destUri = Uri.parse(destPath)
-                    val destDocUri = toTreeDocumentUri(destUri) ?: destUri
+        val destUri = Uri.parse(destPath)
+        val destDocUri = toTreeDocumentUri(destUri) ?: destUri
                     val destMime = queryMimeType(destDocUri)
-                    val targetUri: Uri = when {
+        val targetUri: Uri = when {
                         splitSyntheticChildPath(destPath) != null -> {
                             val (parentStr, name) = splitSyntheticChildPath(destPath)!!
                             createChildDocumentOrNull(Uri.parse(parentStr), name, "application/octet-stream")
@@ -349,10 +331,10 @@ class SafFileSystemTools(
                     sourceFile.inputStream().use { input ->
                         openOutputStreamOrNull(targetUri, "w").use { output ->
                             if (output == null) throw IllegalStateException("Failed to open output stream")
-                            val buffer = ByteArray(64 * 1024)
+        val buffer = ByteArray(64 * 1024)
                             while (true) {
                                 val read = input.read(buffer)
-                                if (read <= 0) break
+        if (read <= 0) break
                                 output.write(buffer, 0, read)
                             }
                             output.flush()
@@ -366,64 +348,59 @@ class SafFileSystemTools(
                         error = ""
                     )
                 }
-
-                val sourceUri = Uri.parse(sourcePath)
-                val sourceDocUri = resolveSourceDocumentUriOrNull(sourcePath)
+        val sourceUri = Uri.parse(sourcePath)
+        val sourceDocUri = resolveSourceDocumentUriOrNull(sourcePath)
                     ?: return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = FileOperationData(operation = "copy", env = envLabel, path = sourcePath, successful = false, details = "Invalid source uri"),
                         error = "Invalid source uri: ${sourcePath}"
                     )
-
-                val sourceName = queryDisplayName(sourceDocUri) ?: ""
-                val sourceIsDir = isDirectoryUri(sourceUri)
-                val sourceMime = queryMimeType(sourceDocUri) ?: if (sourceIsDir) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
-
-                fun resolveDestTargetForFile(): Uri {
+        val sourceName = queryDisplayName(sourceDocUri) ?: ""
+        val sourceIsDir = isDirectoryUri(sourceUri)
+        val sourceMime = queryMimeType(sourceDocUri) ?: if (sourceIsDir) DocumentsContract.Document.MIME_TYPE_DIR else "application/octet-stream"
+        fun resolveDestTargetForFile(): Uri {
                     val synthetic = splitSyntheticChildPath(destPath)
-                    if (synthetic != null) {
+        if (synthetic != null) {
                         val (parentStr, name) = synthetic
                         val created = createChildDocumentOrNull(Uri.parse(parentStr), name, sourceMime)
-                        return created ?: throw IllegalStateException("Failed to create destination file")
+        return created ?: throw IllegalStateException("Failed to create destination file")
                     }
-                    val destUri = Uri.parse(destPath)
-                    val destDocUri = toTreeDocumentUri(destUri) ?: destUri
+        val destUri = Uri.parse(destPath)
+        val destDocUri = toTreeDocumentUri(destUri) ?: destUri
                     val destMime = queryMimeType(destDocUri)
-                    if (destMime == DocumentsContract.Document.MIME_TYPE_DIR) {
+        if (destMime == DocumentsContract.Document.MIME_TYPE_DIR) {
                         val name = if (sourceName.isNotBlank()) sourceName else "copied_file"
-                        val created = DocumentsContract.createDocument(contentResolver, destDocUri, sourceMime, name)
-                        return created ?: throw IllegalStateException("Failed to create destination file")
+        val created = DocumentsContract.createDocument(contentResolver, destDocUri, sourceMime, name)
+        return created ?: throw IllegalStateException("Failed to create destination file")
                     }
-                    if (destMime != null) {
+        if (destMime != null) {
                         return destDocUri
                     }
-                    throw IllegalStateException("Destination does not exist; use parentUri/name")
+        throw IllegalStateException("Destination does not exist; use parentUri/name")
                 }
-
-                fun resolveDestTargetForDir(): Uri {
+        fun resolveDestTargetForDir(): Uri {
                     if (!recursive) throw IllegalStateException("Cannot copy directory without recursive flag")
-                    val synthetic = splitSyntheticChildPath(destPath)
-                    if (synthetic != null) {
+        val synthetic = splitSyntheticChildPath(destPath)
+        if (synthetic != null) {
                         val (parentStr, name) = synthetic
                         val created = createChildDocumentOrNull(Uri.parse(parentStr), name, DocumentsContract.Document.MIME_TYPE_DIR)
-                        return created ?: throw IllegalStateException("Failed to create destination directory")
+        return created ?: throw IllegalStateException("Failed to create destination directory")
                     }
-                    val destUri = Uri.parse(destPath)
-                    val destDocUri = toTreeDocumentUri(destUri) ?: destUri
+        val destUri = Uri.parse(destPath)
+        val destDocUri = toTreeDocumentUri(destUri) ?: destUri
                     val destMime = queryMimeType(destDocUri)
-                    if (destMime == DocumentsContract.Document.MIME_TYPE_DIR) {
+        if (destMime == DocumentsContract.Document.MIME_TYPE_DIR) {
                         return destUri
                     }
-                    throw IllegalStateException("Destination must be a directory uri or parentUri/name")
+        throw IllegalStateException("Destination must be a directory uri or parentUri/name")
                 }
-
-                fun copyDirRecursive(srcDirUri: Uri, dstDirUri: Uri) {
+        fun copyDirRecursive(srcDirUri: Uri, dstDirUri: Uri) {
                     val childrenQuery = resolveChildrenQueryUri(srcDirUri)
                         ?: throw IllegalStateException("Repository copy_dir requires tree-backed document uri")
-                    val treeUri = toTreeUriOrNull(srcDirUri)
+        val treeUri = toTreeUriOrNull(srcDirUri)
                         ?: throw IllegalStateException("Repository copy_dir requires tree-backed document uri")
-                    val dstDirDocUri = ensureDirectoryDocumentUriOrNull(dstDirUri)
+        val dstDirDocUri = ensureDirectoryDocumentUriOrNull(dstDirUri)
                         ?: throw IllegalStateException("Destination is not a directory")
 
                     contentResolver.query(
@@ -438,18 +415,17 @@ class SafFileSystemTools(
                         null
                     )?.use { cursor ->
                         val idIdx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-                        val nameIdx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-                        val mimeIdx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
+        val nameIdx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+        val mimeIdx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
 
                         while (cursor.moveToNext()) {
                             if (idIdx < 0 || cursor.isNull(idIdx)) continue
                             val childId = cursor.getString(idIdx)
-                            val childName = if (nameIdx >= 0 && !cursor.isNull(nameIdx)) cursor.getString(nameIdx) else null
+        val childName = if (nameIdx >= 0 && !cursor.isNull(nameIdx)) cursor.getString(nameIdx) else null
                             if (childName.isNullOrBlank()) continue
                             val childMime = if (mimeIdx >= 0 && !cursor.isNull(mimeIdx)) cursor.getString(mimeIdx) else null
                             val childUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)
-
-                            if (childMime == DocumentsContract.Document.MIME_TYPE_DIR) {
+        if (childMime == DocumentsContract.Document.MIME_TYPE_DIR) {
                                 val createdDir = DocumentsContract.createDocument(
                                     contentResolver,
                                     dstDirDocUri,
@@ -469,8 +445,7 @@ class SafFileSystemTools(
                         }
                     } ?: throw IllegalStateException("Failed to query child documents")
                 }
-
-                if (!sourceIsDir) {
+        if (!sourceIsDir) {
                     val destTarget = resolveDestTargetForFile()
                     copyStreams(sourceDocUri, destTarget)
                 } else {
@@ -518,11 +493,10 @@ class SafFileSystemTools(
                 error = "Repository move requires at least one content:// path"
             )
         }
-
         return withContext(Dispatchers.IO) {
             try {
                 val copyResult = copyFile(tool.copy(name = "copy_file"))
-                if (!copyResult.success) {
+        if (!copyResult.success) {
                     return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -530,15 +504,14 @@ class SafFileSystemTools(
                         error = "Failed to copy before move: ${copyResult.error}"
                     )
                 }
-
-                when {
+        when {
                     sourceIsContent -> {
                         val sourceUri = Uri.parse(sourcePath)
                         deleteRecursive(sourceUri)
                     }
                     else -> {
                         val f = java.io.File(sourcePath)
-                        if (f.isDirectory) {
+        if (f.isDirectory) {
                             f.deleteRecursively()
                         } else {
                             f.delete()
@@ -562,17 +535,14 @@ class SafFileSystemTools(
             }
         }
     }
-
-
-    private fun toTreeDocumentUri(uri: Uri): Uri? {
+        private fun toTreeDocumentUri(uri: Uri): Uri? {
         val authority = uri.authority ?: return null
         val treeId = runCatching { DocumentsContract.getTreeDocumentId(uri) }.getOrNull() ?: return null
         val treeUri = DocumentsContract.buildTreeDocumentUri(authority, treeId)
         val docId = if (DocumentsContract.isTreeUri(uri)) treeId else runCatching { DocumentsContract.getDocumentId(uri) }.getOrNull() ?: treeId
         return DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
     }
-
-    private fun queryMimeType(uri: Uri): String? {
+        private fun queryMimeType(uri: Uri): String? {
         return try {
             contentResolver.query(
                 uri,
@@ -583,64 +553,56 @@ class SafFileSystemTools(
             )?.use { cursor ->
                 if (!cursor.moveToFirst()) return@use null
                 val idx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
-                if (idx < 0 || cursor.isNull(idx)) return@use null
+        if (idx < 0 || cursor.isNull(idx)) return@use null
                 cursor.getString(idx)
             }
         } catch (_: Exception) {
             null
         }
     }
-
-    private fun isDirectoryUri(uri: Uri): Boolean {
+        private fun isDirectoryUri(uri: Uri): Boolean {
         val docUri = toTreeDocumentUri(uri) ?: uri
         val mime = queryMimeType(docUri)
         return mime == DocumentsContract.Document.MIME_TYPE_DIR || DocumentsContract.isTreeUri(uri)
     }
-
-    private fun openInputStreamOrNull(uri: Uri) = runCatching { contentResolver.openInputStream(uri) }.getOrNull()
-
-    private fun openOutputStreamOrNull(uri: Uri, mode: String) = runCatching { contentResolver.openOutputStream(uri, mode) }.getOrNull()
-
-    private fun copyStreams(src: Uri, dst: Uri) {
+        private fun openInputStreamOrNull(uri: Uri) = runCatching { contentResolver.openInputStream(uri) }.getOrNull()
+        private fun openOutputStreamOrNull(uri: Uri, mode: String) = runCatching { contentResolver.openOutputStream(uri, mode) }.getOrNull()
+        private fun copyStreams(src: Uri, dst: Uri) {
         openInputStreamOrNull(src).use { input ->
             if (input == null) throw IllegalStateException("Failed to open input stream")
             openOutputStreamOrNull(dst, "w").use { output ->
                 if (output == null) throw IllegalStateException("Failed to open output stream")
-                val buffer = ByteArray(64 * 1024)
+        val buffer = ByteArray(64 * 1024)
                 while (true) {
                     val read = input.read(buffer)
-                    if (read <= 0) break
+        if (read <= 0) break
                     output.write(buffer, 0, read)
                 }
                 output.flush()
             }
         }
     }
-
-    private fun ensureDirectoryDocumentUriOrNull(uri: Uri): Uri? {
+        private fun ensureDirectoryDocumentUriOrNull(uri: Uri): Uri? {
         val docUri = toTreeDocumentUri(uri) ?: return null
         val mime = queryMimeType(docUri)
         return if (mime == DocumentsContract.Document.MIME_TYPE_DIR || DocumentsContract.isTreeUri(uri)) docUri else null
     }
-
-    private fun createChildDocumentOrNull(parentDirUri: Uri, name: String, mimeType: String): Uri? {
+        private fun createChildDocumentOrNull(parentDirUri: Uri, name: String, mimeType: String): Uri? {
         val parentDocUri = ensureDirectoryDocumentUriOrNull(parentDirUri) ?: return null
         return DocumentsContract.createDocument(contentResolver, parentDocUri, mimeType, name)
     }
-
-    private fun resolveSourceDocumentUriOrNull(sourceStr: String): Uri? {
+        private fun resolveSourceDocumentUriOrNull(sourceStr: String): Uri? {
         val sourceUri = runCatching { Uri.parse(sourceStr) }.getOrNull() ?: return null
         return toTreeDocumentUri(sourceUri) ?: sourceUri
     }
-
-    private fun deleteRecursive(uri: Uri) {
+        private fun deleteRecursive(uri: Uri) {
         val docUri = toTreeDocumentUri(uri) ?: uri
         val mime = queryMimeType(docUri)
         if (mime == DocumentsContract.Document.MIME_TYPE_DIR || DocumentsContract.isTreeUri(uri)) {
             val childrenQuery = resolveChildrenQueryUri(uri) ?: resolveChildrenQueryUri(docUri)
-            if (childrenQuery != null) {
+        if (childrenQuery != null) {
                 val treeUri = toTreeUriOrNull(uri) ?: toTreeUriOrNull(docUri)
-                if (treeUri != null) {
+        if (treeUri != null) {
                     contentResolver.query(
                         childrenQuery.first,
                         arrayOf(
@@ -652,12 +614,12 @@ class SafFileSystemTools(
                         null
                     )?.use { cursor ->
                         val idIdx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-                        val mimeIdx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
+        val mimeIdx = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
                         while (cursor.moveToNext()) {
                             if (idIdx < 0 || cursor.isNull(idIdx)) continue
                             val childId = cursor.getString(idIdx)
-                            val childUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)
-                            val childMime = if (mimeIdx >= 0 && !cursor.isNull(mimeIdx)) cursor.getString(mimeIdx) else null
+        val childUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, childId)
+        val childMime = if (mimeIdx >= 0 && !cursor.isNull(mimeIdx)) cursor.getString(mimeIdx) else null
                             if (childMime == DocumentsContract.Document.MIME_TYPE_DIR) {
                                 deleteRecursive(childUri)
                             } else {
@@ -670,8 +632,7 @@ class SafFileSystemTools(
         }
         DocumentsContract.deleteDocument(contentResolver, docUri)
     }
-
-    private fun isContentUri(path: String): Boolean {
+        private fun isContentUri(path: String): Boolean {
         return path.startsWith("content://", ignoreCase = true)
     }
 
@@ -687,11 +648,10 @@ class SafFileSystemTools(
                 error = "Path parameter is required"
             )
         }
-
         return withContext(Dispatchers.IO) {
             try {
                 val synthetic = splitSyntheticChildPath(path)
-                if (synthetic != null) {
+        if (synthetic != null) {
                     val (parentStr, name) = synthetic
                     val parentUri = resolveSafPathToDocumentUriOrNull(parentStr, environment)
                         ?: return@withContext ToolResult(
@@ -700,8 +660,7 @@ class SafFileSystemTools(
                             result = FileOperationData(operation = "mkdir", env = envLabel, path = path, successful = false, details = "Invalid repository path"),
                             error = "Invalid repository path: ${parentStr}"
                         )
-
-                    val created = createChildDocumentOrNull(parentUri, name, DocumentsContract.Document.MIME_TYPE_DIR)
+        val created = createChildDocumentOrNull(parentUri, name, DocumentsContract.Document.MIME_TYPE_DIR)
                     return@withContext if (created != null) {
                         ToolResult(
                             toolName = tool.name,
@@ -718,11 +677,10 @@ class SafFileSystemTools(
                         )
                     }
                 }
-
-                val docUri = resolveSafPathToDocumentUriOrNull(path, environment)
+        val docUri = resolveSafPathToDocumentUriOrNull(path, environment)
                     ?: run {
                         val parts = splitParentAndNameForAbsolutePath(path)
-                        if (parts != null && extractSafBookmarkNameOrNull(environment) != null) {
+        if (parts != null && extractSafBookmarkNameOrNull(environment) != null) {
                             val (parentPath, name) = parts
                             val parentUri = resolveSafPathToDocumentUriOrNull(parentPath, environment)
                                 ?: return@withContext ToolResult(
@@ -731,7 +689,7 @@ class SafFileSystemTools(
                                     result = FileOperationData(operation = "mkdir", env = envLabel, path = path, successful = false, details = "Invalid repository path"),
                                     error = "Invalid repository path: ${parentPath}"
                                 )
-                            val created = createChildDocumentOrNull(parentUri, name, DocumentsContract.Document.MIME_TYPE_DIR)
+        val created = createChildDocumentOrNull(parentUri, name, DocumentsContract.Document.MIME_TYPE_DIR)
                                 ?: return@withContext ToolResult(
                                     toolName = tool.name,
                                     success = false,
@@ -749,8 +707,7 @@ class SafFileSystemTools(
                         result = FileOperationData(operation = "mkdir", env = envLabel, path = path, successful = false, details = "Invalid repository path"),
                         error = "Invalid repository path: ${path}"
                     )
-
-                val cursor = contentResolver.query(
+        val cursor = contentResolver.query(
                     docUri,
                     arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE),
                     null,
@@ -759,9 +716,9 @@ class SafFileSystemTools(
                 )
                 cursor?.use {
                     val mimeIdx = it.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
-                    if (it.moveToFirst() && mimeIdx >= 0 && !it.isNull(mimeIdx)) {
+        if (it.moveToFirst() && mimeIdx >= 0 && !it.isNull(mimeIdx)) {
                         val mime = it.getString(mimeIdx)
-                        if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
+        if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
                             return@withContext ToolResult(
                                 toolName = tool.name,
                                 success = true,
@@ -809,11 +766,10 @@ class SafFileSystemTools(
                 error = "Path parameter is required"
             )
         }
-
         return withContext(Dispatchers.IO) {
             try {
                 val synthetic = splitSyntheticChildPath(path)
-                val targetUri: Uri = if (synthetic != null) {
+        val targetUri: Uri = if (synthetic != null) {
                     val (parentStr, name) = synthetic
                     val parentUri = resolveSafPathToDocumentUriOrNull(parentStr, environment)
                         ?: return@withContext ToolResult(
@@ -828,8 +784,7 @@ class SafFileSystemTools(
                             ),
                             error = "Invalid repository path: ${parentStr}"
                         )
-
-                    val created = createChildDocumentOrNull(parentUri, name, "text/plain")
+        val created = createChildDocumentOrNull(parentUri, name, "text/plain")
                         ?: return@withContext ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -847,7 +802,7 @@ class SafFileSystemTools(
                     resolveSafPathToDocumentUriOrNull(path, environment)
                         ?: run {
                             val parts = splitParentAndNameForAbsolutePath(path)
-                            if (parts != null && extractSafBookmarkNameOrNull(environment) != null) {
+        if (parts != null && extractSafBookmarkNameOrNull(environment) != null) {
                                 val (parentPath, name) = parts
                                 val parentUri = resolveSafPathToDocumentUriOrNull(parentPath, environment)
                                     ?: return@withContext ToolResult(
@@ -892,9 +847,8 @@ class SafFileSystemTools(
                             error = "Invalid repository path: ${path}"
                         )
                 }
-
-                val mime = queryMimeType(targetUri)
-                if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
+        val mime = queryMimeType(targetUri)
+        if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
                     return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -908,9 +862,8 @@ class SafFileSystemTools(
                         error = "Target is a directory: ${path}"
                     )
                 }
-
-                val mode = if (append) "wa" else "w"
-                val output = openOutputStreamOrNull(targetUri, mode)
+        val mode = if (append) "wa" else "w"
+        val output = openOutputStreamOrNull(targetUri, mode)
                     ?: return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -954,34 +907,31 @@ class SafFileSystemTools(
             }
         }
     }
-
-    private fun queryDisplayName(uri: Uri): String? {
+        private fun queryDisplayName(uri: Uri): String? {
         return try {
             contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
                 if (!cursor.moveToFirst()) return@use null
                 val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                if (idx < 0 || cursor.isNull(idx)) return@use null
+        if (idx < 0 || cursor.isNull(idx)) return@use null
                 cursor.getString(idx)
             }
         } catch (_: Exception) {
             null
         }
     }
-
-    private fun querySize(uri: Uri): Long? {
+        private fun querySize(uri: Uri): Long? {
         return try {
             contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use { cursor ->
                 if (!cursor.moveToFirst()) return@use null
                 val idx = cursor.getColumnIndex(OpenableColumns.SIZE)
-                if (idx < 0 || cursor.isNull(idx)) return@use null
+        if (idx < 0 || cursor.isNull(idx)) return@use null
                 cursor.getLong(idx)
             }
         } catch (_: Exception) {
             null
         }
     }
-
-    private fun queryLastModifiedMillis(uri: Uri): Long? {
+        private fun queryLastModifiedMillis(uri: Uri): Long? {
         return try {
             contentResolver.query(
                 uri,
@@ -992,24 +942,21 @@ class SafFileSystemTools(
             )?.use { cursor ->
                 if (!cursor.moveToFirst()) return@use null
                 val idx = cursor.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_LAST_MODIFIED)
-                if (idx < 0 || cursor.isNull(idx)) return@use null
+        if (idx < 0 || cursor.isNull(idx)) return@use null
                 cursor.getLong(idx)
             }
         } catch (_: Exception) {
             null
         }
     }
-
-    private fun openBufferedReader(uri: Uri): BufferedReader? {
+        private fun openBufferedReader(uri: Uri): BufferedReader? {
         val input = contentResolver.openInputStream(uri) ?: return null
         return InputStreamReader(input, Charsets.UTF_8).buffered()
     }
-
-    private fun guessPermissions(): String {
+        private fun guessPermissions(): String {
         return "r--r--r--"
     }
-
-    private fun formatLastModified(millis: Long): String {
+        private fun formatLastModified(millis: Long): String {
         if (millis == null || millis <= 0) return ""
         return try {
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(Date(millis))
@@ -1017,8 +964,7 @@ class SafFileSystemTools(
             ""
         }
     }
-
-    private fun globToRegex(glob: String, caseInsensitive: Boolean): Regex {
+        private fun globToRegex(glob: String, caseInsensitive: Boolean): Regex {
         val regex = StringBuilder("^")
         for (i in glob.indices) {
             val c = glob[i]
@@ -1044,8 +990,7 @@ class SafFileSystemTools(
             Regex(regex.toString())
         }
     }
-
-    private fun requireTreeUriOrError(tool: AITool, uri: Uri, actionName: String): ToolResult? {
+        private fun requireTreeUriOrError(tool: AITool, uri: Uri, actionName: String): ToolResult? {
         if (!android.provider.DocumentsContract.isTreeUri(uri)) {
             return ToolResult(
                 toolName = tool.name,
@@ -1056,15 +1001,13 @@ class SafFileSystemTools(
         }
         return null
     }
-
-    private fun toTreeUriOrNull(uri: Uri): Uri? {
+        private fun toTreeUriOrNull(uri: Uri): Uri? {
         val authority = uri.authority ?: return null
         val treeId = runCatching { android.provider.DocumentsContract.getTreeDocumentId(uri) }.getOrNull()
             ?: return null
         return android.provider.DocumentsContract.buildTreeDocumentUri(authority, treeId)
     }
-
-    private fun resolveChildrenQueryUri(pathUri: Uri): Pair<Uri, String>? {
+        private fun resolveChildrenQueryUri(pathUri: Uri): Pair<Uri, String>? {
         val treeUri = toTreeUriOrNull(pathUri) ?: return null
         val docId = when {
             android.provider.DocumentsContract.isDocumentUri(context, pathUri) -> {
@@ -1092,7 +1035,6 @@ class SafFileSystemTools(
                 result = StringResultData(""),
                 error = "Invalid repository path: ${path}"
             )
-
         val childrenQuery = resolveChildrenQueryUri(docUri)
             ?: return ToolResult(
                 toolName = tool.name,
@@ -1100,7 +1042,6 @@ class SafFileSystemTools(
                 result = StringResultData(""),
                 error = "list_files requires a tree-backed document uri"
             )
-
         return withContext(Dispatchers.IO) {
             try {
                 val childrenUri = childrenQuery.first
@@ -1122,13 +1063,12 @@ class SafFileSystemTools(
                         result = StringResultData(""),
                         error = "Failed to query child documents"
                     )
-
-                val entries = mutableListOf<DirectoryListingData.FileEntry>()
+        val entries = mutableListOf<DirectoryListingData.FileEntry>()
                 cursor.use {
                     val nameIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-                    val mimeIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE)
-                    val sizeIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_SIZE)
-                    val modIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_LAST_MODIFIED)
+        val mimeIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE)
+        val sizeIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_SIZE)
+        val modIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_LAST_MODIFIED)
 
                     while (it.moveToNext()) {
                         val name = if (nameIdx >= 0 && !it.isNull(nameIdx)) it.getString(nameIdx) else null
@@ -1168,13 +1108,12 @@ class SafFileSystemTools(
         val envLabel = resolveEnvLabel(environment)
         val uri = resolveSafPathToDocumentUriOrNull(path, environment)
             ?: return ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Invalid repository path: ${path}")
-
         return withContext(Dispatchers.IO) {
             try {
                 val docUri = toTreeDocumentUri(uri) ?: uri
                 val mime = queryMimeType(docUri)
-                val isDirectory = mime == DocumentsContract.Document.MIME_TYPE_DIR || DocumentsContract.isTreeUri(uri)
-                if (isDirectory) {
+        val isDirectory = mime == DocumentsContract.Document.MIME_TYPE_DIR || DocumentsContract.isTreeUri(uri)
+        if (isDirectory) {
                     return@withContext ToolResult(
                         toolName = tool.name,
                         success = true,
@@ -1182,9 +1121,8 @@ class SafFileSystemTools(
                         error = ""
                     )
                 }
-
-                val pfd = contentResolver.openFileDescriptor(uri, "r")
-                if (pfd != null) {
+        val pfd = contentResolver.openFileDescriptor(uri, "r")
+        if (pfd != null) {
                     val size = pfd.statSize
                     pfd.close()
                     return@withContext ToolResult(
@@ -1194,9 +1132,8 @@ class SafFileSystemTools(
                         error = ""
                     )
                 }
-
-                val name = queryDisplayName(uri)
-                if (!name.isNullOrBlank()) {
+        val name = queryDisplayName(uri)
+        if (!name.isNullOrBlank()) {
                     val size = querySize(uri) ?: 0L
                     return@withContext ToolResult(
                         toolName = tool.name,
@@ -1229,19 +1166,18 @@ class SafFileSystemTools(
                 result = FileInfoData(path, false, "", 0L, "", "", "", "", "", envLabel),
                 error = "Invalid repository path: ${path}"
             )
-
         return withContext(Dispatchers.IO) {
             try {
                 val displayName = queryDisplayName(uri) ?: ""
-                val size = querySize(uri) ?: 0L
+        val size = querySize(uri) ?: 0L
                 val fileType = if (android.provider.DocumentsContract.isTreeUri(uri)) "directory" else "file"
-                val lastModified = formatLastModified(queryLastModifiedMillis(uri))
-                val rawInfo = buildString {
+        val lastModified = formatLastModified(queryLastModifiedMillis(uri))
+        val rawInfo = buildString {
                     append("Uri: ${path}\n")
-                    if (displayName.isNotBlank()) append("DisplayName: ${displayName}\n")
+        if (displayName.isNotBlank()) append("DisplayName: ${displayName}\n")
                     append("Type: ${fileType}\n")
                     append("Size: ${size} bytes\n")
-                    if (lastModified.isNotBlank()) append("Last Modified: ${lastModified}\n")
+        if (lastModified.isNotBlank()) append("Last Modified: ${lastModified}\n")
                 }
 
                 ToolResult(
@@ -1283,11 +1219,10 @@ class SafFileSystemTools(
                 result = FileOperationData(operation = "delete", env = envLabel, path = path, successful = false, details = "Invalid repository path"),
                 error = "Invalid repository path: ${path}"
             )
-
         return withContext(Dispatchers.IO) {
             try {
                 val deletedCount = contentResolver.delete(uri, null, null)
-                if (deletedCount > 0) {
+        if (deletedCount > 0) {
                     ToolResult(
                         toolName = tool.name,
                         success = true,
@@ -1325,7 +1260,6 @@ class SafFileSystemTools(
                 result = FindFilesResultData(path = path, pattern = pattern, files = emptyList(), env = envLabel),
                 error = "Invalid repository path: ${path}"
             )
-
         val treeUri = toTreeUriOrNull(uri)
             ?: return ToolResult(
                 toolName = tool.name,
@@ -1333,7 +1267,6 @@ class SafFileSystemTools(
                 result = FindFilesResultData(path = path, pattern = pattern, files = emptyList(), env = envLabel),
                 error = "find_files requires a tree-backed document uri"
             )
-
         val startDocId =
             runCatching { android.provider.DocumentsContract.getDocumentId(uri) }.getOrNull()
                 ?: runCatching { android.provider.DocumentsContract.getTreeDocumentId(uri) }.getOrNull()
@@ -1351,22 +1284,18 @@ class SafFileSystemTools(
                 error = "Path and pattern parameters are required"
             )
         }
-
         val usePathPattern = tool.parameters.find { it.name == "use_path_pattern" }?.value?.toBoolean() ?: false
         val caseInsensitive = tool.parameters.find { it.name == "case_insensitive" }?.value?.toBoolean() ?: false
         val maxDepth = tool.parameters.find { it.name == "max_depth" }?.value?.toIntOrNull() ?: -1
         val regex = globToRegex(pattern, caseInsensitive)
-
         val baseRepoPath = if (isContentUri(path)) null else normalizeAbsolutePath(path)
-
         var scanned = 0
         var matched = 0
         var lastUpdateTimeMs = 0L
         var lastRel = ""
-
         fun updateProgress(force: Boolean = false) {
             val now = System.currentTimeMillis()
-            if (!force && lastUpdateTimeMs != 0L && now - lastUpdateTimeMs < 500L && scanned % 200 != 0) return
+        if (!force && lastUpdateTimeMs != 0L && now - lastUpdateTimeMs < 500L && scanned % 200 != 0) return
             ToolProgressBus.update(
                 tool.name,
                 -1f,
@@ -1374,11 +1303,10 @@ class SafFileSystemTools(
             )
             lastUpdateTimeMs = now
         }
-
         fun walk(parentDocId: String, relPrefix: String, depth: Int, out: MutableList<String>) {
             if (maxDepth >= 0 && depth > maxDepth) return
             val childrenUri = android.provider.DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, parentDocId)
-            val cursor = contentResolver.query(
+        val cursor = contentResolver.query(
                 childrenUri,
                 arrayOf(
                     android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID,
@@ -1391,8 +1319,8 @@ class SafFileSystemTools(
             ) ?: return
             cursor.use {
                 val idIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-                val nameIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-                val mimeIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE)
+        val nameIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+        val mimeIdx = it.getColumnIndex(android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE)
                 while (it.moveToNext()) {
                     val docId = if (idIdx >= 0 && !it.isNull(idIdx)) it.getString(idIdx) else null
                     val name = if (nameIdx >= 0 && !it.isNull(nameIdx)) it.getString(nameIdx) else null
@@ -1415,17 +1343,16 @@ class SafFileSystemTools(
                         matched++
                     }
                     updateProgress()
-                    if (isDir) {
+        if (isDir) {
                         walk(docId, rel, depth + 1, out)
                     }
                 }
             }
         }
-
         return withContext(Dispatchers.IO) {
             try {
                 ToolProgressBus.update(tool.name, -1f, "Searching...")
-                val out = mutableListOf<String>()
+        val out = mutableListOf<String>()
                 walk(startDocId, "", 0, out)
                 ToolProgressBus.update(tool.name, 1f, "Search completed, found ${out.size}")
                 ToolResult(
@@ -1454,8 +1381,7 @@ class SafFileSystemTools(
             error = "grep_code is handled by StandardFileSystemTools (find_files + read_file_full)."
         )
     }
-
-    private fun addLineNumbers(content: String): String {
+        private fun addLineNumbers(content: String): String {
         val lines = content.lines()
         if (lines.isEmpty()) return ""
         val maxDigits = lines.size.toString().length
@@ -1463,8 +1389,7 @@ class SafFileSystemTools(
             "${(index + 1).toString().padStart(maxDigits, ' ')}| ${line}"
         }.joinToString("\n")
     }
-
-    private fun addLineNumbers(content: String, startLineZeroBased: Int, totalLines: Int): String {
+        private fun addLineNumbers(content: String, startLineZeroBased: Int, totalLines: Int): String {
         val lines = content.lines()
         if (lines.isEmpty()) return ""
         val maxDigits = if (totalLines > 0) totalLines.toString().length else lines.size.toString().length
@@ -1472,20 +1397,19 @@ class SafFileSystemTools(
             "${(startLineZeroBased + index + 1).toString().padStart(maxDigits, ' ')}| ${line}"
         }.joinToString("\n")
     }
-
-    private suspend fun readUpToBytes(uri: Uri, maxBytes: Int): Pair<ByteArray, Boolean> {
+        private suspend fun readUpToBytes(uri: Uri, maxBytes: Int): Pair<ByteArray, Boolean> {
         return withContext(Dispatchers.IO) {
             val buf = ByteArray(maxBytes + 1)
-            var total = 0
+        var total = 0
             val input = contentResolver.openInputStream(uri) ?: return@withContext Pair(ByteArray(0), false)
             BufferedInputStream(input).use { bis ->
                 while (total < buf.size) {
                     val read = bis.read(buf, total, buf.size - total)
-                    if (read <= 0) break
+        if (read <= 0) break
                     total += read
                 }
             }
-            val truncated = total > maxBytes
+        val truncated = total > maxBytes
             val out = if (total <= maxBytes) buf.copyOf(total) else buf.copyOf(maxBytes)
             Pair(out, truncated)
         }
@@ -1498,7 +1422,6 @@ class SafFileSystemTools(
         val envLabel = resolveEnvLabel(environment)
         val uri = resolveSafPathToDocumentUriOrNull(path, environment)
             ?: return ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Invalid repository path: ${path}")
-
         return withContext(Dispatchers.IO) {
             try {
                 if (textOnly) {
@@ -1507,13 +1430,13 @@ class SafFileSystemTools(
                         return@withContext ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Skipped non-text file: ${path}")
                     }
                 }
-                val input = contentResolver.openInputStream(uri)
+        val input = contentResolver.openInputStream(uri)
                     ?: return@withContext ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Failed to open uri: ${path}")
-                val bytes = input.use { it.readBytes() }
-                if (bytes.isNotEmpty() && !FileUtils.isTextLike(bytes.take(1024).toByteArray())) {
+        val bytes = input.use { it.readBytes() }
+        if (bytes.isNotEmpty() && !FileUtils.isTextLike(bytes.take(1024).toByteArray())) {
                     return@withContext ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "File does not appear to be a text file. Use specialized tools for binary files.")
                 }
-                val content = bytes.toString(Charsets.UTF_8)
+        val content = bytes.toString(Charsets.UTF_8)
                 ToolResult(toolName = tool.name, success = true, result = FileContentData(path = path, content = content, size = querySize(uri) ?: bytes.size.toLong(), env = envLabel), error = "")
             } catch (e: Exception) {
                 AppLogger.e("SafFileSystemTools", "Error reading repository file full: ${path}", e)
@@ -1533,12 +1456,12 @@ class SafFileSystemTools(
         return withContext(Dispatchers.IO) {
             try {
                 val (bytes, truncated) = readUpToBytes(uri, maxFileSizeBytes)
-                if (bytes.isNotEmpty() && !FileUtils.isTextLike(bytes.take(512).toByteArray())) {
+        if (bytes.isNotEmpty() && !FileUtils.isTextLike(bytes.take(512).toByteArray())) {
                     return@withContext ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "File does not appear to be a text file. Use readFileFull tool for special file types.")
                 }
-                val content = bytes.toString(Charsets.UTF_8)
-                var contentWithLineNumbers = addLineNumbers(content)
-                if (truncated) {
+        val content = bytes.toString(Charsets.UTF_8)
+        var contentWithLineNumbers = addLineNumbers(content)
+        if (truncated) {
                     contentWithLineNumbers += "\n\n... (file content truncated) ..."
                 }
                 ToolResult(toolName = tool.name, success = true, result = FileContentData(path = path, content = contentWithLineNumbers, size = contentWithLineNumbers.length.toLong(), env = envLabel), error = "")
@@ -1557,23 +1480,21 @@ class SafFileSystemTools(
         val envLabel = resolveEnvLabel(environment)
         val uri = resolveSafPathToDocumentUriOrNull(path, environment)
             ?: return ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Invalid repository path: ${path}")
-
         val maxFileSizeBytes = ToolExecutionLimits.MAX_FILE_READ_BYTES
 
         return withContext(Dispatchers.IO) {
             try {
                 val reader = openBufferedReader(uri)
                     ?: return@withContext ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Failed to open uri: ${path}")
-
-                val allLines = reader.use { it.readLines() }
-                val totalLines = allLines.size
+        val allLines = reader.use { it.readLines() }
+        val totalLines = allLines.size
 
                 val startLine = maxOf(1, startLineParam).coerceIn(1, maxOf(1, totalLines))
-                val endLine =
+        val endLine =
                     (endLineParam
                             ?: (startLine + ToolExecutionLimits.DEFAULT_FILE_READ_PART_LINES - 1))
                         .coerceIn(startLine, maxOf(1, totalLines))
-                val startIndex = startLine - 1
+        val startIndex = startLine - 1
                 val endExclusive = endLine
 
                 var partContent = if (totalLines > 0 && startIndex < totalLines) {
@@ -1581,14 +1502,12 @@ class SafFileSystemTools(
                 } else {
                     ""
                 }
-
-                val isTruncated = partContent.length > maxFileSizeBytes
+        val isTruncated = partContent.length > maxFileSizeBytes
                 if (isTruncated) {
                     partContent = partContent.substring(0, maxFileSizeBytes)
                 }
-
-                var contentWithLineNumbers = addLineNumbers(partContent, startIndex, totalLines)
-                if (isTruncated) {
+        var contentWithLineNumbers = addLineNumbers(partContent, startIndex, totalLines)
+        if (isTruncated) {
                     contentWithLineNumbers += "\n\n... (file content truncated) ..."
                 }
 
@@ -1620,13 +1539,12 @@ class SafFileSystemTools(
         val envLabel = resolveEnvLabel(environment)
         val uri = resolveSafPathToDocumentUriOrNull(path, environment)
             ?: return ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Invalid repository path: ${path}")
-
         return withContext(Dispatchers.IO) {
             try {
                 val input = contentResolver.openInputStream(uri)
                     ?: return@withContext ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Failed to open uri: ${path}")
-                val bytes = input.use { it.readBytes() }
-                val base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+        val bytes = input.use { it.readBytes() }
+        val base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
                 ToolResult(
                     toolName = tool.name,
                     success = true,

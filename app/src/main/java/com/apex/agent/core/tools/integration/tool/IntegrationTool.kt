@@ -66,7 +66,7 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
         ToolParameter(
             name = "id",
             type = "string",
-            description = "项目ID（用于安�?卸载/详情�?,
+            description = "项目ID（用于安�卸载/详情�?,
             required = false
         ),
         ToolParameter(
@@ -90,7 +90,6 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
         if (action.isBlank()) {
             return StringResultData("错误：缺�?action 参数\n可用操作：list, open, search, browse, install, uninstall, list_installed, categories")
         }
-
         return when (action) {
             "list" -> executeList()
             "open" -> executeOpen(parameters)
@@ -103,8 +102,7 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
             else -> StringResultData("未知操作: $action\n可用操作：list, open, search, browse, install, uninstall, list_installed, categories")
         }
     }
-
-    private fun executeList(): ToolResultData {
+        private fun executeList(): ToolResultData {
         val integrations = IntegrationManager.getAllIntegrations()
         if (integrations.isEmpty()) {
             return StringResultData("暂无已注册的集成")
@@ -116,21 +114,18 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
                 appendLine("${i + 1}. ${info.name} (${info.id})")
                 appendLine("   描述: ${info.description}")
                 appendLine("   功能: ${info.capabilities.size} �?�?${info.capabilities.joinToString(", ") { it.name }}")
-                appendLine("   状�? ${if (info.enabled) "�?已启�? else "�?已禁�?}")
+                appendLine("   状�? ${if (info.enabled) "�已启�? else "�已禁�?}")
                 appendLine()
             }
             appendLine("使用 action=open provider=xxx 查看集成的详细功�?)
             appendLine("使用 action=search query=xxx source=all 跨源搜索")
         })
     }
-
-    private fun executeOpen(parameters: Map<String, Any>): ToolResultData {
+        private fun executeOpen(parameters: Map<String, Any>): ToolResultData {
         val providerId = (parameters["provider"] as? String)?.trim() ?: ""
         if (providerId.isBlank()) return StringResultData("错误：缺�?provider 参数")
-
         val provider = IntegrationManager.getProvider(providerId)
             ?: return StringResultData("未找到集�? $providerId\n可用集成: ${IntegrationManager.getAllIntegrations().joinToString(", ") { "${it.name}(${it.id})" }}")
-
         val info = provider.getInfo()
         return StringResultData(buildString {
             appendLine("📋 ${info.name} 集成详情")
@@ -139,8 +134,8 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
             appendLine("描述: ${info.description}")
             appendLine("作�? ${info.author}")
             appendLine("版本: ${info.version}")
-            if (info.homepage != null) appendLine("主页: ${info.homepage}")
-            appendLine("状�? ${if (info.enabled) "�?已启�? else "�?已禁�?}")
+        if (info.homepage != null) appendLine("主页: ${info.homepage}")
+            appendLine("状�? ${if (info.enabled) "�已启�? else "�已禁�?}")
             appendLine("项目�? ${info.itemCount}")
             appendLine("已安�? ${info.installedCount}")
             appendLine()
@@ -156,16 +151,13 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
             appendLine("  integration action=categories provider=${info.id}")
         })
     }
-
-    private suspend fun executeSearch(parameters: Map<String, Any>): ToolResultData {
+        private suspend fun executeSearch(parameters: Map<String, Any>): ToolResultData {
         val query = (parameters["query"] as? String)?.trim() ?: ""
         if (query.isBlank()) return StringResultData("错误：缺�?query 参数")
-
         val sourceFilter = (parameters["provider"] as? String)?.trim()?.takeIf { it.isNotBlank() }
-
         return withContext(Dispatchers.IO) {
             val results = IntegrationManager.searchAll(query, sourceFilter)
-            if (results.isEmpty()) {
+        if (results.isEmpty()) {
                 StringResultData("未找到匹�?\"$query\" 的结�?)
             } else {
                 StringResultData(buildString {
@@ -175,10 +167,10 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
                         appendLine("${i + 1}. [${item.source.name}] ${item.name}")
                         appendLine("   类型: ${item.type.displayName} | 作�? ${item.author}")
                         appendLine("   描述: ${item.description.take(80)}")
-                        if (item.isInstalled) appendLine("   状�? �?已安�?)
+        if (item.isInstalled) appendLine("   状�? �已安�?)
                         appendLine()
                     }
-                    if (results.size > 30) {
+        if (results.size > 30) {
                         appendLine("...以及 ${results.size - 30} 项更多结�?)
                     }
                     appendLine("使用 action=install provider=${results.first().source.id} id=${results.first().sourceId} 安装")
@@ -186,14 +178,11 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
             }
         }
     }
-
-    private suspend fun executeBrowse(parameters: Map<String, Any>): ToolResultData {
+        private suspend fun executeBrowse(parameters: Map<String, Any>): ToolResultData {
         val providerId = (parameters["provider"] as? String)?.trim() ?: ""
         if (providerId.isBlank()) return StringResultData("错误：缺�?provider 参数")
-
         val provider = IntegrationManager.getProvider(providerId)
             ?: return StringResultData("未找到集�? $providerId")
-
         val tag = (parameters["tag"] as? String)?.trim()?.takeIf { it.isNotBlank() }
         val page = (parameters["page"] as? Number)?.toInt() ?: 1
         val pageSize = (parameters["page_size"] as? Number)?.toInt() ?: 20
@@ -211,13 +200,13 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
                                 appendLine("${i + 1}. ${item.name}")
                                 appendLine("   类型: ${item.type.displayName} | 作�? ${item.author}")
                                 appendLine("   描述: ${item.description.take(80)}")
-                                if (item.tags.isNotEmpty()) {
+        if (item.tags.isNotEmpty()) {
                                     appendLine("   标签: ${item.tags.take(5).joinToString(", ")}")
                                 }
-                                if (item.isInstalled) appendLine("   状�? �?已安�?)
+        if (item.isInstalled) appendLine("   状�? �已安�?)
                                 appendLine()
                             }
-                            appendLine("使用 action=search provider=$providerId query=关键�?搜索")
+                            appendLine("使用 action=search provider=$providerId query=关键�搜索")
                             appendLine("使用 action=install provider=$providerId id=${items.first().sourceId} 安装")
                         })
                     }
@@ -228,59 +217,49 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
             )
         }
     }
-
-    private suspend fun executeInstall(parameters: Map<String, Any>): ToolResultData {
+        private suspend fun executeInstall(parameters: Map<String, Any>): ToolResultData {
         val providerId = (parameters["provider"] as? String)?.trim() ?: ""
         val itemId = (parameters["id"] as? String)?.trim() ?: ""
-
         if (providerId.isBlank()) return StringResultData("错误：缺�?provider 参数")
         if (itemId.isBlank()) return StringResultData("错误：缺�?id 参数")
-
         return withContext(Dispatchers.IO) {
             IntegrationManager.install(providerId, itemId).fold(
                 onSuccess = { msg -> StringResultData("�?$msg") },
-                onFailure = { e -> StringResultData("�?安装失败: ${e.message}") }
+                onFailure = { e -> StringResultData("�安装失败: ${e.message}") }
             )
         }
     }
-
-    private suspend fun executeUninstall(parameters: Map<String, Any>): ToolResultData {
+        private suspend fun executeUninstall(parameters: Map<String, Any>): ToolResultData {
         val providerId = (parameters["provider"] as? String)?.trim() ?: ""
         val itemId = (parameters["id"] as? String)?.trim() ?: ""
-
         if (providerId.isBlank()) return StringResultData("错误：缺�?provider 参数")
         if (itemId.isBlank()) return StringResultData("错误：缺�?id 参数")
-
         return withContext(Dispatchers.IO) {
             IntegrationManager.uninstall(providerId, itemId).fold(
                 onSuccess = { msg -> StringResultData("�?$msg") },
-                onFailure = { e -> StringResultData("�?卸载失败: ${e.message}") }
+                onFailure = { e -> StringResultData("�卸载失败: ${e.message}") }
             )
         }
     }
-
-    private suspend fun executeListInstalled(parameters: Map<String, Any>): ToolResultData {
+        private suspend fun executeListInstalled(parameters: Map<String, Any>): ToolResultData {
         val providerId = (parameters["provider"] as? String)?.trim()?.takeIf { it.isNotBlank() }
-
         val targets = if (providerId != null) {
             listOfNotNull(IntegrationManager.getProvider(providerId))
         } else {
             IntegrationManager.getAvailableProviders()
         }
-
         if (targets.isEmpty()) return StringResultData("暂无已安装的项目")
-
         return withContext(Dispatchers.IO) {
             val output = buildString {
                 appendLine("📦 已安装项目列�?)
                 appendLine()
-                for (provider in targets) {
+        for (provider in targets) {
                     provider.listInstalled().onSuccess { items ->
                         if (items.isNotEmpty()) {
                             appendLine("�?{provider.getInfo().name}】�?${items.size} �?)
                             items.forEachIndexed { i, item ->
                                 appendLine("  ${i + 1}. ${item.name} (${item.type.displayName})")
-                                if (item.author.isNotBlank()) appendLine("     作�? ${item.author}")
+        if (item.author.isNotBlank()) appendLine("     作�? ${item.author}")
                             }
                             appendLine()
                         }
@@ -290,14 +269,11 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
             StringResultData(output.ifBlank { "暂无已安装的项目" })
         }
     }
-
-    private suspend fun executeCategories(parameters: Map<String, Any>): ToolResultData {
+        private suspend fun executeCategories(parameters: Map<String, Any>): ToolResultData {
         val providerId = (parameters["provider"] as? String)?.trim() ?: ""
         if (providerId.isBlank()) return StringResultData("错误：缺�?provider 参数")
-
         val provider = IntegrationManager.getProvider(providerId)
             ?: return StringResultData("未找到集�? $providerId")
-
         return withContext(Dispatchers.IO) {
             provider.getCategories().fold(
                 onSuccess = { cats ->
@@ -306,7 +282,7 @@ class IntegrationTool(private val context: Context) : ToolAdapter {
                         appendLine()
                         cats.forEachIndexed { i, cat -> appendLine("${i + 1}. $cat") }
                         appendLine()
-                        appendLine("使用 action=browse provider=$providerId tag=分类�?浏览")
+                        appendLine("使用 action=browse provider=$providerId tag=分类�浏览")
                     })
                 },
                 onFailure = { e ->

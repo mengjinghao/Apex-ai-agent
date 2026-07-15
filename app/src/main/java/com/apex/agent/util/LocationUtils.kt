@@ -56,23 +56,23 @@ object LocationUtils {
 
         if (!hasLocationPermission(context)) {
             AppLogger.w(TAG, "No location permission; returning result from heuristics only.")
-            return false
+        return false
         }
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         try {
             val lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
                 ?: locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            if (lastKnownLocation != null) {
+        if (lastKnownLocation != null) {
                 AppLogger.d(TAG, "Got last known location from native API.")
-                return getCountryFromLocation(context, lastKnownLocation)
+        return getCountryFromLocation(context, lastKnownLocation)
             }
             AppLogger.d(TAG, "No last known location, requesting current location update.")
-            val currentLocation = getCurrentLocationNative(context, locationManager)
-            return getCountryFromLocation(context, currentLocation)
+        val currentLocation = getCurrentLocationNative(context, locationManager)
+        return getCountryFromLocation(context, currentLocation)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to get location using native API", e)
-            return false
+        return false
         }
     }
 
@@ -84,7 +84,7 @@ object LocationUtils {
      * @return 获取到的 Location 对象
      */
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-    private suspend fun getCurrentLocationNative(context: Context, locationManager: LocationManager): Location {
+        private suspend fun getCurrentLocationNative(context: Context, locationManager: LocationManager): Location {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return suspendCancellableCoroutine { continuation ->
                 val cancellationSignal = CancellationSignal()
@@ -104,7 +104,7 @@ object LocationUtils {
             }
         } else {
             @Suppress("DEPRECATION")
-            return suspendCancellableCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
                 val locationListener = object : android.location.LocationListener {
                     override fun onLocationChanged(location: Location) {
                         locationManager.removeUpdates(this)
@@ -162,15 +162,13 @@ object LocationUtils {
                         1
                     )
                 }
-
-                if (!addresses.isNullOrEmpty()) {
+        if (!addresses.isNullOrEmpty()) {
                     val countryCode = addresses[0].countryCode
                     AppLogger.d(TAG, "Detected country code: ${countryCode}")
                     return@withContext "CN".equals(countryCode, ignoreCase = true)
                 }
-
-                val inBounds = isWithinMainlandChinaBounds(location.latitude, location.longitude)
-                if (!inBounds) AppLogger.w(TAG, "Coordinates outside CN bounds; lat=${location.latitude}, lon=${location.longitude}")
+        val inBounds = isWithinMainlandChinaBounds(location.latitude, location.longitude)
+        if (!inBounds) AppLogger.w(TAG, "Coordinates outside CN bounds; lat=${location.latitude}, lon=${location.longitude}")
                 inBounds
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Geocoder failed", e)
@@ -205,8 +203,8 @@ object LocationUtils {
         return try {
             val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             val networkIso = tm.networkCountryIso?.trim()
-            val simIso = tm.simCountryIso?.trim()
-            val iso = (networkIso?.ifBlank { null } ?: simIso?.ifBlank { null })
+        val simIso = tm.simCountryIso?.trim()
+        val iso = (networkIso?.ifBlank { null } ?: simIso?.ifBlank { null })
             iso?.uppercase(Locale.ROOT)
         } catch (e: Exception) {
             AppLogger.w(TAG, "Telephony country ISO unavailable", e)

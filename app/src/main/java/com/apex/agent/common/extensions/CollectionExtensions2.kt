@@ -14,9 +14,9 @@ import kotlin.random.Random
  */
 fun <T> Iterable<T>.chunkedWhile(predicate: (T) -> Boolean): List<List<T>> {
     if (this is Collection && isEmpty()) return emptyList()
-    val result = mutableListOf<List<T>>()
-    val current = mutableListOf<T>()
-    var lastState: Boolean? = null
+        val result = mutableListOf<List<T>>()
+        val current = mutableListOf<T>()
+        var lastState: Boolean? = null
     for (element in this) {
         val state = predicate(element)
         if (lastState != null && state != lastState && current.isNotEmpty()) {
@@ -26,8 +26,8 @@ fun <T> Iterable<T>.chunkedWhile(predicate: (T) -> Boolean): List<List<T>> {
         current.add(element)
         lastState = state
     }
-    if (current.isNotEmpty()) result.add(current)
-    return result
+        if (current.isNotEmpty()) result.add(current)
+        return result
 }
 
 /**
@@ -38,11 +38,11 @@ fun <T> Iterable<T>.chunkedWhile(predicate: (T) -> Boolean): List<List<T>> {
  */
 fun <T> Iterable<T>.takeUntil(predicate: (T) -> Boolean): List<T> {
     val result = mutableListOf<T>()
-    for (element in this) {
+        for (element in this) {
         result.add(element)
         if (predicate(element)) break
     }
-    return result
+        return result
 }
 
 /**
@@ -53,8 +53,8 @@ fun <T> Iterable<T>.takeUntil(predicate: (T) -> Boolean): List<T> {
  */
 fun <T> Iterable<T>.dropUntil(predicate: (T) -> Boolean): List<T> {
     val list = this.toList()
-    val index = list.indexOfFirst(predicate)
-    return if (index >= 0) list.drop(index) else emptyList()
+        val index = list.indexOfFirst(predicate)
+        return if (index >= 0) list.drop(index) else emptyList()
 }
 
 /**
@@ -65,13 +65,13 @@ fun <T> Iterable<T>.dropUntil(predicate: (T) -> Boolean): List<T> {
  */
 fun <T> Iterable<T>.intersperse(element: T): List<T> {
     val result = mutableListOf<T>()
-    var first = true
+        var first = true
     for (item in this) {
         if (!first) result.add(element)
         result.add(item)
         first = false
     }
-    return result
+        return result
 }
 
 /**
@@ -81,13 +81,13 @@ fun <T> Iterable<T>.intersperse(element: T): List<T> {
  */
 fun <T> Iterable<T>.findDuplicates(): List<T> {
     val seen = mutableSetOf<T>()
-    val duplicates = mutableListOf<T>()
-    for (element in this) {
+        val duplicates = mutableListOf<T>()
+        for (element in this) {
         if (!seen.add(element)) {
             duplicates.add(element)
         }
     }
-    return duplicates.distinct()
+        return duplicates.distinct()
 }
 
 /**
@@ -98,10 +98,10 @@ fun <T> Iterable<T>.findDuplicates(): List<T> {
  */
 fun <T> Iterable<T>.indexesOf(element: T): List<Int> {
     val indexes = mutableListOf<Int>()
-    for ((index, value) in this.withIndex()) {
+        for ((index, value) in this.withIndex()) {
         if (value == element) indexes.add(index)
     }
-    return indexes
+        return indexes
 }
 
 /**
@@ -111,10 +111,10 @@ fun <T> Iterable<T>.indexesOf(element: T): List<Int> {
  */
 fun <T> Iterable<T>.indexOfFirstDuplicate(): Int {
     val seen = mutableSetOf<T>()
-    for ((index, element) in this.withIndex()) {
+        for ((index, element) in this.withIndex()) {
         if (!seen.add(element)) return index
     }
-    return -1
+        return -1
 }
 
 /**
@@ -126,17 +126,17 @@ fun <T> Iterable<T>.indexOfFirstDuplicate(): Int {
  */
 fun <T> Iterable<T>.hasCycle(nextExtractor: (T) -> T?): Boolean {
     val visited = mutableSetOf<Int>()
-    for (element in this) {
+        for (element in this) {
         var current: T? = element
         val path = mutableSetOf<Int>()
         while (current != null) {
             val id = System.identityHashCode(current)
-            if (!path.add(id)) return true
+        if (!path.add(id)) return true
             if (!visited.add(id)) break
             current = nextExtractor(current)
         }
     }
-    return false
+        return false
 }
 
 /**
@@ -147,10 +147,9 @@ fun <T> Iterable<T>.hasCycle(nextExtractor: (T) -> T?): Boolean {
  */
 fun <T> Iterable<T>.topologicalSort(dependencyExtractor: (T) -> Iterable<T>): List<T>? {
     val sorted = mutableListOf<T>()
-    val visited = mutableSetOf<Int>()
-    val visiting = mutableSetOf<Int>()
-
-    fun dfs(node: T): Boolean {
+        val visited = mutableSetOf<Int>()
+        val visiting = mutableSetOf<Int>()
+        fun dfs(node: T): Boolean {
         val id = System.identityHashCode(node)
         if (id in visiting) return false
         if (id in visited) return true
@@ -163,13 +162,12 @@ fun <T> Iterable<T>.topologicalSort(dependencyExtractor: (T) -> Iterable<T>): Li
         sorted.add(node)
         return true
     }
-
-    for (element in this) {
+        for (element in this) {
         if (System.identityHashCode(element) !in visited) {
             if (!dfs(element)) return null
         }
     }
-    return sorted
+        return sorted
 }
 
 /**
@@ -179,12 +177,12 @@ fun <T> Iterable<T>.topologicalSort(dependencyExtractor: (T) -> Iterable<T>): Li
  */
 fun Iterable<Number>.cumulativeSum(): List<Double> {
     val result = mutableListOf<Double>()
-    var sum = 0.0
+        var sum = 0.0
     for (element in this) {
         sum += element.toDouble()
         result.add(sum)
     }
-    return result
+        return result
 }
 
 /**
@@ -194,10 +192,10 @@ fun Iterable<Number>.cumulativeSum(): List<Double> {
  */
 fun <T> Iterable<T>.allUnique(): Boolean {
     val set = mutableSetOf<T>()
-    for (element in this) {
+        for (element in this) {
         if (!set.add(element)) return false
     }
-    return true
+        return true
 }
 
 /**
@@ -207,14 +205,14 @@ fun <T> Iterable<T>.allUnique(): Boolean {
  */
 fun <T : Comparable<T>> Iterable<T>.isSorted(): Boolean {
     val iterator = this.iterator()
-    if (!iterator.hasNext()) return true
+        if (!iterator.hasNext()) return true
     var previous = iterator.next()
     while (iterator.hasNext()) {
         val current = iterator.next()
         if (previous > current) return false
         previous = current
     }
-    return true
+        return true
 }
 
 /**
@@ -231,7 +229,7 @@ fun <T> Iterable<T>.isDistinct(): Boolean = allUnique()
  */
 fun Iterable<Number>.averageOrNull(): Double? {
     val list = this.toList()
-    if (list.isEmpty()) return null
+        if (list.isEmpty()) return null
     return list.sumOf { it.toDouble() } / list.size
 }
 
@@ -242,7 +240,7 @@ fun Iterable<Number>.averageOrNull(): Double? {
  */
 fun Iterable<Number>.medianOrNull(): Double? {
     val sorted = this.map { it.toDouble() }.sorted()
-    if (sorted.isEmpty()) return null
+        if (sorted.isEmpty()) return null
     val size = sorted.size
     return if (size % 2 == 1) sorted[size / 2]
     else (sorted[size / 2 - 1] + sorted[size / 2]) / 2.0
@@ -255,7 +253,7 @@ fun Iterable<Number>.medianOrNull(): Double? {
  */
 fun <T> Iterable<T>.modeOrNull(): T? {
     val list = this.toList()
-    if (list.isEmpty()) return null
+        if (list.isEmpty()) return null
     return list.groupingBy { it }.eachCount().maxByOrNull { it.value }?.key
 }
 
@@ -268,7 +266,7 @@ fun <T> Iterable<T>.modeOrNull(): T? {
  */
 fun <T> Iterable<T>.toDelimitedString(delimiter: String = ",", transform: ((T) -> String)? = null): String {
     val fn = transform ?: { it.toString() }
-    return this.joinToString(delimiter) { fn(it) }
+        return this.joinToString(delimiter) { fn(it) }
 }
 
 /**
@@ -325,8 +323,8 @@ fun <T, K> Iterable<T>.groupByCount(transform: (T) -> K): Map<K, Int> {
  */
 fun <T> Iterable<T>.symmetricDifference(other: Iterable<T>): Set<T> {
     val setA = this.toSet()
-    val setB = other.toSet()
-    return (setA - setB) union (setB - setA)
+        val setB = other.toSet()
+        return (setA - setB) union (setB - setA)
 }
 
 /**
@@ -355,7 +353,7 @@ fun <T> Iterable<T>.shuffled(): List<T> {
  */
 fun <T> Iterable<T>.randomElement(): T? {
     val list = this.toList()
-    return if (list.isEmpty()) null else list[Random.nextInt(list.size)]
+        return if (list.isEmpty()) null else list[Random.nextInt(list.size)]
 }
 
 /**
@@ -366,8 +364,8 @@ fun <T> Iterable<T>.randomElement(): T? {
  */
 fun <T> Iterable<T>.randomElements(n: Int): List<T> {
     val list = this.toList()
-    if (list.isEmpty() || n <= 0) return emptyList()
-    return List(n) { list[Random.nextInt(list.size)] }
+        if (list.isEmpty() || n <= 0) return emptyList()
+        return List(n) { list[Random.nextInt(list.size)] }
 }
 
 /**
@@ -391,13 +389,13 @@ fun <T> Iterable<T>.joinTo(prefix: String = "", separator: String = ", ", suffix
  */
 fun <K, V> toMap(keys: Iterable<K>, values: Iterable<V>): Map<K, V> {
     val keyList = keys.toList()
-    val valueList = values.toList()
-    val size = minOf(keyList.size, valueList.size)
-    val map = mutableMapOf<K, V>()
-    for (i in 0 until size) {
+        val valueList = values.toList()
+        val size = minOf(keyList.size, valueList.size)
+        val map = mutableMapOf<K, V>()
+        for (i in 0 until size) {
         map[keyList[i]] = valueList[i]
     }
-    return map
+        return map
 }
 
 /**
@@ -410,15 +408,15 @@ fun <K, V> toMap(keys: Iterable<K>, values: Iterable<V>): Map<K, V> {
  */
 fun <T, U> Iterable<T>.zipAll(other: Iterable<U>, defaultLeft: T, defaultRight: U): List<Pair<T, U>> {
     val listA = this.toList()
-    val listB = other.toList()
-    val maxSize = maxOf(listA.size, listB.size)
-    val result = mutableListOf<Pair<T, U>>()
-    for (i in 0 until maxSize) {
+        val listB = other.toList()
+        val maxSize = maxOf(listA.size, listB.size)
+        val result = mutableListOf<Pair<T, U>>()
+        for (i in 0 until maxSize) {
         val a = if (i < listA.size) listA[i] else defaultLeft
         val b = if (i < listB.size) listB[i] else defaultRight
         result.add(Pair(a, b))
     }
-    return result
+        return result
 }
 
 /**
@@ -429,7 +427,7 @@ fun <T, U> Iterable<T>.zipAll(other: Iterable<U>, defaultLeft: T, defaultRight: 
  */
 fun <T> MutableCollection<T>.addIfNotNull(element: T?): Boolean {
     if (element != null) return add(element)
-    return false
+        return false
 }
 
 /**
@@ -440,7 +438,7 @@ fun <T> MutableCollection<T>.addIfNotNull(element: T?): Boolean {
  */
 fun <T> MutableCollection<T>.addIfAbsent(element: T): Boolean {
     if (element !in this) return add(element)
-    return false
+        return false
 }
 
 /**
@@ -451,14 +449,14 @@ fun <T> MutableCollection<T>.addIfAbsent(element: T): Boolean {
  */
 fun <T, K> Iterable<T>.distinctBy(transform: (T) -> K): List<T> {
     val seen = mutableSetOf<K>()
-    val result = mutableListOf<T>()
-    for (element in this) {
+        val result = mutableListOf<T>()
+        for (element in this) {
         val key = transform(element)
         if (key in seen) continue
         seen.add(key)
         result.add(element)
     }
-    return result
+        return result
 }
 
 /**
@@ -468,14 +466,14 @@ fun <T, K> Iterable<T>.distinctBy(transform: (T) -> K): List<T> {
  */
 fun <T> Iterable<T>.distinctConsecutive(): List<T> {
     val result = mutableListOf<T>()
-    var previous: Any? = null
+        var previous: Any? = null
     for (element in this) {
         if (element != previous) {
             result.add(element)
             previous = element
         }
     }
-    return result
+        return result
 }
 
 /**
@@ -490,5 +488,5 @@ fun <T, R> Iterable<T>.aggregate(initial: R, operation: (R, T) -> R): R {
     for (element in this) {
         result = operation(result, element)
     }
-    return result
+        return result
 }

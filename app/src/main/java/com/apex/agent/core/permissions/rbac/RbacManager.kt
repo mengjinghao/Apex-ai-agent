@@ -27,18 +27,15 @@ class RbacManager private constructor(private val context: Context) {
                 instance ?: RbacManager(context.applicationContext).also { it.initialize() }
             }
     }
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val permissionCache = ConcurrentHashMap<String, CacheEntry>()
-
-    private lateinit var repo: DatabaseRepository
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val permissionCache = ConcurrentHashMap<String, CacheEntry>()
+        private lateinit var repo: DatabaseRepository
 
     private data class CacheEntry(
         val result: Boolean,
         val timestamp: Long
     )
-
-    private fun initialize() {
+        private fun initialize() {
         val db = AppDatabase.getDatabase(context)
         repo = DatabaseRepository(
             userDao = db.userDao(),
@@ -51,20 +48,17 @@ class RbacManager private constructor(private val context: Context) {
         )
         scope.launch { ensureDefaultData() }
     }
-
-    private suspend fun ensureDefaultData() {
+        private suspend fun ensureDefaultData() {
         if (repo.roleCount() > 0) return
         val now = System.currentTimeMillis()
         val superAdminRole = repo.insertRole(Role(name = "super_admin", description = "超级管理�?- 全部权限", level = 5, isSystem = true))
         val adminRole = repo.insertRole(Role(name = "admin", description = "管理�?- 高级权限", level = 4, isSystem = true))
         val userRole = repo.insertRole(Role(name = "user", description = "普通用�?- 标准权限", level = 1, isSystem = true))
         val guestRole = repo.insertRole(Role(name = "guest", description = "访客 - 只读权限", level = 0, isSystem = true))
-
         val permIds = mutableMapOf<String, Long>()
         for (perm in defaultPermissions()) {
             permIds[perm.name] = repo.insertPermission(perm)
         }
-
         fun add(roleId: Long, vararg permNames: String) {
             for (name in permNames) {
                 permIds[name]?.let { pid ->
@@ -97,8 +91,7 @@ class RbacManager private constructor(private val context: Context) {
             "api:stats:read"
         )
     }
-
-    private fun defaultPermissions(): List<Permission> {
+        private fun defaultPermissions(): List<Permission> {
         val now = System.currentTimeMillis()
         return listOf(
             Permission(name = "agent:tools", description = "允许使用工具", category = "agent", createdAt = now),
@@ -126,8 +119,7 @@ class RbacManager private constructor(private val context: Context) {
             Permission(name = "file:delete", description = "删除文件系统中的文件", category = "file", createdAt = now)
         )
     }
-
-    fun getRepository(): DatabaseRepository = repo
+        fun getRepository(): DatabaseRepository = repo
 
     suspend fun hasPermission(userId: Long, permissionName: String): Boolean {
         val cacheKey = "$userId:$permissionName"
@@ -178,18 +170,15 @@ class RbacManager private constructor(private val context: Context) {
 
     fun getPermissionsForUser(userId: Long): Flow<List<Permission>> =
         repo.getPermissionsForUser(userId)
-
-    fun getRolesForUser(userId: Long): Flow<List<Role>> =
+        fun getRolesForUser(userId: Long): Flow<List<Role>> =
         repo.getRolesForUser(userId)
 
     suspend fun getRolesForUserSync(userId: Long): List<Role> =
         repo.getRolesForUserSync(userId)
-
-    fun invalidateCacheForUser(userId: Long) {
+        fun invalidateCacheForUser(userId: Long) {
         permissionCache.keys.removeAll { it.startsWith("$userId:") }
     }
-
-    fun invalidateAllCache() {
+        fun invalidateAllCache() {
         permissionCache.clear()
     }
 }

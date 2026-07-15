@@ -167,8 +167,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
                             message.createdAt
                         ))
                     }
-                    
-                    if (sessionTitle != null) {
+        if (sessionTitle != null) {
                         messages.forEach { message ->
                             db.execSQL("""
                                 INSERT OR REPLACE INTO ${FTS_METADATA_TABLE}(message_id, session_title)
@@ -217,8 +216,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
                     LIMIT ?
                 """.trimIndent()
             }
-            
-            val args = if (sessionIdFilter != null) {
+        val args = if (sessionIdFilter != null) {
                 arrayOf(query, sessionIdFilter, limit)
             } else {
                 arrayOf(query, limit)

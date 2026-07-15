@@ -4,26 +4,23 @@ import com.apex.util.AppLogger
 
 object ConditionEvaluator {
     private const val TAG = "ConditionEvaluator"
-
-    fun evaluate(expression: String, capabilities: Map<String, Any?>): Boolean {
+        fun evaluate(expression: String, capabilities: Map<String, Any?>): Boolean {
         val trimmed = expression.trim()
         if (trimmed.isEmpty()) {
             return true
         }
-
         return try {
             val tokens = Tokenizer(trimmed).tokenize()
-            val parser = Parser(tokens)
-            val ast = parser.parseExpression()
-            val value = ast.eval(capabilities)
+        val parser = Parser(tokens)
+        val ast = parser.parseExpression()
+        val value = ast.eval(capabilities)
             value.isTruthy()
         } catch (e: Exception) {
             AppLogger.w(TAG, "Condition evaluation failed: '${expression}' (${e.message})")
             false
         }
     }
-
-    private sealed interface Token {
+        private sealed interface Token {
         data class Identifier(val text: String) : Token
         data class StringLiteral(val value: String) : Token
         data class NumberLiteral(val value: Double) : Token
@@ -33,20 +30,18 @@ object ConditionEvaluator {
         data class Punct(val ch: Char) : Token
         data object Eof : Token
     }
-
-    private class Tokenizer(private val input: String) {
+        private class Tokenizer(private val input: String) {
         private var i = 0
 
         fun tokenize(): List<Token> {
             val out = mutableListOf<Token>()
             while (true) {
                 skipWs()
-                if (i >= input.length) {
+        if (i >= input.length) {
                     out.add(Token.Eof)
-                    return out
+        return out
                 }
-
-                val c = input[i]
+        val c = input[i]
                 when {
                     c == '(' || c == ')' || c == '[' || c == ']' || c == ',' -> {
                         out.add(Token.Punct(c))
@@ -60,7 +55,7 @@ object ConditionEvaluator {
                     }
                     isIdentStart(c) -> {
                         val ident = readIdentifier()
-                        when (ident) {
+        when (ident) {
                             "true" -> out.add(Token.BooleanLiteral(true))
                             "false" -> out.add(Token.BooleanLiteral(false))
                             "null" -> out.add(Token.NullLiteral)
@@ -75,11 +70,9 @@ object ConditionEvaluator {
                 }
             }
         }
-
         private fun skipWs() {
             while (i < input.length && input[i].isWhitespace()) i++
         }
-
         private fun isIdentStart(c: Char): Boolean = c.isLetter() || c == '_'
 
         private fun isIdentPart(c: Char): Boolean = c.isLetterOrDigit() || c == '_' || c == '.'
@@ -90,7 +83,6 @@ object ConditionEvaluator {
             while (i < input.length && isIdentPart(input[i])) i++
             return input.substring(start, i)
         }
-
         private fun readString(quote: Char): String {
             i++
             val sb = StringBuilder()
@@ -100,11 +92,11 @@ object ConditionEvaluator {
                     i++
                     return sb.toString()
                 }
-                if (c == '\\') {
+        if (c == '\\') {
                     if (i + 1 >= input.length) {
                         throw IllegalArgumentException("Unterminated escape")
                     }
-                    val n = input[i + 1]
+        val n = input[i + 1]
                     when (n) {
                         'n' -> sb.append('\n')
                         'r' -> sb.append('\r')
@@ -120,9 +112,8 @@ object ConditionEvaluator {
                 sb.append(c)
                 i++
             }
-            throw IllegalArgumentException("Unterminated string")
+        throw IllegalArgumentException("Unterminated string")
         }
-
         private fun readNumber(): Double {
             val start = i
             var hasDot = false
@@ -137,17 +128,15 @@ object ConditionEvaluator {
                     break
                 }
             }
-            return input.substring(start, i).toDouble()
+        return input.substring(start, i).toDouble()
         }
-
         private fun readOperator(): String? {
             fun match(s: String): Boolean {
                 if (!input.startsWith(s, i)) return false
                 i += s.length
                 return true
             }
-
-            return when {
+        return when {
                 match("&&") -> "&&"
                 match("||") -> "||"
                 match("==") -> "=="
@@ -161,50 +150,44 @@ object ConditionEvaluator {
             }
         }
     }
-
-    private sealed interface Expr {
+        private sealed interface Expr {
         fun eval(capabilities: Map<String, Any?>): Value
     }
-
-    private data class LiteralExpr(val value: Value) : Expr {
+        private data class LiteralExpr(val value: Value) : Expr {
         override fun eval(capabilities: Map<String, Any?>): Value = value
     }
-
-    private data class IdentifierExpr(val name: String) : Expr {
+        private data class IdentifierExpr(val name: String) : Expr {
         override fun eval(capabilities: Map<String, Any?>): Value {
             return Value.fromAny(capabilities[name])
         }
     }
-
-    private data class ArrayExpr(val elements: List<Expr>) : Expr {
+        private data class ArrayExpr(val elements: List<Expr>) : Expr {
         override fun eval(capabilities: Map<String, Any?>): Value {
             return Value.Array(elements.map { it.eval(capabilities) })
         }
     }
-
-    private data class UnaryExpr(val op: String, val expr: Expr) : Expr {
+        private data class UnaryExpr(val op: String, val expr: Expr) : Expr {
         override fun eval(capabilities: Map<String, Any?>): Value {
             val v = expr.eval(capabilities)
-            return when (op) {
+        return when (op) {
                 "!" -> Value.Bool(!v.isTruthy())
                 else -> throw IllegalArgumentException("Unsupported unary operator: ${op}")
             }
         }
     }
-
-    private data class BinaryExpr(val left: Expr, val op: String, val right: Expr) : Expr {
+        private data class BinaryExpr(val left: Expr, val op: String, val right: Expr) : Expr {
         override fun eval(capabilities: Map<String, Any?>): Value {
             return when (op) {
                 "&&" -> {
                     val lv = left.eval(capabilities)
-                    if (!lv.isTruthy()) return Value.Bool(false)
-                    val rv = right.eval(capabilities)
+        if (!lv.isTruthy()) return Value.Bool(false)
+        val rv = right.eval(capabilities)
                     Value.Bool(rv.isTruthy())
                 }
                 "||" -> {
                     val lv = left.eval(capabilities)
-                    if (lv.isTruthy()) return Value.Bool(true)
-                    val rv = right.eval(capabilities)
+        if (lv.isTruthy()) return Value.Bool(true)
+        val rv = right.eval(capabilities)
                     Value.Bool(rv.isTruthy())
                 }
                 "==" -> Value.Bool(left.eval(capabilities) == right.eval(capabilities))
@@ -215,16 +198,15 @@ object ConditionEvaluator {
                 "<=" -> Value.Bool(left.eval(capabilities).compareTo(right.eval(capabilities)) <= 0)
                 "in" -> {
                     val item = left.eval(capabilities)
-                    val container = right.eval(capabilities)
-                    val ok = (container as? Value.Array)?.items?.any { it == item } == true
+        val container = right.eval(capabilities)
+        val ok = (container as? Value.Array)?.items?.any { it == item } == true
                     Value.Bool(ok)
                 }
                 else -> throw IllegalArgumentException("Unsupported operator: ${op}")
             }
         }
     }
-
-    private sealed interface Value : Comparable<Value> {
+        private sealed interface Value : Comparable<Value> {
         fun isTruthy(): Boolean
 
         data class Bool(val value: Boolean) : Value {
@@ -242,7 +224,7 @@ object ConditionEvaluator {
             override fun compareTo(other: Value): Int {
                 val otherStr = (other as? Str)?.value
                     ?: throw IllegalArgumentException("Cannot compare string to ${other::class.simpleName}")
-                return value.compareTo(otherStr)
+        return value.compareTo(otherStr)
             }
         }
 
@@ -255,7 +237,6 @@ object ConditionEvaluator {
             override fun isTruthy(): Boolean = items.isNotEmpty()
             override fun compareTo(other: Value): Int = throw IllegalArgumentException("Cannot compare array")
         }
-
         fun toNumberOrNull(): Double? = when (this) {
             is Num -> value
             is Bool -> if (value) 1.0 else 0.0
@@ -278,30 +259,26 @@ object ConditionEvaluator {
             }
         }
     }
-
-    private class Parser(private val tokens: List<Token>) {
+        private class Parser(private val tokens: List<Token>) {
         private var pos = 0
 
         fun parseExpression(): Expr = parseOr()
-
         private fun parseOr(): Expr {
             var left = parseAnd()
             while (matchOp("||")) {
                 val right = parseAnd()
                 left = BinaryExpr(left, "||", right)
             }
-            return left
+        return left
         }
-
         private fun parseAnd(): Expr {
             var left = parseEquality()
             while (matchOp("&&")) {
                 val right = parseEquality()
                 left = BinaryExpr(left, "&&", right)
             }
-            return left
+        return left
         }
-
         private fun parseEquality(): Expr {
             var left = parseRelational()
             while (true) {
@@ -312,7 +289,6 @@ object ConditionEvaluator {
                 }
             }
         }
-
         private fun parseRelational(): Expr {
             var left = parseUnary()
             while (true) {
@@ -326,17 +302,15 @@ object ConditionEvaluator {
                 }
             }
         }
-
         private fun parseUnary(): Expr {
             if (matchOp("!")) {
                 return UnaryExpr("!", parseUnary())
             }
-            return parsePrimary()
+        return parsePrimary()
         }
-
         private fun parsePrimary(): Expr {
             val t = peek()
-            when (t) {
+        when (t) {
                 is Token.BooleanLiteral -> {
                     pos++
                     return LiteralExpr(Value.Bool(t.value))
@@ -362,52 +336,47 @@ object ConditionEvaluator {
                         pos++
                         val inner = parseExpression()
                         expectPunct(')')
-                        return inner
+        return inner
                     }
-                    if (t.ch == '[') {
+        if (t.ch == '[') {
                         pos++
                         val elements = mutableListOf<Expr>()
-                        if (!checkPunct(']')) {
+        if (!checkPunct(']')) {
                             elements.add(parseExpression())
                             while (matchPunct(',')) {
                                 elements.add(parseExpression())
                             }
                         }
                         expectPunct(']')
-                        return ArrayExpr(elements)
+        return ArrayExpr(elements)
                     }
                 }
                 else -> {
                 }
             }
-            throw IllegalArgumentException("Unexpected token: ${t}")
+        throw IllegalArgumentException("Unexpected token: ${t}")
         }
-
         private fun peek(): Token = tokens.getOrElse(pos) { Token.Eof }
-
         private fun matchOp(op: String): Boolean {
             val t = peek()
-            if (t is Token.Operator && t.op == op) {
+        if (t is Token.Operator && t.op == op) {
                 pos++
                 return true
             }
-            return false
+        return false
         }
-
         private fun matchPunct(ch: Char): Boolean {
             val t = peek()
-            if (t is Token.Punct && t.ch == ch) {
+        if (t is Token.Punct && t.ch == ch) {
                 pos++
                 return true
             }
-            return false
+        return false
         }
-
         private fun checkPunct(ch: Char): Boolean {
             val t = peek()
-            return t is Token.Punct && t.ch == ch
+        return t is Token.Punct && t.ch == ch
         }
-
         private fun expectPunct(ch: Char) {
             if (!matchPunct(ch)) {
                 throw IllegalArgumentException("Expected '${ch}'")

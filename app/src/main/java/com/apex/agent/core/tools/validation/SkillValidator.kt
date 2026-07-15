@@ -21,24 +21,19 @@ class SkillValidator(context: Context) {
                 }
         }
     }
-
-    private val securityScanner = SkillSecurityScanner(context)
-    private val benchmark = SkillBenchmark(context)
-    private val compatibilityChecker = SkillCompatibilityChecker(context)
-
-    private val json = Json {
+        private val securityScanner = SkillSecurityScanner(context)
+        private val benchmark = SkillBenchmark(context)
+        private val compatibilityChecker = SkillCompatibilityChecker(context)
+        private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
-
-    fun validateComplete(toolPackage: ToolPackage, otherSkills: List<ToolPackage> = emptyList()): ValidationReport {
+        fun validateComplete(toolPackage: ToolPackage, otherSkills: List<ToolPackage> = emptyList()): ValidationReport {
         AppLogger.d(TAG, "Starting complete validation for skill: ${toolPackage.name}")
-
         val securityReport = securityScanner.scan(toolPackage)
         val performanceReport = benchmark.benchmark(toolPackage)
         val compatibilityReport = compatibilityChecker.check(toolPackage, otherSkills)
-
         val overallStatus = when {
             !securityReport.isPassed -> ValidationStatus.FAILED
             !compatibilityReport.isPassed -> ValidationStatus.FAILED
@@ -46,11 +41,9 @@ class SkillValidator(context: Context) {
             securityReport.riskLevel == RiskLevel.MEDIUM -> ValidationStatus.WARNING
             else -> ValidationStatus.PASSED
         }
-
         val summary = buildSummary(securityReport, performanceReport, compatibilityReport)
 
         AppLogger.d(TAG, "Validation completed for ${toolPackage.name}: status=${overallStatus}")
-
         return ValidationReport(
             skillName = toolPackage.name,
             skillVersion = toolPackage.version,
@@ -61,17 +54,14 @@ class SkillValidator(context: Context) {
             summary = summary
         )
     }
-
-    fun validateScript(
+        fun validateScript(
         scriptContent: String,
         skillName: String = "unknown",
         skillVersion: String = "1.0.0"
     ): ValidationReport {
         AppLogger.d(TAG, "Starting script validation for: ${skillName}")
-
         val securityReport = securityScanner.scanScript(scriptContent, skillName)
         val performanceReport = benchmark.benchmarkScript(scriptContent, skillName)
-
         val overallStatus = when {
             !securityReport.isPassed -> ValidationStatus.FAILED
             securityReport.riskLevel == RiskLevel.CRITICAL -> ValidationStatus.FAILED
@@ -79,9 +69,7 @@ class SkillValidator(context: Context) {
             !performanceReport.isPassed -> ValidationStatus.WARNING
             else -> ValidationStatus.PASSED
         }
-
         val summary = buildScriptSummary(securityReport, performanceReport)
-
         return ValidationReport(
             skillName = skillName,
             skillVersion = skillVersion,
@@ -91,23 +79,19 @@ class SkillValidator(context: Context) {
             summary = summary
         )
     }
-
-    fun validateSecurity(toolPackage: ToolPackage): SecurityReport {
+        fun validateSecurity(toolPackage: ToolPackage): SecurityReport {
         return securityScanner.scan(toolPackage)
     }
-
-    fun validatePerformance(toolPackage: ToolPackage): PerformanceReport {
+        fun validatePerformance(toolPackage: ToolPackage): PerformanceReport {
         return benchmark.benchmark(toolPackage)
     }
-
-    fun validateCompatibility(
+        fun validateCompatibility(
         toolPackage: ToolPackage,
         otherSkills: List<ToolPackage> = emptyList()
     ): CompatibilityReport {
         return compatibilityChecker.check(toolPackage, otherSkills)
     }
-
-    fun generateReportJson(report: ValidationReport): String {
+        fun generateReportJson(report: ValidationReport): String {
         return try {
             json.encodeToString(report)
         } catch (e: Exception) {
@@ -115,12 +99,10 @@ class SkillValidator(context: Context) {
             "{}"
         }
     }
-
-    fun generateMarkdownReport(report: ValidationReport): String {
+        fun generateMarkdownReport(report: ValidationReport): String {
         return buildMarkdownReport(report)
     }
-
-    private fun buildSummary(
+        private fun buildSummary(
         securityReport: SecurityReport,
         performanceReport: PerformanceReport,
         compatibilityReport: CompatibilityReport
@@ -131,8 +113,7 @@ class SkillValidator(context: Context) {
             append("Compatibility: ${if (compatibilityReport.isPassed) "PASS" else "FAIL"}")
         }
     }
-
-    private fun buildScriptSummary(
+        private fun buildScriptSummary(
         securityReport: SecurityReport,
         performanceReport: PerformanceReport
     ): String {
@@ -141,8 +122,7 @@ class SkillValidator(context: Context) {
             append("Performance: ${if (performanceReport.isPassed) "PASS" else "WARN"} (load: ${performanceReport.loadTimeMs}ms, exec: ${performanceReport.executionTimeMs}ms)")
         }
     }
-
-    private fun buildMarkdownReport(report: ValidationReport): String {
+        private fun buildMarkdownReport(report: ValidationReport): String {
         return buildString {
             appendLine("# Skill Validation Report")
             appendLine()
@@ -160,7 +140,7 @@ class SkillValidator(context: Context) {
                 appendLine("**Status:** ${if (security.isPassed) "PASSED" else "FAILED"}")
                 appendLine("**Risk Level:** ${security.riskLevel.name}")
                 appendLine()
-                if (security.dangerPatterns.isNotEmpty()) {
+        if (security.dangerPatterns.isNotEmpty()) {
                     appendLine("### Danger Patterns Detected (${security.dangerPatterns.size})")
                     security.dangerPatterns.forEach { pattern ->
                         appendLine()
@@ -173,21 +153,21 @@ class SkillValidator(context: Context) {
                     }
                     appendLine()
                 }
-                if (security.sensitiveApiCalls.isNotEmpty()) {
+        if (security.sensitiveApiCalls.isNotEmpty()) {
                     appendLine("### Sensitive API Calls (${security.sensitiveApiCalls.size})")
                     security.sensitiveApiCalls.forEach { api ->
                         appendLine("- `${api.apiName}` (Line ${api.lineNumber}): ${api.description}")
                     }
                     appendLine()
                 }
-                if (security.networkRequests.isNotEmpty()) {
+        if (security.networkRequests.isNotEmpty()) {
                     appendLine("### Network Requests (${security.networkRequests.size})")
                     security.networkRequests.forEach { req ->
                         appendLine("- ${req.url} (Line ${req.lineNumber})${if (req.isSuspicious) " **[SUSPICIOUS]**" else ""}")
                     }
                     appendLine()
                 }
-                if (security.recommendations.isNotEmpty()) {
+        if (security.recommendations.isNotEmpty()) {
                     appendLine("### Recommendations")
                     security.recommendations.forEach { rec ->
                         appendLine("- ${rec}")
@@ -216,7 +196,7 @@ class SkillValidator(context: Context) {
                 appendLine("| Load Time (ms) | ${perf.metrics.avgLoadTimeMs} | - | - |")
                 appendLine("| Execution Time (ms) | ${perf.metrics.avgExecutionTimeMs} | ${perf.metrics.minExecutionTimeMs} | ${perf.metrics.maxExecutionTimeMs} |")
                 appendLine()
-                if (perf.recommendations.isNotEmpty()) {
+        if (perf.recommendations.isNotEmpty()) {
                     appendLine("### Recommendations")
                     perf.recommendations.forEach { rec ->
                         appendLine("- ${rec}")
@@ -236,7 +216,7 @@ class SkillValidator(context: Context) {
                 appendLine("- **Current Target SDK:** ${compat.androidVersionCheck.currentTargetSdk}")
                 appendLine("- **Message:** ${compat.androidVersionCheck.message}")
                 appendLine()
-                if (compat.permissionChecks.isNotEmpty()) {
+        if (compat.permissionChecks.isNotEmpty()) {
                     appendLine("### Permissions (${compat.permissionChecks.count { it.isGranted }}/${compat.permissionChecks.size} granted)")
                     compat.permissionChecks.forEach { check ->
                         val status = if (check.isGranted) "�? else "�?
@@ -244,7 +224,7 @@ class SkillValidator(context: Context) {
                     }
                     appendLine()
                 }
-                if (compat.dependencyChecks.isNotEmpty()) {
+        if (compat.dependencyChecks.isNotEmpty()) {
                     appendLine("### Dependencies (${compat.dependencyChecks.count { it.isMet }}/${compat.dependencyChecks.size} met)")
                     compat.dependencyChecks.forEach { check ->
                         val status = if (check.isMet) "�? else "�?
@@ -252,14 +232,14 @@ class SkillValidator(context: Context) {
                     }
                     appendLine()
                 }
-                if (compat.conflictChecks.isNotEmpty()) {
+        if (compat.conflictChecks.isNotEmpty()) {
                     appendLine("### Conflicts (${compat.conflictChecks.size})")
                     compat.conflictChecks.forEach { conflict ->
                         appendLine("- **[${conflict.severity.name}]** ${conflict.conflictingSkill}: ${conflict.description}")
                     }
                     appendLine()
                 }
-                if (compat.recommendations.isNotEmpty()) {
+        if (compat.recommendations.isNotEmpty()) {
                     appendLine("### Recommendations")
                     compat.recommendations.forEach { rec ->
                         appendLine("- ${rec}")
@@ -269,8 +249,7 @@ class SkillValidator(context: Context) {
             }
         }
     }
-
-    private fun formatBytes(bytes: Long): String {
+        private fun formatBytes(bytes: Long): String {
         return when {
             bytes < 1024 -> "${bytes} B"
             bytes < 1024 * 1024 -> "${bytes / 1024} KB"

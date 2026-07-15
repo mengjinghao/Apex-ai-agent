@@ -42,7 +42,7 @@ class ConversationRoundManager {
     val currentRound = currentResponseRound.get()
         roundContents[currentRound] = content
         // AppLogger.d(TAG, "Updated content for round ${currentRound}")
-    return getDisplayContent()
+        return getDisplayContent()
     }
 
     /**
@@ -86,7 +86,7 @@ class ConversationRoundManager {
         }
 
         // Append any content that's outside rounds (key -1)
-    if (roundContents.containsKey(-1)) {
+        if (roundContents.containsKey(-1)) {
             buffer.append("\n").append(roundContents[-1])
         }
         return buffer.toString()
@@ -113,7 +113,7 @@ class ConversationRoundManager {
         }
 
         // Append any content that's outside rounds (key -1)
-    if (roundContents.containsKey(-1)) {
+        if (roundContents.containsKey(-1)) {
             buffer.append("\n").append(roundContents[-1])
         }
         return buffer.toString()

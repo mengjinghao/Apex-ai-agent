@@ -17,7 +17,7 @@ class BingSearchProvider : WebSearchProvider {
         override val supported = true
 
     private val suggestUrl = "https://www.bing.com/AS/Suggestions"
-    private val searchUrl = "https://www.bing.com/search"
+        private val searchUrl = "https://www.bing.com/search"
     override suspend fun searchMeme(query: String, num: Int): MemeSearchResult {
         val start = System.currentTimeMillis()
         val enhancedQuery = enhanceQuery(query)

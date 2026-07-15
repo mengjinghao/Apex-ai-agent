@@ -26,14 +26,13 @@ object ToolPkgComposeDslParser {
             memo = asMap(root.opt("memo"))
         )
     }
-
-    fun extractActionId(value: Any): String? {
+        fun extractActionId(value: Any): String? {
         return when (value) {
             is JSONObject -> value.optString("__actionId").trim().ifBlank { null }
             is Map<*, *> -> value["__actionId"]?.toString()?.trim()?.ifBlank { null }
             is String -> {
                 val normalized = value.trim()
-                when {
+        when {
                     normalized.startsWith("__action:") -> normalized.removePrefix("__action:").trim().ifBlank { null }
                     normalized.isNotBlank() -> normalized
                     else -> null
@@ -42,52 +41,43 @@ object ToolPkgComposeDslParser {
             else -> null
         }
     }
-
-    private fun parseRootObject(rawResult: Any): JSONObject? {
+        private fun parseRootObject(rawResult: Any): JSONObject? {
         return when (rawResult) {
             is JSONObject -> rawResult
             is String -> parseRootObjectFromString(rawResult)
             else -> parseRootObjectFromString(rawResult?.toString().orEmpty())
         }
     }
-
-    private fun parseRootObjectFromString(raw: String): JSONObject? {
+        private fun parseRootObjectFromString(raw: String): JSONObject? {
         val trimmed = raw.trim()
         if (trimmed.isBlank() || trimmed.equals("null", ignoreCase = true)) {
             return null
         }
-
         val first = runCatching { JSONTokener(trimmed).nextValue() }.getOrNull() ?: return null
         if (first is JSONObject) {
             return first
         }
-
         if (first is String) {
             val nested = first.trim()
-            if (nested.startsWith("{") && nested.endsWith("}")) {
+        if (nested.startsWith("{") && nested.endsWith("}")) {
                 return runCatching { JSONObject(nested) }.getOrNull()
             }
         }
-
         return null
     }
-
-    private fun parseNode(value: Any): ToolPkgComposeDslNode? {
+        private fun parseNode(value: Any): ToolPkgComposeDslNode? {
         val nodeObj =
             when (value) {
                 is JSONObject -> value
                 is Map<*, *> -> JSONObject(value)
                 else -> return null
             }
-
         val type = nodeObj.optString("type").trim()
         if (type.isBlank()) {
             return null
         }
-
         val props = asMap(nodeObj.opt("props"))
         val children = mutableListOf<ToolPkgComposeDslNode>()
-
         val rawChildren = nodeObj.opt("children")
         when (rawChildren) {
             is JSONArray -> {
@@ -104,11 +94,9 @@ object ToolPkgComposeDslParser {
                 parseNode(rawChildren)?.let { children.add(it) }
             }
         }
-
         return ToolPkgComposeDslNode(type = type, props = props, children = children)
     }
-
-    private fun asMap(value: Any): Map<String, Any?> {
+        private fun asMap(value: Any): Map<String, Any?> {
         return when (value) {
             is JSONObject -> {
                 val map = linkedMapOf<String, Any?>()
@@ -125,8 +113,7 @@ object ToolPkgComposeDslParser {
             else -> emptyMap()
         }
     }
-
-    private fun asList(value: Any): List<Any?> {
+        private fun asList(value: Any): List<Any?> {
         return when (value) {
             is JSONArray -> {
                 buildList {
@@ -139,8 +126,7 @@ object ToolPkgComposeDslParser {
             else -> emptyList()
         }
     }
-
-    private fun normalize(value: Any): Any? {
+        private fun normalize(value: Any): Any? {
         return when (value) {
             null, JSONObject.NULL -> null
             is JSONObject -> asMap(value)

@@ -112,8 +112,7 @@ object MimeTypeUtils {
         "otf" to "font/otf",
         "eot" to "application/vnd.ms-fontobject"
     )
-
-    private val MIME_TO_EXTENSION = EXTENSION_TO_MIME.entries
+        private val MIME_TO_EXTENSION = EXTENSION_TO_MIME.entries
         .groupBy({ it.value }, { it.key })
         .mapValues { it.value.first() }
 
@@ -183,7 +182,7 @@ object MimeTypeUtils {
                         break
                     }
                 }
-                if (match) return mime
+        if (match) return mime
             }
         }
         return null
@@ -199,8 +198,8 @@ object MimeTypeUtils {
     fun fromStream(input: InputStream, maxBytes: Int = 16): String? {
         return try {
             val bytes = ByteArray(maxBytes)
-            val read = input.read(bytes, 0, maxBytes)
-            if (read > 0) {
+        val read = input.read(bytes, 0, maxBytes)
+        if (read > 0) {
                 fromMagicBytes(bytes.copyOf(read))
             } else null
         } catch (_: Exception) {
@@ -304,27 +303,25 @@ object MimeTypeUtils {
     fun negotiate(available: List<String>, acceptHeader: String): String? {
         if (available.isEmpty()) return null
         if (acceptHeader.isBlank()) return available.first()
-
         val accepted = acceptHeader.split(",")
             .map { it.trim() }
             .mapNotNull { entry ->
                 val parts = entry.split(";")
-                val type = parts[0].trim()
-                val q = parts.drop(1).firstOrNull { it.trim().startsWith("q=") }
+        val type = parts[0].trim()
+        val q = parts.drop(1).firstOrNull { it.trim().startsWith("q=") }
                     ?.substringAfter("=")?.trim()?.toFloatOrNull() ?: 1.0f
                 type to q
             }
             .sortedByDescending { it.second }
-
         for ((type, _) in accepted) {
             if (type == "*/*") return available.first()
-            val typePrefix = type.substringBefore("/")
-            val typeSuffix = type.substringAfter("/")
-            if (type in available) return type
+        val typePrefix = type.substringBefore("/")
+        val typeSuffix = type.substringAfter("/")
+        if (type in available) return type
             val matching = available.filter {
                 it.substringBefore("/") == typePrefix && typeSuffix == "*"
             }
-            if (matching.isNotEmpty()) return matching.first()
+        if (matching.isNotEmpty()) return matching.first()
         }
         return available.first()
     }

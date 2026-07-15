@@ -326,7 +326,7 @@ private fun AddMirrorDialog(
 ) {
     var name by remember { mutableStateOf("") }
         var urlTemplate by remember { mutableStateOf("https://") }
-    var description by remember { mutableStateOf("") }
+        var description by remember { mutableStateOf("") }
         var nameError by remember { mutableStateOf(false) }
         var urlError by remember { mutableStateOf(false) }
         AlertDialog(

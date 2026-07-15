@@ -25,7 +25,6 @@ class ModelConfigService private constructor(private val context: Context) {
     companion object {
         private var instance: ModelConfigService? = null
         private val mutex = Mutex()
-
         fun getInstance(context: Context): ModelConfigService {
             return instance ?: synchronized(this) {
                 instance ?: ModelConfigService(context.applicationContext).also {
@@ -38,19 +37,19 @@ class ModelConfigService private constructor(private val context: Context) {
 
     // 依赖的管理器
     private val modelConfigManager by lazy { ModelConfigManager(context) }
-    private val functionalConfigManager by lazy { FunctionalConfigManager(context) }
+        private val functionalConfigManager by lazy { FunctionalConfigManager(context) }
 
     // 当前活跃的配置ID
     private val _activeConfigId = MutableStateFlow(ModelConfigManager.DEFAULT_CONFIG_ID)
-    val activeConfigId: StateFlow<String> = _activeConfigId.asStateFlow()
+        val activeConfigId: StateFlow<String> = _activeConfigId.asStateFlow()
 
     // 当前活跃的配�?
     private val _activeConfig = MutableStateFlow<ModelConfigData?>(null)
-    val activeConfig: StateFlow<ModelConfigData?> = _activeConfig.asStateFlow()
+        val activeConfig: StateFlow<ModelConfigData?> = _activeConfig.asStateFlow()
 
     // 配置列表
     private val _configList = MutableStateFlow<List<String>>(emptyList())
-    val configList: StateFlow<List<String>> = _configList.asStateFlow()
+        val configList: StateFlow<List<String>> = _configList.asStateFlow()
 
     // 配置缓存，使用ConcurrentHashMap提高并发性能
     private val configCache = ConcurrentHashMap<String, ModelConfigData>()
@@ -60,7 +59,7 @@ class ModelConfigService private constructor(private val context: Context) {
 
     // 配置变更通知
     private val _configChangeEvent = MutableSharedFlow<ConfigChangeEvent>()
-    val configChangeEvent = _configChangeEvent.asSharedFlow()
+        val configChangeEvent = _configChangeEvent.asSharedFlow()
 
     // 配置变更事件类型
     sealed class ConfigChangeEvent {
@@ -618,7 +617,7 @@ class ModelConfigService private constructor(private val context: Context) {
         mutex.withLock {
             // 获取对话功能当前绑定的模型配�?
     val chatConfigId = functionalConfigManager.getConfigIdForFunction(com.apex.data.model.FunctionType.CHAT)
-            val availableConfigIds = _configList.value
+        val availableConfigIds = _configList.value
 
             val configId = availableConfigIds.firstOrNull { it == chatConfigId }
                 ?: availableConfigIds.firstOrNull()
@@ -817,11 +816,9 @@ class ModelConfigService private constructor(private val context: Context) {
             com.apex.data.model.ApiProviderType.CEREBRAS,
             com.apex.data.model.ApiProviderType.NVIDIA
         )
-
         if (providersRequiringKey.contains(config.apiProviderType) && config.apiKey.isBlank()) {
             return Pair(false, "该API提供商需要设置API密钥")
         }
-
         return Pair(true, "配置有效")
     }
 }

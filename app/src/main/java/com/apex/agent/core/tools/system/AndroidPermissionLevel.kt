@@ -9,7 +9,6 @@ enum class AndroidPermissionLevel {
     STANDARD,      // 普通应用权�?   ACCESSIBILITY, // 无障碍服务权�?   DEBUGGER,      // 调试权限
     ADMIN,         // 管理员权�?
     ROOT;          // Root权限
-
     companion object {
         /**
          * 从字符串转换为权限等着         * @param value 权限等级字符�?        * @return 对应的权限等级，如果无法识别则默认为STANDARD

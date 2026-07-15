@@ -24,10 +24,10 @@ private constructor(
         @JvmStatic
         fun fromAsset(context: Context, assetPath: String): ExeEditor {
             val fileName = assetPath.substringAfterLast('/')
-            val outputFile = File(context.cacheDir, "exe_editor_${fileName}")
-            val exeFile = AssetCopyUtils.copyAssetToFile(context, assetPath, outputFile, overwrite = true)
-            val exeIconChanger = ExeIconChanger(context)
-            return ExeEditor(context, exeFile, exeIconChanger)
+        val outputFile = File(context.cacheDir, "exe_editor_${fileName}")
+        val exeFile = AssetCopyUtils.copyAssetToFile(context, assetPath, outputFile, overwrite = true)
+        val exeIconChanger = ExeIconChanger(context)
+        return ExeEditor(context, exeFile, exeIconChanger)
         }
 
         /**
@@ -36,7 +36,7 @@ private constructor(
         @JvmStatic
         fun fromFile(context: Context, exeFile: File): ExeEditor {
             val exeIconChanger = ExeIconChanger(context)
-            return ExeEditor(context, exeFile, exeIconChanger)
+        return ExeEditor(context, exeFile, exeIconChanger)
         }
 
         /**
@@ -45,7 +45,7 @@ private constructor(
         @JvmStatic
         fun fromPath(context: Context, exeFilePath: String): ExeEditor {
             val exeFile = File(exeFilePath)
-            return fromFile(context, exeFile)
+        return fromFile(context, exeFile)
         }
 
         /**
@@ -53,8 +53,7 @@ private constructor(
          * @return 缓存文件
          */
     }
-
-    private var newIconBitmap: Bitmap? = null
+        private var newIconBitmap: Bitmap? = null
     private var outputFile: File? = null
 
     /**
@@ -120,7 +119,6 @@ private constructor(
     if (!exeIconChanger.changeIcon(exeFile, newIconBitmap!!, outputExeFile)) {
             throw RuntimeException(context.getString(R.string.exe_editor_change_icon_failed))
         }
-
         return outputExeFile
     }
 

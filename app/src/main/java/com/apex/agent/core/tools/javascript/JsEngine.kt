@@ -42,15 +42,13 @@ class JsEngine(private val context: Context) {
         private const val DIRECT_SCRIPT_EXECUTION_FUNCTION = "__Apex_run_inline_code__"
         private const val DIRECT_SCRIPT_EXECUTION_SOURCE = "function(params){ return undefined; }"
     }
-
-    private val bitmapRegistry = ConcurrentHashMap<String, Bitmap>()
-    private val binaryDataRegistry = ConcurrentHashMap<String, ByteArray>()
-    private val javaObjectRegistry = ConcurrentHashMap<String, Any>()
-    private val externalJavaCodeLoader = JsExternalJavaCodeLoader(context)
-
-    private val toolHandler = AIToolHandler.getInstance(context)
-    private val packageManager by lazy { PackageManager.getInstance(context, toolHandler) }
-    private val toolCallInterface = JsToolCallInterface()
+        private val bitmapRegistry = ConcurrentHashMap<String, Bitmap>()
+        private val binaryDataRegistry = ConcurrentHashMap<String, ByteArray>()
+        private val javaObjectRegistry = ConcurrentHashMap<String, Any>()
+        private val externalJavaCodeLoader = JsExternalJavaCodeLoader(context)
+        private val toolHandler = AIToolHandler.getInstance(context)
+        private val packageManager by lazy { PackageManager.getInstance(context, toolHandler) }
+        private val toolCallInterface = JsToolCallInterface()
 
     @Volatile
     private var quickJsThread: Thread? = null
@@ -61,9 +59,9 @@ class JsEngine(private val context: Context) {
             quickJsThread = this
         }
     }
-    private val quickJsDispatcher = quickJsExecutor.asCoroutineDispatcher()
-    private val engineScope = CoroutineScope(SupervisorJob() + quickJsDispatcher)
-    private val quickJsInitLock = Any()
+        private val quickJsDispatcher = quickJsExecutor.asCoroutineDispatcher()
+        private val engineScope = CoroutineScope(SupervisorJob() + quickJsDispatcher)
+        private val quickJsInitLock = Any()
 
     @Volatile
     private var quickJs: ApexQuickJsEngine? = null
@@ -77,21 +75,18 @@ class JsEngine(private val context: Context) {
         val toolPkgLogSnapshot: JsToolPkgExecutionContext.LogSnapshot,
         val executionListener: JsExecutionListener?
     )
-
-    private val activeExecutionSessions = ConcurrentHashMap<String, ExecutionSession>()
-    private var jsEnvironmentInitialized = false
+        private val activeExecutionSessions = ConcurrentHashMap<String, ExecutionSession>()
+        private var jsEnvironmentInitialized = false
 
     private val toolPkgExecutionContext = JsToolPkgExecutionContext()
-    private val toolPkgRegistrationSession = JsToolPkgRegistrationSession()
-
-    fun <T> withTemporaryToolPkgTextResourceResolver(
+        private val toolPkgRegistrationSession = JsToolPkgRegistrationSession()
+        fun <T> withTemporaryToolPkgTextResourceResolver(
         resolver: (String, String) -> String?,
         block: () -> T
     ): T {
         return toolPkgExecutionContext.withTemporaryTextResourceResolver(resolver, block)
     }
-
-    private fun resolveTemporaryToolPkgTextResource(
+        private fun resolveTemporaryToolPkgTextResource(
         packageNameOrSubpackageId: String,
         resourcePath: String
     ): String? {
@@ -107,22 +102,18 @@ class JsEngine(private val context: Context) {
             }
         )
     }
-
-    private fun hasTemporaryToolPkgTextResourceResolver(): Boolean {
+        private fun hasTemporaryToolPkgTextResourceResolver(): Boolean {
         return toolPkgExecutionContext.hasTemporaryTextResourceResolver()
     }
-
-    private fun getJavaBridgeBaseClassLoader(): ClassLoader {
+        private fun getJavaBridgeBaseClassLoader(): ClassLoader {
         return context.classLoader
             ?: this::class.java.classLoader
             ?: ClassLoader.getSystemClassLoader()
     }
-
-    private fun getJavaBridgeClassLoader(): ClassLoader {
+        private fun getJavaBridgeClassLoader(): ClassLoader {
         return externalJavaCodeLoader.getEffectiveClassLoader(getJavaBridgeBaseClassLoader())
     }
-
-    private fun <T> runOnQuickJsThreadBlocking(block: () -> T): T {
+        private fun <T> runOnQuickJsThreadBlocking(block: () -> T): T {
         return if (Thread.currentThread() === quickJsThread) {
             block()
         } else {
@@ -131,8 +122,7 @@ class JsEngine(private val context: Context) {
             }
         }
     }
-
-    private fun ensureQuickJs() {
+        private fun ensureQuickJs() {
         if (quickJs != null) {
             return
         }
@@ -149,12 +139,11 @@ class JsEngine(private val context: Context) {
                 quickJs = engine
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Error initializing QuickJS: ${e.message}", e)
-                throw e
+        throw e
             }
         }
     }
-
-    private fun disposeQuickJsForReinit(reason: String) {
+        private fun disposeQuickJsForReinit(reason: String) {
         synchronized(quickJsInitLock) {
             val engine = quickJs
             if (engine == null) {
@@ -173,8 +162,7 @@ class JsEngine(private val context: Context) {
             }
         }
     }
-
-    private fun <T> evaluateQuickJsBlocking(script: String, fileName: String = "<eval>"): T? {
+        private fun <T> evaluateQuickJsBlocking(script: String, fileName: String = "<eval>"): T? {
         ensureQuickJs()
         val engine = quickJs ?: return null
         return if (Thread.currentThread() === quickJsThread) {
@@ -187,8 +175,7 @@ class JsEngine(private val context: Context) {
             }
         }
     }
-
-    private fun launchQuickJsEvaluation(
+        private fun launchQuickJsEvaluation(
         script: String,
         fileName: String = "<eval>",
         onError: ((Exception) -> Unit)? = null
@@ -206,8 +193,7 @@ class JsEngine(private val context: Context) {
             }
         }
     }
-
-    private fun launchQuickJsFunctionCall(
+        private fun launchQuickJsFunctionCall(
         functionName: String,
         argsJson: String,
         callSite: String = "<call:${functionName}>",
@@ -235,13 +221,10 @@ class JsEngine(private val context: Context) {
             block()
         }
     }
-
-
-    private fun nextExecutionCallId(): String {
+        private fun nextExecutionCallId(): String {
         return "Apex_call_${UUID.randomUUID().toString().replace("-", "")}" 
     }
-
-    private fun createExecutionSession(
+        private fun createExecutionSession(
         callId: String,
         script: String,
         functionName: String,
@@ -264,16 +247,13 @@ class JsEngine(private val context: Context) {
             executionListener = executionListener
         )
     }
-
-    private fun resolveExecutionSession(callId: String): ExecutionSession? {
+        private fun resolveExecutionSession(callId: String): ExecutionSession? {
         return activeExecutionSessions[callId.trim()]
     }
-
-    private fun removeExecutionSession(callId: String): ExecutionSession? {
+        private fun removeExecutionSession(callId: String): ExecutionSession? {
         return activeExecutionSessions.remove(callId.trim())
     }
-
-    private fun cancelAllExecutionSessions(reason: String) {
+        private fun cancelAllExecutionSessions(reason: String) {
         val sessions = activeExecutionSessions.values.toList()
         activeExecutionSessions.clear()
         sessions.forEach { session ->
@@ -286,8 +266,7 @@ class JsEngine(private val context: Context) {
             )
         }
     }
-
-    private fun cancelExecutionSessionInJs(callId: String, reason: String) {
+        private fun cancelExecutionSessionInJs(callId: String, reason: String) {
         ensureQuickJs()
         val safeCallId = JSONObject.quote(callId)
         val safeReason = JSONObject.quote(reason)
@@ -298,7 +277,7 @@ class JsEngine(private val context: Context) {
                         var root = typeof globalThis !== 'undefined'
                             ? globalThis
                             : (typeof window !== 'undefined' ? window : this);
-                        if (typeof root.__ApexCancelCallSession === 'function') {
+        if (typeof root.__ApexCancelCallSession === 'function') {
                             root.__ApexCancelCallSession(${safeCallId}, ${safeReason});
                         }
                     })();
@@ -309,28 +288,23 @@ class JsEngine(private val context: Context) {
             }
         )
     }
-
-    private fun withToolPkgPluginTag(message: String): String {
+        private fun withToolPkgPluginTag(message: String): String {
         return toolPkgExecutionContext.withPluginTag(null, message)
     }
-
-    private fun withToolPkgPluginTag(session: ExecutionSession?, message: String): String {
+        private fun withToolPkgPluginTag(session: ExecutionSession?, message: String): String {
         return toolPkgExecutionContext.withPluginTag(session?.toolPkgLogSnapshot, message)
     }
-
-    private fun withToolPkgCodeContext(session: ExecutionSession?, message: String): String {
+        private fun withToolPkgCodeContext(session: ExecutionSession?, message: String): String {
         return toolPkgExecutionContext.withCodeContext(session?.toolPkgLogSnapshot, message)
     }
-
-    private fun runtimeBootstrapModules(): List<JsBootstrapModule> {
+        private fun runtimeBootstrapModules(): List<JsBootstrapModule> {
         return buildRuntimeBootstrapModules(
             context = context,
             ApexDownloadDir = ApexPaths.ApexRootPathSdcard(),
             ApexCleanOnExitDir = ApexPaths.cleanOnExitPathSdcard()
         )
     }
-
-    private fun evaluateBootstrapModule(module: JsBootstrapModule) {
+        private fun evaluateBootstrapModule(module: JsBootstrapModule) {
         if (module.source.isBlank()) {
             return
         }
@@ -344,11 +318,10 @@ class JsEngine(private val context: Context) {
                 "Bootstrap module failed: file=${module.fileName}, scriptLength=${module.source.length}, globals=${globalsSummary}, preview=${summarizeJavaScriptForLog(module.source)}",
                 e
             )
-            throw IllegalStateException("Bootstrap failed for ${module.fileName}: ${e.message}", e)
+        throw IllegalStateException("Bootstrap failed for ${module.fileName}: ${e.message}", e)
         }
     }
-
-    private fun summarizeJavaScriptForLog(source: String, maxLength: Int = 320): String {
+        private fun summarizeJavaScriptForLog(source: String, maxLength: Int = 320): String {
         if (source.isBlank()) {
             return ""
         }
@@ -368,8 +341,7 @@ class JsEngine(private val context: Context) {
             normalized.substring(0, maxLength - 3) + "..."
         }
     }
-
-    private fun exposeBootstrapGlobals(module: JsBootstrapModule) {
+        private fun exposeBootstrapGlobals(module: JsBootstrapModule) {
         if (module.globals.isEmpty()) {
             return
         }
@@ -378,24 +350,22 @@ class JsEngine(private val context: Context) {
             "${module.fileName}#globals"
         )
     }
-
-    private fun buildBootstrapGlobalExposureScript(globalNames: List<String>): String {
+        private fun buildBootstrapGlobalExposureScript(globalNames: List<String>): String {
         val exposeStatements =
             globalNames.joinToString("\n") { name ->
                 val quotedName = JSONObject.quote(name)
                 "expose(${quotedName}, typeof ${name} !== 'undefined' ? ${name} : undefined);"
             }
-
         return """
             (function() {
                 var root = typeof globalThis !== 'undefined'
                     ? globalThis
                     : (typeof window !== 'undefined' ? window : this);
-                var expose = typeof root.__ApexExpose === 'function'
+        var expose = typeof root.__ApexExpose === 'function'
                     ? root.__ApexExpose
                     : function(name, value) {
                         var key = String(name || '').trim();
-                        if (!key || value === undefined) {
+        if (!key || value === undefined) {
                             return;
                         }
                         try { root[key] = value; } catch (_error) {}
@@ -405,8 +375,7 @@ class JsEngine(private val context: Context) {
             })();
         """.trimIndent()
     }
-
-    private fun invokeJavaBridgeJsObjectCallbackSync(
+        private fun invokeJavaBridgeJsObjectCallbackSync(
         jsObjectId: String,
         methodName: String,
         argsJson: String
@@ -425,7 +394,6 @@ class JsEngine(private val context: Context) {
                 .put("error", "quickjs is not initialized")
                 .toString()
         }
-
         val safeArgsJson = argsJson.trim().ifEmpty { "[]" }
         val callbackScript =
             """
@@ -435,18 +403,18 @@ class JsEngine(private val context: Context) {
                         (typeof globalThis !== 'undefined' && typeof globalThis.__ApexJavaBridgeInvokeJsObject === 'function')
                             ? globalThis.__ApexJavaBridgeInvokeJsObject
                             : undefined;
-                    if (!__invoker) {
+        if (!__invoker) {
                         return JSON.stringify({
                             success: false,
                             error: 'java bridge js callback runtime unavailable'
                         });
                     }
-                    var __result = __invoker(
+        var __result = __invoker(
                         ${JSONObject.quote(jsObjectId)},
                         ${JSONObject.quote(methodName)},
                         ${safeArgsJson}
                     );
-                    return JSON.stringify({
+        return JSON.stringify({
                         success: true,
                         data: __result
                     });
@@ -458,7 +426,6 @@ class JsEngine(private val context: Context) {
                 }
             })();
             """.trimIndent()
-
         return try {
             val callbackResult =
                 evaluateQuickJsBlocking<String>(
@@ -476,8 +443,7 @@ class JsEngine(private val context: Context) {
                 .toString()
         }
     }
-
-    private fun releaseJavaBridgeJsObjectSync(jsObjectId: String): Boolean {
+        private fun releaseJavaBridgeJsObjectSync(jsObjectId: String): Boolean {
         val normalizedId = jsObjectId.trim()
         if (normalizedId.isEmpty() || !jsEnvironmentInitialized) {
             return false
@@ -487,7 +453,6 @@ class JsEngine(private val context: Context) {
         if (quickJs == null) {
             return false
         }
-
         val releaseScript =
             """
             (function() {
@@ -496,16 +461,15 @@ class JsEngine(private val context: Context) {
                         (typeof globalThis !== 'undefined' && typeof globalThis.__ApexJavaBridgeReleaseJsObject === 'function')
                             ? globalThis.__ApexJavaBridgeReleaseJsObject
                             : undefined;
-                    if (!__release) {
+        if (!__release) {
                         return false;
                     }
-                    return !!__release(${JSONObject.quote(normalizedId)});
+        return !!__release(${JSONObject.quote(normalizedId)});
                 } catch (_error) {
                     return false;
                 }
             })();
             """.trimIndent()
-
         return try {
             when (
                 val result =
@@ -527,20 +491,19 @@ class JsEngine(private val context: Context) {
 
     // 预定义的错误消息，避免重复创建字符串
     private val EMPTY_BRIDGE_RESPONSE = "empty bridge response"
-    private val INVALID_BRIDGE_RESPONSE_FORMAT = "invalid bridge response format"
-    private val BRIDGE_CALL_FAILED = "bridge call failed"
-    
-    private fun splitBridgeResult(raw: String): Pair<String?, Any?> {
+        private val INVALID_BRIDGE_RESPONSE_FORMAT = "invalid bridge response format"
+        private val BRIDGE_CALL_FAILED = "bridge call failed"
+        private fun splitBridgeResult(raw: String): Pair<String?, Any?> {
         if (raw.isBlank()) {
             return Pair(EMPTY_BRIDGE_RESPONSE, null)
         }
         return try {
             val token = JSONTokener(raw).nextValue()
-            if (token is JSONObject) {
+        if (token is JSONObject) {
                 val success = token.optBoolean("success", false)
-                val data = token.opt("data")
-                val error = token.optString("error").ifBlank { null }
-                if (success) {
+        val data = token.opt("data")
+        val error = token.optString("error").ifBlank { null }
+        if (success) {
                     Pair(null, data)
                 } else {
                     Pair(error ?: BRIDGE_CALL_FAILED, null)
@@ -568,7 +531,7 @@ class JsEngine(private val context: Context) {
                 AppLogger.e(TAG, "Failed to initialize JS environment: ${e.message}", e)
                 disposeQuickJsForReinit("bootstrap initialization failure")
             }
-            if (!jsEnvironmentInitialized) {
+        if (!jsEnvironmentInitialized) {
                 AppLogger.e(TAG, "QuickJS init script failed to produce runtime bridge")
             }
         }
@@ -595,7 +558,6 @@ class JsEngine(private val context: Context) {
             effectiveParams["__Apex_package_lang"] =
                 LocaleUtils.getCurrentLanguage(context).trim().ifBlank { "en" }
         }
-
         val timingEvent = effectiveParams["event"]?.toString()?.trim().orEmpty()
         val timingPluginId =
             effectiveParams["pluginId"]?.toString()?.trim().orEmpty()
@@ -615,30 +577,28 @@ class JsEngine(private val context: Context) {
                 details = "function=${functionName}, plugin=${timingPluginId}"
             )
         }
-
         if (!jsEnvironmentInitialized) {
             val initJavaScriptEnvironmentStartTime = if (shouldLogTiming) messageTimingNow() else 0L
             initJavaScriptEnvironment()
-            if (shouldLogTiming) {
+        if (shouldLogTiming) {
                 logMessageTiming(
                     stage = "toolpkg.jsEngine.initJavaScriptEnvironment",
                     startTimeMs = initJavaScriptEnvironmentStartTime,
                     details = "function=${functionName}, plugin=${timingPluginId}"
                 )
             }
-            if (!jsEnvironmentInitialized) {
+        if (!jsEnvironmentInitialized) {
                 val failureReason = "QuickJS runtime initialization failed"
-                if (shouldLogTiming) {
+        if (shouldLogTiming) {
                     logMessageTiming(
                         stage = "toolpkg.jsEngine.total",
                         startTimeMs = totalStartTime,
                         details = "function=${functionName}, plugin=${timingPluginId}, success=false, reason=${failureReason}"
                     )
                 }
-                return "Error: ${failureReason}"
+        return "Error: ${failureReason}"
             }
         }
-
         val callId = nextExecutionCallId()
         val session =
             createExecutionSession(
@@ -690,7 +650,7 @@ class JsEngine(private val context: Context) {
                             )
                             removeExecutionSession(callId)
                             session.executionListener?.onFailed(callId, "Error: ${e.message ?: "dispatch failed"}")
-                            if (!session.future.isDone) {
+        if (!session.future.isDone) {
                                 session.future.complete("Error: ${e.message ?: "dispatch failed"}")
                             }
                         }
@@ -703,13 +663,12 @@ class JsEngine(private val context: Context) {
                     )
                     removeExecutionSession(callId)
                     session.executionListener?.onFailed(callId, "Error: ${e.message ?: "launch failed"}")
-                    if (!session.future.isDone) {
+        if (!session.future.isDone) {
                         session.future.complete("Error: ${e.message ?: "launch failed"}")
                     }
                 }
             }
         }
-
         val preTimeoutTimer = java.util.Timer()
         val waitResultStartTime = if (shouldLogTiming) messageTimingNow() else 0L
         return try {
@@ -726,10 +685,9 @@ class JsEngine(private val context: Context) {
                 },
                 JsTimeoutConfig.PRE_TIMEOUT_SECONDS * 1000
             )
-
-            val result = session.future.get(safeTimeoutSec, TimeUnit.SECONDS)
+        val result = session.future.get(safeTimeoutSec, TimeUnit.SECONDS)
             removeExecutionSession(callId)
-            if (shouldLogTiming) {
+        if (shouldLogTiming) {
                 logMessageTiming(
                     stage = "toolpkg.jsEngine.waitResult",
                     startTimeMs = waitResultStartTime,
@@ -746,7 +704,7 @@ class JsEngine(private val context: Context) {
             if (e is InterruptedException) {
                 Thread.currentThread().interrupt()
             }
-            val failureReason =
+        val failureReason =
                 when (e) {
                     is java.util.concurrent.TimeoutException ->
                         "Script execution timed out after ${if (timeoutSec <= 0L) 1L else timeoutSec} seconds"
@@ -760,7 +718,7 @@ class JsEngine(private val context: Context) {
             removeExecutionSession(callId)
             cancelExecutionSessionInJs(callId, failureReason)
             session.executionListener?.onFailed(callId, "Error: ${failureReason}")
-            if (shouldLogTiming) {
+        if (shouldLogTiming) {
                 logMessageTiming(
                     stage = "toolpkg.jsEngine.waitResult",
                     startTimeMs = waitResultStartTime,
@@ -799,8 +757,7 @@ class JsEngine(private val context: Context) {
             executionListener = executionListener
         )
     }
-
-    fun executeToolPkgMainRegistrationFunction(
+        fun executeToolPkgMainRegistrationFunction(
         script: String,
         functionName: String,
         params: Map<String, Any?> = emptyMap()
@@ -815,14 +772,13 @@ class JsEngine(private val context: Context) {
                         params = params,
                         timeoutSec = 12L
                     )
-                return toolPkgRegistrationSession.finish(executionResult)
+        return toolPkgRegistrationSession.finish(executionResult)
             } finally {
                 toolPkgRegistrationSession.end()
             }
         }
     }
-
-    fun executeComposeDslScript(
+        fun executeComposeDslScript(
             script: String,
             runtimeOptions: Map<String, Any?> = emptyMap(),
             envOverrides: Map<String, String> = emptyMap()
@@ -834,8 +790,7 @@ class JsEngine(private val context: Context) {
                 envOverrides = envOverrides
         )
     }
-
-    fun executeComposeDslAction(
+        fun executeComposeDslAction(
             actionId: String,
             payload: Any? = null,
             runtimeOptions: Map<String, Any?> = emptyMap(),
@@ -859,8 +814,7 @@ class JsEngine(private val context: Context) {
                 onIntermediateResult = onIntermediateResult
         )
     }
-
-    fun dispatchComposeDslActionAsync(
+        fun dispatchComposeDslActionAsync(
             actionId: String,
             payload: Any? = null,
             runtimeOptions: Map<String, Any?> = emptyMap(),
@@ -873,7 +827,7 @@ class JsEngine(private val context: Context) {
         if (normalizedActionId.isBlank()) {
             onError?.invoke("compose action id is required")
             onComplete?.invoke()
-            return false
+        return false
         }
 
         Thread {
@@ -895,8 +849,7 @@ class JsEngine(private val context: Context) {
                     }
                     return@Thread
                 }
-
-            val errorText =
+        val errorText =
                 result?.toString()
                     ?.takeIf { it.startsWith("Error:", ignoreCase = true) }
                     ?.removePrefix("Error:")
@@ -915,16 +868,13 @@ class JsEngine(private val context: Context) {
                 onComplete?.invoke()
             }
         }.start()
-
         return true
     }
-
-    fun cancelCurrentExecution(reason: String = "Execution canceled: requested by caller") {
+        fun cancelCurrentExecution(reason: String = "Execution canceled: requested by caller") {
         AppLogger.d(TAG, "Cancel current JS execution: ${reason}")
         resetState(cancellationMessage = reason)
     }
-
-    fun cancelExecutionsForChat(
+        fun cancelExecutionsForChat(
         chatId: String,
         reason: String = "Execution canceled: requested by caller"
     ): Boolean {
@@ -932,7 +882,6 @@ class JsEngine(private val context: Context) {
         if (normalizedChatId.isEmpty()) {
             return false
         }
-
         val matchingSessions =
             activeExecutionSessions.values
                 .filter { session -> session.packageChatId == normalizedChatId }
@@ -942,7 +891,7 @@ class JsEngine(private val context: Context) {
 
         matchingSessions.forEach { session ->
             removeExecutionSession(session.callId)
-            if (!session.future.isDone) {
+        if (!session.future.isDone) {
                 session.future.complete("Error: ${reason}")
             }
             cancelExecutionSessionInJs(
@@ -970,7 +919,7 @@ class JsEngine(private val context: Context) {
                             var root = typeof globalThis !== 'undefined'
                                 ? globalThis
                                 : (typeof window !== 'undefined' ? window : this);
-                            if (typeof root.__ApexClearAllTimers === 'function') {
+        if (typeof root.__ApexClearAllTimers === 'function') {
                                 root.__ApexClearAllTimers();
                             }
                         })();
@@ -1002,7 +951,6 @@ class JsEngine(private val context: Context) {
                 releaseInvoker = ::releaseJavaBridgeJsObjectSync
             )
         }
-
         fun detachJavaBridgeLifecycle() {
             JsJavaBridgeDelegates.unregisterJsInterfaceReleaseInvoker(jsBridgeCallbackInvoker)
         }
@@ -1020,7 +968,7 @@ class JsEngine(private val context: Context) {
         @JavascriptInterface
         fun getEnvForCall(callId: String, key: String): String? {
             val session = resolveExecutionSession(callId)
-            return JsNativeInterfaceDelegates.getEnv(
+        return JsNativeInterfaceDelegates.getEnv(
                 context = context,
                 key = key,
                 envOverrides = session?.envOverrides ?: emptyMap()
@@ -1119,12 +1067,12 @@ class JsEngine(private val context: Context) {
                 packageNameOrSubpackageId = packageNameOrSubpackageId,
                 resourcePath = resourcePath
             )?.let { resolved -> return resolved }
-            if (temporaryResolverActive) {
+        if (temporaryResolverActive) {
                 // During toolpkg parsing we must not fall back into PackageManager.
                 // That fallback can wait on initialization and deadlock JavaBridge thread.
     return ""
             }
-            return JsNativeInterfaceDelegates.readToolPkgTextResource(
+        return JsNativeInterfaceDelegates.readToolPkgTextResource(
                     packageManager = packageManager,
                     packageNameOrSubpackageId = packageNameOrSubpackageId,
                     resourcePath = resourcePath
@@ -1203,9 +1151,7 @@ class JsEngine(private val context: Context) {
         fun registerToolPkgPromptEstimateFinalizeHook(specJson: String) {
             toolPkgRegistrationSession.appendPromptEstimateFinalizeHook(specJson)
         }
-
         private fun bridgeClassLoader(): ClassLoader = getJavaBridgeClassLoader()
-
         private fun exposeJavaObject(target: Any, failureLabel: String): String {
             return try {
                 val handle = UUID.randomUUID().toString()
@@ -1227,13 +1173,12 @@ class JsEngine(private val context: Context) {
                     .toString()
             }
         }
-
         private fun launchSuspendJavaBridgeCall(
             callbackId: String,
             block: (normalizedCallbackId: String, resultCallback: (String) -> Unit) -> Unit
         ) {
             val normalizedCallback = callbackId.trim()
-            if (normalizedCallback.isEmpty()) {
+        if (normalizedCallback.isEmpty()) {
                 return
             }
             Thread {
@@ -1243,7 +1188,6 @@ class JsEngine(private val context: Context) {
                 )
             }.start()
         }
-
         private fun createSuspendJavaBridgeResultCallback(callbackId: String): (String) -> Unit {
             return { resultJson ->
                 val (error, data) = splitBridgeResult(resultJson)
@@ -1301,7 +1245,7 @@ class JsEngine(private val context: Context) {
                     .put("success", false)
                     .put("error", "current activity is null")
                     .toString()
-            return exposeJavaObject(
+        return exposeJavaObject(
                 target = activity,
                 failureLabel = "Failed to expose current activity"
             )
@@ -1437,8 +1381,8 @@ class JsEngine(private val context: Context) {
         fun registerImageFromBase64(base64: String, mimeType: String): String {
             return try {
                 val finalMime = if (mimeType.isNotBlank()) mimeType else "image/png"
-                val id = ImagePoolManager.addImageFromBase64(base64, finalMime)
-                if (id != "error") {
+        val id = ImagePoolManager.addImageFromBase64(base64, finalMime)
+        if (id != "error") {
                     "<link type=\"image\" id=\"${id}\"></link>"
                 } else {
                     "[image registration failed]"
@@ -1453,7 +1397,7 @@ class JsEngine(private val context: Context) {
         fun registerImageFromPath(path: String): String {
             return try {
                 val id = ImagePoolManager.addImage(path)
-                if (id != "error") {
+        if (id != "error") {
                     "<link type=\"image\" id=\"${id}\"></link>"
                 } else {
                     "[image registration failed]"
@@ -1566,13 +1510,13 @@ class JsEngine(private val context: Context) {
                     TAG,
                     "Bridge callback from JavaScript: callId=${callId}, length=${result.length}, callback=${session != null}, isDone=${session?.future?.isDone}"
                 )
-                if (session == null) {
+        if (session == null) {
                     AppLogger.e(TAG, "Result callback is null when trying to complete: callId=${callId}")
-                    return
+        return
                 }
-                if (session.future.isDone) {
+        if (session.future.isDone) {
                     AppLogger.w(TAG, "Result callback is already completed when trying to set result: callId=${callId}")
-                    return
+        return
                 }
                 session.executionListener?.onCompleted(callId, result)
                 completeCallFuture(
@@ -1594,17 +1538,16 @@ class JsEngine(private val context: Context) {
                     TAG,
                     "Bridge error from JavaScript: callId=${callId}, length=${error.length}, callback=${session != null}, isDone=${session?.future?.isDone}"
                 )
-                if (session == null) {
+        if (session == null) {
                     AppLogger.e(TAG, "Result callback is null when trying to complete with error: callId=${callId}")
-                    return
+        return
                 }
-                if (session.future.isDone) {
+        if (session.future.isDone) {
                     AppLogger.w(TAG, "Result callback is already completed when trying to set error: callId=${callId}")
-                    return
+        return
                 }
-
-                val logMessage = extractErrorLogMessage(error)
-                val enrichedLogMessage = withToolPkgCodeContext(session, logMessage)
+        val logMessage = extractErrorLogMessage(error)
+        val enrichedLogMessage = withToolPkgCodeContext(session, logMessage)
                 AppLogger.e(TOOLPKG_TAG, withToolPkgPluginTag(session, "JS ERROR: ${enrichedLogMessage}"))
                 session.executionListener?.onFailed(callId, error)
 
@@ -1618,7 +1561,6 @@ class JsEngine(private val context: Context) {
                 resolveExecutionSession(callId)?.future?.completeExceptionally(e)
             }
         }
-
         private fun completeCallFuture(
             session: ExecutionSession,
             value: String,
@@ -1633,34 +1575,33 @@ class JsEngine(private val context: Context) {
                 }
             } catch (e: Exception) {
                 AppLogger.e(TAG, "${failureMessage}: ${e.message}", e)
-                if (!session.future.isDone) {
+        if (!session.future.isDone) {
                     session.future.completeExceptionally(e)
                 }
             }
         }
-
         private fun extractErrorLogMessage(error: String): String {
             return try {
                 if (error.startsWith("{") && error.endsWith("}")) {
                     val errorJson = JSONObject(error)
-                    if (errorJson.has("formatted")) {
+        if (errorJson.has("formatted")) {
                         return errorJson.getString("formatted")
                     }
-                    if (errorJson.has("error") && errorJson.has("message")) {
+        if (errorJson.has("error") && errorJson.has("message")) {
                         val errorType = errorJson.getString("error")
-                        val errorMsg = errorJson.getString("message")
-                        var message = "${errorType}: ${errorMsg}"
-                        if (errorJson.has("details")) {
+        val errorMsg = errorJson.getString("message")
+        var message = "${errorType}: ${errorMsg}"
+        if (errorJson.has("details")) {
                             val details = errorJson.getJSONObject("details")
-                            if (details.has("fileName") && details.has("lineNumber")) {
+        if (details.has("fileName") && details.has("lineNumber")) {
                                 message +=
                                     "\nAt ${details.getString("fileName")}:${details.getString("lineNumber")}"
                             }
-                            if (details.has("stack")) {
+        if (details.has("stack")) {
                                 message += "\nStack: ${details.getString("stack")}"
                             }
                         }
-                        return message
+        return message
                     }
                 }
                 error

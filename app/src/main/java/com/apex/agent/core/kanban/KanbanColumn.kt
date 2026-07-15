@@ -145,7 +145,7 @@ sealed class ColumnCondition {
     ) : ColumnCondition() {
         override fun evaluate(task: KanbanTask): Boolean {
             val hasTag = task.tags.any { it.equals(tag, ignoreCase = true) }
-            return mustHave == hasTag
+        return mustHave == hasTag
         }
     }
 
@@ -168,7 +168,7 @@ sealed class ColumnCondition {
     ) : ColumnCondition() {
         override fun evaluate(task: KanbanTask): Boolean {
             val description = task.description.lowercase()
-            return if (matchAll) {
+        return if (matchAll) {
                 keywords.all { description.contains(it.lowercase()) }
             } else {
                 keywords.any { description.contains(it.lowercase()) }

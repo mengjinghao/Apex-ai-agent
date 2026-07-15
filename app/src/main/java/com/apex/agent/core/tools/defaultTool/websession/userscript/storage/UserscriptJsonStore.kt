@@ -44,23 +44,20 @@ internal class UserscriptJsonStore private constructor(context: Context) {
             }
         }
     }
-
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true; prettyPrint = true }
-    private val rootDir = LogistraPaths.webSessionUserscriptsDir()
-    private val stateDir = File(rootDir, "state").apply { mkdirs() }
-    private val valuesDir = File(stateDir, "values").apply { mkdirs() }
-    private val storeFile = File(stateDir, "registry.json")
-    private val logFile = File(stateDir, "logs.json")
-    private val mutex = Mutex()
-    private val stateFlow = MutableStateFlow(readStoreState())
-    private val logFlow = MutableStateFlow(readLogState())
-
-    fun observeUserscripts(): Flow<List<UserscriptEntity>> =
+        private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true; prettyPrint = true }
+        private val rootDir = LogistraPaths.webSessionUserscriptsDir()
+        private val stateDir = File(rootDir, "state").apply { mkdirs() }
+        private val valuesDir = File(stateDir, "values").apply { mkdirs() }
+        private val storeFile = File(stateDir, "registry.json")
+        private val logFile = File(stateDir, "logs.json")
+        private val mutex = Mutex()
+        private val stateFlow = MutableStateFlow(readStoreState())
+        private val logFlow = MutableStateFlow(readLogState())
+        fun observeUserscripts(): Flow<List<UserscriptEntity>> =
         stateFlow.map { state ->
             state.scripts.sortedWith(compareBy<UserscriptEntity> { it.name.lowercase(Locale.ROOT) }.thenBy { it.id })
         }
-
-    fun observeRecentLogs(limit: Int): Flow<List<UserscriptLogEntity>> =
+        fun observeRecentLogs(limit: Int): Flow<List<UserscriptLogEntity>> =
         logFlow.map { state ->
             state.logs.take(limit.coerceAtLeast(0))
         }
@@ -96,7 +93,7 @@ internal class UserscriptJsonStore private constructor(context: Context) {
     suspend fun insertValue(value: UserscriptValueEntity) {
         mutex.withLock {
             val state = readValueState(value.userscriptId)
-            val nextValues = state.values.filterNot { it.storageKey == value.storageKey } + value
+        val nextValues = state.values.filterNot { it.storageKey == value.storageKey } + value
             writeValueState(value.userscriptId, state.copy(values = nextValues))
         }
     }
@@ -107,8 +104,8 @@ internal class UserscriptJsonStore private constructor(context: Context) {
     ) {
         mutex.withLock {
             val state = readValueState(scriptId)
-            val nextValues = state.values.filterNot { it.storageKey == key }
-            if (nextValues.isEmpty()) {
+        val nextValues = state.values.filterNot { it.storageKey == key }
+        if (nextValues.isEmpty()) {
                 valuesFile(scriptId).delete()
             } else {
                 writeValueState(scriptId, state.copy(values = nextValues))
@@ -152,7 +149,7 @@ internal class UserscriptJsonStore private constructor(context: Context) {
                     val id = if (resource.id > 0L) resource.id else nextResourceId++
                     resource.copy(id = id)
                 }
-            val state = stateFlow.value
+        val state = stateFlow.value
             writeStoreState(
                 state.copy(
                     nextResourceId = nextResourceId,
@@ -211,7 +208,7 @@ internal class UserscriptJsonStore private constructor(context: Context) {
                 )
             )
             valuesFile(scriptId).delete()
-            val logs = logFlow.value
+        val logs = logFlow.value
             writeLogState(logs.copy(logs = logs.logs.filterNot { it.userscriptId == scriptId }))
         }
     }
@@ -227,7 +224,7 @@ internal class UserscriptJsonStore private constructor(context: Context) {
                     val id = if (resource.id > 0L) resource.id else nextResourceId++
                     resource.copy(id = id)
                 }
-            val state = stateFlow.value
+        val state = stateFlow.value
             writeStoreState(
                 state.copy(
                     nextResourceId = nextResourceId,
@@ -236,54 +233,46 @@ internal class UserscriptJsonStore private constructor(context: Context) {
             )
         }
     }
-
-    private fun valuesFile(scriptId: Long): File =
+        private fun valuesFile(scriptId: Long): File =
         File(valuesDir, "${scriptId}.json")
-
-    private fun readStoreState(): StoreState {
+        private fun readStoreState(): StoreState {
         if (!storeFile.exists()) {
             val empty = StoreState()
             writeRaw(storeFile, json.encodeToString(empty))
-            return empty
+        return empty
         }
         return json.decodeFromString(storeFile.readText())
     }
-
-    private fun writeStoreState(state: StoreState) {
+        private fun writeStoreState(state: StoreState) {
         writeRaw(storeFile, json.encodeToString(state))
         stateFlow.value = state
     }
-
-    private fun readLogState(): LogState {
+        private fun readLogState(): LogState {
         if (!logFile.exists()) {
             val empty = LogState()
             writeRaw(logFile, json.encodeToString(empty))
-            return empty
+        return empty
         }
         return json.decodeFromString(logFile.readText())
     }
-
-    private fun writeLogState(state: LogState) {
+        private fun writeLogState(state: LogState) {
         writeRaw(logFile, json.encodeToString(state))
         logFlow.value = state
     }
-
-    private fun readValueState(scriptId: Long): ValueState {
+        private fun readValueState(scriptId: Long): ValueState {
         val file = valuesFile(scriptId)
         if (!file.exists()) {
             return ValueState()
         }
         return json.decodeFromString(file.readText())
     }
-
-    private fun writeValueState(
+        private fun writeValueState(
         scriptId: Long,
         state: ValueState
     ) {
         writeRaw(valuesFile(scriptId), json.encodeToString(state))
     }
-
-    private fun writeRaw(
+        private fun writeRaw(
         file: File,
         content: String
     ) {

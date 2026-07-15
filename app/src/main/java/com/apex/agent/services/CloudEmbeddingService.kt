@@ -23,10 +23,8 @@ class CloudEmbeddingService(
     companion object {
         private const val TAG = "CloudEmbeddingService"
     }
-
-    class CloudEmbeddingException(message: String, cause: Throwable? = null) : IllegalStateException(message, cause)
-
-    private val httpClient: OkHttpClient by lazy {
+        class CloudEmbeddingException(message: String, cause: Throwable? = null) : IllegalStateException(message, cause)
+        private val httpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
@@ -59,13 +57,11 @@ class CloudEmbeddingService(
 
         requestEmbedding(normalized, text)
     }
-
-    private fun requestEmbedding(config: CloudEmbeddingConfig, text: String): Embedding {
+        private fun requestEmbedding(config: CloudEmbeddingConfig, text: String): Embedding {
         val requestBodyJson = JSONObject()
             .put("model", config.model)
             .put("input", text)
             .toString()
-
         val request = Request.Builder()
             .url(completeEmbeddingsEndpoint(config.endpoint))
             .post(requestBodyJson.toRequestBody("application/json".toMediaType()))
@@ -75,49 +71,44 @@ class CloudEmbeddingService(
 
         httpClient.newCall(request).execute().use { response ->
             val responseBody = response.body?.string().orEmpty()
-            if (!response.isSuccessful) {
+        if (!response.isSuccessful) {
                 val detail = extractErrorMessage(responseBody).ifBlank { response.message.ifBlank { "请求失败" } }
-                val message = context.getString(R.string.memory_embedding_error_http, response.code, detail)
+        val message = context.getString(R.string.memory_embedding_error_http, response.code, detail)
                 AppLogger.w(TAG, "${message}, body=${responseBody}")
-                throw CloudEmbeddingException(message)
+        throw CloudEmbeddingException(message)
             }
-
-            return parseEmbedding(responseBody)
+        return parseEmbedding(responseBody)
         }
     }
-
-    private fun parseEmbedding(responseBody: String): Embedding {
+        private fun parseEmbedding(responseBody: String): Embedding {
         if (responseBody.isBlank()) {
             throw CloudEmbeddingException(context.getString(R.string.memory_embedding_error_empty_response))
         }
-
         return try {
             val root = JSONObject(responseBody)
-            val data = root.optJSONArray("data")
+        val data = root.optJSONArray("data")
                 ?: throw CloudEmbeddingException(
                     context.getString(R.string.memory_embedding_error_missing_data, truncate(responseBody))
                 )
-            if (data.length() <= 0) {
+        if (data.length() <= 0) {
                 throw CloudEmbeddingException(
                     context.getString(R.string.memory_embedding_error_empty_data, truncate(responseBody))
                 )
             }
-
-            val first = data.optJSONObject(0)
+        val first = data.optJSONObject(0)
                 ?: throw CloudEmbeddingException(
                     context.getString(R.string.memory_embedding_error_invalid_first_item, truncate(responseBody))
                 )
-            val embeddingJson = first.optJSONArray("embedding")
+        val embeddingJson = first.optJSONArray("embedding")
                 ?: throw CloudEmbeddingException(
                     context.getString(R.string.memory_embedding_error_missing_embedding, truncate(responseBody))
                 )
-            if (embeddingJson.length() <= 0) {
+        if (embeddingJson.length() <= 0) {
                 throw CloudEmbeddingException(
                     context.getString(R.string.memory_embedding_error_empty_embedding, truncate(responseBody))
                 )
             }
-
-            val vector = FloatArray(embeddingJson.length()) { index ->
+        val vector = FloatArray(embeddingJson.length()) { index ->
                 embeddingJson.optDouble(index, 0.0).toFloat()
             }
             Embedding(vector)
@@ -125,19 +116,17 @@ class CloudEmbeddingService(
             throw e
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to parse embedding response", e)
-            throw CloudEmbeddingException(
+        throw CloudEmbeddingException(
                 context.getString(R.string.memory_embedding_error_parse_failed, truncate(responseBody)),
                 e
             )
         }
     }
-
-    private fun extractErrorMessage(responseBody: String): String {
+        private fun extractErrorMessage(responseBody: String): String {
         if (responseBody.isBlank()) return ""
-
         return try {
             val root = JSONObject(responseBody)
-            when {
+        when {
                 root.has("error") -> parseErrorNode(root.opt("error"))
                 root.has("message") -> root.optString("message")
                 root.has("detail") -> root.optString("detail")
@@ -147,8 +136,7 @@ class CloudEmbeddingService(
             truncate(responseBody)
         }
     }
-
-    private fun parseErrorNode(errorNode: Any): String {
+        private fun parseErrorNode(errorNode: Any): String {
         return when (errorNode) {
             is JSONObject -> listOf(
                 errorNode.optString("message"),
@@ -161,23 +149,19 @@ class CloudEmbeddingService(
             else -> truncate(errorNode.toString())
         }
     }
-
-    private fun truncate(text: String, maxLength: Int = 200): String {
+        private fun truncate(text: String, maxLength: Int = 200): String {
         val singleLine = text.replace('\n', ' ').replace('\r', ' ').trim()
         return if (singleLine.length <= maxLength) singleLine else singleLine.take(maxLength) + "..."
     }
-
-    private fun completeEmbeddingsEndpoint(endpoint: String): String {
+        private fun completeEmbeddingsEndpoint(endpoint: String): String {
         val trimmed = endpoint.trim()
         if (trimmed.endsWith("#")) {
             return trimmed.removeSuffix("#")
         }
-
         val withoutSlash = trimmed.removeSuffix("/")
-
         return try {
             val path = URL(trimmed).path.removeSuffix("/")
-            when {
+        when {
                 path.isEmpty() -> "${withoutSlash}/v1/embeddings"
                 path.endsWith("/v1", ignoreCase = true) -> "${withoutSlash}/embeddings"
                 else -> trimmed

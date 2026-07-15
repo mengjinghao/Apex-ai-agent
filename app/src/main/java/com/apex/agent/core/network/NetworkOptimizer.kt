@@ -44,21 +44,19 @@ class NetworkOptimizer(private val name: String = "network-opt") {
         val consecutiveFailures: Int,
         val statusCode: Int
     )
-
-    private val logger = LoggerFactory.getLogger("NetworkOptimizer-$name")
-    private var config = NetworkConfig()
-    private val activeConnections = AtomicInteger(0)
-    private val totalConnections = AtomicLong(0)
-    private val failedConnections = AtomicLong(0)
-    private val bytesSent = AtomicLong(0)
-    private val bytesReceived = AtomicLong(0)
-    private val connectionLatencies = ConcurrentLinkedQueue<Long>()
-    private val maxLatencySamples = 1000
+        private val logger = LoggerFactory.getLogger("NetworkOptimizer-$name")
+        private var config = NetworkConfig()
+        private val activeConnections = AtomicInteger(0)
+        private val totalConnections = AtomicLong(0)
+        private val failedConnections = AtomicLong(0)
+        private val bytesSent = AtomicLong(0)
+        private val bytesReceived = AtomicLong(0)
+        private val connectionLatencies = ConcurrentLinkedQueue<Long>()
+        private val maxLatencySamples = 1000
     private val endpointHealth = ConcurrentHashMap<String, EndpointHealth>()
-    private val dnsCache = ConcurrentHashMap<String, List<String>>()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    fun configure(newConfig: NetworkConfig) {
+        private val dnsCache = ConcurrentHashMap<String, List<String>>()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        fun configure(newConfig: NetworkConfig) {
         this.config = newConfig
         logger.info("Network optimizer configured: {}", newConfig)
     }
@@ -71,16 +69,16 @@ class NetworkOptimizer(private val name: String = "network-opt") {
             try {
                 activeConnections.incrementAndGet()
                 totalConnections.incrementAndGet()
-                val start = System.nanoTime()
-                val result = block()
+        val start = System.nanoTime()
+        val result = block()
                 recordLatency(System.nanoTime() - start)
                 recordEndpointSuccess(url)
-                return result
+        return result
             } catch (e: Exception) {
                 lastException = e
                 failedConnections.incrementAndGet()
                 recordEndpointFailure(url)
-                if (attempt < config.retryCount) {
+        if (attempt < config.retryCount) {
                     logger.debug("Retry {}/{} for {}: {}", attempt + 1, config.retryCount, url, e.message)
                     delay(delay)
                     delay = (delay * 2).coerceAtMost(30000L)
@@ -91,21 +89,17 @@ class NetworkOptimizer(private val name: String = "network-opt") {
         }
         throw lastException ?: RuntimeException("Network operation failed after ${config.retryCount} retries")
     }
-
-    fun recordBytesSent(bytes: Long) { bytesSent.addAndGet(bytes) }
-    fun recordBytesReceived(bytes: Long) { bytesReceived.addAndGet(bytes) }
-
-    fun registerEndpoint(url: String) {
+        fun recordBytesSent(bytes: Long) { bytesSent.addAndGet(bytes) }
+        fun recordBytesReceived(bytes: Long) { bytesReceived.addAndGet(bytes) }
+        fun registerEndpoint(url: String) {
         endpointHealth[url] = EndpointHealth(url, true, 0, System.currentTimeMillis(), 0, 200)
     }
-
-    fun getEndpointHealth(url: String): EndpointHealth? = endpointHealth[url]
+        fun getEndpointHealth(url: String): EndpointHealth? = endpointHealth[url]
 
     fun getUnhealthyEndpoints(): List<EndpointHealth> {
         return endpointHealth.values.filter { !it.isReachable }
     }
-
-    fun getMetrics(): ConnectionMetrics {
+        fun getMetrics(): ConnectionMetrics {
         val sorted = connectionLatencies.sorted()
         return ConnectionMetrics(
             activeConnections = activeConnections.get(),
@@ -120,8 +114,7 @@ class NetworkOptimizer(private val name: String = "network-opt") {
             errorRate = if (totalConnections.get() > 0) failedConnections.get().toDouble() / totalConnections.get() else 0.0
         )
     }
-
-    fun getStats(): Map<String, Any> = mapOf(
+        fun getStats(): Map<String, Any> = mapOf(
         "name" to name,
         "activeConnections" to activeConnections.get(),
         "totalConnections" to totalConnections.get(),
@@ -131,21 +124,17 @@ class NetworkOptimizer(private val name: String = "network-opt") {
         "retryCount" to config.retryCount,
         "timeoutMs" to config.connectionTimeoutMs
     )
-
-    fun shutdown() { scope.cancel() }
-
-    private fun recordLatency(durationNs: Long) {
+        fun shutdown() { scope.cancel() }
+        private fun recordLatency(durationNs: Long) {
         connectionLatencies.add(durationNs)
         while (connectionLatencies.size > maxLatencySamples) connectionLatencies.poll()
     }
-
-    private fun recordEndpointSuccess(url: String) {
+        private fun recordEndpointSuccess(url: String) {
         endpointHealth.computeIfPresent(url) { _, health ->
             health.copy(isReachable = true, latencyMs = 0, lastChecked = System.currentTimeMillis(), consecutiveFailures = 0)
         }
     }
-
-    private fun recordEndpointFailure(url: String) {
+        private fun recordEndpointFailure(url: String) {
         endpointHealth.computeIfPresent(url) { _, health ->
             health.copy(isReachable = false, lastChecked = System.currentTimeMillis(), consecutiveFailures = health.consecutiveFailures + 1)
         }
@@ -160,31 +149,29 @@ class DnsOptimizer(private val name: String = "dns-opt") {
         val ttlMs: Long,
         val resolutionTimeMs: Long
     )
-
-    private val cache = ConcurrentHashMap<String, DnsRecord>()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val logger = LoggerFactory.getLogger("DnsOptimizer-$name")
-    private val totalResolutions = AtomicLong(0)
-    private val cacheHits = AtomicLong(0)
-    private val cacheMisses = AtomicLong(0)
-    private val resolutionTimes = ConcurrentLinkedQueue<Long>()
-    private val defaultTtlMs = 300000L
+        private val cache = ConcurrentHashMap<String, DnsRecord>()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val logger = LoggerFactory.getLogger("DnsOptimizer-$name")
+        private val totalResolutions = AtomicLong(0)
+        private val cacheHits = AtomicLong(0)
+        private val cacheMisses = AtomicLong(0)
+        private val resolutionTimes = ConcurrentLinkedQueue<Long>()
+        private val defaultTtlMs = 300000L
     private val maxCacheSize = 500
 
     suspend fun resolve(hostname: String): List<String> {
         totalResolutions.incrementAndGet()
-
         val cached = cache[hostname]
         if (cached != null && System.currentTimeMillis() < cached.resolvedAt + cached.ttlMs) {
             cacheHits.incrementAndGet()
-            return cached.addresses
+        return cached.addresses
         }
 
         cacheMisses.incrementAndGet()
         val start = System.nanoTime()
         return try {
             val addresses = performDnsResolution(hostname)
-            val elapsed = System.nanoTime() - start
+        val elapsed = System.nanoTime() - start
             resolutionTimes.add(elapsed)
             while (resolutionTimes.size > 100) resolutionTimes.poll()
 
@@ -192,8 +179,7 @@ class DnsOptimizer(private val name: String = "dns-opt") {
                 val oldest = cache.minByOrNull { it.value.resolvedAt }?.key ?: break
                 cache.remove(oldest)
             }
-
-            val record = DnsRecord(
+        val record = DnsRecord(
                 hostname = hostname,
                 addresses = addresses,
                 resolvedAt = System.currentTimeMillis(),
@@ -206,11 +192,9 @@ class DnsOptimizer(private val name: String = "dns-opt") {
             cached?.addresses ?: throw e
         }
     }
-
-    fun invalidate(hostname: String) { cache.remove(hostname) }
-    fun clear() { cache.clear() }
-
-    fun getMetrics(): Map<String, Any> {
+        fun invalidate(hostname: String) { cache.remove(hostname) }
+        fun clear() { cache.clear() }
+        fun getMetrics(): Map<String, Any> {
         val hits = cacheHits.get()
         val misses = cacheMisses.get()
         val total = hits + misses
@@ -223,18 +207,16 @@ class DnsOptimizer(private val name: String = "dns-opt") {
             "totalResolutions" to totalResolutions.get()
         )
     }
-
-    private suspend fun performDnsResolution(hostname: String): List<String> {
+        private suspend fun performDnsResolution(hostname: String): List<String> {
         return try {
             val addr = java.net.InetAddress.getAllByName(hostname)
             addr.map { it.hostAddress ?: "" }.filter { it.isNotEmpty() }
         } catch (e: Exception) {
             logger.warn("DNS resolution failed for {}", hostname, e)
-            throw e
+        throw e
         }
     }
-
-    fun shutdown() { scope.cancel() }
+        fun shutdown() { scope.cancel() }
 }
 
 class ConnectionPoolOptimizer(private val name: String = "conn-pool") {
@@ -258,27 +240,26 @@ class ConnectionPoolOptimizer(private val name: String = "conn-pool") {
         val totalCreated: Long,
         val totalDestroyed: Long
     )
-
-    private val logger = LoggerFactory.getLogger("ConnectionPoolOptimizer-$name")
-    private val connections = ConcurrentHashMap<Int, PooledConnection>()
-    private val idleConnections = ConcurrentLinkedQueue<Int>()
-    private val activeSet = ConcurrentHashMap.newKeySet<Int>()
-    private val maxPoolSize = 16
+        private val logger = LoggerFactory.getLogger("ConnectionPoolOptimizer-$name")
+        private val connections = ConcurrentHashMap<Int, PooledConnection>()
+        private val idleConnections = ConcurrentLinkedQueue<Int>()
+        private val activeSet = ConcurrentHashMap.newKeySet<Int>()
+        private val maxPoolSize = 16
     private val minPoolSize = 2
     private val maxIdleTimeMs = 60000L
     private val connectionCounter = AtomicInteger(0)
-    private val totalCreated = AtomicLong(0)
-    private val totalDestroyed = AtomicLong(0)
-    private val pendingRequests = AtomicInteger(0)
-    private val acquireTimeNs = AtomicLong(0)
-    private val acquireCount = AtomicInteger(0)
-    private val peakActive = AtomicInteger(0)
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val totalCreated = AtomicLong(0)
+        private val totalDestroyed = AtomicLong(0)
+        private val pendingRequests = AtomicInteger(0)
+        private val acquireTimeNs = AtomicLong(0)
+        private val acquireCount = AtomicInteger(0)
+        private val peakActive = AtomicInteger(0)
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     init {
         for (i in 0 until minPoolSize) {
             val id = connectionCounter.incrementAndGet()
-            val conn = PooledConnection(id, "pool-$name", 0, System.currentTimeMillis(), System.currentTimeMillis(), false)
+        val conn = PooledConnection(id, "pool-$name", 0, System.currentTimeMillis(), System.currentTimeMillis(), false)
             connections[id] = conn
             idleConnections.add(id)
             totalCreated.incrementAndGet()
@@ -295,41 +276,39 @@ class ConnectionPoolOptimizer(private val name: String = "conn-pool") {
     suspend fun acquire(): PooledConnection {
         pendingRequests.incrementAndGet()
         val start = System.nanoTime()
-
         var connId = idleConnections.poll()
         if (connId == null && connections.size < maxPoolSize) {
             connId = connectionCounter.incrementAndGet()
-            val conn = PooledConnection(connId, "pool-$name", 0, System.currentTimeMillis(), System.currentTimeMillis(), true)
+        val conn = PooledConnection(connId, "pool-$name", 0, System.currentTimeMillis(), System.currentTimeMillis(), true)
             connections[connId] = conn
             totalCreated.incrementAndGet()
         }
-
         if (connId != null) {
             activeSet.add(connId)
             connections.computeIfPresent(connId) { _, c -> c.copy(lastUsedAt = System.currentTimeMillis(), isActive = true) }
             pendingRequests.decrementAndGet()
-            val elapsed = System.nanoTime() - start
+        val elapsed = System.nanoTime() - start
             acquireTimeNs.addAndGet(elapsed)
             acquireCount.incrementAndGet()
             updatePeakActive()
-            return connections[connId]!!
+        return connections[connId]!!
         }
 
         while (true) {
             connId = idleConnections.poll()
-            if (connId != null) {
+        if (connId != null) {
                 activeSet.add(connId)
                 connections.computeIfPresent(connId) { _, c -> c.copy(lastUsedAt = System.currentTimeMillis(), isActive = true) }
                 pendingRequests.decrementAndGet()
-                val elapsed = System.nanoTime() - start
+        val elapsed = System.nanoTime() - start
                 acquireTimeNs.addAndGet(elapsed)
                 acquireCount.incrementAndGet()
                 updatePeakActive()
-                return connections[connId]!!
+        return connections[connId]!!
             }
-            if (connections.size < maxPoolSize) {
+        if (connections.size < maxPoolSize) {
                 connId = connectionCounter.incrementAndGet()
-                val conn = PooledConnection(connId, "pool-$name", 0, System.currentTimeMillis(), System.currentTimeMillis(), true)
+        val conn = PooledConnection(connId, "pool-$name", 0, System.currentTimeMillis(), System.currentTimeMillis(), true)
                 connections[connId] = conn
                 totalCreated.incrementAndGet()
                 activeSet.add(connId)
@@ -337,13 +316,12 @@ class ConnectionPoolOptimizer(private val name: String = "conn-pool") {
                 acquireTimeNs.addAndGet(System.nanoTime() - start)
                 acquireCount.incrementAndGet()
                 updatePeakActive()
-                return conn
+        return conn
             }
             delay(10)
         }
     }
-
-    fun release(connectionId: Int) {
+        fun release(connectionId: Int) {
         activeSet.remove(connectionId)
         connections.computeIfPresent(connectionId) { _, c -> c.copy(lastUsedAt = System.currentTimeMillis(), isActive = false) }
         if (connections.size > minPoolSize && idleConnections.size > minPoolSize) {
@@ -353,8 +331,7 @@ class ConnectionPoolOptimizer(private val name: String = "conn-pool") {
             idleConnections.add(connectionId)
         }
     }
-
-    fun getMetrics(): PoolMetrics {
+        fun getMetrics(): PoolMetrics {
         val active = activeSet.size
         val idle = idleConnections.size
         val allConnections = connections.values.toList()
@@ -374,8 +351,7 @@ class ConnectionPoolOptimizer(private val name: String = "conn-pool") {
             totalDestroyed = totalDestroyed.get()
         )
     }
-
-    fun getStats(): Map<String, Any> = mapOf(
+        fun getStats(): Map<String, Any> = mapOf(
         "name" to name,
         "totalConnections" to connections.size,
         "active" to activeSet.size,
@@ -386,15 +362,13 @@ class ConnectionPoolOptimizer(private val name: String = "conn-pool") {
         "maxPoolSize" to maxPoolSize,
         "minPoolSize" to minPoolSize
     )
-
-    fun close() {
+        fun close() {
         scope.cancel()
         connections.clear()
         idleConnections.clear()
         activeSet.clear()
     }
-
-    private fun cleanupIdleConnections() {
+        private fun cleanupIdleConnections() {
         val cutoff = System.currentTimeMillis() - maxIdleTimeMs
         val toRemove = mutableListOf<Int>()
         for (connId in idleConnections) {
@@ -410,8 +384,7 @@ class ConnectionPoolOptimizer(private val name: String = "conn-pool") {
             }
         }
     }
-
-    private fun updatePeakActive() {
+        private fun updatePeakActive() {
         val current = activeSet.size
         var peak = peakActive.get()
         while (current > peak && !peakActive.compareAndSet(peak, current)) {
@@ -428,14 +401,12 @@ class RetryWithBackoff(private val name: String = "retry-backoff") {
         val backoffMultiplier: Double = 2.0,
         val jitterFactor: Double = 0.1
     )
-
-    private val logger = LoggerFactory.getLogger("RetryWithBackoff-$name")
-    private var policy = RetryPolicy()
-    private val totalAttempts = AtomicLong(0)
-    private val totalSuccesses = AtomicLong(0)
-    private val totalFailures = AtomicLong(0)
-
-    fun configure(policy: RetryPolicy) { this.policy = policy }
+        private val logger = LoggerFactory.getLogger("RetryWithBackoff-$name")
+        private var policy = RetryPolicy()
+        private val totalAttempts = AtomicLong(0)
+        private val totalSuccesses = AtomicLong(0)
+        private val totalFailures = AtomicLong(0)
+        fun configure(policy: RetryPolicy) { this.policy = policy }
 
     suspend fun <T> executeWithBackoff(block: suspend () -> T): T {
         var lastError: Exception? = null
@@ -446,15 +417,15 @@ class RetryWithBackoff(private val name: String = "retry-backoff") {
             try {
                 val result = block()
                 totalSuccesses.incrementAndGet()
-                return result
+        return result
             } catch (e: Exception) {
                 lastError = e
                 if (attempt == policy.maxRetries) {
                     totalFailures.incrementAndGet()
-                    throw e
+        throw e
                 }
-                val jitter = delay * policy.jitterFactor * (Math.random() - 0.5)
-                val actualDelay = (delay + jitter).toLong().coerceIn(1, policy.maxDelayMs)
+        val jitter = delay * policy.jitterFactor * (Math.random() - 0.5)
+        val actualDelay = (delay + jitter).toLong().coerceIn(1, policy.maxDelayMs)
                 logger.debug("Retry {}/{} after {}ms: {}", attempt + 1, policy.maxRetries, actualDelay, e.message)
                 delay(actualDelay)
                 delay = (delay * policy.backoffMultiplier).toLong().coerceAtMost(policy.maxDelayMs)
@@ -462,8 +433,7 @@ class RetryWithBackoff(private val name: String = "retry-backoff") {
         }
         throw lastError ?: RuntimeException("Retry failed")
     }
-
-    fun getMetrics(): Map<String, Any> = mapOf(
+        fun getMetrics(): Map<String, Any> = mapOf(
         "name" to name,
         "totalAttempts" to totalAttempts.get(),
         "successRate" to if (totalAttempts.get() > 0)
@@ -481,15 +451,12 @@ class RetryWithBackoff(private val name: String = "retry-backoff") {
         fun linearBackoff(baseMs: Long, maxMs: Long): RetryPolicy {
             return RetryPolicy(maxRetries = 5, initialDelayMs = baseMs, maxDelayMs = maxMs, backoffMultiplier = 1.0)
         }
-
         fun exponentialBackoff(baseMs: Long = 100L, maxMs: Long = 30000L): RetryPolicy {
             return RetryPolicy(maxRetries = 5, initialDelayMs = baseMs, maxDelayMs = maxMs, backoffMultiplier = 2.0)
         }
-
         fun fibonacciBackoff(baseMs: Long = 100L, maxMs: Long = 30000L): RetryPolicy {
             return RetryPolicy(maxRetries = 8, initialDelayMs = baseMs, maxDelayMs = maxMs, backoffMultiplier = 1.618)
         }
-
         fun noRetry(): RetryPolicy {
             return RetryPolicy(maxRetries = 0)
         }
@@ -505,13 +472,12 @@ class BandwidthOptimizer(private val name: String = "bandwidth") {
         val throttledBytes: Long,
         val connectionCount: Int
     )
-
-    private val bytesTransferred = AtomicLong(0)
-    private val bytesThrottled = AtomicLong(0)
-    private val activeConnections = AtomicInteger(0)
-    private val peakBps = AtomicLong(0)
-    private val throughputSamples = ConcurrentLinkedQueue<Long>()
-    private val maxSamples = 100
+        private val bytesTransferred = AtomicLong(0)
+        private val bytesThrottled = AtomicLong(0)
+        private val activeConnections = AtomicInteger(0)
+        private val peakBps = AtomicLong(0)
+        private val throughputSamples = ConcurrentLinkedQueue<Long>()
+        private val maxSamples = 100
     private var maxBandwidthBps: Long = -1L
     private var minBandwidthBps: Long = 0L
 
@@ -519,29 +485,25 @@ class BandwidthOptimizer(private val name: String = "bandwidth") {
         maxBandwidthBps = maxBps
         minBandwidthBps = minBps
     }
-
-    fun recordTransfer(bytes: Long) {
+        fun recordTransfer(bytes: Long) {
         bytesTransferred.addAndGet(bytes)
         val now = System.nanoTime()
         throughputSamples.add(now)
         while (throughputSamples.size > maxSamples) throughputSamples.poll()
         updatePeakBps(now)
     }
-
-    fun shouldThrottle(bytes: Long): Boolean {
+        fun shouldThrottle(bytes: Long): Boolean {
         if (maxBandwidthBps <= 0) return false
         val currentBps = getCurrentBps()
         return currentBps + bytes > maxBandwidthBps
     }
-
-    fun getCurrentBps(): Double {
+        fun getCurrentBps(): Double {
         val now = System.nanoTime()
         val windowStart = now - 1_000_000_000L
         val recentCount = throughputSamples.count { it >= windowStart }
         return recentCount.toDouble() * bytesTransferred.get().toDouble() / (now - windowStart + 1) * 1_000_000_000.0
     }
-
-    fun getStats(): BandwidthStats {
+        fun getStats(): BandwidthStats {
         val currentBps = getCurrentBps()
         return BandwidthStats(
             currentBps = currentBps,
@@ -552,8 +514,7 @@ class BandwidthOptimizer(private val name: String = "bandwidth") {
             connectionCount = activeConnections.get()
         )
     }
-
-    private fun updatePeakBps(now: Long) {
+        private fun updatePeakBps(now: Long) {
         val current = throughputSamples.count { it >= now - 1_000_000_000L }
         var peak = peakBps.get()
         while (current > peak && !peakBps.compareAndSet(peak, current)) {
@@ -569,12 +530,12 @@ class RequestBatcher<T, R>(
     private val processor: suspend (List<T>) -> List<R>
 ) {
     private val pending = ConcurrentLinkedQueue<Pair<String, T>>()
-    private val deferreds = ConcurrentHashMap<String, CompletableDeferred<R>>()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val processed = AtomicLong(0)
-    private val batches = AtomicLong(0)
-    private val totalTimeNs = AtomicLong(0)
-    private val totalItems = AtomicLong(0)
+        private val deferreds = ConcurrentHashMap<String, CompletableDeferred<R>>()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val processed = AtomicLong(0)
+        private val batches = AtomicLong(0)
+        private val totalTimeNs = AtomicLong(0)
+        private val totalItems = AtomicLong(0)
 
     init {
         scope.launch {
@@ -607,10 +568,8 @@ class RequestBatcher<T, R>(
         }
         return deferredList.map { it.second.await() }
     }
-
-    fun shutdown() { scope.cancel() }
-
-    private suspend fun processBatch() {
+        fun shutdown() { scope.cancel() }
+        private suspend fun processBatch() {
         if (pending.isEmpty()) return
         val batch = mutableListOf<Pair<String, T>>()
         while (batch.size < batchSize) {
@@ -624,7 +583,7 @@ class RequestBatcher<T, R>(
 
         try {
             val results = processor(batch.map { it.second })
-            for ((i, r) in results.withIndex()) {
+        for ((i, r) in results.withIndex()) {
                 deferreds.remove(batch[i].first)?.complete(r)
             }
             processed.addAndGet(batch.size.toLong())
@@ -647,22 +606,18 @@ class CircuitBreakerV2(private val name: String = "cb-v2") {
         val halfOpenMaxCalls: Int = 3,
         val rollingWindowMs: Long = 60000L
     )
-
-    private val state = java.util.concurrent.atomic.AtomicReference(State.CLOSED)
-    private val failureCount = AtomicInteger(0)
-    private val successCount = AtomicInteger(0)
-    private val totalCalls = AtomicLong(0)
-    private val rejectedCalls = AtomicLong(0)
-    private val stateChangeTime = AtomicLong(System.currentTimeMillis())
-    private val failures = ConcurrentLinkedQueue<Long>()
-    private var config = Config()
-
-    fun configure(cfg: Config) { config = cfg }
-
-    fun <T> call(block: () -> T): T {
+        private val state = java.util.concurrent.atomic.AtomicReference(State.CLOSED)
+        private val failureCount = AtomicInteger(0)
+        private val successCount = AtomicInteger(0)
+        private val totalCalls = AtomicLong(0)
+        private val rejectedCalls = AtomicLong(0)
+        private val stateChangeTime = AtomicLong(System.currentTimeMillis())
+        private val failures = ConcurrentLinkedQueue<Long>()
+        private var config = Config()
+        fun configure(cfg: Config) { config = cfg }
+        fun <T> call(block: () -> T): T {
         totalCalls.incrementAndGet()
         val currentState = state.get()
-
         if (currentState == State.OPEN) {
             if (System.currentTimeMillis() - stateChangeTime.get() >= config.openTimeoutMs) {
                 if (state.compareAndSet(State.OPEN, State.HALF_OPEN)) {
@@ -670,29 +625,25 @@ class CircuitBreakerV2(private val name: String = "cb-v2") {
                 }
             } else {
                 rejectedCalls.incrementAndGet()
-                throw CircuitBreakerOpenException("Circuit $name is OPEN")
+        throw CircuitBreakerOpenException("Circuit $name is OPEN")
             }
         }
-
         if (state.get() == State.HALF_OPEN && totalCalls.get() % (config.halfOpenMaxCalls + 1) != 0L) {
             rejectedCalls.incrementAndGet()
-            throw CircuitBreakerOpenException("Circuit $name is HALF_OPEN")
+        throw CircuitBreakerOpenException("Circuit $name is HALF_OPEN")
         }
-
         return try {
             val result = block()
             onSuccess()
             result
         } catch (e: Exception) {
             onFailure()
-            throw e
+        throw e
         }
     }
-
-    fun forceOpen() { state.set(State.OPEN); stateChangeTime.set(System.currentTimeMillis()) }
-    fun reset() { state.set(State.CLOSED); failureCount.set(0); successCount.set(0); failures.clear() }
-
-    fun getMetrics(): Map<String, Any> = mapOf(
+        fun forceOpen() { state.set(State.OPEN); stateChangeTime.set(System.currentTimeMillis()) }
+        fun reset() { state.set(State.CLOSED); failureCount.set(0); successCount.set(0); failures.clear() }
+        fun getMetrics(): Map<String, Any> = mapOf(
         "name" to name,
         "state" to state.get().toString(),
         "totalCalls" to totalCalls.get(),
@@ -700,8 +651,7 @@ class CircuitBreakerV2(private val name: String = "cb-v2") {
         "failureCount" to failureCount.get(),
         "successCount" to successCount.get()
     )
-
-    private fun onSuccess() {
+        private fun onSuccess() {
         successCount.incrementAndGet()
         if (state.get() == State.HALF_OPEN && successCount.get() >= config.successThreshold) {
             state.set(State.CLOSED)
@@ -710,12 +660,10 @@ class CircuitBreakerV2(private val name: String = "cb-v2") {
             stateChangeTime.set(System.currentTimeMillis())
         }
     }
-
-    private fun onFailure() {
+        private fun onFailure() {
         failures.add(System.currentTimeMillis())
         val now = System.currentTimeMillis()
         while (failures.peek() != null && failures.peek() < now - config.rollingWindowMs) failures.poll()
-
         if (state.get() == State.CLOSED && failures.size >= config.failureThreshold) {
             state.set(State.OPEN)
             failureCount.set(0)
@@ -726,24 +674,22 @@ class CircuitBreakerV2(private val name: String = "cb-v2") {
             stateChangeTime.set(System.currentTimeMillis())
         }
     }
-
-    class CircuitBreakerOpenException(message: String) : RuntimeException(message)
+        class CircuitBreakerOpenException(message: String) : RuntimeException(message)
 }
 
 class AsyncNetworkClient(private val name: String = "async-net") {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val clientCount = AtomicInteger(0)
-    private val totalRequests = AtomicLong(0)
-    private val activeRequests = AtomicInteger(0)
-    private val timeoutCount = AtomicLong(0)
-    private val errorCount = AtomicLong(0)
-    private val requestTimes = ConcurrentLinkedQueue<Long>()
+        private val clientCount = AtomicInteger(0)
+        private val totalRequests = AtomicLong(0)
+        private val activeRequests = AtomicInteger(0)
+        private val timeoutCount = AtomicLong(0)
+        private val errorCount = AtomicLong(0)
+        private val requestTimes = ConcurrentLinkedQueue<Long>()
 
     suspend fun get(url: String, timeoutMs: Long = 30000L): String {
         totalRequests.incrementAndGet()
         activeRequests.incrementAndGet()
         val start = System.nanoTime()
-
         return try {
             withTimeout(timeoutMs) {
                 val result = performHttpGet(url)
@@ -753,10 +699,10 @@ class AsyncNetworkClient(private val name: String = "async-net") {
             }
         } catch (e: TimeoutCancellationException) {
             timeoutCount.incrementAndGet()
-            throw TimeoutException("Request to $url timed out after ${timeoutMs}ms")
+        throw TimeoutException("Request to $url timed out after ${timeoutMs}ms")
         } catch (e: Exception) {
             errorCount.incrementAndGet()
-            throw e
+        throw e
         } finally {
             activeRequests.decrementAndGet()
         }
@@ -769,13 +715,12 @@ class AsyncNetworkClient(private val name: String = "async-net") {
             withTimeout(timeoutMs) { performHttpPost(url, body) }
         } catch (e: Exception) {
             errorCount.incrementAndGet()
-            throw e
+        throw e
         } finally {
             activeRequests.decrementAndGet()
         }
     }
-
-    fun getMetrics(): Map<String, Any> {
+        fun getMetrics(): Map<String, Any> {
         val sorted = requestTimes.sorted()
         return mapOf(
             "name" to name,
@@ -788,10 +733,8 @@ class AsyncNetworkClient(private val name: String = "async-net") {
             "p95Ms" to sorted.getOrNull((sorted.size * 0.95).toInt())?.div(1_000_000.0) ?: 0.0
         )
     }
-
-    fun shutdown() { scope.cancel() }
-
-    private suspend fun performHttpGet(url: String): String {
+        fun shutdown() { scope.cancel() }
+        private suspend fun performHttpGet(url: String): String {
         return withContext(Dispatchers.IO) {
             val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
             connection.requestMethod = "GET"
@@ -800,8 +743,7 @@ class AsyncNetworkClient(private val name: String = "async-net") {
             connection.inputStream.bufferedReader().readText()
         }
     }
-
-    private suspend fun performHttpPost(url: String, body: String): String {
+        private suspend fun performHttpPost(url: String, body: String): String {
         return withContext(Dispatchers.IO) {
             val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
             connection.requestMethod = "POST"
@@ -812,6 +754,5 @@ class AsyncNetworkClient(private val name: String = "async-net") {
             connection.inputStream.bufferedReader().readText()
         }
     }
-
-    class TimeoutException(message: String) : RuntimeException(message)
+        class TimeoutException(message: String) : RuntimeException(message)
 }

@@ -34,12 +34,10 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         private const val TAG = "MemoryDocumentsProvider"
         private const val AUTHORITY = "com.apex.documents.memory"
         private const val ROOT_ID = "memory_root"
-
         private const val DOC_ID_ROOT = "root"
         private const val DOC_ID_PROFILE_PREFIX = "profile:"
         private const val DOC_ID_DIR_PREFIX = "dir:"
         private const val DOC_ID_MEM_PREFIX = "mem:"
-
         private val DEFAULT_ROOT_PROJECTION = arrayOf(
             DocumentsContract.Root.COLUMN_ROOT_ID,
             DocumentsContract.Root.COLUMN_MIME_TYPES,
@@ -50,7 +48,6 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             DocumentsContract.Root.COLUMN_DOCUMENT_ID,
             DocumentsContract.Root.COLUMN_AVAILABLE_BYTES
         )
-
         private val DEFAULT_DOCUMENT_PROJECTION = arrayOf(
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
             DocumentsContract.Document.COLUMN_MIME_TYPE,
@@ -60,11 +57,9 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             DocumentsContract.Document.COLUMN_SIZE
         )
     }
-
-    private val repositoryCache: MutableMap<String, MemoryRepository> = mutableMapOf()
-    private val writeBackExecutor = Executors.newSingleThreadExecutor()
-
-    private fun requireProviderContext(): Context {
+        private val repositoryCache: MutableMap<String, MemoryRepository> = mutableMapOf()
+        private val writeBackExecutor = Executors.newSingleThreadExecutor()
+        private fun requireProviderContext(): Context {
         return context ?: throw IllegalStateException("Context is null")
     }
 
@@ -103,15 +98,13 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             TAG,
             "moveDocument source=${sourceDocumentId} sourceParent=${sourceParentDocumentId} targetParent=${targetParentDocumentId}"
         )
-
         return try {
             val source = parseDocumentId(sourceDocumentId)
-            val targetParent = parseDocumentId(targetParentDocumentId)
-
-            if (targetParent is DocRef.Root) {
+        val targetParent = parseDocumentId(targetParentDocumentId)
+        if (targetParent is DocRef.Root) {
                 throw IllegalArgumentException("Cannot move into root")
             }
-            if (targetParent is DocRef.Memory) {
+        if (targetParent is DocRef.Memory) {
                 throw IllegalArgumentException("Target parent is not a directory: ${targetParentDocumentId}")
             }
 
@@ -124,8 +117,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             } catch (e: Exception) {
                 AppLogger.w(TAG, "moveDocument: failed to parse sourceParentDocumentId=${sourceParentDocumentId}", e)
             }
-
-            when (source) {
+        when (source) {
                 is DocRef.Root -> throw IllegalArgumentException("Cannot move root")
                 is DocRef.Profile -> throw IllegalArgumentException("Cannot move profile")
 
@@ -134,15 +126,13 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                     if (targetParent.profileId != sourceProfileId) {
                         throw IllegalArgumentException("Cross-profile move is not supported")
                     }
-
-                    val repo = getRepository(sourceProfileId)
-                    if (targetParent is DocRef.Directory) {
+        val repo = getRepository(sourceProfileId)
+        if (targetParent is DocRef.Directory) {
                         requireDirectoryExists(repo, targetParent.path)
                     }
-                    val memory = runBlocking { repo.findMemoryByUuid(source.uuid) }
+        val memory = runBlocking { repo.findMemoryByUuid(source.uuid) }
                         ?: throw FileNotFoundException("Memory not found: ${source.uuid}")
-
-                    val newFolderPath: String? = when (targetParent) {
+        val newFolderPath: String? = when (targetParent) {
                         is DocRef.Profile -> null
                         is DocRef.Directory -> targetParent.path
                         is DocRef.Memory -> throw IllegalArgumentException("Target parent is not a directory")
@@ -171,42 +161,36 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                     if (targetParent.profileId != sourceProfileId) {
                         throw IllegalArgumentException("Cross-profile move is not supported")
                     }
-
-                    if (targetParent is DocRef.Directory) {
+        if (targetParent is DocRef.Directory) {
                         if (targetParent.path == source.path || targetParent.path.startsWith(source.path + "/")) {
                             throw IllegalArgumentException("Cannot move a directory into itself")
                         }
                     }
-
-                    val leafName = source.path.substringAfterLast('/')
-                    val newPath = when (targetParent) {
+        val leafName = source.path.substringAfterLast('/')
+        val newPath = when (targetParent) {
                         is DocRef.Profile -> leafName
                         is DocRef.Directory -> targetParent.path + "/" + leafName
                         is DocRef.Memory -> throw IllegalArgumentException("Target parent is not a directory")
                         is DocRef.Root -> throw IllegalArgumentException("Cannot move into root")
                     }
-
-                    if (newPath == source.path) {
+        if (newPath == source.path) {
                         return sourceDocumentId
                     }
-
-                    val repo = getRepository(sourceProfileId)
+        val repo = getRepository(sourceProfileId)
                     requireDirectoryExists(repo, source.path)
-                    if (targetParent is DocRef.Directory) {
+        if (targetParent is DocRef.Directory) {
                         requireDirectoryExists(repo, targetParent.path)
                     }
-                    val existingPaths = loadRealFolderPaths(repo)
-
-                    val conflict = existingPaths.any { p ->
+        val existingPaths = loadRealFolderPaths(repo)
+        val conflict = existingPaths.any { p ->
                         (p == newPath || p.startsWith(newPath + "/")) &&
                             !(p == source.path || p.startsWith(source.path + "/"))
                     }
-                    if (conflict) {
+        if (conflict) {
                         throw IllegalStateException("Target folder already exists: ${newPath}")
                     }
-
-                    val ok = runBlocking { repo.renameFolder(source.path, newPath) }
-                    if (!ok) {
+        val ok = runBlocking { repo.renameFolder(source.path, newPath) }
+        if (!ok) {
                         throw IllegalStateException("Failed to move folder: ${source.path} -> ${newPath}")
                     }
                     buildDirectoryDocumentId(sourceProfileId, newPath)
@@ -215,14 +199,13 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         } catch (e: Exception) {
             Log.e(TAG, "moveDocument failed", e)
             AppLogger.e(TAG, "moveDocument failed", e)
-            throw e
+        throw e
         }
     }
 
     override fun queryRoots(projection: Array<out String>): Cursor {
         Log.d(TAG, "queryRoots projection=${projection?.joinToString()}")
         val result = MatrixCursor(projection ?: DEFAULT_ROOT_PROJECTION)
-
         val row = result.newRow()
         row.add(DocumentsContract.Root.COLUMN_ROOT_ID, ROOT_ID)
         row.add(DocumentsContract.Root.COLUMN_MIME_TYPES, "application/json\ntext/plain\n*/*")
@@ -236,7 +219,6 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         row.add(DocumentsContract.Root.COLUMN_SUMMARY, "Access memory items")
         row.add(DocumentsContract.Root.COLUMN_DOCUMENT_ID, DOC_ID_ROOT)
         row.add(DocumentsContract.Root.COLUMN_AVAILABLE_BYTES, 0L)
-
         return result
     }
 
@@ -259,7 +241,6 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         val result = MatrixCursor(projection ?: DEFAULT_DOCUMENT_PROJECTION)
         val ctx = requireProviderContext()
         val prefs = UserPreferencesManager.getInstance(ctx)
-
         when (val parent = parseDocumentId(parentDocumentId)) {
             is DocRef.Root -> {
                 val profileIds = runBlocking { prefs.profileListFlow.first() }
@@ -271,12 +252,11 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Profile -> {
                 requireProfileExists(parent.profileId)
-                val repo = getRepository(parent.profileId)
-                val allMemories = loadAllMemories(repo)
-                val realFolderPaths = collectRealFolderPaths(allMemories)
-
-                val normalizedFolders = normalizeFolders(realFolderPaths)
-                val topLevel = normalizedFolders
+        val repo = getRepository(parent.profileId)
+        val allMemories = loadAllMemories(repo)
+        val realFolderPaths = collectRealFolderPaths(allMemories)
+        val normalizedFolders = normalizeFolders(realFolderPaths)
+        val topLevel = normalizedFolders
                     .mapNotNull { it.split('/').firstOrNull()?.trim() }
                     .filter { it.isNotBlank() }
                     .distinct()
@@ -296,13 +276,12 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Directory -> {
                 requireProfileExists(parent.profileId)
-                val repo = getRepository(parent.profileId)
+        val repo = getRepository(parent.profileId)
                 requireDirectoryExists(repo, parent.path)
-                val allMemories = loadAllMemories(repo)
-                val realFolderPaths = collectRealFolderPaths(allMemories)
-
-                val normalizedFolders = normalizeFolders(realFolderPaths)
-                val directSubfolders = normalizedFolders
+        val allMemories = loadAllMemories(repo)
+        val realFolderPaths = collectRealFolderPaths(allMemories)
+        val normalizedFolders = normalizeFolders(realFolderPaths)
+        val directSubfolders = normalizedFolders
                     .filter { it.startsWith(parent.path + "/") }
                     .mapNotNull { it.removePrefix(parent.path + "/").split('/').firstOrNull() }
                     .filter { it.isNotBlank() }
@@ -324,7 +303,6 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Memory -> return result
         }
-
         return result
     }
 
@@ -339,11 +317,9 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         if (ref !is DocRef.Memory) {
             throw FileNotFoundException("Document is not a file: ${documentId}")
         }
-
         val repo = getRepository(ref.profileId)
         val context = context ?: throw IllegalStateException("Context is null")
         val handler = Handler(Looper.getMainLooper())
-
         val wantsWrite = mode.contains('w') || mode.contains('W')
         return if (!wantsWrite) {
             val jsonString = runBlocking {
@@ -351,8 +327,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                     ?: throw FileNotFoundException("Memory not found: ${ref.uuid}")
                 buildMemoryJson(memory)
             }
-
-            val tempFile = File(context.cacheDir, "memory_doc_read_${ref.uuid}_${System.currentTimeMillis()}.json")
+        val tempFile = File(context.cacheDir, "memory_doc_read_${ref.uuid}_${System.currentTimeMillis()}.json")
             tempFile.writeText(jsonString, StandardCharsets.UTF_8)
             AppLogger.d(TAG, "openDocument(read) tempFile=${tempFile.absolutePath}")
 
@@ -368,12 +343,10 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                     ?: throw FileNotFoundException("Memory not found: ${ref.uuid}")
                 buildMemoryJson(memory)
             }
-
-            val tempFile = File(context.cacheDir, "memory_doc_${ref.uuid}_${System.currentTimeMillis()}.json")
+        val tempFile = File(context.cacheDir, "memory_doc_${ref.uuid}_${System.currentTimeMillis()}.json")
             tempFile.writeText(jsonString, StandardCharsets.UTF_8)
             AppLogger.d(TAG, "openDocument(write) tempFile=${tempFile.absolutePath}")
-
-            val accessMode = ParcelFileDescriptor.parseMode(mode)
+        val accessMode = ParcelFileDescriptor.parseMode(mode)
 
             ParcelFileDescriptor.open(tempFile, accessMode, handler) {
                 val tempPath = tempFile.absolutePath
@@ -381,7 +354,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                 writeBackExecutor.execute {
                     try {
                         AppLogger.d(TAG, "writeBack start uuid=${ref.uuid}")
-                        val writtenText = File(tempPath).readText(StandardCharsets.UTF_8)
+        val writtenText = File(tempPath).readText(StandardCharsets.UTF_8)
                         applyWrittenContentToMemory(repo, ref.uuid, writtenText)
                         AppLogger.d(TAG, "writeBack done uuid=${ref.uuid} chars=${writtenText.length}")
                     } catch (e: Exception) {
@@ -406,7 +379,6 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         if (parent is DocRef.Root) {
             throw IllegalArgumentException("Cannot create profiles from provider")
         }
-
         if (parent is DocRef.Profile) {
             requireProfileExists(parent.profileId)
         }
@@ -415,7 +387,6 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             is DocRef.Directory -> requireDirectoryExists(repo, parent.path)
             else -> {}
         }
-
         val cleanName = displayName.trim().trim('/').trim()
         if (cleanName.isBlank()) {
             throw IllegalArgumentException("displayName is blank")
@@ -426,7 +397,6 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         if (cleanName.contains(':')) {
             throw IllegalArgumentException("displayName contains ':': ${displayName}")
         }
-
         return if (mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
             val newFolderPath = when (parent) {
                 is DocRef.Profile -> cleanName
@@ -434,23 +404,20 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                 is DocRef.Memory -> throw IllegalArgumentException("Parent is not a directory")
                 is DocRef.Root -> throw IllegalArgumentException("Cannot create profiles from provider")
             }
-
-            val ok = runBlocking { repo.createFolder(newFolderPath) }
-            if (!ok) {
+        val ok = runBlocking { repo.createFolder(newFolderPath) }
+        if (!ok) {
                 throw IllegalStateException("Failed to create folder: ${newFolderPath}")
             }
             buildDirectoryDocumentId(parent.profileId, newFolderPath)
         } else {
             val title = decodeMemoryTitleFromDisplayName(stripJsonExtension(cleanName))
-
-            val folderPathForMemory: String? = when (parent) {
+        val folderPathForMemory: String? = when (parent) {
                 is DocRef.Profile -> null
                 is DocRef.Directory -> parent.path
                 is DocRef.Memory -> null
                 is DocRef.Root -> throw IllegalArgumentException("Cannot create profiles from provider")
             }
-
-            val memory = Memory(
+        val memory = Memory(
                 title = title,
                 content = "",
                 contentType = "text/plain",
@@ -473,20 +440,20 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             is DocRef.Profile -> throw IllegalArgumentException("Cannot delete profile from provider")
             is DocRef.Memory -> {
                 val repo = getRepository(ref.profileId)
-                val memory = runBlocking { repo.findMemoryByUuid(ref.uuid) }
+        val memory = runBlocking { repo.findMemoryByUuid(ref.uuid) }
                     ?: throw FileNotFoundException("Memory not found: ${ref.uuid}")
-                val ok = runBlocking { repo.deleteMemory(memory.id) }
-                if (!ok) {
+        val ok = runBlocking { repo.deleteMemory(memory.id) }
+        if (!ok) {
                     throw IllegalStateException("Failed to delete memory: ${ref.uuid}")
                 }
             }
             is DocRef.Directory -> {
                 val repo = getRepository(ref.profileId)
                 requireDirectoryExists(repo, ref.path)
-                val memories = loadMemoriesInFolderTree(repo, ref.path)
-                val uuids = memories.map { it.uuid }.toSet()
-                val ok = runBlocking { repo.deleteMemoriesByUuids(uuids) }
-                if (!ok) {
+        val memories = loadMemoriesInFolderTree(repo, ref.path)
+        val uuids = memories.map { it.uuid }.toSet()
+        val ok = runBlocking { repo.deleteMemoriesByUuids(uuids) }
+        if (!ok) {
                     throw IllegalStateException("Failed to delete folder and its contents: ${ref.path}")
                 }
             }
@@ -506,13 +473,12 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         if (cleanName.contains(':')) {
             throw IllegalArgumentException("displayName contains ':': ${displayName}")
         }
-
         return when (val ref = parseDocumentId(documentId)) {
             is DocRef.Root -> throw IllegalArgumentException("Cannot rename root")
 
             is DocRef.Profile -> {
                 requireProfileExists(ref.profileId)
-                val profile = runBlocking { prefs.getUserPreferencesFlow(ref.profileId).first() }
+        val profile = runBlocking { prefs.getUserPreferencesFlow(ref.profileId).first() }
                 runBlocking {
                     prefs.updateProfile(profile.copy(name = cleanName))
                 }
@@ -522,18 +488,18 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             is DocRef.Directory -> {
                 val repo = getRepository(ref.profileId)
                 requireDirectoryExists(repo, ref.path)
-                val parentPrefix = ref.path.substringBeforeLast('/', "")
-                val newPath = if (parentPrefix.isBlank()) cleanName else parentPrefix + "/" + cleanName
+        val parentPrefix = ref.path.substringBeforeLast('/', "")
+        val newPath = if (parentPrefix.isBlank()) cleanName else parentPrefix + "/" + cleanName
                 val existingPaths = loadRealFolderPaths(repo)
-                val conflict = existingPaths.any { existing ->
+        val conflict = existingPaths.any { existing ->
                     (existing == newPath || existing.startsWith(newPath + "/")) &&
                         !(existing == ref.path || existing.startsWith(ref.path + "/"))
                 }
-                if (conflict) {
+        if (conflict) {
                     throw IllegalStateException("Target folder already exists: ${newPath}")
                 }
-                val ok = runBlocking { repo.renameFolder(ref.path, newPath) }
-                if (!ok) {
+        val ok = runBlocking { repo.renameFolder(ref.path, newPath) }
+        if (!ok) {
                     throw IllegalStateException("Failed to rename folder: ${ref.path} -> ${newPath}")
                 }
                 buildDirectoryDocumentId(ref.profileId, newPath)
@@ -541,10 +507,9 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Memory -> {
                 val repo = getRepository(ref.profileId)
-                val memory = runBlocking { repo.findMemoryByUuid(ref.uuid) }
+        val memory = runBlocking { repo.findMemoryByUuid(ref.uuid) }
                     ?: throw FileNotFoundException("Memory not found: ${ref.uuid}")
-
-                val newTitle = decodeRequestedTitle(memory, cleanName)
+        val newTitle = decodeRequestedTitle(memory, cleanName)
 
                 runBlocking {
                     repo.updateMemory(
@@ -576,11 +541,9 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         } catch (_: Exception) {
             return false
         }
-
         if (!documentExists(child)) {
             return false
         }
-
         return when (parent) {
             is DocRef.Root -> {
                 when (child) {
@@ -603,7 +566,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Directory -> {
                 val repo = getRepository(parent.profileId)
-                if (!directoryExists(repo, parent.path)) return false
+        if (!directoryExists(repo, parent.path)) return false
                 when (child) {
                     is DocRef.Directory -> {
                         child.profileId == parent.profileId &&
@@ -624,8 +587,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             is DocRef.Memory -> false
         }
     }
-
-    private fun includeDocument(result: MatrixCursor, documentId: String) {
+        private fun includeDocument(result: MatrixCursor, documentId: String) {
         when (val ref = parseDocumentId(documentId)) {
             is DocRef.Root -> {
                 val row = result.newRow()
@@ -639,11 +601,10 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Profile -> {
                 requireProfileExists(ref.profileId)
-                val prefs = UserPreferencesManager.getInstance(context ?: throw IllegalStateException("Context is null"))
-                val profile = runBlocking { prefs.getUserPreferencesFlow(ref.profileId).first() }
-                val displayName = getProfileDisplayName(profile)
-
-                val row = result.newRow()
+        val prefs = UserPreferencesManager.getInstance(context ?: throw IllegalStateException("Context is null"))
+        val profile = runBlocking { prefs.getUserPreferencesFlow(ref.profileId).first() }
+        val displayName = getProfileDisplayName(profile)
+        val row = result.newRow()
                 row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, buildProfileDocumentId(ref.profileId))
                 row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.MIME_TYPE_DIR)
                 row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, displayName)
@@ -657,9 +618,9 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Directory -> {
                 requireProfileExists(ref.profileId)
-                val repo = getRepository(ref.profileId)
+        val repo = getRepository(ref.profileId)
                 requireDirectoryExists(repo, ref.path)
-                var flags = DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE
+        var flags = DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE
                 flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_DELETE
                 flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_RENAME
                 flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_MOVE
@@ -675,14 +636,12 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Memory -> {
                 val repo = getRepository(ref.profileId)
-                val memory = runBlocking { repo.findMemoryByUuid(ref.uuid) }
+        val memory = runBlocking { repo.findMemoryByUuid(ref.uuid) }
                     ?: throw FileNotFoundException("Memory not found: ${ref.uuid}")
-
-                val displayName = buildMemoryDisplayName(memory.title, memory.uuid)
-                val lastModified = memory.updatedAt.time
+        val displayName = buildMemoryDisplayName(memory.title, memory.uuid)
+        val lastModified = memory.updatedAt.time
                 val size = buildMemoryJson(memory).toByteArray(StandardCharsets.UTF_8).size.toLong()
-
-                val row = result.newRow()
+        val row = result.newRow()
                 row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, buildMemoryDocumentId(ref.profileId, ref.uuid))
                 row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, "application/json")
                 row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, displayName)
@@ -698,8 +657,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             }
         }
     }
-
-    private fun includeProfile(result: MatrixCursor, profile: PreferenceProfile) {
+        private fun includeProfile(result: MatrixCursor, profile: PreferenceProfile) {
         val displayName = getProfileDisplayName(profile)
         val row = result.newRow()
         row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, buildProfileDocumentId(profile.id))
@@ -712,8 +670,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         )
         row.add(DocumentsContract.Document.COLUMN_SIZE, 0L)
     }
-
-    private fun includeDirectory(result: MatrixCursor, profileId: String, path: String, displayName: String) {
+        private fun includeDirectory(result: MatrixCursor, profileId: String, path: String, displayName: String) {
         var flags = DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE
         flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_DELETE
         flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_RENAME
@@ -727,8 +684,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         row.add(DocumentsContract.Document.COLUMN_FLAGS, flags)
         row.add(DocumentsContract.Document.COLUMN_SIZE, 0L)
     }
-
-    private fun includeMemoriesForFolder(
+        private fun includeMemoriesForFolder(
         result: MatrixCursor,
         profileId: String,
         memories: List<Memory>,
@@ -740,10 +696,9 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             .sortedBy { it.title.lowercase() }
             .forEach { memory ->
                 val displayName = buildMemoryDisplayName(memory.title, memory.uuid)
-                val lastModified = memory.updatedAt.time
+        val lastModified = memory.updatedAt.time
                 val size = buildMemoryJson(memory).toByteArray(StandardCharsets.UTF_8).size.toLong()
-
-                val row = result.newRow()
+        val row = result.newRow()
                 row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, buildMemoryDocumentId(profileId, memory.uuid))
                 row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, "application/json")
                 row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, displayName)
@@ -758,24 +713,22 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                 row.add(DocumentsContract.Document.COLUMN_SIZE, size)
             }
     }
-
-    private fun getProfileDisplayName(profile: PreferenceProfile): String {
+        private fun getProfileDisplayName(profile: PreferenceProfile): String {
         return profile.name
             .ifBlank { profile.personality }
             .ifBlank { profile.id }
     }
-
-    private fun applyWrittenContentToMemory(repo: MemoryRepository, uuid: String, writtenText: String) {
+        private fun applyWrittenContentToMemory(repo: MemoryRepository, uuid: String, writtenText: String) {
         runBlocking {
             val memory = repo.findMemoryByUuid(uuid) ?: return@runBlocking
             try {
                 val json = JSONObject(writtenText)
-                val newTitle = json.optString("title", memory.title)
-                val requestedContent = json.optString("content", memory.content)
-                val newContentType = json.optString("contentType", memory.contentType)
-                val newSource = json.optString("source", memory.source)
-                val newCredibility = json.optDouble("credibility", memory.credibility.toDouble()).toFloat()
-                val newImportance = json.optDouble("importance", memory.importance.toDouble()).toFloat()
+        val newTitle = json.optString("title", memory.title)
+        val requestedContent = json.optString("content", memory.content)
+        val newContentType = json.optString("contentType", memory.contentType)
+        val newSource = json.optString("source", memory.source)
+        val newCredibility = json.optDouble("credibility", memory.credibility.toDouble()).toFloat()
+        val newImportance = json.optDouble("importance", memory.importance.toDouble()).toFloat()
 
                 repo.updateMemory(
                     memory = memory,
@@ -808,14 +761,13 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             }
         }
     }
-
-    private fun normalizeFolders(folderPaths: Collection<String>): List<String> {
+        private fun normalizeFolders(folderPaths: Collection<String>): List<String> {
         return folderPaths
             .filter { it.isNotBlank() }
             .flatMap { full ->
                 val parts = full.split('/').filter { it.isNotBlank() }
-                val prefixes = mutableListOf<String>()
-                var current = ""
+        val prefixes = mutableListOf<String>()
+        var current = ""
                 parts.forEach { part ->
                     current = if (current.isEmpty()) part else "${current}/${part}"
                     prefixes.add(current)
@@ -825,13 +777,11 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             .distinct()
             .sorted()
     }
-
-    private fun buildMemoryDisplayName(title: String, uuid: String): String {
+        private fun buildMemoryDisplayName(title: String, uuid: String): String {
         val displayTitle = buildVisibleMemoryName(title)
         return "${displayTitle}.json"
     }
-
-    private fun decodeRequestedTitle(memory: Memory, displayName: String): String {
+        private fun decodeRequestedTitle(memory: Memory, displayName: String): String {
         val stem = stripJsonExtension(displayName)
         val currentDisplayStem = stripJsonExtension(buildMemoryDisplayName(memory.title, memory.uuid))
         return if (stem == currentDisplayStem) {
@@ -840,8 +790,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             decodeMemoryTitleFromDisplayName(stem)
         }
     }
-
-    private fun buildMemoryJson(memory: com.apex.data.model.Memory): String {
+        private fun buildMemoryJson(memory: com.apex.data.model.Memory): String {
         val obj = JSONObject()
         obj.put("uuid", memory.uuid)
         obj.put("title", memory.title)
@@ -858,8 +807,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
         obj.put("lastAccessedAt", memory.lastAccessedAt.time)
         return obj.toString(2)
     }
-
-    private fun parseDocumentId(documentId: String): DocRef {
+        private fun parseDocumentId(documentId: String): DocRef {
         return try {
             parseDirectDocumentId(documentId)
         } catch (directError: FileNotFoundException) {
@@ -869,43 +817,42 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             parseSyntheticTreeDocumentId(documentId)
         }
     }
-
-    private fun parseDirectDocumentId(documentId: String): DocRef {
+        private fun parseDirectDocumentId(documentId: String): DocRef {
         return when {
             documentId == DOC_ID_ROOT -> DocRef.Root
             documentId.startsWith(DOC_ID_PROFILE_PREFIX) -> {
                 val profileId = documentId.removePrefix(DOC_ID_PROFILE_PREFIX)
-                if (profileId.isBlank() || profileId.contains('/')) {
+        if (profileId.isBlank() || profileId.contains('/')) {
                     throw FileNotFoundException("Invalid profile documentId: ${documentId}")
                 }
                 DocRef.Profile(profileId = profileId)
             }
             documentId.startsWith(DOC_ID_DIR_PREFIX) -> {
                 val encoded = documentId.removePrefix(DOC_ID_DIR_PREFIX)
-                val parts = encoded.split(":", limit = 2)
-                if (parts.size != 2) throw FileNotFoundException("Invalid directory documentId: ${documentId}")
-                val profileId = parts[0]
+        val parts = encoded.split(":", limit = 2)
+        if (parts.size != 2) throw FileNotFoundException("Invalid directory documentId: ${documentId}")
+        val profileId = parts[0]
                 val encodedPath = parts[1]
                 if (profileId.isBlank() || profileId.contains('/')) {
                     throw FileNotFoundException("Invalid directory documentId: ${documentId}")
                 }
-                if (encodedPath.isBlank() || encodedPath.contains('/')) {
+        if (encodedPath.isBlank() || encodedPath.contains('/')) {
                     throw FileNotFoundException("Invalid directory documentId: ${documentId}")
                 }
-                val path = decodeFileComponent(encodedPath)
-                val normalizedPath = MemoryRepository.normalizeFolderPath(path)
+        val path = decodeFileComponent(encodedPath)
+        val normalizedPath = MemoryRepository.normalizeFolderPath(path)
                     ?: throw FileNotFoundException("Invalid directory documentId: ${documentId}")
-                if (normalizedPath != path) {
+        if (normalizedPath != path) {
                     throw FileNotFoundException("Non-normalized directory documentId: ${documentId}")
                 }
-                val displayName = path.split('/').lastOrNull().orEmpty().ifBlank { path }
+        val displayName = path.split('/').lastOrNull().orEmpty().ifBlank { path }
                 DocRef.Directory(profileId = profileId, path = path, displayName = displayName)
             }
             documentId.startsWith(DOC_ID_MEM_PREFIX) -> {
                 val encoded = documentId.removePrefix(DOC_ID_MEM_PREFIX)
-                val parts = encoded.split(":", limit = 2)
-                if (parts.size != 2) throw FileNotFoundException("Invalid memory documentId: ${documentId}")
-                val profileId = parts[0]
+        val parts = encoded.split(":", limit = 2)
+        if (parts.size != 2) throw FileNotFoundException("Invalid memory documentId: ${documentId}")
+        val profileId = parts[0]
                 val uuid = parts[1]
                 if (profileId.isBlank() || profileId.contains('/') || uuid.isBlank() || uuid.contains('/')) {
                     throw FileNotFoundException("Invalid memory documentId: ${documentId}")
@@ -915,26 +862,23 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             else -> throw FileNotFoundException("Unknown documentId: ${documentId}")
         }
     }
-
-    private fun parseSyntheticTreeDocumentId(documentId: String): DocRef {
+        private fun parseSyntheticTreeDocumentId(documentId: String): DocRef {
         val parts = documentId.split('/').filter { it.isNotBlank() }
         if (parts.size < 2) {
             throw FileNotFoundException("Unknown documentId: ${documentId}")
         }
-
         var current = parseDirectDocumentId(parts.first())
         parts.drop(1).forEach { displayName ->
             current = resolveSyntheticChild(current, displayName, documentId)
         }
         return current
     }
-
-    private fun resolveSyntheticChild(parent: DocRef, displayName: String, originalDocumentId: String): DocRef {
+        private fun resolveSyntheticChild(parent: DocRef, displayName: String, originalDocumentId: String): DocRef {
         return when (parent) {
             is DocRef.Root -> {
                 val prefs = UserPreferencesManager.getInstance(requireProviderContext())
-                val profileIds = runBlocking { prefs.profileListFlow.first() }
-                val profile = profileIds
+        val profileIds = runBlocking { prefs.profileListFlow.first() }
+        val profile = profileIds
                     .asSequence()
                     .map { profileId -> runBlocking { prefs.getUserPreferencesFlow(profileId).first() } }
                     .firstOrNull { getProfileDisplayName(it) == displayName }
@@ -944,7 +888,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
 
             is DocRef.Profile -> {
                 requireProfileExists(parent.profileId)
-                val repo = getRepository(parent.profileId)
+        val repo = getRepository(parent.profileId)
                 resolveSyntheticChildInContainer(
                     profileId = parent.profileId,
                     parentFolderPath = null,
@@ -969,8 +913,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             is DocRef.Memory -> throw FileNotFoundException("Memory has no child: ${originalDocumentId}")
         }
     }
-
-    private fun resolveSyntheticChildInContainer(
+        private fun resolveSyntheticChildInContainer(
         profileId: String,
         parentFolderPath: String?,
         displayName: String,
@@ -990,15 +933,12 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                 displayName = childDisplayName(childDirectoryPath)
             )
         }
-
         val childMemory = filterDirectMemories(allMemories, parentFolderPath)
             .firstOrNull { memory -> buildMemoryDisplayName(memory.title, memory.uuid) == displayName }
             ?: throw FileNotFoundException("Synthetic child not found: ${originalDocumentId}")
-
         return DocRef.Memory(profileId = profileId, uuid = childMemory.uuid)
     }
-
-    private fun findDirectChildDirectoryPath(
+        private fun findDirectChildDirectoryPath(
         parentFolderPath: String?,
         childDisplayName: String,
         folderPaths: Collection<String>
@@ -1022,19 +962,16 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                 ?.let { childName -> parentFolderPath + "/" + childName }
         }
     }
-
-    private fun childDisplayName(path: String): String {
+        private fun childDisplayName(path: String): String {
         return path.split('/').lastOrNull().orEmpty().ifBlank { path }
     }
-
-    private fun getRepository(profileId: String): MemoryRepository {
+        private fun getRepository(profileId: String): MemoryRepository {
         val ctx = requireProviderContext()
         return synchronized(repositoryCache) {
             repositoryCache.getOrPut(profileId) { MemoryRepository(ctx, profileId) }
         }
     }
-
-    private fun documentExists(ref: DocRef): Boolean {
+        private fun documentExists(ref: DocRef): Boolean {
         return when (ref) {
             is DocRef.Root -> true
             is DocRef.Profile -> profileExists(ref.profileId)
@@ -1048,98 +985,82 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             }
         }
     }
-
-    private fun profileExists(profileId: String): Boolean {
+        private fun profileExists(profileId: String): Boolean {
         val prefs = UserPreferencesManager.getInstance(requireProviderContext())
         return runBlocking { prefs.profileListFlow.first() }.contains(profileId)
     }
-
-    private fun requireProfileExists(profileId: String) {
+        private fun requireProfileExists(profileId: String) {
         if (!profileExists(profileId)) {
             throw FileNotFoundException("Profile not found: ${profileId}")
         }
     }
-
-    private fun loadAllMemories(repo: MemoryRepository): List<Memory> {
+        private fun loadAllMemories(repo: MemoryRepository): List<Memory> {
         return runBlocking {
             repo.searchMemories(query = "*", folderPath = null)
         }
     }
-
-    private fun loadRealFolderPaths(repo: MemoryRepository): Set<String> {
+        private fun loadRealFolderPaths(repo: MemoryRepository): Set<String> {
         return collectRealFolderPaths(loadAllMemories(repo))
     }
-
-    private fun loadDirectoryNodes(repo: MemoryRepository): Set<String> {
+        private fun loadDirectoryNodes(repo: MemoryRepository): Set<String> {
         return normalizeFolders(loadRealFolderPaths(repo)).toSet()
     }
-
-    private fun directoryExists(repo: MemoryRepository, path: String): Boolean {
+        private fun directoryExists(repo: MemoryRepository, path: String): Boolean {
         val normalizedPath = MemoryRepository.normalizeFolderPath(path) ?: return false
         return loadDirectoryNodes(repo).contains(normalizedPath)
     }
-
-    private fun requireDirectoryExists(repo: MemoryRepository, path: String) {
+        private fun requireDirectoryExists(repo: MemoryRepository, path: String) {
         if (!directoryExists(repo, path)) {
             throw FileNotFoundException("Directory not found: ${path}")
         }
     }
-
-    private fun loadMemoriesInFolderTree(repo: MemoryRepository, folderPath: String): List<Memory> {
+        private fun loadMemoriesInFolderTree(repo: MemoryRepository, folderPath: String): List<Memory> {
         val normalizedTarget = MemoryRepository.normalizeFolderPath(folderPath) ?: return emptyList()
         return loadAllMemories(repo).filter { memory ->
             val path = MemoryRepository.normalizeFolderPath(memory.folderPath) ?: return@filter false
             path == normalizedTarget || path.startsWith("${normalizedTarget}/")
         }
     }
-
-    private fun collectRealFolderPaths(memories: List<Memory>): Set<String> {
+        private fun collectRealFolderPaths(memories: List<Memory>): Set<String> {
         return memories
             .mapNotNull { MemoryRepository.normalizeFolderPath(it.folderPath) }
             .toSortedSet()
     }
-
-    private fun filterDirectMemories(memories: List<Memory>, folderPath: String): List<Memory> {
+        private fun filterDirectMemories(memories: List<Memory>, folderPath: String): List<Memory> {
         val ctx = requireProviderContext()
         return memories
             .filter { it.title != ".folder_placeholder" && it.title != ctx.getString(R.string.memory_repository_folder_description_title) }
             .filter { memory ->
                 val normalizedMemoryFolder = MemoryRepository.normalizeFolderPath(memory.folderPath)
-                if (folderPath == null) {
+        if (folderPath == null) {
                     normalizedMemoryFolder == null
                 } else {
                     normalizedMemoryFolder == folderPath
                 }
             }
     }
-
-    private fun buildProfileDocumentId(profileId: String): String {
+        private fun buildProfileDocumentId(profileId: String): String {
         return DOC_ID_PROFILE_PREFIX + profileId
     }
-
-    private fun buildDirectoryDocumentId(profileId: String, path: String): String {
+        private fun buildDirectoryDocumentId(profileId: String, path: String): String {
         val normalizedPath = MemoryRepository.normalizeFolderPath(path)
             ?: throw IllegalArgumentException("Invalid directory path: ${path}")
         return DOC_ID_DIR_PREFIX + profileId + ":" + encodeFileComponent(normalizedPath)
     }
-
-    private fun buildMemoryDocumentId(profileId: String, uuid: String): String {
+        private fun buildMemoryDocumentId(profileId: String, uuid: String): String {
         return DOC_ID_MEM_PREFIX + profileId + ":" + uuid
     }
-
-    private fun stripJsonExtension(name: String): String {
+        private fun stripJsonExtension(name: String): String {
         return if (name.endsWith(".json", ignoreCase = true)) {
             name.dropLast(5)
         } else {
             name
         }
     }
-
-    private fun decodeMemoryTitleFromDisplayName(stem: String): String {
+        private fun decodeMemoryTitleFromDisplayName(stem: String): String {
         return stem.trim().ifBlank { "untitled" }
     }
-
-    private fun buildVisibleMemoryName(title: String): String {
+        private fun buildVisibleMemoryName(title: String): String {
         val raw = title.ifBlank { "untitled" }
         return raw
             .replace("/", "�?
@@ -1147,8 +1068,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             .trim()
             .ifBlank { "untitled" }
     }
-
-    private fun encodeFileComponent(value: String): String {
+        private fun encodeFileComponent(value: String): String {
         val raw = MemoryRepository.normalizeFolderPath(value)
             ?: throw IllegalArgumentException("Cannot encode blank path")
         return Base64.encodeToString(
@@ -1156,8 +1076,7 @@ class MemoryDocumentsProvider : DocumentsProvider() {
             Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING
         )
     }
-
-    private fun decodeFileComponent(value: String): String {
+        private fun decodeFileComponent(value: String): String {
         if (value.isBlank() || value.contains('/')) {
             throw FileNotFoundException("Invalid encoded directory path")
         }
@@ -1171,14 +1090,13 @@ class MemoryDocumentsProvider : DocumentsProvider() {
                 3 -> "${value}="
                 else -> throw FileNotFoundException("Invalid encoded directory path: ${value}")
             }
-            val decodedBytes = Base64.decode(paddedValue, Base64.URL_SAFE or Base64.NO_WRAP)
+        val decodedBytes = Base64.decode(paddedValue, Base64.URL_SAFE or Base64.NO_WRAP)
             String(decodedBytes, StandardCharsets.UTF_8)
         } catch (_: IllegalArgumentException) {
             throw FileNotFoundException("Invalid encoded directory path: ${value}")
         }
     }
-
-    private sealed class DocRef {
+        private sealed class DocRef {
         abstract val profileId: String
 
         object Root : DocRef() {

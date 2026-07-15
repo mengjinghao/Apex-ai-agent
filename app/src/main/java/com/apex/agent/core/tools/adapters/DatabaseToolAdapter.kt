@@ -19,7 +19,7 @@ class DatabaseToolAdapter : ToolAdapter {
     
     // 简单的查询缓存
     private val queryCache = mutableMapOf<String, CachedQueryResult>()
-    private val MAX_CACHE_SIZE = 50
+        private val MAX_CACHE_SIZE = 50
     private val CACHE_EXPIRE_TIME = 5 * 60 * 1000L // 5分钟
     override fun getName(): String {
         return "database"
@@ -32,7 +32,6 @@ class DatabaseToolAdapter : ToolAdapter {
     override suspend fun execute(parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
         val action = parameters["action"] as? String 
             ?: return@withContext StringResultData("错误：缺少action参数")
-        
         val connectionId = parameters["connection_id"] as? String ?: "default"
 
         try {
@@ -72,8 +71,7 @@ class DatabaseToolAdapter : ToolAdapter {
     override fun isAvailable(): Boolean {
         return true
     }
-
-    private suspend fun connect(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
+        private suspend fun connect(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
         val url = parameters["url"] as? String 
             ?: return@withContext StringResultData("错误：缺少url参数")
         val username = parameters["username"] as? String ?: ""
@@ -105,17 +103,14 @@ class DatabaseToolAdapter : ToolAdapter {
             StringResultData("连接失败，{e.message}")
         }
     }
-
-    private suspend fun query(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
+        private suspend fun query(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
         val sql = parameters["sql"] as? String 
             ?: return@withContext StringResultData("错误：缺少sql参数")
         val params = parameters["params"] as? List<*> ?: emptyList()
         val useCache = parameters["use_cache"] as? Boolean ?: true
         val timeout = (parameters["timeout"] as? Int ?: 30)
-
         val connection = connections[connectionId] 
             ?: return@withContext StringResultData("错误：未连接到数据库，请先执行connect操作")
-        
         if (connection.isClosed) {
             return@withContext StringResultData("错误：连接已关闭，请重新连接")
         }
@@ -139,18 +134,16 @@ class DatabaseToolAdapter : ToolAdapter {
                     setObject(index + 1, param)
                 }
             }
-
-            val resultSet = statement.executeQuery()
-            val result = StringBuilder()
-
-            if (resultSet != null) {
+        val resultSet = statement.executeQuery()
+        val result = StringBuilder()
+        if (resultSet != null) {
                 val metaData = resultSet.metaData
                 val columnCount = metaData.columnCount
 
                 // 输出列名
     for (i in 1..columnCount) {
                     result.append(metaData.getColumnName(i))
-                    if (i < columnCount) result.append("\t")
+        if (i < columnCount) result.append("\t")
                 }
                 result.append("\n")
 
@@ -158,7 +151,7 @@ class DatabaseToolAdapter : ToolAdapter {
     for (i in 1..columnCount) {
                     val columnNameLength = metaData.getColumnName(i).length
                     result.append("-".repeat(columnNameLength))
-                    if (i < columnCount) result.append("\t")
+        if (i < columnCount) result.append("\t")
                 }
                 result.append("\n")
 
@@ -168,7 +161,7 @@ class DatabaseToolAdapter : ToolAdapter {
                     for (i in 1..columnCount) {
                         val value = resultSet.getObject(i)
                         result.append(value ?: "NULL")
-                        if (i < columnCount) result.append("\t")
+        if (i < columnCount) result.append("\t")
                     }
                     result.append("\n")
                     rowCount++
@@ -192,16 +185,13 @@ class DatabaseToolAdapter : ToolAdapter {
             StringResultData("查询失败，{e.message}")
         }
     }
-
-    private suspend fun insert(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
+        private suspend fun insert(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
         val sql = parameters["sql"] as? String 
             ?: return@withContext StringResultData("错误：缺少sql参数")
         val params = parameters["params"] as? List<*> ?: emptyList()
         val timeout = (parameters["timeout"] as? Int ?: 30)
-
         val connection = connections[connectionId] 
             ?: return@withContext StringResultData("错误：未连接到数据库，请先执行connect操作")
-        
         if (connection.isClosed) {
             return@withContext StringResultData("错误：连接已关闭，请重新连接")
         }
@@ -213,14 +203,12 @@ class DatabaseToolAdapter : ToolAdapter {
                     setObject(index + 1, param)
                 }
             }
-
-            val affectedRows = statement.executeUpdate()
-            val generatedKeys = statement.generatedKeys
+        val affectedRows = statement.executeUpdate()
+        val generatedKeys = statement.generatedKeys
 
             val result = StringBuilder()
             result.append("${affectedRows}")
-
-            if (generatedKeys != null && generatedKeys.next()) {
+        if (generatedKeys != null && generatedKeys.next()) {
                 result.append("\n生成的ID，{generatedKeys.getObject(1)}")
             }
 
@@ -230,16 +218,13 @@ class DatabaseToolAdapter : ToolAdapter {
             StringResultData("插入失败，{e.message}")
         }
     }
-
-    private suspend fun update(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
+        private suspend fun update(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
         val sql = parameters["sql"] as? String 
             ?: return@withContext StringResultData("错误：缺少sql参数")
         val params = parameters["params"] as? List<*> ?: emptyList()
         val timeout = (parameters["timeout"] as? Int ?: 30)
-
         val connection = connections[connectionId] 
             ?: return@withContext StringResultData("错误：未连接到数据库，请先执行connect操作")
-        
         if (connection.isClosed) {
             return@withContext StringResultData("错误：连接已关闭，请重新连接")
         }
@@ -251,8 +236,7 @@ class DatabaseToolAdapter : ToolAdapter {
                     setObject(index + 1, param)
                 }
             }
-
-            val affectedRows = statement.executeUpdate()
+        val affectedRows = statement.executeUpdate()
             statement.close()
 
             StringResultData("${affectedRows}")
@@ -260,16 +244,13 @@ class DatabaseToolAdapter : ToolAdapter {
             StringResultData("更新失败，{e.message}")
         }
     }
-
-    private suspend fun delete(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
+        private suspend fun delete(connectionId: String, parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
         val sql = parameters["sql"] as? String 
             ?: return@withContext StringResultData("错误：缺少sql参数")
         val params = parameters["params"] as? List<*> ?: emptyList()
         val timeout = (parameters["timeout"] as? Int ?: 30)
-
         val connection = connections[connectionId] 
             ?: return@withContext StringResultData("错误：未连接到数据库，请先执行connect操作")
-        
         if (connection.isClosed) {
             return@withContext StringResultData("错误：连接已关闭，请重新连接")
         }
@@ -281,8 +262,7 @@ class DatabaseToolAdapter : ToolAdapter {
                     setObject(index + 1, param)
                 }
             }
-
-            val affectedRows = statement.executeUpdate()
+        val affectedRows = statement.executeUpdate()
             statement.close()
 
             StringResultData("${affectedRows}")
@@ -290,8 +270,7 @@ class DatabaseToolAdapter : ToolAdapter {
             StringResultData("删除失败，{e.message}")
         }
     }
-
-    private suspend fun disconnect(connectionId: String): ToolResultData = withContext(Dispatchers.IO) {
+        private suspend fun disconnect(connectionId: String): ToolResultData = withContext(Dispatchers.IO) {
         connections[connectionId]?.let {
             try {
                 if (!it.isClosed) {
@@ -304,18 +283,15 @@ class DatabaseToolAdapter : ToolAdapter {
             }
         } ?: StringResultData("错误：未找到连接ID，connectionId")
     }
-
-    private fun listConnections(): ToolResultData {
+        private fun listConnections(): ToolResultData {
         val activeConnections = connections.filterValues { !it.isClosed }
         val closedConnections = connections.filterValues { it.isClosed }
-        
         val result = StringBuilder()
         result.append("数据库连接列表\n")
         result.append("活跃连接(${activeConnections.size}):\n")
         activeConnections.keys.forEach { id ->
             result.append("  - ${id}\n")
         }
-        
         if (closedConnections.isNotEmpty()) {
             result.append("\n已关闭连�?{closedConnections.size}):\n")
             closedConnections.keys.forEach { id ->
@@ -324,17 +300,14 @@ class DatabaseToolAdapter : ToolAdapter {
         }
         
         result.append("\n缓存查询�?${queryCache.size}")
-        
         return StringResultData(result.toString())
     }
-
-    private fun clearCache(): ToolResultData {
+        private fun clearCache(): ToolResultData {
         val cacheSize = queryCache.size
         queryCache.clear()
         return StringResultData("成功清除查询缓存，清除了 ${cacheSize} 条记�?
     }
-
-    private data class CachedQueryResult(
+        private data class CachedQueryResult(
         val result: String,
         val timestamp: Long
     )

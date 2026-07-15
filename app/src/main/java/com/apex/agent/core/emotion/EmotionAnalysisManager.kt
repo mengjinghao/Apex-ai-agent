@@ -121,7 +121,6 @@ class EmotionAnalysisManager private constructor(
      */
     suspend fun getEmotionalAdvice(userId: String, messages: List<ChatMessage>): String = withContext(Dispatchers.IO) {
         val profile = analyzeUserEmotion(userId, messages)
-        
         when (profile.dominantEmotion) {
             "开�?-> "用户当前情绪积极，保持愉快的互动方方�?
             "满意" -> "用户对服务满意，继续保持良好的服务质量，

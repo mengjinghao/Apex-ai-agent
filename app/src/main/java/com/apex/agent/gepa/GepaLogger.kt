@@ -13,92 +13,71 @@ import java.util.concurrent.atomic.AtomicBoolean
 object GepaLogger {
 
     private const val TAG = "GEPA"
-
-    private val logQueue = ConcurrentLinkedQueue<LogEntry>()
-    private val _logs = MutableStateFlow<List<LogEntry>>(emptyList())
-    val logs: StateFlow<List<LogEntry>> = _logs.asStateFlow()
-
-    private val isEnabled = AtomicBoolean(true)
-    private val maxLogSize = 1000
+        private val logQueue = ConcurrentLinkedQueue<LogEntry>()
+        private val _logs = MutableStateFlow<List<LogEntry>>(emptyList())
+        val logs: StateFlow<List<LogEntry>> = _logs.asStateFlow()
+        private val isEnabled = AtomicBoolean(true)
+        private val maxLogSize = 1000
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
-
-    fun setEnabled(enabled: Boolean) {
+        fun setEnabled(enabled: Boolean) {
         isEnabled.set(enabled)
     }
-
-    fun v(message: String, tag: String = TAG, context: Map<String, Any>? = null) {
+        fun v(message: String, tag: String = TAG, context: Map<String, Any>? = null) {
         log(LogLevel.VERBOSE, message, tag, context)
     }
-
-    fun d(message: String, tag: String = TAG, context: Map<String, Any>? = null) {
+        fun d(message: String, tag: String = TAG, context: Map<String, Any>? = null) {
         log(LogLevel.DEBUG, message, tag, context)
     }
-
-    fun i(message: String, tag: String = TAG, context: Map<String, Any>? = null) {
+        fun i(message: String, tag: String = TAG, context: Map<String, Any>? = null) {
         log(LogLevel.INFO, message, tag, context)
     }
-
-    fun w(message: String, tag: String = TAG, context: Map<String, Any>? = null) {
+        fun w(message: String, tag: String = TAG, context: Map<String, Any>? = null) {
         log(LogLevel.WARNING, message, tag, context)
     }
-
-    fun e(message: String, throwable: Throwable? = null, tag: String = TAG, context: Map<String, Any>? = null) {
+        fun e(message: String, throwable: Throwable? = null, tag: String = TAG, context: Map<String, Any>? = null) {
         log(LogLevel.ERROR, message, tag, context, throwable)
     }
-
-    fun skillExtracted(skillId: Int, taskType: String, successRate: Float) {
+        fun skillExtracted(skillId: Int, taskType: String, successRate: Float) {
         i("Skill extracted: id=${skillId}, type=${taskType}, rate=${successRate}", tag = "SkillExtractor")
     }
-
-    fun skillMatched(taskType: String, matched: Boolean, skillId: Int? = null) {
+        fun skillMatched(taskType: String, matched: Boolean, skillId: Int? = null) {
         val msg = if (matched) "Skill matched: type=${taskType}, id=${skillId}" else "No skill matched: type=${taskType}"
         i(msg, tag = "SkillMatcher")
     }
-
-    fun taskStarted(taskId: String, taskType: String, subtaskCount: Int) {
+        fun taskStarted(taskId: String, taskType: String, subtaskCount: Int) {
         i("Task started: id=${taskId}, type=${taskType}, subtasks=${subtaskCount}", tag = "TaskScheduler")
     }
-
-    fun taskCompleted(taskId: String, success: Boolean, duration: Long) {
+        fun taskCompleted(taskId: String, success: Boolean, duration: Long) {
         val msg = if (success) "Task completed: id=${taskId}, duration=${duration} ms" else "Task failed: id=${taskId}, duration=${duration} ms"
         i(msg, tag = "TaskScheduler")
     }
-
-    fun subtaskCompleted(subtaskId: String, agentId: String, success: Boolean, duration: Long) {
+        fun subtaskCompleted(subtaskId: String, agentId: String, success: Boolean, duration: Long) {
         val msg = "Subtask completed: id=${subtaskId}, agent=${agentId}, success=${success}, duration=${duration} ms"
         d(msg, tag = "TaskScheduler")
     }
-
-    fun agentRegistered(agentId: String, agentType: String) {
+        fun agentRegistered(agentId: String, agentType: String) {
         i("Agent registered: id=${agentId}, type=${agentType}", tag = "AgentRegistry")
     }
-
-    fun agentUnregistered(agentId: String) {
+        fun agentUnregistered(agentId: String) {
         i("Agent unregistered: id=${agentId}", tag = "AgentRegistry")
     }
-
-    fun agentCircuitBreakerOpened(agentId: String) {
+        fun agentCircuitBreakerOpened(agentId: String) {
         w("Circuit breaker opened: agent=${agentId}", tag = "CircuitBreaker")
     }
-
-    fun agentCircuitBreakerClosed(agentId: String) {
+        fun agentCircuitBreakerClosed(agentId: String) {
         i("Circuit breaker closed: agent=${agentId}", tag = "CircuitBreaker")
     }
-
-    fun cacheHit(key: String) {
+        fun cacheHit(key: String) {
         d("Cache hit: key=${key}", tag = "Cache")
     }
-
-    fun cacheMiss(key: String) {
+        fun cacheMiss(key: String) {
         d("Cache miss: key=${key}", tag = "Cache")
     }
-
-    fun cacheEviction(key: String) {
+        fun cacheEviction(key: String) {
         d("Cache eviction: key=${key}", tag = "Cache")
     }
-
-    private fun log(
+        private fun log(
         level: LogLevel,
         message: String,
         tag: String,
@@ -119,7 +98,6 @@ object GepaLogger {
 
         logQueue.offer(entry)
         trimLogQueue()
-
         val androidLogLevel = when (level) {
             LogLevel.VERBOSE -> Log.VERBOSE
             LogLevel.DEBUG -> Log.DEBUG
@@ -127,7 +105,6 @@ object GepaLogger {
             LogLevel.WARNING -> Log.WARN
             LogLevel.ERROR -> Log.ERROR
         }
-
         val fullMessage = if (context != null) {
             "${message} | context=${context}"
         } else {
@@ -135,30 +112,25 @@ object GepaLogger {
         }
 
         Log.println(androidLogLevel, tag, fullMessage)
-
         if (throwable != null) {
             Log.println(androidLogLevel, tag, Log.getStackTraceString(throwable))
         }
 
         updateLogsState()
     }
-
-    private fun trimLogQueue() {
+        private fun trimLogQueue() {
         while (logQueue.size > maxLogSize) {
             logQueue.poll()
         }
     }
-
-    private fun updateLogsState() {
+        private fun updateLogsState() {
         _logs.value = logQueue.toList()
     }
-
-    fun clearLogs() {
+        fun clearLogs() {
         logQueue.clear()
         updateLogsState()
     }
-
-    fun getLogs(limit: Int = 100, level: LogLevel? = null): List<LogEntry> {
+        fun getLogs(limit: Int = 100, level: LogLevel? = null): List<LogEntry> {
         val filtered = if (level != null) {
             logQueue.filter { it.level >= level }
         } else {
@@ -166,16 +138,13 @@ object GepaLogger {
         }
         return filtered.takeLast(limit)
     }
-
-    fun getLogsByTag(tag: String, limit: Int = 100): List<LogEntry> {
+        fun getLogsByTag(tag: String, limit: Int = 100): List<LogEntry> {
         return logQueue.filter { it.tag == tag }.takeLast(limit)
     }
-
-    fun getLogsByTaskId(taskId: String, limit: Int = 100): List<LogEntry> {
+        fun getLogsByTaskId(taskId: String, limit: Int = 100): List<LogEntry> {
         return logQueue.filter { it.context?.get("taskId") == taskId }.takeLast(limit)
     }
-
-    fun exportLogs(): String {
+        fun exportLogs(): String {
         return buildString {
             appendLine("GEPA System Logs")
             appendLine("=================")
@@ -212,23 +181,21 @@ object GepaLogger {
 class GepaPerformanceMonitor {
 
     private val _performanceMetrics = MutableStateFlow(PerformanceMetrics())
-    val performanceMetrics: StateFlow<PerformanceMetrics> = _performanceMetrics.asStateFlow()
-
-    private val operationTimings = ConcurrentHashMap<String, MutableList<Long>>()
-    private val maxSamplesPerOperation = 100
+        val performanceMetrics: StateFlow<PerformanceMetrics> = _performanceMetrics.asStateFlow()
+        private val operationTimings = ConcurrentHashMap<String, MutableList<Long>>()
+        private val maxSamplesPerOperation = 100
 
     fun recordOperation(operationName: String, durationMs: Long) {
         val timings = operationTimings.computeIfAbsent(operationName) { mutableListOf() }
         synchronized(timings) {
             timings.add(durationMs)
-            if (timings.size > maxSamplesPerOperation) {
+        if (timings.size > maxSamplesPerOperation) {
                 timings.removeAt(0)
             }
         }
         updateMetrics()
     }
-
-    fun recordTaskExecution(success: Boolean, durationMs: Long) {
+        fun recordTaskExecution(success: Boolean, durationMs: Long) {
         updateMetrics { metrics ->
             if (success) {
                 metrics.copy(
@@ -244,8 +211,7 @@ class GepaPerformanceMonitor {
             }
         }
     }
-
-    fun recordCacheAccess(hit: Boolean) {
+        fun recordCacheAccess(hit: Boolean) {
         updateMetrics { metrics ->
             if (hit) {
                 metrics.copy(
@@ -260,8 +226,7 @@ class GepaPerformanceMonitor {
             }
         }
     }
-
-    fun recordAgentExecution(agentId: String, success: Boolean, durationMs: Long) {
+        fun recordAgentExecution(agentId: String, success: Boolean, durationMs: Long) {
         updateMetrics { metrics ->
             metrics.copy(
                 totalAgentExecutions = metrics.totalAgentExecutions + 1,
@@ -269,12 +234,10 @@ class GepaPerformanceMonitor {
             )
         }
     }
-
-    private fun updateMetrics(update: (PerformanceMetrics) -> PerformanceMetrics) {
+        private fun updateMetrics(update: (PerformanceMetrics) -> PerformanceMetrics) {
         _performanceMetrics.value = update(_performanceMetrics.value)
     }
-
-    private fun updateMetrics() {
+        private fun updateMetrics() {
         val timings = operationTimings.mapValues { (_, list) ->
             synchronized(list) {
                 if (list.isEmpty()) 0L else list.average().toLong()
@@ -285,13 +248,11 @@ class GepaPerformanceMonitor {
             operationAverages = timings
         )
     }
-
-    fun reset() {
+        fun reset() {
         operationTimings.clear()
         _performanceMetrics.value = PerformanceMetrics()
     }
-
-    fun getMetrics(): PerformanceMetrics = _performanceMetrics.value
+        fun getMetrics(): PerformanceMetrics = _performanceMetrics.value
 
     data class PerformanceMetrics(
         var totalSuccessfulTasks: Int = 0,

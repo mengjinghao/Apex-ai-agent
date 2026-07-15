@@ -34,12 +34,10 @@ internal class WebSessionAgentLoginStorage(
             }
         }
     }
-    
-    private val prefs: SharedPreferences by lazy {
+        private val prefs: SharedPreferences by lazy {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
-    
-    private val json = Json { 
+        private val json = Json { 
         encodeDefaults = true
         ignoreUnknownKeys = true
         prettyPrint = false
@@ -55,12 +53,12 @@ internal class WebSessionAgentLoginStorage(
     fun saveCookies(siteKey: String, cookies: String, url: String = "") {
         try {
             val key = "cookies_${siteKey}"
-            val data = AgentLoginData(
+        val data = AgentLoginData(
                 cookies = cookies,
                 url = url,
                 timestamp = System.currentTimeMillis()
             )
-            val jsonStr = json.encodeToString(data)
+        val jsonStr = json.encodeToString(data)
             
             prefs.edit()
                 .putString(key, jsonStr)
@@ -81,13 +79,12 @@ internal class WebSessionAgentLoginStorage(
     fun getCookies(siteKey: String): String {
         try {
             val key = "cookies_${siteKey}"
-            val jsonStr = prefs.getString(key, null) ?: return ""
-            
-            val data = json.decodeFromString<AgentLoginData>(jsonStr)
-            return data.cookies
+        val jsonStr = prefs.getString(key, null) ?: return ""
+        val data = json.decodeFromString<AgentLoginData>(jsonStr)
+        return data.cookies
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to load cookies for: ${siteKey}", e)
-            return ""
+        return ""
         }
     }
     
@@ -120,10 +117,10 @@ internal class WebSessionAgentLoginStorage(
     fun getLastUpdateTime(siteKey: String): Long {
         try {
             val key = "cookies_${siteKey}"
-            val jsonStr = prefs.getString(key, null) ?: return 0L
+        val jsonStr = prefs.getString(key, null) ?: return 0L
             
             val data = json.decodeFromString<AgentLoginData>(jsonStr)
-            return data.timestamp
+        return data.timestamp
         } catch (e: Exception) {
             return 0L
         }
@@ -141,7 +138,6 @@ internal class WebSessionAgentLoginStorage(
                 sites.add(siteKey)
             }
         }
-        
         return sites
     }
     

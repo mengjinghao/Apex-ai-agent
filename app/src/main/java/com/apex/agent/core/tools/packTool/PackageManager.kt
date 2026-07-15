@@ -82,16 +82,12 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     }
 
     // Map of package name to package description (all available packages in market)
-    private val availablePackages = ConcurrentHashMap<String, ToolPackage>()
-
-    private val packageLoadErrors = ConcurrentHashMap<String, String>()
-
-    private val activePackageToolNames = ConcurrentHashMap<String, Set<String>>()
-
-    private val activePackageStateIds = ConcurrentHashMap<String, String?>()
-
-    private val toolPkgContainers = ConcurrentHashMap<String, ToolPkgContainerRuntime>()
-    private val toolPkgSubpackageByPackageName = ConcurrentHashMap<String, ToolPkgSubpackageRuntime>()
+        private val availablePackages = ConcurrentHashMap<String, ToolPackage>()
+        private val packageLoadErrors = ConcurrentHashMap<String, String>()
+        private val activePackageToolNames = ConcurrentHashMap<String, Set<String>>()
+        private val activePackageStateIds = ConcurrentHashMap<String, String?>()
+        private val toolPkgContainers = ConcurrentHashMap<String, ToolPkgContainerRuntime>()
+        private val toolPkgSubpackageByPackageName = ConcurrentHashMap<String, ToolPkgSubpackageRuntime>()
 
     data class ToolPkgSubpackageInfo(
         val packageName: String,
@@ -131,22 +127,19 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         val sourcePath: String?,
         val isExternalSource: Boolean
     )
-
-    private data class PackageScanSnapshot(
+        private data class PackageScanSnapshot(
         val packageLoadErrors: Map<String, String>,
         val availablePackages: Map<String, ToolPackage>,
         val toolPkgContainers: Map<String, ToolPkgContainerRuntime>,
         val toolPkgSubpackages: Map<String, ToolPkgSubpackageRuntime>
     )
-
-    private data class PackageScanCandidateResult(
+        private data class PackageScanCandidateResult(
         val packageLoadErrors: Map<String, String> = emptyMap(),
         val toolPackage: ToolPackage? = null,
         val toolPkgLoadResult: ToolPkgLoadResult? = null,
         val sourcePath: String? = null
     )
-
-    private data class ExternalPackageScanCacheEntry(
+        private data class ExternalPackageScanCacheEntry(
         val signature: String,
         val result: PackageScanCandidateResult
     )
@@ -161,7 +154,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     @Volatile
     private var runtimeCachesReady = false
     private val initLock = Any()
-    private val toolPkgCacheLock = Any()
+        private val toolPkgCacheLock = Any()
     @Volatile
     private var initializationFuture: CompletableFuture<Unit>? = null
     private val initializationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -175,61 +168,53 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     private var assetPackageScanSnapshot: PackageScanSnapshot? = null
     @Volatile
     private var externalPackageScanCache: Map<String, ExternalPackageScanCacheEntry> = emptyMap()
-    private val toolPkgRuntimeChangeListeners = CopyOnWriteArrayList<ToolPkgRuntimeChangeListener>()
-
-    private val skillManager by lazy { SkillManager.getInstance(context) }
-
-    private val skillVisibilityPreferences by lazy { SkillVisibilityPreferences.getInstance(context) }
+        private val toolPkgRuntimeChangeListeners = CopyOnWriteArrayList<ToolPkgRuntimeChangeListener>()
+        private val skillManager by lazy { SkillManager.getInstance(context) }
+        private val skillVisibilityPreferences by lazy { SkillVisibilityPreferences.getInstance(context) }
 
     // JavaScript engine for executing JS package code
     private val jsEngine by lazy { JsEngine(context) }
-    private val toolPkgExecutionEngines = ConcurrentHashMap<String, JsEngine>()
-    private val toolPkgFacade by lazy { PackageManagerToolPkgFacade(this) }
+        private val toolPkgExecutionEngines = ConcurrentHashMap<String, JsEngine>()
+        private val toolPkgFacade by lazy { PackageManagerToolPkgFacade(this) }
 
     // Environment preferences for package-level env variables
     private val envPreferences by lazy { EnvPreferences.getInstance(context) }
 
     // MCP Manager instance (lazy loading)
-    private val mcpManager by lazy { MCPManager.getInstance(context) }
-
-    private fun logToolPkgInfo(message: String) {
+        private val mcpManager by lazy { MCPManager.getInstance(context) }
+        private fun logToolPkgInfo(message: String) {
         AppLogger.i(TOOLPKG_TAG, "PKG: ${message}")
     }
-
-    private fun logToolPkgError(message: String, tr: Throwable? = null) {
+        private fun logToolPkgError(message: String, tr: Throwable? = null) {
         if (tr == null) {
             AppLogger.e(TOOLPKG_TAG, "PKG: ${message}")
         } else {
             AppLogger.e(TOOLPKG_TAG, "PKG: ${message}", tr)
         }
     }
-
-    private fun persistImportedPackagesToPrefs(importedPackages: List<String>) {
+        private fun persistImportedPackagesToPrefs(importedPackages: List<String>) {
         val prefs = context.getSharedPreferences(PACKAGE_PREFS, Context.MODE_PRIVATE)
         val updatedJson = Json.encodeToString(importedPackages)
         prefs.edit().putString(IMPORTED_PACKAGES_KEY, updatedJson).apply()
     }
-
-    private fun persistToolPkgSubpackageStatesToPrefs(states: Map<String, Boolean>) {
+        private fun persistToolPkgSubpackageStatesToPrefs(states: Map<String, Boolean>) {
         val prefs = context.getSharedPreferences(PACKAGE_PREFS, Context.MODE_PRIVATE)
         val updatedJson = Json.encodeToString(states)
         prefs.edit().putString(TOOLPKG_SUBPACKAGE_STATES_KEY, updatedJson).apply()
     }
-
-    private fun decodeImportedPackagesFromPrefs(): List<String> {
+        private fun decodeImportedPackagesFromPrefs(): List<String> {
         val prefs = context.getSharedPreferences(PACKAGE_PREFS, Context.MODE_PRIVATE)
         val packagesJson = prefs.getString(IMPORTED_PACKAGES_KEY, "[]")
         return try {
             val jsonConfig = Json { ignoreUnknownKeys = true }
-            val rawPackages = jsonConfig.decodeFromString<List<String>>(packagesJson ?: "[]")
+        val rawPackages = jsonConfig.decodeFromString<List<String>>(packagesJson ?: "[]")
             normalizeImportedPackageNames(rawPackages)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error decoding imported packages", e)
             emptyList()
         }
     }
-
-    private fun decodeToolPkgSubpackageStatesFromPrefs(): Map<String, Boolean> {
+        private fun decodeToolPkgSubpackageStatesFromPrefs(): Map<String, Boolean> {
         val prefs = context.getSharedPreferences(PACKAGE_PREFS, Context.MODE_PRIVATE)
         val statesJson = prefs.getString(TOOLPKG_SUBPACKAGE_STATES_KEY, "{}")
         return try {
@@ -240,8 +225,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             emptyMap()
         }
     }
-
-    private fun buildImportedToolPkgContainerRuntimes(
+        private fun buildImportedToolPkgContainerRuntimes(
         importedPackages: List<String>
     ): List<ToolPkgContainerRuntime> {
         val importedSet = importedPackages.toSet()
@@ -251,8 +235,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             .sortedBy(ToolPkgContainerRuntime::packageName)
             .toList()
     }
-
-    private fun notifyToolPkgRuntimeChangeListeners() {
+        private fun notifyToolPkgRuntimeChangeListeners() {
         toolPkgRuntimeChangeListeners.forEach { listener ->
             runCatching {
                 listener.onToolPkgRuntimeChanged()
@@ -264,8 +247,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
         }
     }
-
-    private fun refreshToolPkgRuntimeState(
+        private fun refreshToolPkgRuntimeState(
         persistIfChanged: Boolean,
         importedPackagesOverride: List<String>? = null,
         subpackageStatesOverride: Map<String, Boolean>? = null
@@ -273,19 +255,18 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         synchronized(initLock) {
             val normalizedImportedPackages =
                 normalizeImportedPackageNames(importedPackagesOverride ?: decodeImportedPackagesFromPrefs())
-            val cleanedImportedPackages =
+        val cleanedImportedPackages =
                 normalizedImportedPackages.filter { packageName -> availablePackages.containsKey(packageName) }
-            if (persistIfChanged && cleanedImportedPackages != normalizedImportedPackages) {
+        if (persistIfChanged && cleanedImportedPackages != normalizedImportedPackages) {
                 persistImportedPackagesToPrefs(cleanedImportedPackages)
             }
-
-            val normalizedStates =
+        val normalizedStates =
                 normalizeToolPkgSubpackageStates(subpackageStatesOverride ?: decodeToolPkgSubpackageStatesFromPrefs())
-            val cleanedStates =
+        val cleanedStates =
                 normalizedStates.filterKeys { packageName ->
                     toolPkgSubpackageByPackageName.containsKey(packageName)
                 }
-            if (persistIfChanged && cleanedStates != normalizedStates) {
+        if (persistIfChanged && cleanedStates != normalizedStates) {
                 persistToolPkgSubpackageStatesToPrefs(cleanedStates)
             }
 
@@ -307,13 +288,11 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         val normalizedKey = contextKey.trim().ifBlank { "toolpkg_main:default" }
         return toolPkgExecutionEngines.computeIfAbsent(normalizedKey) { JsEngine(context) }
     }
-
-    private fun destroyToolPkgExecutionEngine(contextKey: String) {
+        private fun destroyToolPkgExecutionEngine(contextKey: String) {
         val normalizedKey = contextKey.trim().ifBlank { return }
         toolPkgExecutionEngines.remove(normalizedKey)?.destroy()
     }
-
-    private fun destroyDefaultToolPkgExecutionEngine(packageName: String) {
+        private fun destroyDefaultToolPkgExecutionEngine(packageName: String) {
         val normalizedPackageName = normalizePackageName(packageName)
         if (normalizedPackageName.isBlank()) {
             return
@@ -370,8 +349,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         }
         return buildImportedToolPkgContainerRuntimes(getImportedPackagesInternal())
     }
-
-    fun cancelToolPkgExecutionsForChat(
+        fun cancelToolPkgExecutionsForChat(
         chatId: String,
         reason: String = "Execution canceled: requested by caller"
     ): Boolean {
@@ -379,7 +357,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         if (normalizedChatId.isEmpty()) {
             return false
         }
-
         var cancelledAny = false
         toolPkgExecutionEngines.values.forEach { engine ->
             runCatching {
@@ -401,14 +378,13 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     private val externalPackagesDir: File
         get() {
             val dir = File(context.getExternalFilesDir(null), PACKAGES_DIR)
-            if (!dir.exists()) {
+        if (!dir.exists()) {
                 dir.mkdirs()
             }
             AppLogger.d(TAG, "External packages directory: ${dir.absolutePath}")
-            return dir
+        return dir
         }
-
-    private fun formatPackageLoadError(
+        private fun formatPackageLoadError(
         message: String,
         sourcePath: String? = null
     ): String {
@@ -419,8 +395,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             "Source: ${normalizedSourcePath}\n${message}"
         }
     }
-
-    private fun extractPackageLoadErrorSourcePath(errorText: String): String? {
+        private fun extractPackageLoadErrorSourcePath(errorText: String): String? {
         val sourcePrefix = "Source: "
         val firstLine = errorText.lineSequence().firstOrNull()?.trim().orEmpty()
         return firstLine
@@ -429,8 +404,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             ?.trim()
             ?.takeIf { it.isNotEmpty() }
     }
-
-    private fun stripPackageLoadErrorSourcePath(errorText: String): String {
+        private fun stripPackageLoadErrorSourcePath(errorText: String): String {
         val sourcePrefix = "Source: "
         val lines = errorText.lines()
         return if (lines.firstOrNull()?.trim()?.startsWith(sourcePrefix) == true) {
@@ -439,12 +413,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             errorText
         }
     }
-
-    private fun isExternalPackageSourcePath(sourcePath: String): Boolean {
+        private fun isExternalPackageSourcePath(sourcePath: String): Boolean {
         if (sourcePath.isNullOrBlank()) {
             return false
         }
-
         val candidateCanonicalPath =
             runCatching { File(sourcePath).canonicalPath }.getOrElse { return false }
         val externalRootCanonicalPath =
@@ -455,18 +427,16 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             } else {
                 externalRootCanonicalPath + File.separator
             }
-
         return candidateCanonicalPath.equals(externalRootCanonicalPath, ignoreCase = true) ||
             candidateCanonicalPath.startsWith(externalRootPrefix, ignoreCase = true)
     }
-
-    private val toolPkgCacheRootDir: File
+        private val toolPkgCacheRootDir: File
         get() {
             val dir = File(context.filesDir, TOOLPKG_CACHE_DIR)
-            if (!dir.exists()) {
+        if (!dir.exists()) {
                 dir.mkdirs()
             }
-            return dir
+        return dir
         }
 
     internal fun ensureInitialized() {
@@ -482,11 +452,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         } catch (e: Exception) {
             val threadName = Thread.currentThread().name
             logToolPkgError("ensureInitialized failed on background thread, thread=${threadName}, reason=${e.message ?: e.javaClass.simpleName}", e)
-            throw IllegalStateException("PackageManager initialization failed", e)
+        throw IllegalStateException("PackageManager initialization failed", e)
         }
     }
-
-    private fun ensureInitializationStarted(): CompletableFuture<Unit> {
+        private fun ensureInitializationStarted(): CompletableFuture<Unit> {
         synchronized(initLock) {
             if (isInitialized) {
                 return CompletableFuture.completedFuture(Unit)
@@ -494,8 +463,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             initializationFuture?.let {
                 return it
             }
-
-            val future = CompletableFuture<Unit>()
+        val future = CompletableFuture<Unit>()
             initializationFuture = future
 
             initializationScope.launch {
@@ -533,18 +501,16 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     }
                 }
             }
-            return future
+        return future
         }
     }
-
-    private fun resolveToolPkgSubpackageRuntime(nameOrId: String): ToolPkgSubpackageRuntime? {
+        private fun resolveToolPkgSubpackageRuntime(nameOrId: String): ToolPkgSubpackageRuntime? {
         val candidate = nameOrId.trim()
         if (candidate.isBlank()) {
             return null
         }
 
         toolPkgSubpackageByPackageName[candidate]?.let { return it }
-
         return toolPkgSubpackageByPackageName.values.firstOrNull {
             it.subpackageId.equals(candidate, ignoreCase = true)
         }
@@ -557,35 +523,31 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         }
         return resolveToolPkgSubpackageRuntime(trimmed)?.packageName ?: trimmed
     }
-
-    private fun normalizeImportedPackageNames(packageNames: List<String>): List<String> {
+        private fun normalizeImportedPackageNames(packageNames: List<String>): List<String> {
         val normalized = LinkedHashSet<String>()
         packageNames.forEach { original ->
             val canonical = normalizePackageName(original)
-            if (canonical.isNotBlank()) {
+        if (canonical.isNotBlank()) {
                 normalized.add(canonical)
             }
         }
         return normalized.toList()
     }
-
-    private fun normalizeToolPkgSubpackageStates(states: Map<String, Boolean>): Map<String, Boolean> {
+        private fun normalizeToolPkgSubpackageStates(states: Map<String, Boolean>): Map<String, Boolean> {
         val normalized = linkedMapOf<String, Boolean>()
         states.forEach { (name, enabled) ->
             val canonical = normalizePackageName(name)
-            if (!toolPkgSubpackageByPackageName.containsKey(canonical)) {
+        if (!toolPkgSubpackageByPackageName.containsKey(canonical)) {
                 return@forEach
             }
-
-            val isCanonicalKey = name.trim().equals(canonical, ignoreCase = true)
-            if (isCanonicalKey || !normalized.containsKey(canonical)) {
+        val isCanonicalKey = name.trim().equals(canonical, ignoreCase = true)
+        if (isCanonicalKey || !normalized.containsKey(canonical)) {
                 normalized[canonical] = enabled
             }
         }
         return normalized
     }
-
-    private fun toolPkgCacheDirName(packageName: String): String {
+        private fun toolPkgCacheDirName(packageName: String): String {
         val normalized = packageName.trim()
         val safeName =
             normalized
@@ -594,25 +556,22 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         val hash = Integer.toHexString(normalized.hashCode())
         return "${safeName}-${hash}"
     }
-
-    private fun toolPkgCacheDir(packageName: String): File {
+        private fun toolPkgCacheDir(packageName: String): File {
         return File(toolPkgCacheRootDir, toolPkgCacheDirName(packageName))
     }
-
-    private fun deleteToolPkgCacheDir(packageName: String) {
+        private fun deleteToolPkgCacheDir(packageName: String) {
         synchronized(toolPkgCacheLock) {
             val dir = toolPkgCacheDir(packageName)
-            if (dir.exists() && !dir.deleteRecursively()) {
+        if (dir.exists() && !dir.deleteRecursively()) {
                 AppLogger.w(TAG, "Failed to delete toolpkg cache dir: ${dir.absolutePath}")
             }
         }
     }
-
-    private fun buildToolPkgCacheSignature(runtime: ToolPkgContainerRuntime): String? {
+        private fun buildToolPkgCacheSignature(runtime: ToolPkgContainerRuntime): String? {
         return when (runtime.sourceType) {
             ToolPkgSourceType.EXTERNAL -> {
                 val sourceFile = File(runtime.sourcePath)
-                if (!sourceFile.exists()) {
+        if (!sourceFile.exists()) {
                     null
                 } else {
                     buildString {
@@ -646,8 +605,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
         }
     }
-
-    private fun extractToolPkgArchive(runtime: ToolPkgContainerRuntime, destinationDir: File): Boolean {
+        private fun extractToolPkgArchive(runtime: ToolPkgContainerRuntime, destinationDir: File): Boolean {
         return when (runtime.sourceType) {
             ToolPkgSourceType.EXTERNAL ->
                 ToolPkgArchiveParser.extractZipEntriesFromExternal(
@@ -662,24 +620,22 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 )
         }
     }
-
-    private fun ensureToolPkgCache(runtime: ToolPkgContainerRuntime): File? {
+        private fun ensureToolPkgCache(runtime: ToolPkgContainerRuntime): File? {
         val signature = buildToolPkgCacheSignature(runtime) ?: return null
         synchronized(toolPkgCacheLock) {
             val cacheDir = toolPkgCacheDir(runtime.packageName)
-            val signatureFile = File(cacheDir, TOOLPKG_CACHE_SIGNATURE_FILE)
-            val mainScriptFile = File(cacheDir, runtime.mainEntry)
-            val cacheDirExists = cacheDir.exists()
-            val signatureFileExists = signatureFile.exists()
-            val signatureMatches =
+        val signatureFile = File(cacheDir, TOOLPKG_CACHE_SIGNATURE_FILE)
+        val mainScriptFile = File(cacheDir, runtime.mainEntry)
+        val cacheDirExists = cacheDir.exists()
+        val signatureFileExists = signatureFile.exists()
+        val signatureMatches =
                 if (signatureFileExists) {
                     runCatching { signatureFile.readText() == signature }.getOrDefault(false)
                 } else {
                     false
                 }
-            val mainScriptExists = mainScriptFile.exists()
-
-            if (cacheDirExists &&
+        val mainScriptExists = mainScriptFile.exists()
+        if (cacheDirExists &&
                 signatureFileExists &&
                 signatureMatches &&
                 mainScriptExists
@@ -688,11 +644,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
 
             deleteToolPkgCacheDir(runtime.packageName)
-            if (!cacheDir.exists() && !cacheDir.mkdirs()) {
+        if (!cacheDir.exists() && !cacheDir.mkdirs()) {
                 throw IllegalStateException("Failed to create toolpkg cache dir: ${cacheDir.absolutePath}")
             }
-
-            return try {
+        return try {
                 if (!extractToolPkgArchive(runtime, cacheDir)) {
                     deleteToolPkgCacheDir(runtime.packageName)
                     null
@@ -707,12 +662,11 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
         }
     }
-
-    private fun reconcileToolPkgCaches() {
+        private fun reconcileToolPkgCaches() {
         synchronized(toolPkgCacheLock) {
             val importedPackages = getImportedPackagesInternal().toSet()
-            val availableContainerNames = toolPkgContainers.keys.toSet()
-            val importedContainerNames = linkedSetOf<String>().apply {
+        val availableContainerNames = toolPkgContainers.keys.toSet()
+        val importedContainerNames = linkedSetOf<String>().apply {
                 toolPkgContainers.keys.forEach { containerName ->
                     if (importedPackages.contains(containerName)) {
                         add(containerName)
@@ -724,8 +678,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     }
                 }
             }
-
-            val expectedCacheDirNames = importedContainerNames.map(::toolPkgCacheDirName).toSet()
+        val expectedCacheDirNames = importedContainerNames.map(::toolPkgCacheDirName).toSet()
             toolPkgCacheRootDir.listFiles()?.forEach { child ->
                 if (!expectedCacheDirNames.contains(child.name)) {
                     if (!child.deleteRecursively()) {
@@ -744,8 +697,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 .forEach(::deleteToolPkgCacheDir)
         }
     }
-
-    private fun buildPackageScanSnapshot(
+        private fun buildPackageScanSnapshot(
         packageLoadErrors: Map<String, String>,
         availablePackages: Map<String, ToolPackage>,
         toolPkgContainers: Map<String, ToolPkgContainerRuntime>,
@@ -758,8 +710,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             toolPkgSubpackages = LinkedHashMap(toolPkgSubpackages)
         )
     }
-
-    private fun applyPackageScanSnapshot(snapshot: PackageScanSnapshot) {
+        private fun applyPackageScanSnapshot(snapshot: PackageScanSnapshot) {
         synchronized(initLock) {
             packageLoadErrors.clear()
             packageLoadErrors.putAll(snapshot.packageLoadErrors)
@@ -774,15 +725,13 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             toolPkgSubpackageByPackageName.putAll(snapshot.toolPkgSubpackages)
         }
     }
-
-    private data class PackageScanCandidate(
+        private data class PackageScanCandidate(
         val fileName: String,
         val sourcePath: String,
         val loadJs: (((String, String) -> Unit) -> ToolPackage)? = null,
         val loadToolPkg: (((String, String) -> Unit) -> ToolPkgLoadResult)? = null
     )
-
-    private fun parsePackageCandidate(
+        private fun parsePackageCandidate(
         phase: String,
         candidate: PackageScanCandidate
     ): PackageScanCandidateResult {
@@ -832,8 +781,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             )
         }
     }
-
-    private fun mergePackageScanCandidateResults(
+        private fun mergePackageScanCandidateResults(
         candidateResults: Iterable<PackageScanCandidateResult>,
         baseSnapshot: PackageScanSnapshot? = null
     ): PackageScanSnapshot {
@@ -865,7 +813,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 )
             }
         }
-
         return buildPackageScanSnapshot(
             packageLoadErrors = stagedPackageLoadErrors,
             availablePackages = stagedAvailablePackages,
@@ -873,8 +820,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             toolPkgSubpackages = stagedToolPkgSubpackages
         )
     }
-
-    private fun buildExternalPackageScanSignature(file: File): String {
+        private fun buildExternalPackageScanSignature(file: File): String {
         return buildString {
             append(file.absolutePath)
             append('|')
@@ -883,8 +829,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             append(file.lastModified())
         }
     }
-
-    private fun scanPackageCandidates(
+        private fun scanPackageCandidates(
         phase: String,
         candidates: List<PackageScanCandidate>,
         baseSnapshot: PackageScanSnapshot? = null
@@ -894,8 +839,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             baseSnapshot = baseSnapshot
         )
     }
-
-    private fun scanAssetPackages(): PackageScanSnapshot {
+        private fun scanAssetPackages(): PackageScanSnapshot {
         val packageFiles = context.assets.list(ASSETS_PACKAGES_DIR) ?: emptyArray()
         val candidates =
             packageFiles.map { fileName ->
@@ -909,8 +853,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
         return scanPackageCandidates(phase = "asset", candidates = candidates)
     }
-
-    private fun scanExternalPackages(baseSnapshot: PackageScanSnapshot): PackageScanSnapshot {
+        private fun scanExternalPackages(baseSnapshot: PackageScanSnapshot): PackageScanSnapshot {
         val externalFiles =
             if (externalPackagesDir.exists()) {
                 (externalPackagesDir.listFiles() ?: emptyArray()).filter(File::isFile)
@@ -928,8 +871,8 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                         loadJs = { onError -> loadPackageFromJsFile(file, onError) },
                         loadToolPkg = { onError -> loadToolPkgFromExternalFile(file, onError) }
                     )
-                val signature = buildExternalPackageScanSignature(file)
-                val cachedResult =
+        val signature = buildExternalPackageScanSignature(file)
+        val cachedResult =
                     previousCache[file.absolutePath]
                         ?.takeIf { entry -> entry.signature == signature }
                         ?.result
@@ -947,58 +890,48 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             baseSnapshot = baseSnapshot
         )
     }
-
-    fun resolvePackageForDisplay(packageName: String): ToolPackage? {
+        fun resolvePackageForDisplay(packageName: String): ToolPackage? {
         ensureInitialized()
         val normalizedPackageName = normalizePackageName(packageName)
         val toolPackage = availablePackages[normalizedPackageName] ?: return null
         return selectToolPackageState(toolPackage)
     }
-
-    fun isToolPkgContainer(packageName: String): Boolean {
+        fun isToolPkgContainer(packageName: String): Boolean {
         return toolPkgFacade.isToolPkgContainer(packageName)
     }
-
-    fun isToolPkgSubpackage(packageName: String): Boolean {
+        fun isToolPkgSubpackage(packageName: String): Boolean {
         return toolPkgFacade.isToolPkgSubpackage(packageName)
     }
-
-    fun isTopLevelPackage(packageName: String): Boolean {
+        fun isTopLevelPackage(packageName: String): Boolean {
         ensureInitialized()
         return resolveToolPkgSubpackageRuntime(packageName) == null
     }
-
-    fun getTopLevelAvailablePackages(forceRefresh: Boolean = false): Map<String, ToolPackage> {
+        fun getTopLevelAvailablePackages(forceRefresh: Boolean = false): Map<String, ToolPackage> {
         val packages = getAvailablePackages(forceRefresh)
         return packages.filterKeys { !toolPkgSubpackageByPackageName.containsKey(it) }
     }
-
-    fun getToolPkgContainerDetails(
+        fun getToolPkgContainerDetails(
         packageName: String,
         resolveContext: Context? = null
     ): ToolPkgContainerDetails? {
         return toolPkgFacade.getToolPkgContainerDetails(packageName, resolveContext)
     }
-
-    fun getToolPkgToolboxUiModules(
+        fun getToolPkgToolboxUiModules(
         runtime: String = TOOLPKG_RUNTIME_COMPOSE_DSL,
         resolveContext: Context? = null
     ): List<ToolPkgToolboxUiModule> {
         return toolPkgFacade.getToolPkgToolboxUiModules(runtime, resolveContext)
     }
-
-    fun setToolPkgSubpackageEnabled(subpackagePackageName: String, enabled: Boolean): Boolean {
+        fun setToolPkgSubpackageEnabled(subpackagePackageName: String, enabled: Boolean): Boolean {
         return toolPkgFacade.setToolPkgSubpackageEnabled(subpackagePackageName, enabled)
     }
-
-    fun findPreferredPackageNameForSubpackageId(
+        fun findPreferredPackageNameForSubpackageId(
         subpackageId: String,
         preferImported: Boolean = true
     ): String? {
         return toolPkgFacade.findPreferredPackageNameForSubpackageId(subpackageId, preferImported)
     }
-
-    fun copyToolPkgResourceToFileBySubpackageId(
+        fun copyToolPkgResourceToFileBySubpackageId(
         subpackageId: String,
         resourceKey: String,
         destinationFile: File,
@@ -1011,8 +944,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             preferImportedContainer = preferImportedContainer
         )
     }
-
-    fun copyToolPkgResourceToFile(
+        fun copyToolPkgResourceToFile(
         containerPackageName: String,
         resourceKey: String,
         destinationFile: File
@@ -1023,8 +955,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             destinationFile = destinationFile
         )
     }
-
-    fun getToolPkgResourceOutputFileName(
+        fun getToolPkgResourceOutputFileName(
         packageNameOrSubpackageId: String,
         resourceKey: String,
         preferImportedContainer: Boolean = true
@@ -1035,8 +966,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             preferImportedContainer = preferImportedContainer
         )
     }
-
-    fun getToolPkgComposeDslScriptBySubpackageId(
+        fun getToolPkgComposeDslScriptBySubpackageId(
         subpackageId: String,
         uiModuleId: String? = null,
         preferImportedContainer: Boolean = true
@@ -1047,8 +977,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             preferImportedContainer = preferImportedContainer
         )
     }
-
-    fun getToolPkgComposeDslScript(
+        fun getToolPkgComposeDslScript(
         containerPackageName: String,
         uiModuleId: String? = null
     ): String? {
@@ -1057,8 +986,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             uiModuleId = uiModuleId
         )
     }
-
-    private fun getToolPkgMainScript(containerPackageName: String): String? {
+        private fun getToolPkgMainScript(containerPackageName: String): String? {
         val totalStartTime = messageTimingNow()
         ensureInitialized()
         val normalizedContainerPackageName = normalizePackageName(containerPackageName)
@@ -1070,16 +998,15 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         if (runtime.mainEntry.isBlank()) {
             return null
         }
-
         return try {
             val readBytesStartTime = messageTimingNow()
-            val bytes = readToolPkgResourceBytes(runtime, runtime.mainEntry) ?: return null
+        val bytes = readToolPkgResourceBytes(runtime, runtime.mainEntry) ?: return null
             logMessageTiming(
                 stage = "toolpkg.getMainScript.readBytes",
                 startTimeMs = readBytesStartTime,
                 details = "container=${runtime.packageName}, sourceType=${runtime.sourceType}, entry=${runtime.mainEntry}, bytes=${bytes.size}"
             )
-            val script = bytes.toString(StandardCharsets.UTF_8)
+        val script = bytes.toString(StandardCharsets.UTF_8)
             logMessageTiming(
                 stage = "toolpkg.getMainScript.total",
                 startTimeMs = totalStartTime,
@@ -1095,8 +1022,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             null
         }
     }
-
-    fun getToolPkgComposeDslScreenPath(
+        fun getToolPkgComposeDslScreenPath(
         containerPackageName: String,
         uiModuleId: String? = null
     ): String? {
@@ -1105,8 +1031,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             uiModuleId = uiModuleId
         )
     }
-
-    fun runToolPkgMainHook(
+        fun runToolPkgMainHook(
         containerPackageName: String,
         functionName: String,
         event: String,
@@ -1127,8 +1052,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             onIntermediateResult = onIntermediateResult
         )
     }
-
-    fun readToolPkgTextResource(
+        fun readToolPkgTextResource(
         packageNameOrSubpackageId: String,
         resourcePath: String,
         preferImportedContainer: Boolean = true
@@ -1166,10 +1090,9 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 }
             }
         }
-
         if (packagesChanged) {
             val prefs = context.getSharedPreferences(PACKAGE_PREFS, Context.MODE_PRIVATE)
-            val updatedJson = Json.encodeToString(importedPackages.toList())
+        val updatedJson = Json.encodeToString(importedPackages.toList())
             prefs.edit().putString(IMPORTED_PACKAGES_KEY, updatedJson).apply()
             AppLogger.d(TAG, "Updated imported packages with default packages.")
         }
@@ -1182,7 +1105,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     private fun loadAvailablePackages(refreshExternalOnly: Boolean = false) {
         val loadStart = System.currentTimeMillis()
         logToolPkgInfo("loadAvailablePackages start")
-
         val assetSnapshot =
             if (refreshExternalOnly) {
                 val cachedSnapshot = assetPackageScanSnapshot
@@ -1194,7 +1116,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             } else {
                 scanAssetPackages().also { assetPackageScanSnapshot = it }
             }
-
         val mergedSnapshot = scanExternalPackages(assetSnapshot)
         applyPackageScanSnapshot(mergedSnapshot)
         reconcileToolPkgCaches()
@@ -1205,8 +1126,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             "loadAvailablePackages finish, elapsedMs=${System.currentTimeMillis() - loadStart}, available=${mergedSnapshot.availablePackages.size}, containers=${mergedSnapshot.toolPkgContainers.size}, subpackages=${mergedSnapshot.toolPkgSubpackages.size}, errors=${mergedSnapshot.packageLoadErrors.size}"
         )
     }
-
-    private fun registerToolPkg(loadResult: ToolPkgLoadResult): Boolean {
+        private fun registerToolPkg(loadResult: ToolPkgLoadResult): Boolean {
         return registerToolPkgInto(
             loadResult = loadResult,
             availablePackagesTarget = availablePackages,
@@ -1215,8 +1135,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             packageLoadErrorsTarget = packageLoadErrors
         )
     }
-
-    private fun registerToolPkgInto(
+        private fun registerToolPkgInto(
         loadResult: ToolPkgLoadResult,
         availablePackagesTarget: MutableMap<String, ToolPackage>,
         toolPkgContainersTarget: MutableMap<String, ToolPkgContainerRuntime>,
@@ -1231,14 +1150,12 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     sourcePath = loadResult.containerRuntime.sourcePath
                 )
             AppLogger.w(TAG, "Skipped duplicated toolpkg container: ${containerName}")
-            return false
+        return false
         }
-
         val duplicateSubpackages =
             loadResult.subpackagePackages
                 .map { it.name }
                 .filter { availablePackagesTarget.containsKey(it) }
-
         if (duplicateSubpackages.isNotEmpty()) {
             packageLoadErrorsTarget[containerName] =
                 formatPackageLoadError(
@@ -1246,7 +1163,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     sourcePath = loadResult.containerRuntime.sourcePath
                 )
             AppLogger.w(TAG, "Skipped toolpkg '${containerName}' due to duplicate subpackages: ${duplicateSubpackages}")
-            return false
+        return false
         }
 
         availablePackagesTarget[containerName] = loadResult.containerPackage
@@ -1271,7 +1188,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     ): ToolPackage? {
         try {
             val jsContent = file.readText()
-            return parseJsPackage(jsContent) { key, error ->
+        return parseJsPackage(jsContent) { key, error ->
                 reportPackageLoadError(
                     key,
                     formatPackageLoadError(
@@ -1289,7 +1206,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     sourcePath = file.path
                 )
             )
-            return null
+        return null
         }
     }
 
@@ -1303,7 +1220,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         try {
             val assetManager = context.assets
             val jsContent = assetManager.open(assetPath).bufferedReader().use { it.readText() }
-            return parseJsPackage(jsContent) { key, error ->
+        return parseJsPackage(jsContent) { key, error ->
                 reportPackageLoadError(
                     key,
                     formatPackageLoadError(
@@ -1321,11 +1238,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     sourcePath = assetPath
                 )
             )
-            return null
+        return null
         }
     }
-
-    private fun loadToolPkgFromExternalFile(
+        private fun loadToolPkgFromExternalFile(
         file: File,
         reportPackageLoadError: (key: String, error: String) -> Unit = { key, error ->
             packageLoadErrors[key] = error
@@ -1338,7 +1254,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 jsEngine.withTemporaryToolPkgTextResourceResolver(
                     resolver = { _, resourcePath ->
                         val normalizedPath = ToolPkgArchiveParser.normalizeZipEntryPath(resourcePath)
-                        if (normalizedPath == null) {
+        if (normalizedPath == null) {
                             null
                         } else {
                             ToolPkgArchiveParser.findZipEntryContent(entries, normalizedPath)
@@ -1388,8 +1304,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             null
         }
     }
-
-    private fun loadToolPkgFromAsset(
+        private fun loadToolPkgFromAsset(
         assetPath: String,
         reportPackageLoadError: (key: String, error: String) -> Unit = { key, error ->
             packageLoadErrors[key] = error
@@ -1402,7 +1317,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 jsEngine.withTemporaryToolPkgTextResourceResolver(
                     resolver = { _, resourcePath ->
                         val normalizedPath = ToolPkgArchiveParser.normalizeZipEntryPath(resourcePath)
-                        if (normalizedPath == null) {
+        if (normalizedPath == null) {
                             null
                         } else {
                             ToolPkgArchiveParser.findZipEntryContent(entries, normalizedPath)
@@ -1474,7 +1389,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         if (parent != null && !parent.exists()) {
             parent.mkdirs()
         }
-
         return if (ToolPkgArchiveParser.isDirectoryResourceMime(resource.mime)) {
             if (!resourceFile.isDirectory) {
                 false
@@ -1507,8 +1421,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         }
         return resourceFile
     }
-
-    private fun zipToolPkgResourceDirectory(sourceDirectory: File, destinationZip: File): Boolean {
+        private fun zipToolPkgResourceDirectory(sourceDirectory: File, destinationZip: File): Boolean {
         val zipRootParent = sourceDirectory.parentFile ?: return false
         destinationZip.outputStream().buffered().use { fileOutput ->
             ZipOutputStream(fileOutput).use { zipOutput ->
@@ -1550,9 +1463,9 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             // 检查并修复 tools 数组中的元素，确保每个工具都，script 字段
     if (metadataJson.has("tools") && metadataJson.get("tools") is org.json.JSONArray) {
                 val toolsArray = metadataJson.getJSONArray("tools")
-                for (i in 0 until toolsArray.length()) {
+        for (i in 0 until toolsArray.length()) {
                     val tool = toolsArray.getJSONObject(i)
-                    if (!tool.has("script")) {
+        if (!tool.has("script")) {
                         // 添加一个临时的，script 字段
                         tool.put("script", "")
                     }
@@ -1562,13 +1475,13 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             // 检查并修复 states.tools 数组中的元素，确保每个工具都，script 字段
     if (metadataJson.has("states") && metadataJson.get("states") is org.json.JSONArray) {
                 val statesArray = metadataJson.getJSONArray("states")
-                for (i in 0 until statesArray.length()) {
+        for (i in 0 until statesArray.length()) {
                     val state = statesArray.optJSONObject(i) ?: continue
                     if (state.has("tools") && state.get("tools") is org.json.JSONArray) {
                         val toolsArray = state.getJSONArray("tools")
-                        for (j in 0 until toolsArray.length()) {
+        for (j in 0 until toolsArray.length()) {
                             val tool = toolsArray.getJSONObject(j)
-                            if (!tool.has("script")) {
+        if (!tool.has("script")) {
                                 tool.put("script", "")
                             }
                         }
@@ -1578,9 +1491,8 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
 
             // 使用修改后的 JSON 字符串进行反序列�?
     val jsonString = metadataJson.toString()
-
-            val jsonConfig = Json { ignoreUnknownKeys = true }
-            val packageMetadata = jsonConfig.decodeFromString<ToolPackage>(jsonString)
+        val jsonConfig = Json { ignoreUnknownKeys = true }
+        val packageMetadata = jsonConfig.decodeFromString<ToolPackage>(jsonString)
 
             // 更新所有工具，使用相同的完整脚本内容，但记录每个工具的函数�?
     val tools =
@@ -1593,8 +1505,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     // 使用整个脚本，并记录函数名，而不是提取单个函�?
                     tool.copy(script = jsContent)
                 }
-
-            val states =
+        val states =
                 packageMetadata.states.map { state ->
                     val stateTools =
                         state.tools.map { tool ->
@@ -1605,23 +1516,21 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                         }
                     state.copy(tools = stateTools)
                 }
-
-            return packageMetadata.copy(tools = tools, states = states)
+        return packageMetadata.copy(tools = tools, states = states)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error parsing JS package: ${e.message}", e)
-            val fallbackKey = try {
+        val fallbackKey = try {
                 val metadataString = extractMetadataFromJs(jsContent)
-                val metadataJson = org.json.JSONObject(JsonValue.readHjson(metadataString).toString())
+        val metadataJson = org.json.JSONObject(JsonValue.readHjson(metadataString).toString())
                 metadataJson.optString("name").takeIf { it.isNotBlank() } ?: "unknown"
             } catch (_: Exception) {
                 "unknown"
             }
             onError(fallbackKey, e.stackTraceToString())
-            return null
+        return null
         }
     }
-
-    private fun normalizeJsPackageMetadata(metadataJson: org.json.JSONObject) {
+        private fun normalizeJsPackageMetadata(metadataJson: org.json.JSONObject) {
         normalizeBooleanFieldAlias(
             metadataJson = metadataJson,
             canonicalKey = "enabledByDefault",
@@ -1634,8 +1543,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         )
         normalizeCategoryField(metadataJson)
     }
-
-    private fun normalizeBooleanFieldAlias(
+        private fun normalizeBooleanFieldAlias(
         metadataJson: org.json.JSONObject,
         canonicalKey: String,
         legacyAlias: String
@@ -1643,16 +1551,13 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         if (!metadataJson.has(canonicalKey) && metadataJson.has(legacyAlias)) {
             metadataJson.put(canonicalKey, metadataJson.opt(legacyAlias))
         }
-
         if (!metadataJson.has(canonicalKey)) {
             return
         }
-
         val normalized = normalizeToBoolean(metadataJson.opt(canonicalKey)) ?: return
         metadataJson.put(canonicalKey, normalized)
     }
-
-    private fun normalizeToBoolean(value: Any): Boolean? {
+        private fun normalizeToBoolean(value: Any): Boolean? {
         return when (value) {
             is Boolean -> value
             is Number -> value.toInt() != 0
@@ -1666,8 +1571,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             else -> null
         }
     }
-
-    private fun normalizeCategoryField(metadataJson: org.json.JSONObject) {
+        private fun normalizeCategoryField(metadataJson: org.json.JSONObject) {
         val normalized =
             metadataJson
                 .opt("category")
@@ -1677,13 +1581,11 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
 
         metadataJson.put("category", normalized.ifBlank { "Other" })
     }
-
-    fun getPackageLoadErrors(): Map<String, String> {
+        fun getPackageLoadErrors(): Map<String, String> {
         ensureInitialized()
         return packageLoadErrors.toMap()
     }
-
-    fun getPackageLoadErrorInfos(): List<PackageLoadErrorInfo> {
+        fun getPackageLoadErrorInfos(): List<PackageLoadErrorInfo> {
         ensureInitialized()
         return packageLoadErrors
             .toSortedMap(String.CASE_INSENSITIVE_ORDER)
@@ -1697,25 +1599,22 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 )
             }
     }
-
-    fun deleteExternalPackageSource(sourcePath: String): Boolean {
+        fun deleteExternalPackageSource(sourcePath: String): Boolean {
         ensureInitialized()
         val normalizedSourcePath = sourcePath.trim()
         if (normalizedSourcePath.isEmpty()) {
             return false
         }
-
         val targetFile = File(normalizedSourcePath)
         val targetCanonicalPath =
             runCatching { targetFile.canonicalPath }.getOrElse { return false }
         if (!isExternalPackageSourcePath(targetCanonicalPath)) {
             AppLogger.w(TAG, "Refusing to delete non-external package source: ${normalizedSourcePath}")
-            return false
+        return false
         }
-
         if (targetFile.exists() && (!targetFile.isFile || !targetFile.delete())) {
             AppLogger.e(TAG, "Failed to delete external package source: ${targetCanonicalPath}")
-            return false
+        return false
         }
 
         externalPackageScanCache =
@@ -1739,7 +1638,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 """(?:const|let|var)\s+${toolName}\s*=\s*(?:async\s+)?\(""",
                 """exports\.${toolName}\s*=\s*(?:async\s+)?\(?"""
             )
-
         for (pattern in patterns) {
             if (pattern.toRegex().find(jsContent) != null) {
                 return true
@@ -1754,7 +1652,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     private fun extractMetadataFromJs(jsContent: String): String {
         val metadataPattern = """/\*\s*METADATA\s*([\s\S]*)\*/""".toRegex()
         val match = metadataPattern.find(jsContent)
-
         return if (match != null) {
             match.groupValues[1].trim()
         } else {
@@ -1779,72 +1676,61 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     fun importPackageFromExternalStorage(filePath: String): String {
         try {
             ensureInitialized()
-
-            val file = File(filePath)
-            if (!file.exists() || !file.canRead()) {
+        val file = File(filePath)
+        if (!file.exists() || !file.canRead()) {
                 return "Cannot access file at path: ${filePath}"
             }
-
-            val lowerPath = filePath.lowercase()
-            val isToolPkg = lowerPath.endsWith(TOOLPKG_EXTENSION)
-            val isJsLike = lowerPath.endsWith(".js") || lowerPath.endsWith(".ts")
-            val isHjson = lowerPath.endsWith(".hjson")
-
-            if (!isToolPkg && !isJsLike && !isHjson) {
+        val lowerPath = filePath.lowercase()
+        val isToolPkg = lowerPath.endsWith(TOOLPKG_EXTENSION)
+        val isJsLike = lowerPath.endsWith(".js") || lowerPath.endsWith(".ts")
+        val isHjson = lowerPath.endsWith(".hjson")
+        if (!isToolPkg && !isJsLike && !isHjson) {
                 return "Only .toolpkg, HJSON, JavaScript (.js) and TypeScript (.ts) package files are supported"
             }
-
-            if (isToolPkg) {
+        if (isToolPkg) {
                 val preview = loadToolPkgFromExternalFile(file)
                     ?: return "Failed to parse toolpkg file"
-                val containerName = preview.containerPackage.name
+        val containerName = preview.containerPackage.name
                 if (availablePackages.containsKey(containerName)) {
                     return "A package with name '${containerName}' already exists in available packages"
                 }
-
-                val conflictSubpackages =
+        val conflictSubpackages =
                     preview.subpackagePackages
                         .map { it.name }
                         .filter { availablePackages.containsKey(it) }
-                if (conflictSubpackages.isNotEmpty()) {
+        if (conflictSubpackages.isNotEmpty()) {
                     return "Subpackage name conflict: ${conflictSubpackages.joinToString(", ")}"
                 }
-
-                val destinationFile = File(externalPackagesDir, file.name)
-                if (file.absolutePath != destinationFile.absolutePath) {
+        val destinationFile = File(externalPackagesDir, file.name)
+        if (file.absolutePath != destinationFile.absolutePath) {
                     file.inputStream().use { input ->
                         destinationFile.outputStream().use { output -> input.copyTo(output) }
                     }
                 }
-
-                val loadedFromDestination = loadToolPkgFromExternalFile(destinationFile)
+        val loadedFromDestination = loadToolPkgFromExternalFile(destinationFile)
                     ?: return "Failed to parse copied toolpkg file"
-                if (!registerToolPkg(loadedFromDestination)) {
+        if (!registerToolPkg(loadedFromDestination)) {
                     return "Failed to register toolpkg '${containerName}' due to naming conflict"
                 }
-
-                return "Successfully imported toolpkg: ${containerName}\nStored at: ${destinationFile.absolutePath}"
+        return "Successfully imported toolpkg: ${containerName}\nStored at: ${destinationFile.absolutePath}"
             }
-
-            val packageMetadata =
+        val packageMetadata =
                 if (isHjson) {
                     val hjsonContent = file.readText()
-                    val metadataJson = org.json.JSONObject(JsonValue.readHjson(hjsonContent).toString())
+        val metadataJson = org.json.JSONObject(JsonValue.readHjson(hjsonContent).toString())
                     normalizeJsPackageMetadata(metadataJson)
-                    val jsonString = metadataJson.toString()
-                    val jsonConfig = Json { ignoreUnknownKeys = true }
+        val jsonString = metadataJson.toString()
+        val jsonConfig = Json { ignoreUnknownKeys = true }
                     jsonConfig.decodeFromString<ToolPackage>(jsonString)
                 } else {
                     loadPackageFromJsFile(file)
                         ?: return "Failed to parse ${if (lowerPath.endsWith(".ts")) "TypeScript" else "JavaScript"} package file"
                 }
-
-            if (availablePackages.containsKey(packageMetadata.name)) {
+        if (availablePackages.containsKey(packageMetadata.name)) {
                 return "A package with name '${packageMetadata.name}' already exists in available packages"
             }
-
-            val destinationFile = File(externalPackagesDir, file.name)
-            if (file.absolutePath != destinationFile.absolutePath) {
+        val destinationFile = File(externalPackagesDir, file.name)
+        if (file.absolutePath != destinationFile.absolutePath) {
                 file.inputStream().use { input ->
                     destinationFile.outputStream().use { output -> input.copyTo(output) }
                 }
@@ -1853,14 +1739,13 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             availablePackages[packageMetadata.name] = packageMetadata.copy(isBuiltIn = false)
 
             AppLogger.d(TAG, "Successfully imported external package to: ${destinationFile.absolutePath}")
-            return "Successfully imported package: ${packageMetadata.name}\nStored at: ${destinationFile.absolutePath}"
+        return "Successfully imported package: ${packageMetadata.name}\nStored at: ${destinationFile.absolutePath}"
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error importing package from external storage", e)
-            return "Error importing package: ${e.message}"
+        return "Error importing package: ${e.message}"
         }
     }
-
-    private fun findDuplicateExternalToolPkgFiles(
+        private fun findDuplicateExternalToolPkgFiles(
         containerPackageName: String,
         preferredFilePath: String
     ): List<File> {
@@ -1868,7 +1753,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         val preferredCanonicalPath =
             runCatching { File(preferredFilePath).canonicalPath }
                 .getOrElse { File(preferredFilePath).absolutePath }
-
         return (externalPackagesDir.listFiles() ?: emptyArray())
             .asSequence()
             .filter { candidate ->
@@ -1887,8 +1771,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
             .toList()
     }
-
-    private fun collectRelatedToolPkgLoadErrors(
+        private fun collectRelatedToolPkgLoadErrors(
         containerPackageName: String,
         externalFilePath: String
     ): Map<String, String> {
@@ -1917,17 +1800,14 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         resetSubpackageStatesToManifest: Boolean = true
     ): String {
         ensureInitialized()
-
         val normalizedContainerPackageName = normalizePackageName(containerPackageName)
         if (normalizedContainerPackageName.isBlank()) {
             return "Missing toolpkg package name"
         }
-
         val normalizedExternalFilePath = externalFilePath.trim()
         if (normalizedExternalFilePath.isBlank()) {
             return "Missing toolpkg file path"
         }
-
         val targetFile = File(normalizedExternalFilePath)
         if (!targetFile.exists()) {
             return "ToolPkg file not found: ${targetFile.absolutePath}"
@@ -1938,7 +1818,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         if (!targetFile.name.endsWith(TOOLPKG_EXTENSION, ignoreCase = true)) {
             return "ToolPkg debug install only supports .toolpkg files: ${targetFile.absolutePath}"
         }
-
         val externalPackagesCanonicalPath =
             runCatching { externalPackagesDir.canonicalPath }.getOrElse { externalPackagesDir.absolutePath }
         val targetParentCanonicalPath =
@@ -1948,7 +1827,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         if (targetParentCanonicalPath != externalPackagesCanonicalPath) {
             return "ToolPkg debug install expects file inside external packages dir: ${externalPackagesCanonicalPath}"
         }
-
         val previousContainerRuntime = toolPkgContainers[normalizedContainerPackageName]
         val previousSubpackageNames =
             previousContainerRuntime
@@ -1959,7 +1837,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             previousSubpackageNames
                 .filter { packageName -> activePackageToolNames.containsKey(packageName) }
                 .toSortedSet(String.CASE_INSENSITIVE_ORDER)
-
         val removedDuplicateArchives = mutableListOf<String>()
         findDuplicateExternalToolPkgFiles(
             containerPackageName = normalizedContainerPackageName,
@@ -1972,7 +1849,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         }
 
         getAvailablePackages(forceRefresh = true)
-
         val runtime = toolPkgContainers[normalizedContainerPackageName]
         if (runtime == null) {
             val relatedErrors =
@@ -1980,10 +1856,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     containerPackageName = normalizedContainerPackageName,
                     externalFilePath = normalizedExternalFilePath
                 )
-            return buildString {
+        return buildString {
                 append("Failed to reload debug toolpkg: ")
                 append(normalizedContainerPackageName)
-                if (relatedErrors.isNotEmpty()) {
+        if (relatedErrors.isNotEmpty()) {
                     append("\nRelated load errors:")
                     relatedErrors.forEach { (key, value) ->
                         append("\n- ")
@@ -1994,18 +1870,17 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 }
             }
         }
-
         if (runtime.sourceType != ToolPkgSourceType.EXTERNAL) {
             val relatedErrors =
                 collectRelatedToolPkgLoadErrors(
                     containerPackageName = normalizedContainerPackageName,
                     externalFilePath = normalizedExternalFilePath
                 )
-            return buildString {
+        return buildString {
                 append("Failed to install debug toolpkg '")
                 append(normalizedContainerPackageName)
                 append("': a built-in package with the same name is taking precedence")
-                if (relatedErrors.isNotEmpty()) {
+        if (relatedErrors.isNotEmpty()) {
                     append("\nRelated load errors:")
                     relatedErrors.forEach { (key, value) ->
                         append("\n- ")
@@ -2016,7 +1891,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 }
             }
         }
-
         val runtimeSourceCanonicalPath =
             runCatching { File(runtime.sourcePath).canonicalPath }.getOrElse { File(runtime.sourcePath).absolutePath }
         val targetCanonicalPath =
@@ -2031,10 +1905,9 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 append(runtimeSourceCanonicalPath)
             }
         }
-
         if (resetSubpackageStatesToManifest) {
             val updatedStates = getToolPkgSubpackageStatesInternal().toMutableMap()
-            val currentSubpackageNames =
+        val currentSubpackageNames =
                 runtime.subpackages
                     .map(ToolPkgSubpackageRuntime::packageName)
                     .toSet()
@@ -2049,7 +1922,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
 
             saveToolPkgSubpackageStates(updatedStates)
         }
-
         val importMessage = importPackage(normalizedContainerPackageName)
 
         destroyDefaultToolPkgExecutionEngine(normalizedContainerPackageName)
@@ -2060,30 +1932,26 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             )
             .distinct()
             .forEach(::unregisterPackageTools)
-
         val reactivatedPackages = mutableListOf<String>()
         val reactivationFailures = mutableListOf<String>()
         previouslyActivePackages.forEach { packageName ->
             if (!toolPkgSubpackageByPackageName.containsKey(packageName)) {
                 return@forEach
             }
-            if (!isPackageImported(packageName)) {
+        if (!isPackageImported(packageName)) {
                 return@forEach
             }
-
-            val useMessage = usePackage(packageName)
-            if (useMessage.startsWith("Using package:")) {
+        val useMessage = usePackage(packageName)
+        if (useMessage.startsWith("Using package:")) {
                 reactivatedPackages += packageName
             } else {
                 reactivationFailures += "${packageName} -> ${useMessage}"
             }
         }
-
         val enabledSubpackages =
             runtime.subpackages
                 .map(ToolPkgSubpackageRuntime::packageName)
                 .filter(::isPackageImported)
-
         return buildString {
             append("Successfully installed debug toolpkg: ")
             append(normalizedContainerPackageName)
@@ -2093,15 +1961,15 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             append(importMessage)
             append("\nEnabled subpackages: ")
             append(if (enabledSubpackages.isEmpty()) "(none)" else enabledSubpackages.joinToString(", "))
-            if (removedDuplicateArchives.isNotEmpty()) {
+        if (removedDuplicateArchives.isNotEmpty()) {
                 append("\nRemoved duplicate archives: ")
                 append(removedDuplicateArchives.joinToString(", "))
             }
-            if (reactivatedPackages.isNotEmpty()) {
+        if (reactivatedPackages.isNotEmpty()) {
                 append("\nReactivated packages: ")
                 append(reactivatedPackages.joinToString(", "))
             }
-            if (reactivationFailures.isNotEmpty()) {
+        if (reactivationFailures.isNotEmpty()) {
                 append("\nReactivation failures: ")
                 append(reactivationFailures.joinToString(" | "))
             }
@@ -2115,14 +1983,11 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     fun importPackage(packageName: String): String {
         ensureInitialized()
         val normalizedPackageName = normalizePackageName(packageName)
-
         if (!availablePackages.containsKey(normalizedPackageName)) {
             return "Package not found in available packages: ${normalizedPackageName}"
         }
-
         val importedPackages = LinkedHashSet(getImportedPackages())
         val subpackageStates = getToolPkgSubpackageStatesInternal().toMutableMap()
-
         val containerRuntime = toolPkgContainers[normalizedPackageName]
         if (containerRuntime != null) {
             val containerAlreadyImported = importedPackages.contains(normalizedPackageName)
@@ -2132,8 +1997,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 val shouldEnable =
                     subpackageStates[subpackage.packageName] ?: subpackage.enabledByDefault
                 subpackageStates.putIfAbsent(subpackage.packageName, shouldEnable)
-
-                if (shouldEnable) {
+        if (shouldEnable) {
                     importedPackages.add(subpackage.packageName)
                 } else {
                     importedPackages.remove(subpackage.packageName)
@@ -2144,17 +2008,15 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             saveToolPkgSubpackageStates(subpackageStates)
             removeFromDisabledPackages(normalizedPackageName)
             ensureToolPkgCache(containerRuntime)
-
-            val message =
+        val message =
                 if (containerAlreadyImported) {
                     "ToolPkg container '${normalizedPackageName}' is already enabled"
                 } else {
                     "Successfully enabled toolpkg container: ${normalizedPackageName}"
                 }
             AppLogger.d(TAG, message)
-            return message
+        return message
         }
-
         val subpackageRuntime = toolPkgSubpackageByPackageName[normalizedPackageName]
         if (subpackageRuntime != null) {
             importedPackages.add(subpackageRuntime.containerPackageName)
@@ -2167,12 +2029,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             toolPkgContainers[subpackageRuntime.containerPackageName]?.let { runtime ->
                 ensureToolPkgCache(runtime)
             }
-
-            val message = "Successfully enabled toolpkg subpackage: ${normalizedPackageName}"
+        val message = "Successfully enabled toolpkg subpackage: ${normalizedPackageName}"
             AppLogger.d(TAG, message)
-            return message
+        return message
         }
-
         if (importedPackages.contains(normalizedPackageName)) {
             return "Package '${normalizedPackageName}' is already imported"
         }
@@ -2194,14 +2054,13 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     fun usePackage(packageName: String): String {
         ensureInitialized()
         val normalizedPackageName = normalizePackageName(packageName)
-
         val containerRuntime = toolPkgContainers[normalizedPackageName]
         if (containerRuntime != null) {
             return "ToolPkg container '${normalizedPackageName}' is not a package and cannot be activated."
         }
 
         // First check if packageName is a standard imported package (priority)
-    val importedPackages = getImportedPackages()
+        val importedPackages = getImportedPackages()
         val subpackageRuntime = toolPkgSubpackageByPackageName[normalizedPackageName]
         if (subpackageRuntime != null &&
             !importedPackages.contains(subpackageRuntime.containerPackageName)
@@ -2217,11 +2076,11 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             // Validate required environment variables, if any
     if (toolPackage.env.isNotEmpty()) {
                 val missingRequiredEnv = mutableListOf<String>()
-                val missingOptionalEnv = mutableListOf<Pair<String, String>>() // env name, default value
+        val missingOptionalEnv = mutableListOf<Pair<String, String>>() // env name, default value
 
                 toolPackage.env.forEach { envVar ->
                     val envName = envVar.name.trim()
-                    if (envName.isEmpty()) return@forEach
+        if (envName.isEmpty()) return@forEach
 
                     val value = try {
                         envPreferences.getEnv(envName)
@@ -2233,8 +2092,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                         )
                         null
                     }
-
-                    if (envVar.required) {
+        if (envVar.required) {
                         // Check required environment variables
     if (value.isNullOrEmpty()) {
                             missingRequiredEnv.add(envName)
@@ -2267,13 +2125,13 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                             append("Package '")
                             append(normalizedPackageName)
                             append("' requires environment variable")
-                            if (missingRequiredEnv.size > 1) append("s")
+        if (missingRequiredEnv.size > 1) append("s")
                             append(": ")
                             append(missingRequiredEnv.joinToString(", "))
                             append(". Please set them before using this package.")
                         }
                     AppLogger.w(TAG, msg)
-                    return msg
+        return msg
                 }
 
                 // Log info about optional env vars using defaults
@@ -2301,7 +2159,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         ) {
             return "Skill '${normalizedPackageName}' is set to not show to AI"
         }
-
         val skillPrompt = skillManager.getSkillSystemPrompt(normalizedPackageName)
         if (skillPrompt != null) {
             return skillPrompt
@@ -2311,11 +2168,9 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     if (isRegisteredMCPServer(normalizedPackageName)) {
             return useMCPServer(normalizedPackageName)
         }
-
         return "Package not found: ${normalizedPackageName}. Please import it first or register it as an MCP server."
     }
-
-    fun getActivePackageStateId(packageName: String): String? {
+        fun getActivePackageStateId(packageName: String): String? {
         ensureInitialized()
         val normalizedPackageName = normalizePackageName(packageName)
         return activePackageStateIds[normalizedPackageName]
@@ -2334,7 +2189,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 error = "Missing required parameter: package_name"
             )
         }
-
         val normalizedPackageName = normalizePackageName(packageName)
         if (isToolPkgContainer(normalizedPackageName)) {
             return ToolResult(
@@ -2344,7 +2198,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 error = "ToolPkg container '${normalizedPackageName}' is not a package and cannot be activated."
             )
         }
-
         if (skillManager.getAvailableSkills().containsKey(normalizedPackageName) &&
             !skillVisibilityPreferences.isSkillVisibleToAi(normalizedPackageName)
         ) {
@@ -2355,7 +2208,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 error = "Skill '${normalizedPackageName}' is set to not show to AI"
             )
         }
-
         val text = usePackage(normalizedPackageName)
         return ToolResult(
             toolName = toolName,
@@ -2413,21 +2265,18 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
         }
     }
-
-    private fun selectToolPackageState(toolPackage: ToolPackage): ToolPackage {
+        private fun selectToolPackageState(toolPackage: ToolPackage): ToolPackage {
         if (toolPackage.states.isEmpty()) {
             activePackageStateIds.remove(toolPackage.name)
-            return toolPackage
+        return toolPackage
         }
-
         val capabilities = buildConditionCapabilitiesSnapshot()
         val selectedState = toolPackage.states.firstOrNull { state ->
             ConditionEvaluator.evaluate(state.condition, capabilities)
         }
-
         if (selectedState == null) {
             activePackageStateIds.remove(toolPackage.name)
-            return toolPackage
+        return toolPackage
         }
 
         activePackageStateIds[toolPackage.name] = selectedState.id
@@ -2435,8 +2284,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         val mergedTools = mergeToolsForState(toolPackage.tools, selectedState)
         return toolPackage.copy(tools = mergedTools)
     }
-
-    private fun mergeToolsForState(baseTools: List<PackageTool>, state: ToolPackageState): List<PackageTool> {
+        private fun mergeToolsForState(baseTools: List<PackageTool>, state: ToolPackageState): List<PackageTool> {
         val toolMap = linkedMapOf<String, PackageTool>()
         if (state.inheritTools) {
             baseTools.forEach { toolMap[it.name] = it }
@@ -2445,35 +2293,29 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         state.tools.forEach { toolMap[it.name] = it }
         return toolMap.values.toList()
     }
-
-    private fun buildConditionCapabilitiesSnapshot(): Map<String, Any?> {
+        private fun buildConditionCapabilitiesSnapshot(): Map<String, Any?> {
         val level = try {
             androidPermissionPreferences.getPreferredPermissionLevel() ?: AndroidPermissionLevel.STANDARD
         } catch (_: Exception) {
             AndroidPermissionLevel.STANDARD
         }
-
         val shizukuAvailable = try {
             ShizukuAuthorizer.isShizukuServiceRunning() && ShizukuAuthorizer.hasShizukuPermission()
         } catch (_: Exception) {
             false
         }
-
         val experimentalEnabled = try {
             DisplayPreferencesManager.getInstance(context).isExperimentalVirtualDisplayEnabled()
         } catch (_: Exception) {
             true
         }
-
         val adbOrHigher = when (level) {
             AndroidPermissionLevel.DEBUGGER,
             AndroidPermissionLevel.ADMIN,
             AndroidPermissionLevel.ROOT -> true
             else -> false
         }
-
         val virtualDisplayCapable = adbOrHigher && experimentalEnabled && (level != AndroidPermissionLevel.DEBUGGER || shizukuAvailable)
-
         return mapOf(
             "ui.virtual_display" to virtualDisplayCapable,
             "android.permission_level" to level,
@@ -2500,7 +2342,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                     "- ${toolPackage.name}:${tool.name}: ${tool.description.resolve(context)}"
                 }
             sb.appendLine(toolLabel)
-            if (tool.parameters.isNotEmpty()) {
+        if (tool.parameters.isNotEmpty()) {
                 sb.appendLine("  Parameters:")
                 tool.parameters.forEach { param ->
                     val requiredText = if (param.required) "(required)" else "(optional)"
@@ -2509,7 +2351,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
             sb.appendLine()
         }
-
         return sb.toString()
     }
 
@@ -2555,8 +2396,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         }
         return getImportedPackagesInternal()
     }
-
-    private fun getImportedPackagesInternal(): List<String> {
+        private fun getImportedPackagesInternal(): List<String> {
         if (runtimeCachesReady) {
             return importedPackagesCache
         }
@@ -2572,11 +2412,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         // (e.g. during forceRefresh) causing accidental removal of valid imports.
         synchronized(initLock) {
             val normalizedPackages = normalizeImportedPackageNames(currentPackages)
-            val cleanedPackages = normalizedPackages.filter { packageName ->
+        val cleanedPackages = normalizedPackages.filter { packageName ->
                 availablePackages.containsKey(packageName)
             }
-
-            if (cleanedPackages.size != currentPackages.size || cleanedPackages != currentPackages) {
+        if (cleanedPackages.size != currentPackages.size || cleanedPackages != currentPackages) {
                 val removed = currentPackages.filter { !cleanedPackages.contains(it) }
                 AppLogger.d(
                     TAG,
@@ -2585,18 +2424,15 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 saveImportedPackages(cleanedPackages)
                 AppLogger.d(TAG, "Cleaned up imported packages list. Removed: ${removed}")
             }
-
-            val states = getToolPkgSubpackageStatesInternal()
-            val cleanedStates =
+        val states = getToolPkgSubpackageStatesInternal()
+        val cleanedStates =
                 states.filterKeys { packageName ->
                     toolPkgSubpackageByPackageName.containsKey(packageName)
                 }
-
-            if (cleanedStates.size != states.size) {
+        if (cleanedStates.size != states.size) {
                 saveToolPkgSubpackageStates(cleanedStates)
             }
-
-            return cleanedPackages
+        return cleanedPackages
         }
     }
 
@@ -2608,8 +2444,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         ensureInitialized()
         return getDisabledPackagesInternal()
     }
-
-    private fun getDisabledPackagesInternal(): List<String> {
+        private fun getDisabledPackagesInternal(): List<String> {
         val prefs = context.getSharedPreferences(PACKAGE_PREFS, Context.MODE_PRIVATE)
         val packagesJson = prefs.getString(DISABLED_PACKAGES_KEY, "[]")
         return try {
@@ -2664,20 +2499,18 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             )
         }
     }
-
-    private fun removeFromDisabledPackages(packageName: String) {
+        private fun removeFromDisabledPackages(packageName: String) {
         val disabledPackages = getDisabledPackages().toMutableList()
         if (disabledPackages.remove(packageName)) {
             saveDisabledPackages(disabledPackages)
             AppLogger.d(TAG, "Removed package from disabled list: ${packageName}")
         }
     }
-
-    private fun addToDisabledIfDefaultEnabled(packageName: String) {
+        private fun addToDisabledIfDefaultEnabled(packageName: String) {
         val toolPackage = availablePackages[packageName]
         if (toolPackage != null && toolPackage.isBuiltIn && toolPackage.enabledByDefault) {
             val disabledPackages = getDisabledPackages().toMutableList()
-            if (!disabledPackages.contains(packageName)) {
+        if (!disabledPackages.contains(packageName)) {
                 disabledPackages.add(packageName)
                 saveDisabledPackages(disabledPackages)
                 AppLogger.d(TAG, "Added default package to disabled list: ${packageName}")
@@ -2703,8 +2536,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         val normalizedPackageName = normalizePackageName(packageName)
         return availablePackages[normalizedPackageName]
     }
-
-    fun getEffectivePackageTools(packageName: String): ToolPackage? {
+        fun getEffectivePackageTools(packageName: String): ToolPackage? {
         ensureInitialized()
         val normalizedPackageName = normalizePackageName(packageName)
         val toolPackage = availablePackages[normalizedPackageName] ?: return null
@@ -2733,7 +2565,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
     fun removePackage(packageName: String): String {
         ensureInitialized()
         val normalizedPackageName = normalizePackageName(packageName)
-
         val currentPackages = LinkedHashSet(getImportedPackages())
         val subpackageStates = getToolPkgSubpackageStatesInternal().toMutableMap()
         var packageWasRemoved = false
@@ -2753,14 +2584,12 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             addToDisabledIfDefaultEnabled(normalizedPackageName)
             deleteToolPkgCacheDir(normalizedPackageName)
             destroyDefaultToolPkgExecutionEngine(normalizedPackageName)
-
-            return if (packageWasRemoved) {
+        return if (packageWasRemoved) {
                 "Successfully disabled toolpkg container: ${normalizedPackageName}"
             } else {
                 "ToolPkg container is already disabled: ${normalizedPackageName}"
             }
         }
-
         if (toolPkgSubpackageByPackageName.containsKey(normalizedPackageName)) {
             packageWasRemoved = currentPackages.remove(normalizedPackageName)
             subpackageStates[normalizedPackageName] = false
@@ -2768,8 +2597,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
 
             saveImportedPackages(currentPackages.toList())
             saveToolPkgSubpackageStates(subpackageStates)
-
-            return if (packageWasRemoved) {
+        return if (packageWasRemoved) {
                 "Successfully removed package: ${normalizedPackageName}"
             } else {
                 "Package not found in imported list: ${normalizedPackageName}"
@@ -2779,7 +2607,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         packageWasRemoved = currentPackages.remove(normalizedPackageName)
         unregisterPackageTools(normalizedPackageName)
         addToDisabledIfDefaultEnabled(normalizedPackageName)
-
         return if (packageWasRemoved) {
             saveImportedPackages(currentPackages.toList())
             AppLogger.d(TAG, "Removed package from imported list: ${normalizedPackageName}")
@@ -2853,7 +2680,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
 
             AppLogger.d(TAG, "Registered MCP tool: ${toolName}")
         }
-
         return generateMCPSystemPrompt(toolPackage, serverName)
     }
 
@@ -2870,7 +2696,7 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         toolPackage.tools.forEach { tool ->
             // 使用 serverName:toolName 格式
             sb.appendLine("- ${serverName}:${tool.name}: ${tool.description.resolve(context)}")
-            if (tool.parameters.isNotEmpty()) {
+        if (tool.parameters.isNotEmpty()) {
                 sb.appendLine("  Parameters:")
                 tool.parameters.forEach { param ->
                     val requiredText = if (param.required) "(required)" else "(optional)"
@@ -2879,7 +2705,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             }
             sb.appendLine()
         }
-
         return sb.toString()
     }
 
@@ -2891,15 +2716,12 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         val normalizedPackageName = normalizePackageName(packageName)
         AppLogger.d(TAG, "Attempting to delete package: ${normalizedPackageName}")
         ensureInitialized()
-
         if (toolPkgSubpackageByPackageName.containsKey(normalizedPackageName)) {
             // Subpackage is part of a toolpkg archive; only remove enable state.
             removePackage(normalizedPackageName)
-            return true
+        return true
         }
-
         val packageFile = findPackageFile(normalizedPackageName)
-
         if (packageFile == null || !packageFile.exists()) {
             AppLogger.w(
                 TAG,
@@ -2907,40 +2729,36 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
             )
             removePackage(normalizedPackageName)
             removeFromCachesAfterDelete(normalizedPackageName)
-            return true
+        return true
         }
 
         AppLogger.d(TAG, "Found package file to delete: ${packageFile.absolutePath}")
-
         val fileDeleted = packageFile.delete()
-
         if (fileDeleted) {
             AppLogger.d(TAG, "Successfully deleted package file: ${packageFile.absolutePath}")
             removePackage(normalizedPackageName)
             removeFromCachesAfterDelete(normalizedPackageName)
             AppLogger.d(TAG, "Package '${normalizedPackageName}' fully deleted.")
-            return true
+        return true
         }
 
         AppLogger.e(TAG, "Failed to delete package file: ${packageFile.absolutePath}")
         return false
     }
-
-    private fun removeFromCachesAfterDelete(packageName: String) {
+        private fun removeFromCachesAfterDelete(packageName: String) {
         if (toolPkgContainers.containsKey(packageName)) {
             val container = toolPkgContainers.remove(packageName)
             availablePackages.remove(packageName)
             deleteToolPkgCacheDir(packageName)
             destroyDefaultToolPkgExecutionEngine(packageName)
-
-            val states = getToolPkgSubpackageStatesInternal().toMutableMap()
+        val states = getToolPkgSubpackageStatesInternal().toMutableMap()
             container?.subpackages?.forEach { subpackage ->
                 availablePackages.remove(subpackage.packageName)
                 toolPkgSubpackageByPackageName.remove(subpackage.packageName)
                 states.remove(subpackage.packageName)
             }
             saveToolPkgSubpackageStates(states)
-            return
+        return
         }
 
         deleteToolPkgCacheDir(packageName)
@@ -2959,11 +2777,10 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
         val containerRuntime = toolPkgContainers[normalizedPackageName]
         if (containerRuntime != null && containerRuntime.sourceType == ToolPkgSourceType.EXTERNAL) {
             val candidate = File(containerRuntime.sourcePath)
-            if (candidate.exists()) {
+        if (candidate.exists()) {
                 return candidate
             }
         }
-
         val jsFile = File(externalPackagesDir, "${normalizedPackageName}.js")
         if (jsFile.exists()) return jsFile
 
@@ -2972,19 +2789,17 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
 
             if (file.name.endsWith(".js", ignoreCase = true)) {
                 val loadedPackage = loadPackageFromJsFile(file)
-                if (loadedPackage?.name == normalizedPackageName) {
+        if (loadedPackage?.name == normalizedPackageName) {
                     return file
                 }
             }
-
-            if (file.name.endsWith(TOOLPKG_EXTENSION, ignoreCase = true)) {
+        if (file.name.endsWith(TOOLPKG_EXTENSION, ignoreCase = true)) {
                 val loadedToolPkg = loadToolPkgFromExternalFile(file)
-                if (loadedToolPkg?.containerPackage?.name == normalizedPackageName) {
+        if (loadedToolPkg?.containerPackage?.name == normalizedPackageName) {
                     return file
                 }
             }
         }
-
         return null
     }
 
@@ -3013,7 +2828,6 @@ private constructor(private val context: Context, private val aiToolHandler: AIT
                 parameters = parametersString
             )
         }
-
         return PackageToolPromptCategory(
             packageName = toolPackage.name,
             packageDescription = toolPackage.description.resolve(context),

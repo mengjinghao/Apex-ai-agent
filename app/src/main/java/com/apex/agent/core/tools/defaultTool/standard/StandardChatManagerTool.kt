@@ -56,8 +56,7 @@ data class MessageSendStreamSession(
     private val cancelAction: () -> Unit
 ) {
     fun currentState(): InputProcessingState = currentStateProvider()
-
-    fun cancel() {
+        fun cancel() {
         cancelAction()
     }
 }
@@ -80,8 +79,7 @@ class StandardChatManagerTool(private val context: Context) {
     private const val RESPONSE_STREAM_ACQUIRE_TIMEOUT = 15000L
         private const val AI_RESPONSE_TIMEOUT = 300000L
     }
-
-    private fun simplifyXmlBlocksForHistory(text: String): String {
+        private fun simplifyXmlBlocksForHistory(text: String): String {
         if (text.isEmpty()) return text
         return text
             .replace(ChatMarkupRegex.toolTag, "")
@@ -92,8 +90,7 @@ class StandardChatManagerTool(private val context: Context) {
             .replace(ChatMarkupRegex.statusSelfClosingTag, "")
             .trim()
     }
-
-    private fun isMatchTitle(title: String, query: String, matchMode: String): Boolean {
+        private fun isMatchTitle(title: String, query: String, matchMode: String): Boolean {
         if (query.isBlank()) return true
         return when (matchMode) {
             "exact" -> title == query
@@ -107,17 +104,14 @@ class StandardChatManagerTool(private val context: Context) {
             else -> title.contains(query)
         }
     }
-
-    private fun toSortableNumber(value: String): Long {
+        private fun toSortableNumber(value: String): Long {
         return runCatching { value.toLong() }
             .getOrElse { 0L }
     }
-
-    private fun toEpochMillis(dateTime: java.time.LocalDateTime): Long {
+        private fun toEpochMillis(dateTime: java.time.LocalDateTime): Long {
         return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     }
-
-    private fun buildChatInfo(
+        private fun buildChatInfo(
         chat: ChatHistory,
         messageCounts: Map<String, Int>,
         currentChatId: String?
@@ -138,7 +132,7 @@ class StandardChatManagerTool(private val context: Context) {
     suspend fun getChatMessages(tool: AITool): ToolResult {
         return try {
             val chatId = tool.parameters.find { it.name == "chat_id" }?.value?.trim()
-            if (chatId.isNullOrBlank()) {
+        if (chatId.isNullOrBlank()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -146,10 +140,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: missing chat_id"
                 )
             }
-
-            val rawOrder = tool.parameters.find { it.name == "order" }?.value?.trim()
-            val order = rawOrder?.lowercase()?.takeIf { it == "asc" || it == "desc" }
-            if (rawOrder != null && rawOrder.isNotBlank() && order == null) {
+        val rawOrder = tool.parameters.find { it.name == "order" }?.value?.trim()
+        val order = rawOrder?.lowercase()?.takeIf { it == "asc" || it == "desc" }
+        if (rawOrder != null && rawOrder.isNotBlank() && order == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -157,10 +150,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: order must be asc/desc"
                 )
             }
-
-            val rawLimit = tool.parameters.find { it.name == "limit" }?.value?.trim()
-            val parsedLimit = rawLimit?.takeIf { it.isNotBlank() }?.toIntOrNull()
-            if (rawLimit != null && rawLimit.isNotBlank() && parsedLimit == null) {
+        val rawLimit = tool.parameters.find { it.name == "limit" }?.value?.trim()
+        val parsedLimit = rawLimit?.takeIf { it.isNotBlank() }?.toIntOrNull()
+        if (rawLimit != null && rawLimit.isNotBlank() && parsedLimit == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -168,13 +160,11 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: limit must be an integer"
                 )
             }
-
-            val effectiveOrder = order ?: "desc"
-            val effectiveLimit = (parsedLimit ?: 20).coerceIn(1, 200)
-
-            val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
-            val title = chatHistoryManager.getChatTitle(chatId)
-            if (title == null) {
+        val effectiveOrder = order ?: "desc"
+        val effectiveLimit = (parsedLimit ?: 20).coerceIn(1, 200)
+        val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
+        val title = chatHistoryManager.getChatTitle(chatId)
+        if (title == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -182,14 +172,12 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Chat does not exist: ${chatId}"
                 )
             }
-
-            val messages = chatHistoryManager.loadChatMessages(
+        val messages = chatHistoryManager.loadChatMessages(
                 chatId = chatId,
                 order = effectiveOrder,
                 limit = effectiveLimit
             )
-
-            val filteredMessages = messages.filterNot { msg -> msg.sender == "summary" }
+        val filteredMessages = messages.filterNot { msg -> msg.sender == "summary" }
 
             ToolResult(
                 toolName = tool.name,
@@ -226,7 +214,7 @@ class StandardChatManagerTool(private val context: Context) {
     suspend fun agentStatus(tool: AITool): ToolResult {
         return try {
             val chatId = tool.parameters.find { it.name == "chat_id" }?.value?.trim()
-            if (chatId.isNullOrBlank()) {
+        if (chatId.isNullOrBlank()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -234,10 +222,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: missing chat_id"
                 )
             }
-
-            val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
-            val title = chatHistoryManager.getChatTitle(chatId)
-            if (title == null) {
+        val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
+        val title = chatHistoryManager.getChatTitle(chatId)
+        if (title == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -245,9 +232,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Chat does not exist: ${chatId}"
                 )
             }
-
-            val connected = ensureServiceConnected()
-            val chatService = chatCore
+        val connected = ensureServiceConnected()
+        val chatService = chatCore
             if (!connected || chatService == null) {
                 return ToolResult(
                     toolName = tool.name,
@@ -256,10 +242,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Chat service not connected"
                 )
             }
-
-            val state = chatService.inputProcessingStateByChatId.value[chatId] ?: InputProcessingState.Idle
+        val state = chatService.inputProcessingStateByChatId.value[chatId] ?: InputProcessingState.Idle
             var stateKey = "idle"
-            var message: String? = null
+        var message: String? = null
             var isIdle = false
             var isProcessing = false
             when (state) {
@@ -349,7 +334,7 @@ class StandardChatManagerTool(private val context: Context) {
     suspend fun findChat(tool: AITool): ToolResult {
         return try {
             val query = tool.parameters.find { it.name == "query" }?.value?.trim().orEmpty()
-            if (query.isBlank()) {
+        if (query.isBlank()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -357,9 +342,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: missing query"
                 )
             }
-
-            val matchRaw = tool.parameters.find { it.name == "match" }?.value?.trim()?.lowercase()
-            val matchMode = when (matchRaw) {
+        val matchRaw = tool.parameters.find { it.name == "match" }?.value?.trim()?.lowercase()
+        val matchMode = when (matchRaw) {
                 null, "", "contains" -> "contains"
                 "exact", "regex" -> matchRaw
                 else ->
@@ -370,10 +354,9 @@ class StandardChatManagerTool(private val context: Context) {
                         error = "Invalid parameter: match must be contains/exact/regex"
                     )
             }
-
-            val rawIndex = tool.parameters.find { it.name == "index" }?.value?.trim()
-            val index = rawIndex?.takeIf { it.isNotBlank() }?.toIntOrNull()
-            if (rawIndex != null && rawIndex.isNotBlank() && index == null) {
+        val rawIndex = tool.parameters.find { it.name == "index" }?.value?.trim()
+        val index = rawIndex?.takeIf { it.isNotBlank() }?.toIntOrNull()
+        if (rawIndex != null && rawIndex.isNotBlank() && index == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -381,20 +364,18 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: index must be an integer"
                 )
             }
-
-            val targetIndex = index ?: 0
+        val targetIndex = index ?: 0
             val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
-            val chatHistories = chatHistoryManager.chatHistoriesFlow.first()
-            val currentChatId = chatHistoryManager.currentChatIdFlow.first()
-            val messageCounts = chatHistoryManager.getMessageCountsByChatId()
-
-            val idMatches = chatHistories.filter { chat -> chat.id == query }
-            val matched = if (idMatches.isNotEmpty()) {
+        val chatHistories = chatHistoryManager.chatHistoriesFlow.first()
+        val currentChatId = chatHistoryManager.currentChatIdFlow.first()
+        val messageCounts = chatHistoryManager.getMessageCountsByChatId()
+        val idMatches = chatHistories.filter { chat -> chat.id == query }
+        val matched = if (idMatches.isNotEmpty()) {
                 idMatches
             } else {
                 chatHistories.filter { chat -> isMatchTitle(chat.title, query, matchMode) }
             }
-            if (matched.isEmpty()) {
+        if (matched.isEmpty()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -402,8 +383,7 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Chat not found by query: ${query}"
                 )
             }
-
-            if (targetIndex !in matched.indices) {
+        if (targetIndex !in matched.indices) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -411,8 +391,7 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Chat index out of range: index=${targetIndex}, matched=${matched.size}"
                 )
             }
-
-            val chatInfo = buildChatInfo(matched[targetIndex], messageCounts, currentChatId)
+        val chatInfo = buildChatInfo(matched[targetIndex], messageCounts, currentChatId)
             ToolResult(
                 toolName = tool.name,
                 success = true,
@@ -435,7 +414,7 @@ class StandardChatManagerTool(private val context: Context) {
     suspend fun updateChatTitle(tool: AITool): ToolResult {
         return try {
             val chatId = tool.parameters.find { it.name == "chat_id" }?.value?.trim()
-            if (chatId.isNullOrBlank()) {
+        if (chatId.isNullOrBlank()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -443,10 +422,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: missing chat_id"
                 )
             }
-
-            val titleRaw = tool.parameters.find { it.name == "title" }?.value
+        val titleRaw = tool.parameters.find { it.name == "title" }?.value
             val title = titleRaw?.trim().orEmpty()
-            if (title.isBlank()) {
+        if (title.isBlank()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -454,10 +432,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: missing title"
                 )
             }
-
-            val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
-            val existingTitle = chatHistoryManager.getChatTitle(chatId)
-            if (existingTitle == null) {
+        val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
+        val existingTitle = chatHistoryManager.getChatTitle(chatId)
+        if (existingTitle == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -489,7 +466,7 @@ class StandardChatManagerTool(private val context: Context) {
     suspend fun deleteChat(tool: AITool): ToolResult {
         return try {
             val chatId = tool.parameters.find { it.name == "chat_id" }?.value?.trim()
-            if (chatId.isNullOrBlank()) {
+        if (chatId.isNullOrBlank()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -497,10 +474,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: missing chat_id"
                 )
             }
-
-            val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
-            val chat = chatHistoryManager.chatHistoriesFlow.first().find { it.id == chatId }
-            if (chat == null) {
+        val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
+        val chat = chatHistoryManager.chatHistoriesFlow.first().find { it.id == chatId }
+        if (chat == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -508,8 +484,7 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Chat does not exist: ${chatId}"
                 )
             }
-
-            if (chat.locked) {
+        if (chat.locked) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -517,9 +492,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Chat is locked and cannot be deleted: ${chatId}"
                 )
             }
-
-            val deleted = chatHistoryManager.deleteChatHistory(chatId)
-            if (!deleted) {
+        val deleted = chatHistoryManager.deleteChatHistory(chatId)
+        if (!deleted) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -543,8 +517,7 @@ class StandardChatManagerTool(private val context: Context) {
             )
         }
     }
-
-    private val appContext = context.applicationContext
+        private val appContext = context.applicationContext
 
     // Service 连接状�?  private var chatCore: ChatServiceCore? = null
     private var floatingService: FloatingChatService? = null
@@ -555,7 +528,7 @@ class StandardChatManagerTool(private val context: Context) {
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder) {
             AppLogger.d(TAG, "Service connected")
-            val binder = service as? FloatingChatService.LocalBinder
+        val binder = service as? FloatingChatService.LocalBinder
             if (binder != null) {
                 floatingService = binder.getService()
                 chatCore = binder.getChatCore()
@@ -564,13 +537,13 @@ class StandardChatManagerTool(private val context: Context) {
                     AppLogger.d(TAG, "Received close callback from FloatingChatService")
                     unbindService()
                 }
-                if (!connectionDeferred.isCompleted) {
+        if (!connectionDeferred.isCompleted) {
                     connectionDeferred.complete(true)
                 }
                 AppLogger.d(TAG, "ChatServiceCore obtained successfully")
             } else {
                 AppLogger.e(TAG, "Failed to cast binder")
-                if (!connectionDeferred.isCompleted) {
+        if (!connectionDeferred.isCompleted) {
                     connectionDeferred.complete(false)
                 }
             }
@@ -602,24 +575,22 @@ class StandardChatManagerTool(private val context: Context) {
                     }
                 }
             }
-            return true
+        return true
         }
-
         if (startIntent == null && FloatingChatService.getInstance() == null) {
             AppLogger.w(TAG, "FloatingChatService not running; skip auto-start in ensureServiceConnected")
-            if (!connectionDeferred.isCompleted) {
+        if (!connectionDeferred.isCompleted) {
                 connectionDeferred.complete(false)
             }
-            return false
+        return false
         }
-
         val prefs = appContext.getSharedPreferences("floating_chat_prefs", Context.MODE_PRIVATE)
         if (prefs.getBoolean("service_disabled_due_to_crashes", false)) {
             AppLogger.w(TAG, "FloatingChatService is disabled due to frequent crashes")
-            if (!connectionDeferred.isCompleted) {
+        if (!connectionDeferred.isCompleted) {
                 connectionDeferred.complete(false)
             }
-            return false
+        return false
         }
 
         // 如果正在连接中，等待连接完成
@@ -630,7 +601,7 @@ class StandardChatManagerTool(private val context: Context) {
                 }
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Service connection timeout", e)
-                if (!connectionDeferred.isCompleted) {
+        if (!connectionDeferred.isCompleted) {
                     connectionDeferred.complete(false)
                 }
                 false
@@ -641,10 +612,8 @@ class StandardChatManagerTool(private val context: Context) {
     return try {
             // 重置 deferred
             connectionDeferred = CompletableDeferred()
-            
-            val intent = startIntent ?: Intent(appContext, FloatingChatService::class.java)
-
-            val bound =
+        val intent = startIntent ?: Intent(appContext, FloatingChatService::class.java)
+        val bound =
                 withContext(Dispatchers.Main) {
                     if (startIntent != null) {
                         // 启动服务
@@ -662,11 +631,10 @@ class StandardChatManagerTool(private val context: Context) {
                         Context.BIND_AUTO_CREATE
                     )
                 }
-            
-            if (!bound) {
+        if (!bound) {
                 AppLogger.e(TAG, "Failed to bind service")
                 connectionDeferred.complete(false)
-                return false
+        return false
             }
 
             // 等待连接完成
@@ -705,19 +673,18 @@ class StandardChatManagerTool(private val context: Context) {
     suspend fun startChatService(tool: AITool): ToolResult {
         return try {
             val initialModeParam = tool.parameters.find { it.name == "initial_mode" }?.value?.trim()
-            val autoEnterVoiceChatParam =
+        val autoEnterVoiceChatParam =
                 tool.parameters.find { it.name == "auto_enter_voice_chat" }?.value?.trim()
-            val wakeLaunchedParam = tool.parameters.find { it.name == "wake_launched" }?.value?.trim()
-            val timeoutMsParam = tool.parameters.find { it.name == "timeout_ms" }?.value?.trim()
-            val keepIfExistsParam = tool.parameters.find { it.name == "keep_if_exists" }?.value?.trim()
-
-            val initialMode =
+        val wakeLaunchedParam = tool.parameters.find { it.name == "wake_launched" }?.value?.trim()
+        val timeoutMsParam = tool.parameters.find { it.name == "timeout_ms" }?.value?.trim()
+        val keepIfExistsParam = tool.parameters.find { it.name == "keep_if_exists" }?.value?.trim()
+        val initialMode =
                 initialModeParam
                     ?.takeIf { it.isNotBlank() }
                     ?.let { raw ->
                         runCatching { FloatingMode.valueOf(raw.uppercase()) }.getOrNull()
                     }
-            if (initialModeParam != null && initialModeParam.isNotBlank() && initialMode == null) {
+        if (initialModeParam != null && initialModeParam.isNotBlank() && initialMode == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -725,17 +692,15 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: initial_mode is invalid: ${initialModeParam}"
                 )
             }
-
-            fun parseBooleanOrNull(value: String): Boolean? {
+        fun parseBooleanOrNull(value: String): Boolean? {
                 return when (value?.lowercase()) {
                     "true" -> true
                     "false" -> false
                     else -> null
                 }
             }
-
-            val autoEnterVoiceChat = parseBooleanOrNull(autoEnterVoiceChatParam)
-            if (autoEnterVoiceChatParam != null && autoEnterVoiceChat == null) {
+        val autoEnterVoiceChat = parseBooleanOrNull(autoEnterVoiceChatParam)
+        if (autoEnterVoiceChatParam != null && autoEnterVoiceChat == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -743,9 +708,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: auto_enter_voice_chat must be true/false"
                 )
             }
-
-            val wakeLaunched = parseBooleanOrNull(wakeLaunchedParam)
-            if (wakeLaunchedParam != null && wakeLaunched == null) {
+        val wakeLaunched = parseBooleanOrNull(wakeLaunchedParam)
+        if (wakeLaunchedParam != null && wakeLaunched == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -753,9 +717,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: wake_launched must be true/false"
                 )
             }
-
-            val timeoutMs = timeoutMsParam?.takeIf { it.isNotBlank() }?.toLongOrNull()
-            if (timeoutMsParam != null && timeoutMsParam.isNotBlank() && timeoutMs == null) {
+        val timeoutMs = timeoutMsParam?.takeIf { it.isNotBlank() }?.toLongOrNull()
+        if (timeoutMsParam != null && timeoutMsParam.isNotBlank() && timeoutMs == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -763,9 +726,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: timeout_ms must be an integer (milliseconds)"
                 )
             }
-
-            val keepIfExists = parseBooleanOrNull(keepIfExistsParam)
-            if (keepIfExistsParam != null && keepIfExists == null) {
+        val keepIfExists = parseBooleanOrNull(keepIfExistsParam)
+        if (keepIfExistsParam != null && keepIfExists == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -773,27 +735,24 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: keep_if_exists must be true/false"
                 )
             }
-
-            val intent = Intent(appContext, FloatingChatService::class.java)
-            if (initialMode != null) {
+        val intent = Intent(appContext, FloatingChatService::class.java)
+        if (initialMode != null) {
                 intent.putExtra("INITIAL_MODE", initialMode.name)
             }
-            if (autoEnterVoiceChat == true) {
+        if (autoEnterVoiceChat == true) {
                 intent.putExtra(FloatingChatService.EXTRA_AUTO_ENTER_VOICE_CHAT, true)
             }
-            if (wakeLaunched != null) {
+        if (wakeLaunched != null) {
                 intent.putExtra(FloatingChatService.EXTRA_WAKE_LAUNCHED, wakeLaunched)
             }
-            if (timeoutMs != null) {
+        if (timeoutMs != null) {
                 intent.putExtra(FloatingChatService.EXTRA_AUTO_EXIT_AFTER_MS, timeoutMs)
             }
-            if (keepIfExists == true) {
+        if (keepIfExists == true) {
                 intent.putExtra(FloatingChatService.EXTRA_KEEP_IF_EXISTS, true)
             }
-
-            val connected = ensureServiceConnected(intent)
-            
-            if (connected) {
+        val connected = ensureServiceConnected(intent)
+        if (connected) {
                 try {
                     floatingService?.setFloatingWindowVisible(true)
                 } catch (e: Exception) {
@@ -831,9 +790,8 @@ class StandardChatManagerTool(private val context: Context) {
             }
 
             unbindService()
-
-            val intent = Intent(appContext, FloatingChatService::class.java)
-            val stopped = runCatching { appContext.stopService(intent) }.getOrDefault(false)
+        val intent = Intent(appContext, FloatingChatService::class.java)
+        val stopped = runCatching { appContext.stopService(intent) }.getOrDefault(false)
 
             ToolResult(
                 toolName = tool.name,
@@ -864,8 +822,7 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Service not connected"
                 )
             }
-
-            val core = chatCore ?: return ToolResult(
+        val core = chatCore ?: return ToolResult(
                 toolName = tool.name,
                 success = false,
                 result = ChatCreationResultData(chatId = ""),
@@ -874,19 +831,17 @@ class StandardChatManagerTool(private val context: Context) {
 
             // 获取创建前的 chat list
     val previousChatIds = core.chatHistories.value.map { it.id }.toSet()
-
-            val group = tool.parameters.find { it.name == "group" }?.value?.trim()
-            val effectiveGroup = group?.takeIf { it.isNotBlank() }
-
-            val rawSetAsCurrent = tool.parameters.find { it.name == "set_as_current_chat" }?.value?.trim()
-            val setAsCurrentChat =
+        val group = tool.parameters.find { it.name == "group" }?.value?.trim()
+        val effectiveGroup = group?.takeIf { it.isNotBlank() }
+        val rawSetAsCurrent = tool.parameters.find { it.name == "set_as_current_chat" }?.value?.trim()
+        val setAsCurrentChat =
                 when (rawSetAsCurrent?.lowercase()) {
                     null, "" -> true
                     "true" -> true
                     "false" -> false
                     else -> null
                 }
-            if (setAsCurrentChat == null) {
+        if (setAsCurrentChat == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -900,8 +855,7 @@ class StandardChatManagerTool(private val context: Context) {
                 group = effectiveGroup,
                 setAsCurrentChat = setAsCurrentChat
             )
-
-            val newChatId = try {
+        val newChatId = try {
                 withTimeout(5000L) {
                     var newId: String? = null
                     while (newId == null) {
@@ -916,8 +870,7 @@ class StandardChatManagerTool(private val context: Context) {
             } catch (_: TimeoutCancellationException) {
                 null
             }
-
-            if (newChatId != null) {
+        if (newChatId != null) {
                 if (setAsCurrentChat) {
                     val switched = try {
                         withTimeout(5000L) {
@@ -929,7 +882,7 @@ class StandardChatManagerTool(private val context: Context) {
                     } catch (_: TimeoutCancellationException) {
                         false
                     }
-                    if (!switched) {
+        if (!switched) {
                         return ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -968,13 +921,12 @@ class StandardChatManagerTool(private val context: Context) {
     suspend fun listChats(tool: AITool): ToolResult {
         return try {
             val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
-            val chatHistories = chatHistoryManager.chatHistoriesFlow.first()
-            val currentChatId = chatHistoryManager.currentChatIdFlow.first()
-            val messageCounts = chatHistoryManager.getMessageCountsByChatId()
-
-            val query = tool.parameters.find { it.name == "query" }?.value?.trim().orEmpty()
-            val matchRaw = tool.parameters.find { it.name == "match" }?.value?.trim()?.lowercase()
-            val matchMode = when (matchRaw) {
+        val chatHistories = chatHistoryManager.chatHistoriesFlow.first()
+        val currentChatId = chatHistoryManager.currentChatIdFlow.first()
+        val messageCounts = chatHistoryManager.getMessageCountsByChatId()
+        val query = tool.parameters.find { it.name == "query" }?.value?.trim().orEmpty()
+        val matchRaw = tool.parameters.find { it.name == "match" }?.value?.trim()?.lowercase()
+        val matchMode = when (matchRaw) {
                 null, "", "contains" -> "contains"
                 "exact", "regex" -> matchRaw
                 else ->
@@ -985,10 +937,9 @@ class StandardChatManagerTool(private val context: Context) {
                         error = "Invalid parameter: match must be contains/exact/regex"
                     )
             }
-
-            val rawLimit = tool.parameters.find { it.name == "limit" }?.value?.trim()
-            val parsedLimit = rawLimit?.takeIf { it.isNotBlank() }?.toIntOrNull()
-            if (rawLimit != null && rawLimit.isNotBlank() && parsedLimit == null) {
+        val rawLimit = tool.parameters.find { it.name == "limit" }?.value?.trim()
+        val parsedLimit = rawLimit?.takeIf { it.isNotBlank() }?.toIntOrNull()
+        if (rawLimit != null && rawLimit.isNotBlank() && parsedLimit == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -996,10 +947,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: limit must be an integer"
                 )
             }
-            val limit = (parsedLimit ?: 50).coerceIn(1, 200)
-
-            val sortByRaw = tool.parameters.find { it.name == "sort_by" }?.value?.trim()
-            val sortBy = when (sortByRaw) {
+        val limit = (parsedLimit ?: 50).coerceIn(1, 200)
+        val sortByRaw = tool.parameters.find { it.name == "sort_by" }?.value?.trim()
+        val sortBy = when (sortByRaw) {
                 null, "", "updatedAt" -> "updatedAt"
                 "createdAt", "messageCount" -> sortByRaw
                 else ->
@@ -1010,9 +960,8 @@ class StandardChatManagerTool(private val context: Context) {
                         error = "Invalid parameter: sort_by must be updatedAt/createdAt/messageCount"
                     )
             }
-
-            val sortOrderRaw = tool.parameters.find { it.name == "sort_order" }?.value?.trim()?.lowercase()
-            val sortOrder = when (sortOrderRaw) {
+        val sortOrderRaw = tool.parameters.find { it.name == "sort_order" }?.value?.trim()?.lowercase()
+        val sortOrder = when (sortOrderRaw) {
                 null, "", "desc" -> "desc"
                 "asc" -> "asc"
                 else ->
@@ -1023,8 +972,7 @@ class StandardChatManagerTool(private val context: Context) {
                         error = "Invalid parameter: sort_order must be asc/desc"
                     )
             }
-
-            val matched = chatHistories
+        val matched = chatHistories
                 .filter { chat -> isMatchTitle(chat.title, query, matchMode) }
                 .sortedWith { a, b ->
                     val av = when (sortBy) {
@@ -1032,15 +980,14 @@ class StandardChatManagerTool(private val context: Context) {
                         "createdAt" -> toEpochMillis(a.createdAt)
                         else -> toEpochMillis(a.updatedAt)
                     }
-                    val bv = when (sortBy) {
+        val bv = when (sortBy) {
                         "messageCount" -> toSortableNumber((messageCounts[b.id] ?: 0).toString())
                         "createdAt" -> toEpochMillis(b.createdAt)
                         else -> toEpochMillis(b.updatedAt)
                     }
-                    if (sortOrder == "asc") av.compareTo(bv) else bv.compareTo(av)
+        if (sortOrder == "asc") av.compareTo(bv) else bv.compareTo(av)
                 }
-
-            val chatInfoList = matched.take(limit).map { chat ->
+        val chatInfoList = matched.take(limit).map { chat ->
                 buildChatInfo(chat, messageCounts, currentChatId)
             }
 
@@ -1081,15 +1028,13 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Service not connected"
                 )
             }
-
-            val core = chatCore ?: return ToolResult(
+        val core = chatCore ?: return ToolResult(
                 toolName = tool.name,
                 success = false,
                 result = ChatSwitchResultData(chatId = "", chatTitle = ""),
                 error = "ChatServiceCore not initialized"
             )
-
-            val chatId = tool.parameters.find { it.name == "chat_id" }?.value
+        val chatId = tool.parameters.find { it.name == "chat_id" }?.value
             if (chatId.isNullOrBlank()) {
                 return ToolResult(
                     toolName = tool.name,
@@ -1101,7 +1046,7 @@ class StandardChatManagerTool(private val context: Context) {
 
             // 检查对话是否存在并获取标题
     val targetChat = core.chatHistories.value.find { it.id == chatId }
-            if (targetChat == null) {
+        if (targetChat == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1119,8 +1064,7 @@ class StandardChatManagerTool(private val context: Context) {
                 delay(100)
                 attempts++
             }
-            
-            if (core.currentChatId.value == chatId) {
+        if (core.currentChatId.value == chatId) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -1162,8 +1106,7 @@ class StandardChatManagerTool(private val context: Context) {
                     )
                 )
             }
-
-            val core =
+        val core =
                 chatCore
                     ?: return MessageSendStreamStartResult.Failed(
                         ToolResult(
@@ -1173,8 +1116,7 @@ class StandardChatManagerTool(private val context: Context) {
                             error = "ChatServiceCore not initialized"
                         )
                     )
-
-            val message = tool.parameters.find { it.name == "message" }?.value
+        val message = tool.parameters.find { it.name == "message" }?.value
             if (message.isNullOrBlank()) {
                 return MessageSendStreamStartResult.Failed(
                     ToolResult(
@@ -1185,18 +1127,16 @@ class StandardChatManagerTool(private val context: Context) {
                     )
                 )
             }
-
-            val senderNameParam = tool.parameters.find { it.name == "sender_name" }?.value?.trim()
-            val proxySenderName = senderNameParam?.takeIf { it.isNotBlank() }
+        val senderNameParam = tool.parameters.find { it.name == "sender_name" }?.value?.trim()
+        val proxySenderName = senderNameParam?.takeIf { it.isNotBlank() }
 
             try {
                 // 可选的 chat_id 参数
     val targetChatId = tool.parameters.find { it.name == "chat_id" }?.value?.trim()
-                val hasTargetChat = !targetChatId.isNullOrBlank()
-
-                if (hasTargetChat) {
+        val hasTargetChat = !targetChatId.isNullOrBlank()
+        if (hasTargetChat) {
                     val chatExists = core.chatHistories.value.any { it.id == targetChatId }
-                    if (!chatExists) {
+        if (!chatExists) {
                         return MessageSendStreamStartResult.Failed(
                             ToolResult(
                                 toolName = tool.name,
@@ -1207,8 +1147,7 @@ class StandardChatManagerTool(private val context: Context) {
                         )
                     }
                 }
-
-                val preflightChatId = targetChatId ?: core.currentChatId.value
+        val preflightChatId = targetChatId ?: core.currentChatId.value
 
                 try {
                     preflightChatId?.let { chatId ->
@@ -1228,8 +1167,7 @@ class StandardChatManagerTool(private val context: Context) {
                         )
                     )
                 }
-
-                if (hasTargetChat) {
+        if (hasTargetChat) {
                     // 后台发送到指定对话，不切换 UI
                     core.sendUserMessage(
                         promptFunctionType = PromptFunctionType.CHAT,
@@ -1247,8 +1185,7 @@ class StandardChatManagerTool(private val context: Context) {
                         proxySenderNameOverride = proxySenderName
                     )
                 }
-
-                val resolvedChatId = if (hasTargetChat) {
+        val resolvedChatId = if (hasTargetChat) {
                     preflightChatId
                 } else {
                     withTimeout(RESPONSE_STREAM_ACQUIRE_TIMEOUT) {
@@ -1260,8 +1197,7 @@ class StandardChatManagerTool(private val context: Context) {
                         id
                     }
                 }
-
-                if (resolvedChatId == null) {
+        if (resolvedChatId == null) {
                     return MessageSendStreamStartResult.Failed(
                         ToolResult(
                             toolName = tool.name,
@@ -1271,8 +1207,7 @@ class StandardChatManagerTool(private val context: Context) {
                         )
                     )
                 }
-
-                val responseStream: SharedStream<String> = try {
+        val responseStream: SharedStream<String> = try {
                     var stream: SharedStream<String>? = core.getResponseStream(resolvedChatId)
                     withTimeout(RESPONSE_STREAM_ACQUIRE_TIMEOUT) {
                         while (stream == null) {
@@ -1288,7 +1223,7 @@ class StandardChatManagerTool(private val context: Context) {
                     requireNotNull(stream)
                 } catch (e: TimeoutCancellationException) {
                     runCatching { core.cancelMessage(resolvedChatId) }
-                    return MessageSendStreamStartResult.Failed(
+        return MessageSendStreamStartResult.Failed(
                         ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -1343,16 +1278,15 @@ class StandardChatManagerTool(private val context: Context) {
                             }
                         } catch (e: TimeoutCancellationException) {
                             runCatching { session.cancel() }
-                            return ToolResult(
+        return ToolResult(
                                 toolName = tool.name,
                                 success = false,
                                 result = MessageSendResultData(chatId = session.chatId, message = session.message),
                                 error = "Timeout waiting for AI reply"
                             )
                         }
-
-                    val finalState = session.currentState()
-                    if (finalState is InputProcessingState.Error) {
+        val finalState = session.currentState()
+        if (finalState is InputProcessingState.Error) {
                         ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -1394,7 +1328,7 @@ class StandardChatManagerTool(private val context: Context) {
     suspend fun sendMessageToAIAdvanced(tool: AITool): ToolResult {
         return try {
             val message = tool.parameters.find { it.name == "message" }?.value?.trim()
-            if (message.isNullOrBlank()) {
+        if (message.isNullOrBlank()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1402,10 +1336,9 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: missing message"
                 )
             }
-
-            val maxTokensParam = tool.parameters.find { it.name == "max_tokens" }?.value?.trim()
-            val maxTokens = maxTokensParam?.toIntOrNull()
-            if (maxTokens == null) {
+        val maxTokensParam = tool.parameters.find { it.name == "max_tokens" }?.value?.trim()
+        val maxTokens = maxTokensParam?.toIntOrNull()
+        if (maxTokens == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1413,11 +1346,10 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: max_tokens must be an integer"
                 )
             }
-
-            val tokenUsageThresholdParam =
+        val tokenUsageThresholdParam =
                 tool.parameters.find { it.name == "token_usage_threshold" }?.value?.trim()
-            val tokenUsageThreshold = tokenUsageThresholdParam?.toDoubleOrNull()
-            if (tokenUsageThreshold == null) {
+        val tokenUsageThreshold = tokenUsageThresholdParam?.toDoubleOrNull()
+        if (tokenUsageThreshold == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1425,33 +1357,30 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: token_usage_threshold must be a number"
                 )
             }
-
-            fun parseBooleanOrNull(value: String): Boolean? {
+        fun parseBooleanOrNull(value: String): Boolean? {
                 return when (value?.lowercase()) {
                     "true" -> true
                     "false" -> false
                     else -> null
                 }
             }
-
-            val chatId = tool.parameters.find { it.name == "chat_id" }?.value?.trim()
+        val chatId = tool.parameters.find { it.name == "chat_id" }?.value?.trim()
                 ?.takeIf { it.isNotBlank() }
-            val chatHistoryParam = tool.parameters.find { it.name == "chat_history" }?.value?.trim()
-            val workspacePath =
+        val chatHistoryParam = tool.parameters.find { it.name == "chat_history" }?.value?.trim()
+        val workspacePath =
                 tool.parameters.find { it.name == "workspace_path" }?.value?.trim()?.takeIf { it.isNotBlank() }
-            val functionTypeParam = tool.parameters.find { it.name == "function_type" }?.value?.trim()
-            val promptFunctionTypeParam =
+        val functionTypeParam = tool.parameters.find { it.name == "function_type" }?.value?.trim()
+        val promptFunctionTypeParam =
                 tool.parameters.find { it.name == "prompt_function_type" }?.value?.trim()
-            val enableThinkingParam = tool.parameters.find { it.name == "enable_thinking" }?.value?.trim()
-            val thinkingGuidanceParam = tool.parameters.find { it.name == "thinking_guidance" }?.value?.trim()
-            val enableMemoryQueryParam = tool.parameters.find { it.name == "enable_memory_query" }?.value?.trim()
-            val customSystemPromptTemplate =
+        val enableThinkingParam = tool.parameters.find { it.name == "enable_thinking" }?.value?.trim()
+        val thinkingGuidanceParam = tool.parameters.find { it.name == "thinking_guidance" }?.value?.trim()
+        val enableMemoryQueryParam = tool.parameters.find { it.name == "enable_memory_query" }?.value?.trim()
+        val customSystemPromptTemplate =
                 tool.parameters.find { it.name == "custom_system_prompt_template" }?.value?.trim()
                     ?.takeIf { it.isNotBlank() }
-            val isSubTaskParam = tool.parameters.find { it.name == "is_sub_task" }?.value?.trim()
-            val streamParam = tool.parameters.find { it.name == "stream" }?.value?.trim()
-
-            val functionType =
+        val isSubTaskParam = tool.parameters.find { it.name == "is_sub_task" }?.value?.trim()
+        val streamParam = tool.parameters.find { it.name == "stream" }?.value?.trim()
+        val functionType =
                 if (functionTypeParam.isNullOrBlank()) {
                     FunctionType.CHAT
                 } else {
@@ -1463,8 +1392,7 @@ class StandardChatManagerTool(private val context: Context) {
                             error = "Invalid parameter: function_type is invalid: ${functionTypeParam}"
                         )
                 }
-
-            val promptFunctionType =
+        val promptFunctionType =
                 if (promptFunctionTypeParam.isNullOrBlank()) {
                     PromptFunctionType.CHAT
                 } else {
@@ -1476,9 +1404,8 @@ class StandardChatManagerTool(private val context: Context) {
                             error = "Invalid parameter: prompt_function_type is invalid: ${promptFunctionTypeParam}"
                         )
                 }
-
-            val enableThinking = parseBooleanOrNull(enableThinkingParam)
-            if (enableThinkingParam != null && enableThinking == null) {
+        val enableThinking = parseBooleanOrNull(enableThinkingParam)
+        if (enableThinkingParam != null && enableThinking == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1486,9 +1413,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: enable_thinking must be true/false"
                 )
             }
-
-            val thinkingGuidance = parseBooleanOrNull(thinkingGuidanceParam)
-            if (thinkingGuidanceParam != null && thinkingGuidance == null) {
+        val thinkingGuidance = parseBooleanOrNull(thinkingGuidanceParam)
+        if (thinkingGuidanceParam != null && thinkingGuidance == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1496,9 +1422,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: thinking_guidance must be true/false"
                 )
             }
-
-            val enableMemoryQuery = parseBooleanOrNull(enableMemoryQueryParam)
-            if (enableMemoryQueryParam != null && enableMemoryQuery == null) {
+        val enableMemoryQuery = parseBooleanOrNull(enableMemoryQueryParam)
+        if (enableMemoryQueryParam != null && enableMemoryQuery == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1506,9 +1431,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: enable_memory_query must be true/false"
                 )
             }
-
-            val isSubTask = parseBooleanOrNull(isSubTaskParam)
-            if (isSubTaskParam != null && isSubTask == null) {
+        val isSubTask = parseBooleanOrNull(isSubTaskParam)
+        if (isSubTaskParam != null && isSubTask == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1516,9 +1440,8 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: is_sub_task must be true/false"
                 )
             }
-
-            val stream = parseBooleanOrNull(streamParam)
-            if (streamParam != null && stream == null) {
+        val stream = parseBooleanOrNull(streamParam)
+        if (streamParam != null && stream == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1526,24 +1449,23 @@ class StandardChatManagerTool(private val context: Context) {
                     error = "Invalid parameter: stream must be true/false"
                 )
             }
-
-            val chatHistory =
+        val chatHistory =
                 if (chatHistoryParam.isNullOrBlank()) {
                     emptyList()
                 } else {
                     val parsed = runCatching {
                         val arr = JSONArray(chatHistoryParam)
-                        val result = ArrayList<Pair<String, String>>(arr.length())
-                        for (i in 0 until arr.length()) {
+        val result = ArrayList<Pair<String, String>>(arr.length())
+        for (i in 0 until arr.length()) {
                             val item = arr.getJSONArray(i)
-                            if (item.length() < 2) {
+        if (item.length() < 2) {
                                 return@runCatching null
                             }
                             result.add(Pair(item.getString(0), item.getString(1)))
                         }
                         result
                     }.getOrNull()
-                    if (parsed == null) {
+        if (parsed == null) {
                         return ToolResult(
                             toolName = tool.name,
                             success = false,
@@ -1553,16 +1475,14 @@ class StandardChatManagerTool(private val context: Context) {
                     }
                     parsed
                 }
-
-            val enhancedService =
+        val enhancedService =
                 if (chatId != null) {
                     EnhancedAIService.getChatInstance(appContext, chatId)
                 } else {
                     EnhancedAIService.getInstance(appContext)
                 }
-
-            val responseBuilder = StringBuilder()
-            val responseStream =
+        val responseBuilder = StringBuilder()
+        val responseStream =
                 enhancedService.sendMessage(
                     message = message,
                     chatId = chatId,

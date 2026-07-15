@@ -35,12 +35,12 @@ fun MainNavigation(
     var currentTab by remember { mutableStateOf(NavTab.TERMINAL) }
 
     // 终端状态(mock,实际接入真实状态)
-    var terminalLines by remember { mutableStateOf(listOf(TerminalLine("Apex Terminal v2.4.0 — Deep Sea Aurora", TerminalLineKind.SYSTEM))) }
+        var terminalLines by remember { mutableStateOf(listOf(TerminalLine("Apex Terminal v2.4.0 — Deep Sea Aurora", TerminalLineKind.SYSTEM))) }
         var inputText by remember { mutableStateOf("") }
         val terminalForm = AuraMascot.AuraForm.IDLE
 
     // 狂暴模式状态(mock)
-    var kernelState by remember { mutableStateOf(KernelState.STOPPED) }
+        var kernelState by remember { mutableStateOf(KernelState.STOPPED) }
         val loadedSkills = remember { mutableStateOf(listOf("ReAct", "ToT", "Racing", "RedBlueAdversarial", "SelfCorrection")) }
         val burstLogs = remember { mutableStateOf(listOf<BurstLogEntry>()) }
         Scaffold(

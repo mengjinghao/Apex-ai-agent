@@ -57,7 +57,6 @@ class WorkflowEngine private constructor() {
         fun setNodeOutput(nodeId: String, output: Any) {
             nodeOutputs[nodeId] = output
         }
-
         fun getNodeState(nodeId: String): NodeExecutionState =
             nodeStates.getOrPut(nodeId) { NodeExecutionState.Pending }
     }
@@ -94,28 +93,21 @@ class WorkflowEngine private constructor() {
         val output: Any? = null,
         val errorMessage: String? = null
     )
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val mutex = Mutex()
-
-    private val workflows = ConcurrentHashMap<String, WorkflowDefinition>()
-    private val runningExecutions = ConcurrentHashMap<String, ExecutionContext>()
-    private val executionHistory = ConcurrentHashMap<String, List<ExecutionResult>>()
-
-    private val _executionState = MutableStateFlow<Map<String, ExecutionState>>(emptyMap())
-    val executionState: StateFlow<Map<String, ExecutionState>> = _executionState.asStateFlow()
-
-    private val _executionEvents = MutableSharedFlow<ExecutionEvent>()
-    val executionEvents: SharedFlow<ExecutionEvent> = _executionEvents.asSharedFlow()
-
-    private val eventBus = SkillEventBus.getInstance()
-
-    private val toolExecutor: WorkflowToolExecutor = WorkflowToolExecutor()
-
-    private val statsTotalExecutions = AtomicLong(0)
-    private val statsSuccessfulExecutions = AtomicLong(0)
-    private val statsFailedExecutions = AtomicLong(0)
-    private val statsTotalExecutionTime = AtomicLong(0)
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val mutex = Mutex()
+        private val workflows = ConcurrentHashMap<String, WorkflowDefinition>()
+        private val runningExecutions = ConcurrentHashMap<String, ExecutionContext>()
+        private val executionHistory = ConcurrentHashMap<String, List<ExecutionResult>>()
+        private val _executionState = MutableStateFlow<Map<String, ExecutionState>>(emptyMap())
+        val executionState: StateFlow<Map<String, ExecutionState>> = _executionState.asStateFlow()
+        private val _executionEvents = MutableSharedFlow<ExecutionEvent>()
+        val executionEvents: SharedFlow<ExecutionEvent> = _executionEvents.asSharedFlow()
+        private val eventBus = SkillEventBus.getInstance()
+        private val toolExecutor: WorkflowToolExecutor = WorkflowToolExecutor()
+        private val statsTotalExecutions = AtomicLong(0)
+        private val statsSuccessfulExecutions = AtomicLong(0)
+        private val statsFailedExecutions = AtomicLong(0)
+        private val statsTotalExecutionTime = AtomicLong(0)
 
     sealed class ExecutionEvent {
         data class Started(val workflowId: String, val executionId: String) : ExecutionEvent()
@@ -128,35 +120,29 @@ class WorkflowEngine private constructor() {
 
     suspend fun registerWorkflow(workflow: WorkflowDefinition): RegistrationResult {
         val validation = workflow.validate()
-
         if (!validation.isValid) {
             AppLogger.e(TAG, "Workflow validation failed: ${validation.errors}")
-            return RegistrationResult.Invalid(validation.errors, validation.warnings)
+        return RegistrationResult.Invalid(validation.errors, validation.warnings)
         }
 
         workflows[workflow.id] = workflow
         AppLogger.i(TAG, "Workflow registered: ${workflow.name} [${workflow.id}]")
-
         if (validation.warnings.isNotEmpty()) {
             AppLogger.w(TAG, "Workflow warnings: ${validation.warnings}")
         }
-
         return RegistrationResult.Success(validation.warnings)
     }
-
-    fun unregisterWorkflow(workflowId: String): Boolean {
+        fun unregisterWorkflow(workflowId: String): Boolean {
         val removed = workflows.remove(workflowId) != null
         if (removed) {
             AppLogger.i(TAG, "Workflow unregistered: ${workflowId}")
         }
         return removed
     }
-
-    fun getWorkflow(workflowId: String): WorkflowDefinition? = workflows[workflowId]
+        fun getWorkflow(workflowId: String): WorkflowDefinition? = workflows[workflowId]
 
     fun getAllWorkflows(): List<WorkflowDefinition> = workflows.values.toList()
-
-    fun isWorkflowRegistered(workflowId: String): Boolean = workflows.containsKey(workflowId)
+        fun isWorkflowRegistered(workflowId: String): Boolean = workflows.containsKey(workflowId)
 
     suspend fun executeWorkflow(
         workflowId: String,
@@ -165,22 +151,18 @@ class WorkflowEngine private constructor() {
     ): ExecutionResult? {
         val workflow = workflows[workflowId] ?: run {
             AppLogger.e(TAG, "Workflow not found: ${workflowId}")
-            return null
+        return null
         }
-
         if (!workflow.enabled) {
             AppLogger.w(TAG, "Workflow is disabled: ${workflowId}")
-            return null
+        return null
         }
-
         if (runningExecutions.size >= MAX_CONCURRENT_EXECUTIONS) {
             AppLogger.w(TAG, "Max concurrent executions reached")
-            return null
+        return null
         }
-
         val executionId = "exec_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
         val startTime = System.currentTimeMillis()
-
         val context = ExecutionContext(
             workflowId = workflowId,
             executionId = executionId
@@ -203,15 +185,13 @@ class WorkflowEngine private constructor() {
 
         try {
             val triggerNodes = workflow.getTriggerNodes()
-            if (triggerNodes.isEmpty()) {
+        if (triggerNodes.isEmpty()) {
                 throw IllegalStateException("No trigger node found in workflow")
             }
-
-            val entryNode = triggerNodes.first()
-            val result = executeNode(workflow, entryNode, context)
-
-            val endTime = System.currentTimeMillis()
-            val success = !context.cancelled && result.isSuccess
+        val entryNode = triggerNodes.first()
+        val result = executeNode(workflow, entryNode, context)
+        val endTime = System.currentTimeMillis()
+        val success = !context.cancelled && result.isSuccess
 
             val executionResult = ExecutionResult(
                 executionId = executionId,
@@ -222,7 +202,7 @@ class WorkflowEngine private constructor() {
                 totalExecutionTimeMs = endTime - startTime,
                 nodeResults = context.nodeStates.mapValues { (nodeId, state) ->
                     val node = workflow.getNodeById(nodeId)
-                    val output = context.getNodeOutput(nodeId)
+        val output = context.getNodeOutput(nodeId)
                     NodeResult(
                         nodeId = nodeId,
                         nodeName = node?.name ?: "Unknown",
@@ -239,16 +219,15 @@ class WorkflowEngine private constructor() {
             updateExecutionState(executionId, ExecutionState.Completed(success, executionResult))
 
             statsTotalExecutions.incrementAndGet()
-            if (success) {
+        if (success) {
                 statsSuccessfulExecutions.incrementAndGet()
             } else {
                 statsFailedExecutions.incrementAndGet()
             }
             statsTotalExecutionTime.addAndGet(executionResult.totalExecutionTimeMs)
-
-            val history = executionHistory.getOrPut(workflowId) { emptyList() }.toMutableList()
+        val history = executionHistory.getOrPut(workflowId) { emptyList() }.toMutableList()
             history.add(executionResult)
-            if (history.size > 100) {
+        if (history.size > 100) {
                 history.removeAt(0)
             }
             executionHistory[workflowId] = history
@@ -263,8 +242,7 @@ class WorkflowEngine private constructor() {
             }
 
             _executionEvents.emit(ExecutionEvent.Completed(workflowId, executionId, success))
-
-            return executionResult
+        return executionResult
 
         } catch (e: Exception) {
             AppLogger.e(TAG, "Workflow execution failed: ${executionId}", e)
@@ -276,8 +254,7 @@ class WorkflowEngine private constructor() {
             statsFailedExecutions.incrementAndGet()
 
             _executionEvents.emit(ExecutionEvent.Failed(workflowId, executionId, e.message ?: "Unknown error"))
-
-            return ExecutionResult(
+        return ExecutionResult(
                 executionId = executionId,
                 workflowId = workflowId,
                 success = false,
@@ -289,8 +266,7 @@ class WorkflowEngine private constructor() {
             )
         }
     }
-
-    private suspend fun executeNode(
+        private suspend fun executeNode(
         workflow: WorkflowDefinition,
         node: WorkflowNode,
         context: ExecutionContext
@@ -314,9 +290,7 @@ class WorkflowEngine private constructor() {
                 executionTimeMs = 0
             ))
         }
-
         val startTime = System.currentTimeMillis()
-
         return try {
             val result = withContext(Dispatchers.Default) {
                 when (node.type) {
@@ -327,8 +301,7 @@ class WorkflowEngine private constructor() {
                     NodeType.EXTRACT -> executeExtractNode(node, context)
                 }
             }
-
-            val executionTime = System.currentTimeMillis() - startTime
+        val executionTime = System.currentTimeMillis() - startTime
 
             context.nodeStates[node.id] = NodeExecutionState.Success
             context.setNodeOutput(node.id, result.getOrNull() ?: "null")
@@ -351,10 +324,8 @@ class WorkflowEngine private constructor() {
             Result.failure(e)
         }
     }
-
-    private suspend fun executeTriggerNode(node: WorkflowNode, context: ExecutionContext): Result<Any> {
+        private suspend fun executeTriggerNode(node: WorkflowNode, context: ExecutionContext): Result<Any> {
         val triggerConfig = node.config.triggerConfig ?: return Result.success("Trigger executed")
-
         val output = when (triggerConfig.triggerType) {
             TriggerType.MANUAL -> "Manual trigger"
             TriggerType.SCHEDULE -> {
@@ -374,16 +345,12 @@ class WorkflowEngine private constructor() {
                 "Speech trigger: ${speechConfig?.pattern}"
             }
         }
-
         return Result.success(output)
     }
-
-    private suspend fun executeExecuteNode(node: WorkflowNode, context: ExecutionContext): Result<Any> {
+        private suspend fun executeExecuteNode(node: WorkflowNode, context: ExecutionContext): Result<Any> {
         val actionType = node.config.actionType ?: return Result.failure(IllegalArgumentException("actionType is required"))
         val actionConfig = node.config.actionConfig ?: emptyMap()
-
         val resolvedConfig = resolveParameters(actionConfig, context)
-
         return try {
             val result = toolExecutor.execute(actionType, resolvedConfig)
             Result.success(result)
@@ -391,42 +358,32 @@ class WorkflowEngine private constructor() {
             Result.failure(e)
         }
     }
-
-    private suspend fun executeConditionNode(node: WorkflowNode, context: ExecutionContext): Result<Boolean> {
+        private suspend fun executeConditionNode(node: WorkflowNode, context: ExecutionContext): Result<Boolean> {
         val left = node.config.left ?: return Result.failure(IllegalArgumentException("left value is required"))
         val operator = node.config.operator ?: return Result.failure(IllegalArgumentException("operator is required"))
         val right = node.config.right
 
         val leftValue = resolveParameterValue(left, context)
         val rightValue = right?.let { resolveParameterValue(it, context) }
-
         val result = evaluateCondition(leftValue, operator, rightValue)
-
         return Result.success(result)
     }
-
-    private suspend fun executeLogicNode(node: WorkflowNode, context: ExecutionContext): Result<Boolean> {
+        private suspend fun executeLogicNode(node: WorkflowNode, context: ExecutionContext): Result<Boolean> {
         val operator = node.config.operator ?: return Result.failure(IllegalArgumentException("operator is required"))
         val inputs = node.config.inputs ?: return Result.failure(IllegalArgumentException("inputs are required"))
-
         if (inputs.isEmpty()) {
             return Result.success(true)
         }
-
         val resolvedInputs = inputs.map { resolveParameterValue(it, context) }.map { it.toBoolean() }
-
         val result = when (operator.uppercase()) {
             "AND" -> resolvedInputs.all { it }
             "OR" -> resolvedInputs.any { it }
             else -> return Result.failure(IllegalArgumentException("Unknown operator: ${operator}"))
         }
-
         return Result.success(result)
     }
-
-    private suspend fun executeExtractNode(node: WorkflowNode, context: ExecutionContext): Result<Any> {
+        private suspend fun executeExtractNode(node: WorkflowNode, context: ExecutionContext): Result<Any> {
         val mode = node.config.mode ?: return Result.failure(IllegalArgumentException("mode is required"))
-
         return try {
             val result = when (mode) {
                 ExtractMode.REGEX -> extractRegex(node, context)
@@ -441,8 +398,7 @@ class WorkflowEngine private constructor() {
             Result.failure(e)
         }
     }
-
-    private fun extractRegex(node: WorkflowNode, context: ExecutionContext): String {
+        private fun extractRegex(node: WorkflowNode, context: ExecutionContext): String {
         val source = node.config.source ?: throw IllegalArgumentException("source is required for REGEX mode")
         val expression = node.config.expression ?: throw IllegalArgumentException("expression is required for REGEX mode")
         val group = node.config.group ?: 0
@@ -450,17 +406,14 @@ class WorkflowEngine private constructor() {
 
         val sourceValue = resolveParameterValue(source, context)
         val regex = Regex(expression)
-
         return regex.find(sourceValue)?.groupValues?.getOrNull(group) ?: defaultValue ?: ""
     }
-
-    private fun extractJson(node: WorkflowNode, context: ExecutionContext): String {
+        private fun extractJson(node: WorkflowNode, context: ExecutionContext): String {
         val source = node.config.source ?: throw IllegalArgumentException("source is required for JSON mode")
         val expression = node.config.expression ?: throw IllegalArgumentException("expression is required for JSON mode")
         val defaultValue = node.config.defaultValue
 
         val sourceValue = resolveParameterValue(source, context)
-
         return try {
             val json = kotlinx.serialization.json.Json.parseToJsonElement(sourceValue)
             json.toString()
@@ -468,15 +421,13 @@ class WorkflowEngine private constructor() {
             defaultValue ?: ""
         }
     }
-
-    private fun extractSubstring(node: WorkflowNode, context: ExecutionContext): String {
+        private fun extractSubstring(node: WorkflowNode, context: ExecutionContext): String {
         val source = node.config.source ?: throw IllegalArgumentException("source is required for SUB mode")
         val startIndex = node.config.startIndex ?: 0
         val length = node.config.length ?: -1
         val defaultValue = node.config.defaultValue
 
         val sourceValue = resolveParameterValue(source, context)
-
         return try {
             if (length < 0) {
                 sourceValue.substring(startIndex)
@@ -487,14 +438,11 @@ class WorkflowEngine private constructor() {
             defaultValue ?: ""
         }
     }
-
-    private fun extractConcat(node: WorkflowNode, context: ExecutionContext): String {
+        private fun extractConcat(node: WorkflowNode, context: ExecutionContext): String {
         val others = node.config.others ?: emptyList()
-
         return others.joinToString("") { resolveParameterValue(it, context) }
     }
-
-    private fun generateRandomInt(node: WorkflowNode, context: ExecutionContext): String {
+        private fun generateRandomInt(node: WorkflowNode, context: ExecutionContext): String {
         val min = node.config.randomMin ?: 0
         val max = node.config.randomMax ?: Int.MAX_VALUE
         val useFixed = node.config.useFixed ?: false
@@ -506,8 +454,7 @@ class WorkflowEngine private constructor() {
             (min + Math.random() * (max - min)).toInt().toString()
         }
     }
-
-    private fun generateRandomString(node: WorkflowNode, context: ExecutionContext): String {
+        private fun generateRandomString(node: WorkflowNode, context: ExecutionContext): String {
         val length = node.config.randomStringLength ?: 8
         val charset = node.config.randomStringCharset ?: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
         val useFixed = node.config.useFixed ?: false
@@ -519,8 +466,7 @@ class WorkflowEngine private constructor() {
             (1..length).map { charset[(Math.random() * charset.length).toInt()] }.joinToString("")
         }
     }
-
-    private suspend fun resolveParameters(
+        private suspend fun resolveParameters(
         config: Map<String, ParameterValue>,
         context: ExecutionContext
     ): Map<String, Any> {
@@ -528,8 +474,7 @@ class WorkflowEngine private constructor() {
             resolveParameterValue(value, context)
         }
     }
-
-    private fun resolveParameterValue(value: ParameterValue, context: ExecutionContext): String {
+        private fun resolveParameterValue(value: ParameterValue, context: ExecutionContext): String {
         return when (value) {
             is ParameterValue.StaticValue -> value.value
             is ParameterValue.NodeReference -> {
@@ -537,11 +482,9 @@ class WorkflowEngine private constructor() {
             }
         }
     }
-
-    private fun evaluateCondition(leftValue: String, operator: String, rightValue: String): Boolean {
+        private fun evaluateCondition(leftValue: String, operator: String, rightValue: String): Boolean {
         val left = leftValue.toDoubleOrNull()
         val right = rightValue?.toDoubleOrNull()
-
         return when (operator.uppercase()) {
             "EQ", "==" -> leftValue == rightValue
             "NE", "!=" -> leftValue != rightValue
@@ -564,29 +507,25 @@ class WorkflowEngine private constructor() {
             else -> false
         }
     }
-
-    private suspend fun processNextNodes(
+        private suspend fun processNextNodes(
         workflow: WorkflowDefinition,
         currentNode: WorkflowNode,
         context: ExecutionContext,
         lastResult: Result<Any>
     ) {
         val outgoingConnections = workflow.getOutgoingConnections(currentNode.id)
-
         for (connection in outgoingConnections) {
             val condition = ConnectionCondition.fromString(connection.condition.name)
-
-            val shouldProceed = when {
+        val shouldProceed = when {
                 lastResult.isSuccess && (condition == ConnectionCondition.OnSuccess || condition == ConnectionCondition.TRUE) -> true
                 lastResult.isFailure && condition == ConnectionCondition.OnError -> true
                 condition == ConnectionCondition.TRUE && lastResult.getOrNull() == true -> true
                 condition == ConnectionCondition.FALSE && lastResult.getOrNull() == false -> true
                 else -> false
             }
-
-            if (shouldProceed) {
+        if (shouldProceed) {
                 val nextNode = workflow.getNodeById(connection.targetNodeId)
-                if (nextNode != null && context.getNodeState(nextNode.id) == NodeExecutionState.Pending) {
+        if (nextNode != null && context.getNodeState(nextNode.id) == NodeExecutionState.Pending) {
                     executeNode(workflow, nextNode, context)
                 }
             } else {
@@ -594,8 +533,7 @@ class WorkflowEngine private constructor() {
             }
         }
     }
-
-    private fun updateExecutionProgress(context: ExecutionContext) {
+        private fun updateExecutionProgress(context: ExecutionContext) {
         val workflow = workflows[context.workflowId] ?: return
         val totalNodes = workflow.nodes.size
         val completedNodes = context.nodeStates.count { it.value != NodeExecutionState.Pending && it.value != NodeExecutionState.Running }
@@ -603,8 +541,7 @@ class WorkflowEngine private constructor() {
 
         updateExecutionState(context.executionId, ExecutionState.Running(progress))
     }
-
-    private fun updateExecutionState(executionId: String, state: ExecutionState) {
+        private fun updateExecutionState(executionId: String, state: ExecutionState) {
         scope.launch {
             mutex.withLock {
                 val currentStates = _executionState.value.toMutableMap()
@@ -613,14 +550,11 @@ class WorkflowEngine private constructor() {
             }
         }
     }
-
-    fun getExecutionState(executionId: String): ExecutionState? = _executionState.value[executionId]
+        fun getExecutionState(executionId: String): ExecutionState? = _executionState.value[executionId]
 
     fun getRunningExecutions(): Map<String, ExecutionContext> = runningExecutions.toMap()
-
-    fun getExecutionHistory(workflowId: String): List<ExecutionResult> = executionHistory[workflowId] ?: emptyList()
-
-    fun getStats(): EngineStats {
+        fun getExecutionHistory(workflowId: String): List<ExecutionResult> = executionHistory[workflowId] ?: emptyList()
+        fun getStats(): EngineStats {
         val avgExecutionTime = if (statsTotalExecutions.get() > 0) {
             statsTotalExecutionTime.get() / statsTotalExecutions.get()
         } else 0L
@@ -651,11 +585,10 @@ class WorkflowEngine private constructor() {
     ) {
         companion object {
             fun Success(warnings: List<String> = emptyList()) = RegistrationResult(true, warnings)
-            fun Invalid(errors: List<String>, warnings: List<String> = emptyList()) = RegistrationResult(false, warnings, errors)
+        fun Invalid(errors: List<String>, warnings: List<String> = emptyList()) = RegistrationResult(false, warnings, errors)
         }
     }
-
-    class CancelledException(message: String) : Exception(message)
+        class CancelledException(message: String) : Exception(message)
 
     suspend fun cancelExecution(executionId: String): Boolean {
         val context = runningExecutions[executionId] ?: return false
@@ -663,7 +596,6 @@ class WorkflowEngine private constructor() {
 
         _executionEvents.emit(ExecutionEvent.Cancelled(context.workflowId, executionId))
         AppLogger.i(TAG, "Execution cancelled: ${executionId}")
-
         return true
     }
 }

@@ -38,16 +38,16 @@ import java.util.Locale
 fun ApexMainScaffold() {
     val context = LocalContext.current
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    var currentTab by remember { mutableStateOf(ApexTab.CHAT) }
+        val scope = rememberCoroutineScope()
+        var currentTab by remember { mutableStateOf(ApexTab.CHAT) }
 
     // 会话管理
     val sessionManager = remember { ChatSessionManager(context) }
-    var sessions by remember { mutableStateOf(sessionManager.listAll()) }
-    var currentSessionId by remember { mutableStateOf<String?>(null) }
-    var showSearchField by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-    var renamingSession by remember { mutableStateOf<ChatSession?>(null) }
+        var sessions by remember { mutableStateOf(sessionManager.listAll()) }
+        var currentSessionId by remember { mutableStateOf<String?>(null) }
+        var showSearchField by remember { mutableStateOf(false) }
+        var searchQuery by remember { mutableStateOf("") }
+        var renamingSession by remember { mutableStateOf<ChatSession?>(null) }
 
     // 筛选
     val displaySessions = if (searchQuery.isBlank()) sessions else sessionManager.search(searchQuery)
@@ -104,7 +104,7 @@ fun ApexMainScaffold() {
                         Spacer(Modifier.width(8.dp))
                         Text("新建对话")
                     }
-                    if (showSearchField) {
+        if (showSearchField) {
                         Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
                             value = searchQuery,
@@ -238,7 +238,7 @@ private fun SessionItem(
     onRename: () -> Unit
 ) {
     val dateFormat = remember { SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()) }
-    val bg = if (isActive) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent
+        val bg = if (isActive) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent
     val fg = if (isActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
 
     Row(
@@ -265,7 +265,7 @@ private fun SessionItem(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            if (session.lastMessage.isNotBlank()) {
+        if (session.lastMessage.isNotBlank()) {
                 Text(
                     session.lastMessage,
                     style = MaterialTheme.typography.labelSmall,

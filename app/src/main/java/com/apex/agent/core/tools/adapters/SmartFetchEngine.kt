@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
  */
 object SmartFetchEngine {
     private const val TAG = "SmartFetchEngine"
-    private val inputSanitizer = InputSanitizer()
+        private val inputSanitizer = InputSanitizer()
 
     /**
      * 爬取结果
@@ -30,7 +30,7 @@ object SmartFetchEngine {
 
     // 内容缓存
     private val contentCache = ConcurrentHashMap<String, CachedContent>()
-    private const val CACHE_EXPIRE = 20 * 60 * 1000L // 20分钟
+        private const val CACHE_EXPIRE = 20 * 60 * 1000L // 20分钟
     private const val MAX_CACHE_SIZE = 60
     private const val CLEANUP_BATCH_SIZE = 20
     private const val MAX_CONTENT_LENGTH = 15000
@@ -72,7 +72,7 @@ object SmartFetchEngine {
     private fun cleanOldCacheIfNeeded() {
         if (contentCache.size >= MAX_CACHE_SIZE) {
             cleanExpiredCache()
-            if (contentCache.size >= MAX_CACHE_SIZE) {
+        if (contentCache.size >= MAX_CACHE_SIZE) {
                 // 按时间排序，删除最旧的缓存
     val sortedKeys = contentCache.entries
                     .sortedBy { it.value.timestamp }
@@ -90,7 +90,7 @@ object SmartFetchEngine {
     private fun isValidUrl(url: String): Boolean {
         return try {
             val cleanUrl = url.trim()
-            if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+        if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
                 false
             } else {
                 val uri = java.net.URI.create(cleanUrl)
@@ -168,7 +168,7 @@ object SmartFetchEngine {
             
             // 检查Content-Type
     val contentType = response.header("Content-Type") ?: ""
-            if (!contentType.contains("text/html") && !contentType.contains("application/xhtml")) {
+        if (!contentType.contains("text/html") && !contentType.contains("application/xhtml")) {
                 return@withContext FetchResult(
                     url = cleanUrl,
                     pureContent = "该链接不是HTML网页，无法提取内�?,
@@ -177,8 +177,7 @@ object SmartFetchEngine {
                     success = false
                 )
             }
-            
-            val html = response.body?.string() ?: ""
+        val html = response.body?.string() ?: ""
             
             // 检查HTML内容
     if (html.isEmpty()) {
@@ -208,7 +207,7 @@ object SmartFetchEngine {
             // 对提取的内容进行安全消毒
     val pureContent = try {
                 val sanitizeResult = inputSanitizer.sanitize(rawContent)
-                if (sanitizeResult.findings.isNotEmpty()) {
+        if (sanitizeResult.findings.isNotEmpty()) {
                     AppLogger.d(TAG, "网页内容消毒完成: 发现${sanitizeResult.findings.size}个安全问�?)
                 }
                 sanitizeResult.sanitizedText
@@ -217,8 +216,7 @@ object SmartFetchEngine {
                 // 消毒失败时使用原始内容，不阻断流�?
                 rawContent
             }
-
-            val result = FetchResult(
+        val result = FetchResult(
                 url = cleanUrl,
                 pureContent = pureContent,
                 fetchTime = getCurrentTime(),
@@ -280,7 +278,6 @@ object SmartFetchEngine {
     if (html.isEmpty()) {
             return ""
         }
-        
         var text = html
 
         // 步骤1：移除脚本和样式（带异常保护�?
@@ -340,15 +337,14 @@ object SmartFetchEngine {
             text = text.take(MAX_CONTENT_LENGTH)
             // 尝试在完整句子处截断
     val lastPeriod = text.lastIndexOf("�?)
-            val lastComma = text.lastIndexOf("�?)
-            val lastDot = text.lastIndexOf(".")
-            val cutPoint = listOf(lastPeriod, lastComma, lastDot).maxOrNull() ?: MAX_CONTENT_LENGTH
+        val lastComma = text.lastIndexOf("�?)
+        val lastDot = text.lastIndexOf(".")
+        val cutPoint = listOf(lastPeriod, lastComma, lastDot).maxOrNull() ?: MAX_CONTENT_LENGTH
             if (cutPoint > MAX_CONTENT_LENGTH * 0.7) {
                 text = text.take(cutPoint + 1)
             }
             text += "......(内容已截断）"
         }
-
         return text.trim()
     }
 
@@ -368,11 +364,10 @@ object SmartFetchEngine {
             """<div[^>]*class="[^"]*article[^"]*"[\s\S]*?<\/div>""",
             """<section[\s\S]*?<\/section>"""
         )
-
         for (selector in contentSelectors) {
             try {
                 val match = Regex(selector, RegexOption.IGNORE_CASE).find(html)
-                if (match != null) {
+        if (match != null) {
                     val content = match.value
                     // 检查内容长度，确保是有效内容区�?
     if (content.length > 500) {
@@ -383,7 +378,6 @@ object SmartFetchEngine {
                 // 忽略
             }
         }
-
         return ""
     }
 
@@ -402,7 +396,6 @@ object SmartFetchEngine {
         if (!result.success) {
             return "网页抓取失败: ${result.pureContent}"
         }
-
         return buildString {
             append("📄 网页内容�?{result.fetchTime}）：\n")
             append("🔗 ${result.url}\n")

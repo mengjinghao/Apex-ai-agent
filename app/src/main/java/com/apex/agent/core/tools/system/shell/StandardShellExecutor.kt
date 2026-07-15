@@ -50,7 +50,7 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
 
                     // 设置超时
     val completed = process.waitFor(COMMAND_TIMEOUT, TimeUnit.SECONDS)
-                    if (!completed) {
+        if (!completed) {
                         process.destroy()
                         return@withContext ShellExecutor.CommandResult(
                                 false,
@@ -71,8 +71,7 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
                             BufferedReader(InputStreamReader(process.errorStream)).use {
                                 it.readText()
                             }
-
-                    val exitCode = process.exitValue()
+        val exitCode = process.exitValue()
 
                     return@withContext ShellExecutor.CommandResult(
                             exitCode == 0,
@@ -104,7 +103,7 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
 
                     // 设置超时
     val completed = process.waitFor(COMMAND_TIMEOUT, TimeUnit.SECONDS)
-                    if (!completed) {
+        if (!completed) {
                         process.destroy()
                         return@withContext ShellExecutor.CommandResult(
                                 false,
@@ -125,8 +124,7 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
                             BufferedReader(InputStreamReader(process.errorStream)).use {
                                 it.readText()
                             }
-
-                    val exitCode = process.exitValue()
+        val exitCode = process.exitValue()
 
                     // 对于grep命令，即使没有匹配也认为成功
     val success =
@@ -206,7 +204,6 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
             escaped = false
             i++
         }
-
         return false
     }
 }
@@ -315,8 +312,7 @@ private class StandardShellProcess(command: String) : ShellProcess {
                 escaped = false
                 i++
             }
-
-            return false
+        return false
         }
     }
 }

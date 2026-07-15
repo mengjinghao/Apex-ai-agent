@@ -24,16 +24,13 @@ class ModelPerformanceOptimizer(private val context: Context) {
         val memoryUsage: String,
         val recommendations: List<String>
     )
-
-    fun optimizeForDevice(): PerformanceConfig {
+        fun optimizeForDevice(): PerformanceConfig {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memInfo)
-
         val totalRAM = memInfo.totalMem
         val availableRAM = memInfo.availMem
         val cpuCores = Runtime.getRuntime().availableProcessors()
-
         val isHighEndDevice = totalRAM >= 8 * 1024 * 1024 * 1024 && cpuCores >= 6
 
         val threadCount = when {
@@ -42,15 +39,12 @@ class ModelPerformanceOptimizer(private val context: Context) {
             cpuCores <= 8 -> cpuCores - 2
             else -> cpuCores - 3
         }.coerceIn(1, cpuCores)
-
         val batchSize = when {
             isHighEndDevice -> 512
             totalRAM >= 6 * 1024 * 1024 * 1024 -> 256
             else -> 128
         }
-
         val gpuLayers = detectOptimalGpuLayers()
-
         val useMemoryMapping = availableRAM > 4 * 1024 * 1024 * 1024
 
         val useMemoryLock = !useMemoryMapping && availableRAM > 2 * 1024 * 1024 * 1024
@@ -61,7 +55,6 @@ class ModelPerformanceOptimizer(private val context: Context) {
             totalRAM >= 4 * 1024 * 1024 * 1024 -> 2048
             else -> 1024
         }
-
         return PerformanceConfig(
             threadCount = threadCount,
             batchSize = batchSize,
@@ -71,14 +64,12 @@ class ModelPerformanceOptimizer(private val context: Context) {
             contextSize = contextSize
         )
     }
-
-    private fun detectOptimalGpuLayers(): Int {
+        private fun detectOptimalGpuLayers(): Int {
         return try {
             val memInfo = ActivityManager.MemoryInfo()
-            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             activityManager.getMemoryInfo(memInfo)
-
-            val totalRAM = memInfo.totalMem
+        val totalRAM = memInfo.totalMem
             val gpuMemoryEstimate = when {
                 Build.HARDWARE.contains("adreno", ignoreCase = true) -> {
                     when {
@@ -103,39 +94,29 @@ class ModelPerformanceOptimizer(private val context: Context) {
             0
         }
     }
-
-    fun benchmarkAndSuggest(
+        fun benchmarkAndSuggest(
         currentConfig: PerformanceConfig,
         testPromptLength: Int = 500
     ): OptimizationResult {
         val optimal = optimizeForDevice()
-
         val improvements = mutableListOf<String>()
-
         if (currentConfig.threadCount != optimal.threadCount) {
             improvements.add("线程�? ${currentConfig.threadCount} -> ${optimal.threadCount}")
         }
-
         if (currentConfig.batchSize != optimal.batchSize) {
             improvements.add("批处理大�? ${currentConfig.batchSize} -> ${optimal.batchSize}")
         }
-
         if (currentConfig.gpuLayers != optimal.gpuLayers) {
             improvements.add("GPU层数: ${currentConfig.gpuLayers} -> ${optimal.gpuLayers}")
         }
-
         if (!currentConfig.useMemoryMapping && optimal.useMemoryMapping) {
             improvements.add("启用内存映射以提升速度")
         }
-
         if (currentConfig.contextSize != optimal.contextSize) {
             improvements.add("上下文大�? ${currentConfig.contextSize} -> ${optimal.contextSize}")
         }
-
         val estimatedSpeedUp = calculateSpeedUp(currentConfig, optimal)
-
         val memoryUsage = estimateMemoryUsage(optimal)
-
         return OptimizationResult(
             config = optimal,
             estimatedSpeedUp = estimatedSpeedUp,
@@ -143,30 +124,24 @@ class ModelPerformanceOptimizer(private val context: Context) {
             recommendations = improvements
         )
     }
-
-    private fun calculateSpeedUp(current: PerformanceConfig, optimal: PerformanceConfig): Float {
+        private fun calculateSpeedUp(current: PerformanceConfig, optimal: PerformanceConfig): Float {
         var speedUp = 1.0f
 
         if (current.threadCount < optimal.threadCount) {
             speedUp *= 1.1f
         }
-
         if (current.gpuLayers < optimal.gpuLayers) {
             speedUp *= 1.2f
         }
-
         if (!current.useMemoryMapping && optimal.useMemoryMapping) {
             speedUp *= 1.15f
         }
-
         if (current.batchSize < optimal.batchSize) {
             speedUp *= 1.05f
         }
-
         return speedUp
     }
-
-    private fun estimateMemoryUsage(config: PerformanceConfig): String {
+        private fun estimateMemoryUsage(config: PerformanceConfig): String {
         val baseMemory = config.contextSize * 4L
         val tensorMemory = config.batchSize * 2L * config.gpuLayers
         val totalMemory = baseMemory + tensorMemory
@@ -176,8 +151,7 @@ class ModelPerformanceOptimizer(private val context: Context) {
             else -> String.format("%.2f GB", totalMemory / (1024.0 * 1024.0 * 1024.0))
         }
     }
-
-    fun getQuickSettings(): Map<String, Any> {
+        fun getQuickSettings(): Map<String, Any> {
         val config = optimizeForDevice()
         return mapOf(
             "threads" to config.threadCount,

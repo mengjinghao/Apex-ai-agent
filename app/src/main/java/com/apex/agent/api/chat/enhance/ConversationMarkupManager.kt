@@ -109,7 +109,7 @@ class ConversationMarkupManager {
          */
         fun createToolNotAvailableError(toolName: String, details: String? = null): String {
             val errorMessage = details ?: "The tool `${toolName}` is not available."
-            return createToolErrorStatus(toolName, errorMessage)
+        return createToolErrorStatus(toolName, errorMessage)
         }
 
         /**
@@ -122,16 +122,16 @@ class ConversationMarkupManager {
         fun createToolsSkippedByCompletionWarning(context: Context, toolNames: List<String>): String {
             val uniqueNames =
                     toolNames.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
-            val toolDescription =
+        val toolDescription =
                     if (uniqueNames.isEmpty()) {
                         context.getString(R.string.conversation_markup_tool_calls)
                     } else {
                         context.getString(R.string.conversation_markup_tools_call, uniqueNames.joinToString("`, `"))
                     }
-            val message =
+        val message =
                     context.getString(R.string.conversation_markup_completion_with_tools_warning, toolDescription) +
                             context.getString(R.string.conversation_markup_completion_with_tools_hint)
-            return createWarningStatus(message)
+        return createWarningStatus(message)
         }
 
         /**
@@ -179,19 +179,17 @@ class ConversationMarkupManager {
         fun containsWaitForUserNeed(content: String): Boolean {
             return containsStatusType(content, STATUS_WAIT_FOR_USER_NEED)
         }
-
         private fun containsStatusType(content: String, statusType: String): Boolean {
             val escapedType = Regex.escape(statusType)
-            val statusRegex = Regex(
+        val statusRegex = Regex(
                 "<status\\b[^>]*\\btype\\s*=\\s*\"${escapedType}\"[^>]*(?:/>|>[\\s\\S]*?</status>)",
                 setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
             )
-            return statusRegex.containsMatchIn(content)
+        return statusRegex.containsMatchIn(content)
         }
-
         private fun createToolResultXml(toolName: String, status: String, content: String): String {
             val tagName = ChatMarkupRegex.generateRandomToolResultTagName()
-            return """<${tagName} name="${toolName}" status="${status}">${content}</${tagName}>""".trimIndent()
+        return """<${tagName} name="${toolName}" status="${status}">${content}</${tagName}>""".trimIndent()
         }
 
     }

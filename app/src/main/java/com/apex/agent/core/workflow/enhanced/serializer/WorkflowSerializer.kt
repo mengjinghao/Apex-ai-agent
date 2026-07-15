@@ -31,8 +31,7 @@ class WorkflowSerializer {
         encodeDefaults = true
         prettyPrint = false
     }
-
-    private val prettyJson = Json {
+        private val prettyJson = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
         prettyPrint = true
@@ -94,7 +93,7 @@ class WorkflowSerializer {
 
             // 校验和校验
     val actualChecksum = computeChecksum(pkg.workflows)
-            if (pkg.checksum.isNotEmpty() && actualChecksum != pkg.checksum) {
+        if (pkg.checksum.isNotEmpty() && actualChecksum != pkg.checksum) {
                 return ImportResult(
                     workflows = emptyList(),
                     warnings = emptyList(),
@@ -170,7 +169,7 @@ class WorkflowSerializer {
     fun fromCompact(compactStr: String): ImportResult {
         return try {
             val c = json.decodeFromString(CompactWorkflow.serializer(), compactStr)
-            val workflow = EnhancedWorkflow(
+        val workflow = EnhancedWorkflow(
                 id = c.id, name = c.name, version = c.v,
                 sagaMode = c.s,
                 nodes = c.n.map {
@@ -240,7 +239,6 @@ class WorkflowSerializer {
     )
 
     // ============ 辅助方法 ============
-
     data class ImportResult(
         val workflows: List<EnhancedWorkflow>,
         val warnings: List<String>,
@@ -248,17 +246,14 @@ class WorkflowSerializer {
     ) {
         val isSuccess: Boolean get() = errors.isEmpty()
     }
-
-    private fun computeChecksum(workflows: List<EnhancedWorkflow>): String {
+        private fun computeChecksum(workflows: List<EnhancedWorkflow>): String {
         val jsonStr = json.encodeToString(kotlinx.serialization.builtins.ListSerializer(EnhancedWorkflow.serializer()), workflows)
         val md = java.security.MessageDigest.getInstance("SHA-256")
         val bytes = md.digest(jsonStr.toByteArray())
         return bytes.joinToString("") { "%02x".format(it) }.take(16)
     }
-
-    private fun computeChecksum(workflow: EnhancedWorkflow): String = computeChecksum(listOf(workflow))
-
-    private fun jsonToYaml(element: JsonElement, indent: Int): String {
+        private fun computeChecksum(workflow: EnhancedWorkflow): String = computeChecksum(listOf(workflow))
+        private fun jsonToYaml(element: JsonElement, indent: Int): String {
         val sb = StringBuilder()
         val pad = "  ".repeat(indent)
         when (element) {
@@ -286,8 +281,7 @@ class WorkflowSerializer {
         }
         return sb.toString()
     }
-
-    private fun yamlToJson(yaml: String): JsonElement {
+        private fun yamlToJson(yaml: String): JsonElement {
         // 极简 YAML 解析（仅支持键值对和缩进）
     val lines = yaml.lines().filter { it.isNotBlank() && !it.startsWith("#") }
         val root = buildJsonObject {  }

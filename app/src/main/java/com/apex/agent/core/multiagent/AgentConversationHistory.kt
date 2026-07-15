@@ -40,10 +40,8 @@ data class AgentConversation(
         messages.add(message)
         lastActivity = System.currentTimeMillis()
     }
-
-    fun toJson(): String = Gson().toJson(this)
-
-    fun getFormattedHistory(): String {
+        fun toJson(): String = Gson().toJson(this)
+        fun getFormattedHistory(): String {
         return messages.joinToString("\n\n") { msg ->
             val rolePrefix = when (msg.role) {
                 MessageRole.USER -> "?? 用户"

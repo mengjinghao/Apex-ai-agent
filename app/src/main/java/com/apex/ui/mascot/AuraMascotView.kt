@@ -76,8 +76,8 @@ fun AuraMascotView(
     val accent = accentColorFor(form)
 
     // 浮动动画:轻微上下浮动(呼吸感)
-    val infiniteTransition = rememberInfiniteTransition(label = "aura_float")
-    val floatY by infiniteTransition.animateFloat(
+        val infiniteTransition = rememberInfiniteTransition(label = "aura_float")
+        val floatY by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = -6f,
         animationSpec = infiniteRepeatable(
@@ -156,21 +156,19 @@ private fun JellyfishFrame(
     val context = LocalContext.current
 
     val animDrawableName = AuraMascot.getAnimationDrawableName(form)
-    val animResId = remember(animDrawableName) {
+        val animResId = remember(animDrawableName) {
         context.resources.getIdentifier(animDrawableName, "drawable", context.packageName)
     }
-    val staticDrawableName = AuraMascot.getDrawableName(form)
-    val staticResId = remember(staticDrawableName) {
+        val staticDrawableName = AuraMascot.getDrawableName(form)
+        val staticResId = remember(staticDrawableName) {
         context.resources.getIdentifier(staticDrawableName, "drawable", context.packageName)
     }
-
-    val graphicsModifier = modifier.graphicsLayer {
+        val graphicsModifier = modifier.graphicsLayer {
         translationY = floatY
         scaleX = breathScale
         scaleY = breathScale
     }
-
-    when {
+        when {
         animResId != 0 -> {
             // 帧动画版 — AndroidView 桥接 ImageView 播放 AnimationDrawable
             AndroidView(
@@ -226,7 +224,7 @@ private fun TransitionBurstEffect(
     modifier: Modifier = Modifier,
 ) {
     var burstScale by remember { mutableStateOf(0.3f) }
-    var burstAlpha by remember { mutableStateOf(0f) }
+        var burstAlpha by remember { mutableStateOf(0f) }
 
     LaunchedEffect(form) {
         // 触发爆发:从 0.3 缩放到 1.8,透明度从 0.9 衰减到 0
@@ -241,8 +239,7 @@ private fun TransitionBurstEffect(
         }
         burstAlpha = 0f
     }
-
-    if (burstAlpha > 0.01f) {
+        if (burstAlpha > 0.01f) {
         Box(
             modifier = modifier,
             contentAlignment = Alignment.Center

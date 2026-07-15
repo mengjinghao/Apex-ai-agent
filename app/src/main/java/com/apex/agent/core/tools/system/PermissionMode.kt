@@ -70,11 +70,9 @@ enum class PermissionMode(
             values().find { it.level == level } ?: STANDARD
 
         fun sortedByLevel(): List<PermissionMode> = values().sortedBy { it.level }
-
         fun sortedByLevelDesc(): List<PermissionMode> = values().sortedByDescending { it.level }
     }
-
-    fun isHigherOrEqualThan(other: PermissionMode): Boolean = this.level >= other.level
+        fun isHigherOrEqualThan(other: PermissionMode): Boolean = this.level >= other.level
 
     fun isHigherThan(other: PermissionMode): Boolean = this.level > other.level
 }
@@ -137,8 +135,7 @@ enum class RootExecutionMode(
                 com.apex.agent.data.preferences.RootCommandExecutionMode.FORCE_EXEC -> FORCE_EXEC
             }
     }
-
-    fun toLegacyMode(): com.apex.agent.data.preferences.RootCommandExecutionMode =
+        fun toLegacyMode(): com.apex.agent.data.preferences.RootCommandExecutionMode =
         when (this) {
             AUTO -> com.apex.agent.data.preferences.RootCommandExecutionMode.AUTO
             FORCE_LIBSU -> com.apex.agent.data.preferences.RootCommandExecutionMode.FORCE_LIBSU

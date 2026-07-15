@@ -69,27 +69,20 @@ class SkillWorkflowEditor private constructor() {
         val zoomLevel: Float = 1.0f,
         val panOffset: NodePosition = NodePosition()
     )
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val mutex = Mutex()
-
-    private val workflows = ConcurrentHashMap<String, WorkflowDefinition>()
-    private val editorStates = ConcurrentHashMap<String, EditorState>()
-    private val undoStacks = ConcurrentHashMap<String, MutableList<EditorAction>>()
-    private val redoStacks = ConcurrentHashMap<String, MutableList<EditorAction>>()
-
-    private val _editorState = MutableStateFlow(EditorState())
-    val editorState: StateFlow<EditorState> = _editorState.asStateFlow()
-
-    private val _editorEvents = MutableSharedFlow<EditorEvent>()
-    val editorEvents: SharedFlow<EditorEvent> = _editorEvents.asSharedFlow()
-
-    private val _workflowsFlow = MutableStateFlow<List<WorkflowDefinition>>(emptyList())
-    val workflowsFlow: StateFlow<List<WorkflowDefinition>> = _workflowsFlow.asStateFlow()
-
-    private val json = Json { prettyPrint = true; encodeDefaults = true }
-
-    fun createWorkflow(name: String, description: String = ""): WorkflowDefinition {
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val mutex = Mutex()
+        private val workflows = ConcurrentHashMap<String, WorkflowDefinition>()
+        private val editorStates = ConcurrentHashMap<String, EditorState>()
+        private val undoStacks = ConcurrentHashMap<String, MutableList<EditorAction>>()
+        private val redoStacks = ConcurrentHashMap<String, MutableList<EditorAction>>()
+        private val _editorState = MutableStateFlow(EditorState())
+        val editorState: StateFlow<EditorState> = _editorState.asStateFlow()
+        private val _editorEvents = MutableSharedFlow<EditorEvent>()
+        val editorEvents: SharedFlow<EditorEvent> = _editorEvents.asSharedFlow()
+        private val _workflowsFlow = MutableStateFlow<List<WorkflowDefinition>>(emptyList())
+        val workflowsFlow: StateFlow<List<WorkflowDefinition>> = _workflowsFlow.asStateFlow()
+        private val json = Json { prettyPrint = true; encodeDefaults = true }
+        fun createWorkflow(name: String, description: String = ""): WorkflowDefinition {
         val workflow = WorkflowDefinition(
             name = name,
             description = description,
@@ -110,16 +103,14 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.i(TAG, "Workflow created: ${workflow.name} [${workflow.id}]")
         return workflow
     }
-
-    fun loadWorkflow(workflow: WorkflowDefinition) {
+        fun loadWorkflow(workflow: WorkflowDefinition) {
         workflows[workflow.id] = workflow
         undoStacks.getOrPut(workflow.id) { mutableListOf() }.clear()
         redoStacks.getOrPut(workflow.id) { mutableListOf() }.clear()
         updateWorkflowsFlow()
         AppLogger.d(TAG, "Workflow loaded: ${workflow.name} [${workflow.id}]")
     }
-
-    fun deleteWorkflow(workflowId: String): Boolean {
+        fun deleteWorkflow(workflowId: String): Boolean {
         val removed = workflows.remove(workflowId) ?: return false
         editorStates.remove(workflowId)
         undoStacks.remove(workflowId)
@@ -134,12 +125,10 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.i(TAG, "Workflow deleted: ${workflowId}")
         return true
     }
-
-    fun getWorkflow(workflowId: String): WorkflowDefinition? = workflows[workflowId]
+        fun getWorkflow(workflowId: String): WorkflowDefinition? = workflows[workflowId]
 
     fun getAllWorkflows(): List<WorkflowDefinition> = workflows.values.toList()
-
-    fun updateWorkflowMetadata(workflowId: String, name: String? = null, description: String? = null, enabled: Boolean? = null): WorkflowDefinition? {
+        fun updateWorkflowMetadata(workflowId: String, name: String? = null, description: String? = null, enabled: Boolean? = null): WorkflowDefinition? {
         val workflow = workflows[workflowId] ?: return null
         val oldWorkflow = workflow
 
@@ -163,8 +152,7 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Workflow metadata updated: ${workflowId}")
         return updatedWorkflow
     }
-
-    fun addNode(workflowId: String, node: WorkflowNode): WorkflowNode? {
+        fun addNode(workflowId: String, node: WorkflowNode): WorkflowNode? {
         val workflow = workflows[workflowId] ?: return null
 
         val updatedWorkflow = workflow.copy(
@@ -185,8 +173,7 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Node added to workflow ${workflowId}: ${node.name} [${node.id}]")
         return node
     }
-
-    fun createAndAddNode(
+        fun createAndAddNode(
         workflowId: String,
         name: String,
         type: NodeType,
@@ -201,14 +188,12 @@ class SkillWorkflowEditor private constructor() {
         )
         return addNode(workflowId, node)
     }
-
-    fun updateNode(workflowId: String, nodeId: String, updates: (NodeConfig) -> NodeConfig): WorkflowNode? {
+        fun updateNode(workflowId: String, nodeId: String, updates: (NodeConfig) -> NodeConfig): WorkflowNode? {
         val workflow = workflows[workflowId] ?: return null
         val oldNode = workflow.getNodeById(nodeId) ?: return null
 
         val newConfig = updates(oldNode.config)
         val newNode = oldNode.copy(config = newConfig)
-
         val updatedNodes = workflow.nodes.map { if (it.id == nodeId) newNode else it }
         val updatedWorkflow = workflow.copy(
             nodes = updatedNodes,
@@ -228,14 +213,12 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Node updated in workflow ${workflowId}: ${newNode.name} [${newNode.id}]")
         return newNode
     }
-
-    fun removeNode(workflowId: String, nodeId: String): Boolean {
+        fun removeNode(workflowId: String, nodeId: String): Boolean {
         val workflow = workflows[workflowId] ?: return false
         val node = workflow.getNodeById(nodeId) ?: return false
 
         val updatedNodes = workflow.nodes.filter { it.id != nodeId }
         val updatedConnections = workflow.connections.filter { it.sourceNodeId != nodeId && it.targetNodeId != nodeId }
-
         val updatedWorkflow = workflow.copy(
             nodes = updatedNodes,
             connections = updatedConnections,
@@ -255,15 +238,13 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Node removed from workflow ${workflowId}: ${nodeId}")
         return true
     }
-
-    fun moveNode(workflowId: String, nodeId: String, newPosition: NodePosition): Boolean {
+        fun moveNode(workflowId: String, nodeId: String, newPosition: NodePosition): Boolean {
         val workflow = workflows[workflowId] ?: return false
         val node = workflow.getNodeById(nodeId) ?: return false
 
         val oldPosition = node.position
         val updatedNode = node.copy(position = newPosition)
         val updatedNodes = workflow.nodes.map { if (it.id == nodeId) updatedNode else it }
-
         val updatedWorkflow = workflow.copy(
             nodes = updatedNodes,
             updatedAt = System.currentTimeMillis()
@@ -280,8 +261,7 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Node moved in workflow ${workflowId}: ${nodeId} to ${newPosition}")
         return true
     }
-
-    fun addConnection(workflowId: String, connection: WorkflowConnection): WorkflowConnection? {
+        fun addConnection(workflowId: String, connection: WorkflowConnection): WorkflowConnection? {
         val workflow = workflows[workflowId] ?: return null
 
         val sourceNode = workflow.getNodeById(connection.sourceNodeId) ?: return null
@@ -292,9 +272,8 @@ class SkillWorkflowEditor private constructor() {
         }
         if (existingConnection != null) {
             AppLogger.w(TAG, "Connection already exists between ${connection.sourceNodeId} and ${connection.targetNodeId}")
-            return null
+        return null
         }
-
         val updatedWorkflow = workflow.copy(
             connections = workflow.connections + connection,
             updatedAt = System.currentTimeMillis()
@@ -313,8 +292,7 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Connection added to workflow ${workflowId}: ${connection.id}")
         return connection
     }
-
-    fun createAndAddConnection(
+        fun createAndAddConnection(
         workflowId: String,
         sourceNodeId: String,
         targetNodeId: String,
@@ -327,8 +305,7 @@ class SkillWorkflowEditor private constructor() {
         )
         return addConnection(workflowId, connection)
     }
-
-    fun removeConnection(workflowId: String, connectionId: String): Boolean {
+        fun removeConnection(workflowId: String, connectionId: String): Boolean {
         val workflow = workflows[workflowId] ?: return false
         val connection = workflow.connections.find { it.id == connectionId } ?: return false
 
@@ -350,14 +327,12 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Connection removed from workflow ${workflowId}: ${connectionId}")
         return true
     }
-
-    fun updateConnectionCondition(workflowId: String, connectionId: String, newCondition: ConnectionCondition): Boolean {
+        fun updateConnectionCondition(workflowId: String, connectionId: String, newCondition: ConnectionCondition): Boolean {
         val workflow = workflows[workflowId] ?: return false
         val connection = workflow.connections.find { it.id == connectionId } ?: return false
 
         val updatedConnection = connection.copy(condition = newCondition)
         val updatedConnections = workflow.connections.map { if (it.id == connectionId) updatedConnection else it }
-
         val updatedWorkflow = workflow.copy(
             connections = updatedConnections,
             updatedAt = System.currentTimeMillis()
@@ -369,13 +344,12 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Connection condition updated: ${connectionId} to ${newCondition}")
         return true
     }
-
-    private fun pushUndoAction(workflowId: String, action: EditorAction) {
+        private fun pushUndoAction(workflowId: String, action: EditorAction) {
         scope.launch {
             mutex.withLock {
                 val undoStack = undoStacks.getOrPut(workflowId) { mutableListOf() }
                 undoStack.add(action)
-                if (undoStack.size > MAX_UNDO_STACK_SIZE) {
+        if (undoStack.size > MAX_UNDO_STACK_SIZE) {
                     undoStack.removeAt(0)
                 }
 
@@ -383,19 +357,17 @@ class SkillWorkflowEditor private constructor() {
             }
         }
     }
-
-    fun undo(workflowId: String): Boolean {
+        fun undo(workflowId: String): Boolean {
         var action: EditorAction? = null
 
         scope.launch {
             mutex.withLock {
                 val undoStack = undoStacks.getOrPut(workflowId) { mutableListOf() }
-                if (undoStack.isEmpty()) return@launch
+        if (undoStack.isEmpty()) return@launch
 
                 action = undoStack.removeAt(undoStack.lastIndex)
             }
         }
-
         val currentAction = action ?: return false
 
         scope.launch {
@@ -414,19 +386,17 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Undo performed for workflow ${workflowId}")
         return true
     }
-
-    fun redo(workflowId: String): Boolean {
+        fun redo(workflowId: String): Boolean {
         var action: EditorAction? = null
 
         scope.launch {
             mutex.withLock {
                 val redoStack = redoStacks.getOrPut(workflowId) { mutableListOf() }
-                if (redoStack.isEmpty()) return@launch
+        if (redoStack.isEmpty()) return@launch
 
                 action = redoStack.removeAt(redoStack.lastIndex)
             }
         }
-
         val currentAction = action ?: return false
 
         scope.launch {
@@ -445,8 +415,7 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.d(TAG, "Redo performed for workflow ${workflowId}")
         return true
     }
-
-    private fun applyUndoAction(workflowId: String, action: EditorAction) {
+        private fun applyUndoAction(workflowId: String, action: EditorAction) {
         when (action) {
             is EditorAction.AddNode -> removeNode(workflowId, action.node.id)
             is EditorAction.RemoveNode -> addNode(workflowId, action.node)
@@ -470,8 +439,7 @@ class SkillWorkflowEditor private constructor() {
         }
         updateWorkflowsFlow()
     }
-
-    private fun applyRedoAction(workflowId: String, action: EditorAction) {
+        private fun applyRedoAction(workflowId: String, action: EditorAction) {
         when (action) {
             is EditorAction.AddNode -> addNode(workflowId, action.node)
             is EditorAction.RemoveNode -> removeNode(workflowId, action.node.id)
@@ -495,41 +463,32 @@ class SkillWorkflowEditor private constructor() {
         }
         updateWorkflowsFlow()
     }
-
-    fun canUndo(workflowId: String): Boolean {
+        fun canUndo(workflowId: String): Boolean {
         return undoStacks[workflowId]?.isNotEmpty() ?: false
     }
-
-    fun canRedo(workflowId: String): Boolean {
+        fun canRedo(workflowId: String): Boolean {
         return redoStacks[workflowId]?.isNotEmpty() ?: false
     }
-
-    fun setEditorState(updates: (EditorState) -> EditorState) {
+        fun setEditorState(updates: (EditorState) -> EditorState) {
         _editorState.value = updates(_editorState.value)
     }
-
-    fun selectNode(nodeId: String) {
+        fun selectNode(nodeId: String) {
         setEditorState { it.copy(selectedNodeId = nodeId, selectedConnectionId = null) }
     }
-
-    fun selectConnection(connectionId: String) {
+        fun selectConnection(connectionId: String) {
         setEditorState { it.copy(selectedConnectionId = connectionId, selectedNodeId = null) }
     }
-
-    fun setZoom(zoomLevel: Float) {
+        fun setZoom(zoomLevel: Float) {
         setEditorState { it.copy(zoomLevel = zoomLevel.coerceIn(0.1f, 3.0f)) }
     }
-
-    fun setPan(panOffset: NodePosition) {
+        fun setPan(panOffset: NodePosition) {
         setEditorState { it.copy(panOffset = panOffset) }
     }
-
-    fun exportWorkflowToJson(workflowId: String): String? {
+        fun exportWorkflowToJson(workflowId: String): String? {
         val workflow = workflows[workflowId] ?: return null
         return json.encodeToString(workflow)
     }
-
-    fun importWorkflowFromJson(jsonString: String): WorkflowDefinition? {
+        fun importWorkflowFromJson(jsonString: String): WorkflowDefinition? {
         return try {
             val workflow = json.decodeFromString<WorkflowDefinition>(jsonString)
             loadWorkflow(workflow)
@@ -539,8 +498,7 @@ class SkillWorkflowEditor private constructor() {
             null
         }
     }
-
-    fun duplicateWorkflow(workflowId: String, newName: String? = null): WorkflowDefinition? {
+        fun duplicateWorkflow(workflowId: String, newName: String? = null): WorkflowDefinition? {
         val original = workflows[workflowId] ?: return null
 
         val duplicated = original.copy(
@@ -559,12 +517,10 @@ class SkillWorkflowEditor private constructor() {
         AppLogger.i(TAG, "Workflow duplicated: ${original.name} -> ${duplicated.name}")
         return duplicated
     }
-
-    fun validateWorkflow(workflowId: String): WorkflowValidationResult? {
+        fun validateWorkflow(workflowId: String): WorkflowValidationResult? {
         return workflows[workflowId]?.validate()
     }
-
-    fun getAvailableNodeTypes(): List<NodeType> = NodeType.entries
+        fun getAvailableNodeTypes(): List<NodeType> = NodeType.entries
 
     fun createDefaultNodeConfig(type: NodeType): NodeConfig {
         return when (type) {
@@ -593,12 +549,10 @@ class SkillWorkflowEditor private constructor() {
             )
         }
     }
-
-    private fun updateWorkflowsFlow() {
+        private fun updateWorkflowsFlow() {
         _workflowsFlow.value = workflows.values.toList()
     }
-
-    fun clearAllWorkflows() {
+        fun clearAllWorkflows() {
         workflows.clear()
         editorStates.clear()
         undoStacks.clear()
@@ -606,8 +560,7 @@ class SkillWorkflowEditor private constructor() {
         updateWorkflowsFlow()
         AppLogger.i(TAG, "All workflows cleared")
     }
-
-    fun getStats(): EditorStats {
+        fun getStats(): EditorStats {
         return EditorStats(
             totalWorkflows = workflows.size,
             totalNodes = workflows.values.sumOf { it.nodes.size },

@@ -4,9 +4,9 @@ import com.apex.data.model.ChatMessage
 
 interface ChatServiceUiBridge {
     fun updateWebServerForCurrentChat(chatId: String)
-    fun resetAttachmentPanelState()
-    fun clearReplyToMessage()
-    fun getReplyToMessage(): ChatMessage?
+        fun resetAttachmentPanelState()
+        fun clearReplyToMessage()
+        fun getReplyToMessage(): ChatMessage?
 }
 
 object EmptyChatServiceUiBridge : ChatServiceUiBridge {

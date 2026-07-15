@@ -35,11 +35,11 @@ fun MultiAgentScreen(
     modifier: Modifier = Modifier,
 ) {
     val agents by state.agents.collectAsState()
-    val tasks by state.tasks.collectAsState()
-    val messages by state.messages.collectAsState()
-    val topology by state.topology.collectAsState()
-    val stats by state.stats.collectAsState()
-    val currentMode by state.collaborationMode.collectAsState()
+        val tasks by state.tasks.collectAsState()
+        val messages by state.messages.collectAsState()
+        val topology by state.topology.collectAsState()
+        val stats by state.stats.collectAsState()
+        val currentMode by state.collaborationMode.collectAsState()
 
     Column(
         modifier = modifier
@@ -145,7 +145,7 @@ private fun AgentCard(agent: AgentCardData, onRemove: () -> Unit) {
         AgentRoleType.PLANNER -> Color(0xFFA78BFA)
         AgentRoleType.SYSTEM -> Color(0xFF94A3B8)
     }
-    val statusColor = when (agent.status) {
+        val statusColor = when (agent.status) {
         AgentStatus.IDLE -> Color(0xFF64748B)
         AgentStatus.THINKING -> Color(0xFF60A5FA)
         AgentStatus.EXECUTING -> Color(0xFF00E5FF)
@@ -176,8 +176,8 @@ private fun TopologyPanel(topology: CollaborationTopology, modifier: Modifier = 
                 val w = size.width; val h = size.height
                 topology.edges.forEach { edge ->
                     val from = topology.nodes.find { it.agentId == edge.fromId }
-                    val to = topology.nodes.find { it.agentId == edge.toId }
-                    if (from != null && to != null) {
+        val to = topology.nodes.find { it.agentId == edge.toId }
+        if (from != null && to != null) {
                         drawLine(color = Color(edge.color), start = androidx.compose.ui.geometry.Offset(from.x * w, from.y * h), end = androidx.compose.ui.geometry.Offset(to.x * w, to.y * h), strokeWidth = 2f)
                     }
                 }

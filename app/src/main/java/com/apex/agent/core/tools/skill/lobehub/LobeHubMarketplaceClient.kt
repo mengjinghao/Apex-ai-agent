@@ -32,7 +32,7 @@ class LobeHubMarketplaceClient private constructor() {
         
         // LobeHub API endpoints
     private const val BASE_URL = "https://lobehub.com"
-    private const val SKILLS_API = "${BASE_URL}/api/skills"
+        private const val SKILLS_API = "${BASE_URL}/api/skills"
         private const val SKILL_DETAIL_API = "${BASE_URL}/api/skills"
         private const val SKILL_MD_BASE = "${BASE_URL}/skills"
         

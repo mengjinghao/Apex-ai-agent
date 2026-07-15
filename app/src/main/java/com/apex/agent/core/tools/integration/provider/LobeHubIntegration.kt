@@ -16,12 +16,12 @@ import kotlinx.coroutines.withContext
 class LobeHubIntegration(private val context: Context) : IntegrationProvider {
 
     private val skillManager = LobeHubSkillManager.getInstance(context)
-    private val source = IntegrationSource.LOBE_HUB
+        private val source = IntegrationSource.LOBE_HUB
 
     override fun getInfo(): IntegrationInfo = IntegrationInfo(
         id = source.id,
         name = source.name,
-        description = "LobeHub 技能市�?�?浏览、搜索和安装 330,000+ AI Skills",
+        description = "LobeHub 技能市�?�浏览、搜索和安装 330,000+ AI Skills",
         version = "1.0.0",
         author = "LobeHub",
         homepage = "https://lobehub.com/skills",
@@ -113,8 +113,7 @@ class LobeHubIntegration(private val context: Context) : IntegrationProvider {
             "open-claw", "claude-code", "codex", "cursor", "github-copilot"
         ))
     }
-
-    private fun LobeHubSkillListing.toUnifiedItem() = UnifiedItem(
+        private fun LobeHubSkillListing.toUnifiedItem() = UnifiedItem(
         source = source,
         sourceId = id,
         name = name,

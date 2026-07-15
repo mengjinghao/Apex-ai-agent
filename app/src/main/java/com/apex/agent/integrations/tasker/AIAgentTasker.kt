@@ -19,25 +19,25 @@ import com.joaomgcd.taskerpluginlibrary.runner.TaskerPluginResultConditionSatisf
 @TaskerInputRoot
 class AIAgentActionUpdate @JvmOverloads constructor(
     @field:TaskerInputField("task_type")
-    var taskType: String? = null,
+        var taskType: String? = null,
 
     @field:TaskerInputField("arg1")
-    var arg1: String? = null,
+        var arg1: String? = null,
 
     @field:TaskerInputField("arg2")
-    var arg2: String? = null,
+        var arg2: String? = null,
 
     @field:TaskerInputField("arg3")
-    var arg3: String? = null,
+        var arg3: String? = null,
 
     @field:TaskerInputField("arg4")
-    var arg4: String? = null,
+        var arg4: String? = null,
 
     @field:TaskerInputField("arg5")
-    var arg5: String? = null,
+        var arg5: String? = null,
 
     @field:TaskerInputField("args_json")
-    var argsJson: String? = null
+        var argsJson: String? = null
 )
 
 @TaskerOutputObject
@@ -51,19 +51,19 @@ class AIAgentActionOutput(
     private val argsJson: String?
 ) {
     @get:TaskerOutputVariable("task_type")
-    val outTaskType get() = taskType ?: ""
+        val outTaskType get() = taskType ?: ""
     @get:TaskerOutputVariable("arg1")
-    val outArg1 get() = arg1 ?: ""
+        val outArg1 get() = arg1 ?: ""
     @get:TaskerOutputVariable("arg2")
-    val outArg2 get() = arg2 ?: ""
+        val outArg2 get() = arg2 ?: ""
     @get:TaskerOutputVariable("arg3")
-    val outArg3 get() = arg3 ?: ""
+        val outArg3 get() = arg3 ?: ""
     @get:TaskerOutputVariable("arg4")
-    val outArg4 get() = arg4 ?: ""
+        val outArg4 get() = arg4 ?: ""
     @get:TaskerOutputVariable("arg5")
-    val outArg5 get() = arg5 ?: ""
+        val outArg5 get() = arg5 ?: ""
     @get:TaskerOutputVariable("args_json")
-    val outArgsJson get() = argsJson ?: ""
+        val outArgsJson get() = argsJson ?: ""
 }
 
 class AIAgentActionEventRunner :

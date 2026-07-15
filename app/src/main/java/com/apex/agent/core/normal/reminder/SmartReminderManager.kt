@@ -92,11 +92,10 @@ class SmartReminderManager(
 ) {
 
     private val reminders = ConcurrentHashMap<String, Reminder>()
-    private val pendingQueue = ConcurrentPriorityQueue<Reminder>(compareBy { it.scheduledAt })
-    private val _events = MutableSharedFlow<ReminderEvent>(extraBufferCapacity = 64)
-    val events: SharedFlow<ReminderEvent> = _events.asSharedFlow()
-
-    private var checkerJob: Job? = null
+        private val pendingQueue = ConcurrentPriorityQueue<Reminder>(compareBy { it.scheduledAt })
+        private val _events = MutableSharedFlow<ReminderEvent>(extraBufferCapacity = 64)
+        val events: SharedFlow<ReminderEvent> = _events.asSharedFlow()
+        private var checkerJob: Job? = null
 
     init {
         startChecker()
@@ -131,12 +130,11 @@ class SmartReminderManager(
             "remind me to (.+?) (?:at|on|in) (.+)" to ReminderType.TODO,
             "todo[:\\s]+(.+?)(?:\\s+(?:by|at|on)\\s+(.+))?" to ReminderType.TODO
         )
-
         for ((pattern, type) in todoPatterns) {
             Regex(pattern, RegexOption.IGNORE_CASE).findAll(message).forEach { match ->
                 val title = match.groupValues.getOrElse(1) { "" }.ifBlank { "待办事项" }
-                val timeStr = match.groupValues.getOrNull(2) ?: ""
-                val scheduledAt = parseTimeString(timeStr) ?: (System.currentTimeMillis() + 60 * 60_000L)  // 默认 1 小时后
+        val timeStr = match.groupValues.getOrNull(2) ?: ""
+        val scheduledAt = parseTimeString(timeStr) ?: (System.currentTimeMillis() + 60 * 60_000L)  // 默认 1 小时后
     val reminder = Reminder(
                     id = "reminder_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}",
                     type = type,
@@ -156,10 +154,9 @@ class SmartReminderManager(
     val deadlinePattern = Regex("(?:截止|deadline|due)[:\\s]+(.+?)(?:\\s+(?:by|at|on|前)\\s+(.+))?", RegexOption.IGNORE_CASE)
         deadlinePattern.findAll(message).forEach { match ->
             val title = match.groupValues[1].ifBlank { "截止任务" }
-            val timeStr = match.groupValues.getOrNull(2) ?: ""
-            val scheduledAt = parseTimeString(timeStr) ?: (System.currentTimeMillis() + 24 * 60 * 60_000L)
-
-            val reminder = Reminder(
+        val timeStr = match.groupValues.getOrNull(2) ?: ""
+        val scheduledAt = parseTimeString(timeStr) ?: (System.currentTimeMillis() + 24 * 60 * 60_000L)
+        val reminder = Reminder(
                 id = "reminder_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}",
                 type = ReminderType.DEADLINE,
                 title = title.trim(),
@@ -171,7 +168,6 @@ class SmartReminderManager(
             scope.launch { create(reminder) }
             extracted.add(reminder)
         }
-
         return extracted
     }
 
@@ -207,7 +203,6 @@ class SmartReminderManager(
         if (cal.timeInMillis <= System.currentTimeMillis()) {
             cal.add(java.util.Calendar.DAY_OF_MONTH, 1)
         }
-
         val reminder = Reminder(
             id = "habit_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}",
             type = ReminderType.HABIT,
@@ -298,7 +293,6 @@ class SmartReminderManager(
     fun generateReminderPrompt(): String {
         val pending = listPending().take(3)
         if (pending.isEmpty()) return ""
-
         val sb = StringBuilder()
         sb.appendLine("[待办提醒]")
         pending.forEach { r ->
@@ -323,7 +317,7 @@ class SmartReminderManager(
                 val now = System.currentTimeMillis()
                 while (pendingQueue.isNotEmpty() && pendingQueue.peek().scheduledAt <= now) {
                     val reminder = pendingQueue.poll()
-                    if (!reminder.dismissed && !reminder.triggered) {
+        if (!reminder.dismissed && !reminder.triggered) {
                         triggerReminder(reminder)
                     }
                 }
@@ -331,8 +325,7 @@ class SmartReminderManager(
             }
         }
     }
-
-    private suspend fun triggerReminder(reminder: Reminder) {
+        private suspend fun triggerReminder(reminder: Reminder) {
         val triggered = reminder.copy(triggered = true)
         reminders[reminder.id] = triggered
         _events.emit(ReminderEvent.Triggered(triggered))
@@ -340,7 +333,7 @@ class SmartReminderManager(
         // 如果是重复提醒，创建下一次
         reminder.recurrence?.let { pattern ->
             val nextTime = computeNextOccurrence(pattern, reminder.scheduledAt)
-            if (nextTime != null) {
+        if (nextTime != null) {
                 val next = reminder.copy(
                     id = "reminder_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}",
                     scheduledAt = nextTime,
@@ -351,8 +344,7 @@ class SmartReminderManager(
             }
         }
     }
-
-    private fun computeNextOccurrence(pattern: RecurrencePattern, from: Long): Long? {
+        private fun computeNextOccurrence(pattern: RecurrencePattern, from: Long): Long? {
         return when (pattern) {
             is RecurrencePattern.Daily -> {
                 val cal = java.util.Calendar.getInstance()
@@ -385,8 +377,7 @@ class SmartReminderManager(
             is RecurrencePattern.Once -> null
         }
     }
-
-    private fun parseTimeString(timeStr: String): Long? {
+        private fun parseTimeString(timeStr: String): Long? {
         if (timeStr.isBlank()) return null
         val now = System.currentTimeMillis()
 
@@ -413,15 +404,14 @@ class SmartReminderManager(
         // 绝对时间 HH:mm
         Regex("(\\d{1,2})[:：](\\d{2})").find(timeStr)?.let { m ->
             val hour = m.groupValues[1].toInt()
-            val minute = m.groupValues[2].toInt()
-            val cal = java.util.Calendar.getInstance()
+        val minute = m.groupValues[2].toInt()
+        val cal = java.util.Calendar.getInstance()
             cal.set(java.util.Calendar.HOUR_OF_DAY, hour)
             cal.set(java.util.Calendar.MINUTE, minute)
             cal.set(java.util.Calendar.SECOND, 0)
-            if (cal.timeInMillis <= now) cal.add(java.util.Calendar.DAY_OF_MONTH, 1)
-            return cal.timeInMillis
+        if (cal.timeInMillis <= now) cal.add(java.util.Calendar.DAY_OF_MONTH, 1)
+        return cal.timeInMillis
         }
-
         return null
     }
 }

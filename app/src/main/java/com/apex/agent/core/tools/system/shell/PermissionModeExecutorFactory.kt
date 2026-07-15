@@ -41,22 +41,16 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
                 }
             }
     }
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val mutex = Mutex()
-
-    private val _executorCache = MutableStateFlow<Map<PermissionMode, ShellExecutor>>(emptyMap())
-    val executorCache: StateFlow<Map<PermissionMode, ShellExecutor>> = _executorCache.asStateFlow()
-
-    private val _currentExecutor = MutableStateFlow<ShellExecutor?>(null)
-    val currentExecutor: StateFlow<ShellExecutor?> = _currentExecutor.asStateFlow()
-
-    private val _isInitializing = MutableStateFlow(false)
-    val isInitializing: StateFlow<Boolean> = _isInitializing.asStateFlow()
-
-    private val executorCreationTime = ConcurrentHashMap<PermissionMode, Long>()
-
-    private val modeManager by lazy { PermissionModeManager.getInstance(context) }
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val mutex = Mutex()
+        private val _executorCache = MutableStateFlow<Map<PermissionMode, ShellExecutor>>(emptyMap())
+        val executorCache: StateFlow<Map<PermissionMode, ShellExecutor>> = _executorCache.asStateFlow()
+        private val _currentExecutor = MutableStateFlow<ShellExecutor?>(null)
+        val currentExecutor: StateFlow<ShellExecutor?> = _currentExecutor.asStateFlow()
+        private val _isInitializing = MutableStateFlow(false)
+        val isInitializing: StateFlow<Boolean> = _isInitializing.asStateFlow()
+        private val executorCreationTime = ConcurrentHashMap<PermissionMode, Long>()
+        private val modeManager by lazy { PermissionModeManager.getInstance(context) }
 
     /**
      * 获取指定权限模式的执行器
@@ -70,12 +64,11 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
             val creationTime = executorCreationTime[mode] ?: 0L
             if (now - creationTime < CACHE_TTL && cached.isAvailable()) {
                 AppLogger.v(TAG, "使用缓存�?${mode.displayName} 执行�?)
-                return cached
+        return cached
             }
         }
 
         AppLogger.d(TAG, "创建 ${mode.displayName} 执行�?..")
-
         val executor = createExecutor(mode)
         executor.initialize()
 
@@ -86,8 +79,7 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
 
         return executor
     }
-
-    private fun createExecutor(mode: PermissionMode): ShellExecutor =
+        private fun createExecutor(mode: PermissionMode): ShellExecutor =
         when (mode) {
             PermissionMode.STANDARD -> StandardShellExecutor(context)
             PermissionMode.ACCESSIBILITY -> AccessibilityShellExecutor(context)
@@ -140,9 +132,9 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
         for (mode in preferredModes) {
             try {
                 val executor = getExecutor(mode)
-                if (executor.isAvailable() && executor.hasPermission().granted) {
+        if (executor.isAvailable() && executor.hasPermission().granted) {
                     AppLogger.d(TAG, "使用 ${mode.displayName} 执行�?)
-                    return executor
+        return executor
                 }
             } catch (e: Exception) {
                 AppLogger.w(TAG, "获取 ${mode.displayName} 执行器失�?, e)
@@ -207,17 +199,15 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
      */
     suspend fun getAvailableExecutors(): Map<PermissionMode, Pair<ShellExecutor, ShellExecutor.PermissionStatus>> {
         val result = mutableMapOf<PermissionMode, Pair<ShellExecutor, ShellExecutor.PermissionStatus>>()
-
         for (mode in PermissionMode.values()) {
             try {
                 val executor = getExecutor(mode)
-                val status = executor.hasPermission()
+        val status = executor.hasPermission()
                 result[mode] = executor to status
             } catch (e: Exception) {
                 AppLogger.w(TAG, "获取 ${mode.displayName} 执行器状态失�?, e)
             }
         }
-
         return result
     }
 }

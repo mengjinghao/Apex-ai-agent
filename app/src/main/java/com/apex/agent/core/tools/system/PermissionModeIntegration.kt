@@ -17,9 +17,8 @@ import com.apex.agent.core.tools.system.ShizukuManager
  */
 object PermissionModeIntegration {
     private const val TAG = "PermissionModeIntegration"
-
-    private val integrationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private var isInitialized = false
+        private val integrationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private var isInitialized = false
 
     // 管理器实�?
     private lateinit var modeManager: PermissionModeManager
@@ -29,7 +28,7 @@ object PermissionModeIntegration {
 
     // 状态流
     private val _isReady = androidx.compose.runtime.mutableStateOf(false)
-    val isReady: androidx.compose.runtime.State<Boolean> = _isReady
+        val isReady: androidx.compose.runtime.State<Boolean> = _isReady
 
     /**
      * 初始化权限模式系�?
@@ -38,7 +37,7 @@ object PermissionModeIntegration {
     fun initialize(context: Context) {
         if (isInitialized) {
             AppLogger.d(TAG, "权限模式系统已初始化，跳�?)
-            return
+        return
         }
 
         try {
@@ -46,7 +45,7 @@ object PermissionModeIntegration {
 
             // 1. 初始化增强的偏好管理
             initEnhancedPermissionPreferences(context)
-            AppLogger.d(TAG, "�?增强偏好管理初始化完�?)
+            AppLogger.d(TAG, "�增强偏好管理初始化完�?)
 
             // 2. 初始�?RootManager
             RootManager.initialize(context)
@@ -77,7 +76,7 @@ object PermissionModeIntegration {
                 try {
                     val factory = PermissionModeExecutorFactory.getInstance(context)
                     factory.preloadExecutors()
-                    AppLogger.d(TAG, "�?执行器预加载完成")
+                    AppLogger.d(TAG, "�执行器预加载完成")
                 } catch (e: Exception) {
                     AppLogger.e(TAG, "执行器预加载失败", e)
                 }
@@ -88,7 +87,7 @@ object PermissionModeIntegration {
                 try {
                     modeManager.checkAllModes(forceRefresh = false)
                     _isReady.value = true
-                    AppLogger.d(TAG, "�?初始检测完成，系统已就�?)
+                    AppLogger.d(TAG, "�初始检测完成，系统已就�?)
                 } catch (e: Exception) {
                     AppLogger.e(TAG, "初始检测失�?, e)
                 }
@@ -145,7 +144,6 @@ object PermissionModeIntegration {
         modeManager.checkAllModes(forceRefresh = true)
         val rootCheck = RootManager.checkRootStatus(context, true)
         val shizukuCheck = ShizukuManager.getStatus()
-
         val duration = System.currentTimeMillis() - start
 
         return SystemCheckResult(

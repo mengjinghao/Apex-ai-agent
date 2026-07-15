@@ -66,20 +66,19 @@ data class DebateScore(
     val userScore: Int,
     val aiScore: Int,
     val criteria: Map<String, Pair<Int, Int>>,  // 维度 -> (用户分, AI分)
-    val feedback: String,
+        val feedback: String,
     val winner: DebateSide?
 )
 
 class DebatePartner {
 
     private val sessions = ConcurrentHashMap<String, DebateSession>()
-    private val topics = mutableListOf<DebateTopic>()
+        private val topics = mutableListOf<DebateTopic>()
 
     init {
         loadBuiltinTopics()
     }
-
-    fun startDebate(topicId: String, mode: DebateMode, userSide: DebateSide): DebateSession? {
+        fun startDebate(topicId: String, mode: DebateMode, userSide: DebateSide): DebateSession? {
         val topic = topics.find { it.id == topicId } ?: return null
         val aiSide = if (userSide == DebateSide.PROPOSITION) DebateSide.OPPOSITION else DebateSide.PROPOSITION
         val session = DebateSession(
@@ -97,8 +96,7 @@ class DebatePartner {
         sessions[session.id] = session
         return session
     }
-
-    fun submitArgument(sessionId: String, claim: String, evidence: List<String> = emptyList(), reasoning: String = ""): DebateSession? {
+        fun submitArgument(sessionId: String, claim: String, evidence: List<String> = emptyList(), reasoning: String = ""): DebateSession? {
         val session = sessions[sessionId] ?: return null
         val arg = Argument(
             id = "arg_${session.arguments.size}",
@@ -117,8 +115,7 @@ class DebatePartner {
         sessions[sessionId] = updated
         return updated
     }
-
-    fun generateAIArgument(sessionId: String): Argument? {
+        fun generateAIArgument(sessionId: String): Argument? {
         val session = sessions[sessionId] ?: return null
         val topic = session.topic
         val aiSide = session.aiSide
@@ -136,7 +133,6 @@ class DebatePartner {
                 "从另一个角度看，..."
             )
         }
-
         val arg = Argument(
             id = "arg_${session.arguments.size}",
             side = aiSide,
@@ -151,19 +147,16 @@ class DebatePartner {
         sessions[sessionId] = updated
         return arg
     }
-
-    fun evaluateDebate(sessionId: String): DebateScore? {
+        fun evaluateDebate(sessionId: String): DebateScore? {
         val session = sessions[sessionId] ?: return null
         val userArgs = session.arguments.filter { it.side == session.userSide }
         val aiArgs = session.arguments.filter { it.side == session.aiSide }
-
         val criteria = mapOf(
             "逻辑性" to (scoreLogic(userArgs) to scoreLogic(aiArgs)),
             "证据充分" to (scoreEvidence(userArgs) to scoreEvidence(aiArgs)),
             "说服力" to (scorePersuasion(userArgs) to scorePersuasion(aiArgs)),
             "反驳有效" to (scoreRebuttal(userArgs, aiArgs) to scoreRebuttal(aiArgs, userArgs))
         )
-
         val userTotal = criteria.values.sumOf { it.first }
         val aiTotal = criteria.values.sumOf { it.second }
         val winner = when {
@@ -171,7 +164,6 @@ class DebatePartner {
             aiTotal > userTotal -> session.aiSide
             else -> null
         }
-
         val feedback = buildString {
             appendLine("辩论评价:")
             criteria.forEach { (dim, scores) ->
@@ -180,19 +172,15 @@ class DebatePartner {
             appendLine()
             appendLine("总评: ${if (winner == session.userSide) "你赢了！" else if (winner == session.aiSide) "AI 获胜" else "平局"}")
         }
-
         val score = DebateScore(userTotal, aiTotal, criteria, feedback, winner)
         sessions[sessionId] = session.copy(phase = DebatePhase.FINISHED, score = score)
         return score
     }
-
-    fun listTopics(category: String? = null): List<DebateTopic> {
+        fun listTopics(category: String? = null): List<DebateTopic> {
         return if (category != null) topics.filter { it.category == category } else topics
     }
-
-    fun addTopic(topic: DebateTopic) { topics.add(topic) }
-
-    private fun advancePhase(phase: DebatePhase, round: Int, maxRounds: Int): DebatePhase {
+        fun addTopic(topic: DebateTopic) { topics.add(topic) }
+        private fun advancePhase(phase: DebatePhase, round: Int, maxRounds: Int): DebatePhase {
         return when (phase) {
             DebatePhase.OPENING -> DebatePhase.ARGUMENT
             DebatePhase.ARGUMENT -> if (round >= maxRounds / 2) DebatePhase.REBUTTAL else DebatePhase.ARGUMENT
@@ -202,16 +190,14 @@ class DebatePartner {
             DebatePhase.FINISHED -> DebatePhase.FINISHED
         }
     }
-
-    private fun scoreLogic(args: List<Argument>): Int = args.size * 20 + args.count { it.reasoning.isNotBlank() } * 10
+        private fun scoreLogic(args: List<Argument>): Int = args.size * 20 + args.count { it.reasoning.isNotBlank() } * 10
     private fun scoreEvidence(args: List<Argument>): Int = args.sumOf { it.evidence.size * 10 }
-    private fun scorePersuasion(args: List<Argument>): Int = args.size * 15 + 30
+        private fun scorePersuasion(args: List<Argument>): Int = args.size * 15 + 30
     private fun scoreRebuttal(myArgs: List<Argument>, oppArgs: List<Argument>): Int {
         val rebuttalCount = myArgs.count { it.claim.contains("漏洞", "反驳", "但是", "然而") }
         return rebuttalCount * 25
     }
-
-    private fun loadBuiltinTopics() {
+        private fun loadBuiltinTopics() {
         topics.addAll(listOf(
             DebateTopic("t1", "AI 是否会取代人类工作", "讨论人工智能对就业的影响", "AI 将创造更多新工作", "AI 将导致大规模失业", "科技", 3),
             DebateTopic("t2", "是否应该禁止短视频", "讨论短视频的利弊", "应该禁止（成瘾、浪费时间）", "不应禁止（娱乐自由、信息传播）", "社会", 2),

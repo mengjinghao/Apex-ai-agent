@@ -26,33 +26,26 @@ class SkillUpdateChecker private constructor(private val context: Context) {
             }
         }
     }
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val marketplace = SkillPluginMarketplace.getInstance(context)
-    private val pluginManager = SkillPluginManager.getInstance(context)
-
-    private val _availableUpdates = MutableStateFlow<List<SkillPluginUpdate>>(emptyList())
-    val availableUpdates: StateFlow<List<SkillPluginUpdate>> = _availableUpdates.asStateFlow()
-
-    private val _lastCheckTime = MutableStateFlow(0L)
-    val lastCheckTime: StateFlow<Long> = _lastCheckTime.asStateFlow()
-
-    private val _isChecking = MutableStateFlow(false)
-    val isChecking: StateFlow<Boolean> = _isChecking.asStateFlow()
-
-    private val notifiedUpdates = ConcurrentHashMap.newKeySet<String>()
-
-    fun checkForUpdates() {
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val marketplace = SkillPluginMarketplace.getInstance(context)
+        private val pluginManager = SkillPluginManager.getInstance(context)
+        private val _availableUpdates = MutableStateFlow<List<SkillPluginUpdate>>(emptyList())
+        val availableUpdates: StateFlow<List<SkillPluginUpdate>> = _availableUpdates.asStateFlow()
+        private val _lastCheckTime = MutableStateFlow(0L)
+        val lastCheckTime: StateFlow<Long> = _lastCheckTime.asStateFlow()
+        private val _isChecking = MutableStateFlow(false)
+        val isChecking: StateFlow<Boolean> = _isChecking.asStateFlow()
+        private val notifiedUpdates = ConcurrentHashMap.newKeySet<String>()
+        fun checkForUpdates() {
         scope.launch {
             _isChecking.value = true
             try {
                 val updates = marketplace.checkUpdates()
                 _availableUpdates.value = updates
                 _lastCheckTime.value = System.currentTimeMillis()
-
-                if (updates.isNotEmpty()) {
+        if (updates.isNotEmpty()) {
                     val newUpdates = updates.filter { !notifiedUpdates.contains(it.pluginId) }
-                    if (newUpdates.isNotEmpty()) {
+        if (newUpdates.isNotEmpty()) {
                         newUpdates.forEach { notifiedUpdates.add(it.pluginId) }
                         AppLogger.i(
                             TAG,
@@ -86,20 +79,17 @@ class SkillUpdateChecker private constructor(private val context: Context) {
     suspend fun applyUpdate(update: SkillPluginUpdate): Result<String> = withContext(Dispatchers.IO) {
         try {
             AppLogger.i(TAG, "开始更新插�? ${update.pluginId} (${update.currentVersion} -> ${update.latestVersion})")
-
-            val pluginManager = pluginManager
+        val pluginManager = pluginManager
             val existingPlugin = pluginManager.getPlugin(update.pluginId)
-            if (existingPlugin == null) {
+        if (existingPlugin == null) {
                 return@withContext Result.failure(Exception("插件 ${update.pluginId} 未安�?))
             }
 
             pluginManager.disablePlugin(update.pluginId)
             pluginManager.unregisterPlugin(update.pluginId)
-
-            val downloadedFile = marketplace.downloadPlugin(update.pluginId)
-
-            val loader = SkillPluginLoader.getInstance(context)
-            val newPlugin = loader.loadPlugin(downloadedFile)
+        val downloadedFile = marketplace.downloadPlugin(update.pluginId)
+        val loader = SkillPluginLoader.getInstance(context)
+        val newPlugin = loader.loadPlugin(downloadedFile)
             newPlugin.onLoad(context)
 
             pluginManager.registerPlugin(newPlugin)
@@ -115,18 +105,15 @@ class SkillUpdateChecker private constructor(private val context: Context) {
             Result.failure(e)
         }
     }
-
-    fun getUpdateCount(): Int = _availableUpdates.value.size
+        fun getUpdateCount(): Int = _availableUpdates.value.size
 
     suspend fun hasUpdates(): Boolean = withContext(Dispatchers.IO) {
         _availableUpdates.value.isNotEmpty()
     }
-
-    fun dismissNotification(pluginId: String) {
+        fun dismissNotification(pluginId: String) {
         notifiedUpdates.remove(pluginId)
     }
-
-    fun dismissAll() {
+        fun dismissAll() {
         notifiedUpdates.clear()
     }
 }

@@ -36,7 +36,7 @@ sealed class MacroValue {
         data class Reference(val stepId: String, val jsonPath: String? = null) : MacroValue()
         data class InputParam(val paramName: String) : MacroValue()
         data class Template(val template: String) : MacroValue()  // 支持 ${param} 和 ${step.output}
-    fun resolve(inputs: Map<String, String>, stepOutputs: Map<String, Any>): String = when (this) {
+        fun resolve(inputs: Map<String, String>, stepOutputs: Map<String, Any>): String = when (this) {
         is Literal -> value
         is Reference -> {
             val output = stepOutputs[stepId]

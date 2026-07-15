@@ -14,7 +14,7 @@ class SemanticImportanceScorer {
         private val TASK_ID_PATTERN = Regex("\\b(TASK|task|任务|ID|id)[_:-]?\\d+\\b", RegexOption.IGNORE_CASE)
         private val CODE_BLOCK_PATTERN = Regex("```[\\s\\S]*?```|`[^`]+`")
         private val URL_PATTERN = Regex("https?://\\S+")
-    private val EMAIL_PATTERN = Regex("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b")
+        private val EMAIL_PATTERN = Regex("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b")
         private val COMMAND_PATTERN = Regex("\\b(sudo|adb|pm|am|getprop|setprop|exec|run|start|stop)\\b")
         private val ERROR_KEYWORD_PATTERN = Regex("错误|error|异常", RegexOption.IGNORE_CASE)
         private val WARNING_KEYWORD_PATTERN = Regex("警告|warning|注意", RegexOption.IGNORE_CASE)

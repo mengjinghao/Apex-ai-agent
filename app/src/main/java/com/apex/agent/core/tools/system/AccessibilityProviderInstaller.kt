@@ -39,7 +39,7 @@ class AccessibilityProviderInstaller {
                 return versionInfo
             } catch (e: Exception) {
                 AppLogger.e(TAG, "获取内置无障碍服务版本失败：${e.message})
-                val unknown = context.getString(R.string.accessibility_provider_unknown)
+        val unknown = context.getString(R.string.accessibility_provider_unknown)
                 cachedBundledVersion = unknown
                 return unknown
             }
@@ -60,7 +60,7 @@ class AccessibilityProviderInstaller {
                     @Suppress("DEPRECATION")
                     packageManager.getPackageInfo(ACCESSIBILITY_PACKAGE_NAME, 0)
                 }
-                val versionName = packageInfo.versionName
+        val versionName = packageInfo.versionName
                 cachedInstalledVersion = versionName
                 return versionName
             } catch (e: PackageManager.NameNotFoundException) {
@@ -80,54 +80,50 @@ class AccessibilityProviderInstaller {
             if (cachedUpdateNeeded != null && !isCacheExpired()) {
                 return cachedUpdateNeeded!!
             }
-
-            val installedVersion = getInstalledVersion(context)
-            if (installedVersion == null) {
+        val installedVersion = getInstalledVersion(context)
+        if (installedVersion == null) {
                 cachedUpdateNeeded = false
                 updateCacheTimestamp()
-                return false // Not installed, no need to update
+        return false // Not installed, no need to update
             }
-
-            val bundledVersion = getBundledVersion(context)
-            val unknown = context.getString(R.string.accessibility_provider_unknown)
-            if (bundledVersion == unknown) {
+        val bundledVersion = getBundledVersion(context)
+        val unknown = context.getString(R.string.accessibility_provider_unknown)
+        if (bundledVersion == unknown) {
                 cachedUpdateNeeded = false
                 updateCacheTimestamp()
-                return false // Cannot determine bundled version, do not suggest update
+        return false // Cannot determine bundled version, do not suggest update
             }
 
             try {
                 val installed = installedVersion.split(".").map { it.toIntOrNull() ?: 0 }
-                val bundled = bundledVersion.split(".").map { it.toIntOrNull() ?: 0 }
-
-                val commonPartLength = min(installed.size, bundled.size)
-                for (i in 0 until commonPartLength) {
+        val bundled = bundledVersion.split(".").map { it.toIntOrNull() ?: 0 }
+        val commonPartLength = min(installed.size, bundled.size)
+        for (i in 0 until commonPartLength) {
                     if (bundled[i] > installed[i]) {
                         cachedUpdateNeeded = true
                         updateCacheTimestamp()
-                        return true
+        return true
                     }
-                    if (bundled[i] < installed[i]) {
+        if (bundled[i] < installed[i]) {
                         cachedUpdateNeeded = false
                         updateCacheTimestamp()
-                        return false
+        return false
                     }
                 }
-
-                if (bundled.size > installed.size) {
+        if (bundled.size > installed.size) {
                     cachedUpdateNeeded = true
                     updateCacheTimestamp()
-                    return true
+        return true
                 }
                 
                 cachedUpdateNeeded = false
                 updateCacheTimestamp()
-                return false
+        return false
             } catch (e: Exception) {
                 AppLogger.e(TAG, "比较无障碍服务版本时出错", e)
                 cachedUpdateNeeded = false
                 updateCacheTimestamp()
-                return false
+        return false
             }
         }
 
@@ -137,14 +133,12 @@ class AccessibilityProviderInstaller {
         fun launchInstall(context: Context) {
             UIHierarchyManager.launchProviderInstall(context)
             clearCache() // 清除缓存以在安装后刷新状�?       }
-    private fun updateCacheTimestamp() {
+        private fun updateCacheTimestamp() {
             lastCheckTime = System.currentTimeMillis()
         }
-
         private fun isCacheExpired(): Boolean {
             return System.currentTimeMillis() - lastCheckTime > CACHE_EXPIRE_TIME
         }
-
         fun clearCache() {
             cachedInstalledVersion = null
             cachedBundledVersion = null

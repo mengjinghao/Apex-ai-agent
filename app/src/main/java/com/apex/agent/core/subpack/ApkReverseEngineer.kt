@@ -99,17 +99,16 @@ class ApkReverseEngineer(private val context: Context) {
         try {
             if (outputApk.exists()) outputApk.delete()
             outputApk.parentFile?.mkdirs()
-
-            val tempUnalignedApk =
+        val tempUnalignedApk =
                     File(outputApk.parentFile, "${outputApk.nameWithoutExtension}_unaligned.apk")
-            if (tempUnalignedApk.exists()) tempUnalignedApk.delete()
+        if (tempUnalignedApk.exists()) tempUnalignedApk.delete()
 
             ZipArchiveOutputStream(FileOutputStream(tempUnalignedApk)).use { zipOut ->
                 ZipFile(inputApk).use { zip ->
                     val entries = zip.entries()
                     while (entries.hasMoreElements()) {
                         val entry = entries.nextElement()
-                        val entryName = entry.name
+        val entryName = entry.name
 
                         // 跳过旧签�?
     if (entryName.startsWith("META-INF/")) {
@@ -120,16 +119,14 @@ class ApkReverseEngineer(private val context: Context) {
     if (entryName.startsWith("assets/flutter_assets/assets/web_content/")) {
                             continue
                         }
-
-                        if (newIconBitmap != null && shouldReplaceIconEntry(entryName)) {
+        if (newIconBitmap != null && shouldReplaceIconEntry(entryName)) {
                             val iconBytes = buildIconBytes(newIconBitmap, entryName)
                             writeBytesEntry(zipOut, entryName, iconBytes, entry.time, entry.method)
                             continue
                         }
-
-                        if (entryName == ANDROID_MANIFEST) {
+        if (entryName == ANDROID_MANIFEST) {
                             val originalBytes = zip.getInputStream(entry).use { it.readBytes() }
-                            val modifiedBytes =
+        val modifiedBytes =
                                     modifyManifestBytes(
                                             originalBytes,
                                             newPackageName,
@@ -149,20 +146,18 @@ class ApkReverseEngineer(private val context: Context) {
             }
 
             AppLogger.d(TAG, "APK快速打包完成，准备进行zipalign对齐: ${tempUnalignedApk.absolutePath}")
-
-            val aligned = zipalign(tempUnalignedApk, outputApk, 4)
+        val aligned = zipalign(tempUnalignedApk, outputApk, 4)
             tempUnalignedApk.delete()
-
-            if (!aligned) {
+        if (!aligned) {
                 AppLogger.e(TAG, "APK对齐失败")
-                return false
+        return false
             }
 
             AppLogger.d(TAG, "APK快速打包成功并完成4字节对齐: ${outputApk.absolutePath}")
-            return true
+        return true
         } catch (e: Exception) {
             AppLogger.e(TAG, "APK快速打包失败：${e.message})
-            return false
+        return false
         }
     }
 
@@ -183,7 +178,7 @@ class ApkReverseEngineer(private val context: Context) {
 
             // 使用zipalign-java库进行对�?
     val rafIn = RandomAccessFile(inputApk, "r")
-            val fos = FileOutputStream(outputApk)
+        val fos = FileOutputStream(outputApk)
 
             // ，so文件使用16KB边界对齐，其他文件使，字节对�?
             com.iyxan23.zipalignjava.ZipAlign.alignZip(rafIn, fos, alignment, 4 * 1024)
@@ -192,10 +187,10 @@ class ApkReverseEngineer(private val context: Context) {
             fos.close()
 
             AppLogger.d(TAG, "APK对齐完成")
-            return true
+        return true
         } catch (e: Exception) {
             AppLogger.e(TAG, "zipalign处理失败", e)
-            return false
+        return false
         }
     }
 
@@ -222,26 +217,21 @@ class ApkReverseEngineer(private val context: Context) {
             else -> false
         }
     }
-
-    private fun calculateBytesCrc32(data: ByteArray): Long {
+        private fun calculateBytesCrc32(data: ByteArray): Long {
         val crc = CRC32()
         crc.update(data)
         return crc.value
     }
-
-    private fun shouldReplaceIconEntry(entryName: String): Boolean {
+        private fun shouldReplaceIconEntry(entryName: String): Boolean {
         val lowerName = entryName.lowercase()
         val fileName = lowerName.substringAfterLast('/')
-
         if (!lowerName.startsWith("res/")) {
             return false
         }
-
         val knownIconNames = setOf("yn.png", "n3.png", "9w.png", "fs.png", "rj.png", "o-.png")
         if (knownIconNames.contains(fileName)) {
             return true
         }
-
         val isIconFile =
                 fileName.startsWith("ic_launcher") ||
                         fileName.startsWith("ic_launcher_round") ||
@@ -250,11 +240,9 @@ class ApkReverseEngineer(private val context: Context) {
         if (!isIconFile) {
             return false
         }
-
         return lowerName.contains("/mipmap") || lowerName.contains("/drawable")
     }
-
-    private fun buildIconBytes(sourceBitmap: Bitmap, entryName: String): ByteArray {
+        private fun buildIconBytes(sourceBitmap: Bitmap, entryName: String): ByteArray {
         val size = determineIconSizeFromPath(entryName)
         val scaled = scaleBitmap(sourceBitmap, size)
         val format =
@@ -263,13 +251,11 @@ class ApkReverseEngineer(private val context: Context) {
                     "jpg", "jpeg" -> Bitmap.CompressFormat.JPEG
                     else -> Bitmap.CompressFormat.PNG
                 }
-
         val output = ByteArrayOutputStream()
         scaled.compress(format, 100, output)
         return output.toByteArray()
     }
-
-    private fun determineIconSizeFromPath(entryPath: String): Int {
+        private fun determineIconSizeFromPath(entryPath: String): Int {
         val lowerPath = entryPath.lowercase()
         return when {
             lowerPath.contains("xxxhdpi") -> 192
@@ -280,8 +266,7 @@ class ApkReverseEngineer(private val context: Context) {
             else -> 96
         }
     }
-
-    private fun calculateStreamCrcAndSize(input: InputStream): Pair<Long, Long> {
+        private fun calculateStreamCrcAndSize(input: InputStream): Pair<Long, Long> {
         val crc = CRC32()
         var size = 0L
         val buffer = ByteArray(8192)
@@ -292,8 +277,7 @@ class ApkReverseEngineer(private val context: Context) {
         }
         return Pair(crc.value, size)
     }
-
-    private fun writeBytesEntry(
+        private fun writeBytesEntry(
             zipOut: ZipArchiveOutputStream,
             entryName: String,
             data: ByteArray,
@@ -309,7 +293,6 @@ class ApkReverseEngineer(private val context: Context) {
                     shouldStoreWithoutCompression(entryName) -> ZipArchiveEntry.STORED
                     else -> ZipArchiveEntry.DEFLATED
                 }
-
         if (methodToUse == ZipArchiveEntry.STORED) {
             entry.method = ZipArchiveEntry.STORED
             entry.size = data.size.toLong()
@@ -323,8 +306,7 @@ class ApkReverseEngineer(private val context: Context) {
         zipOut.write(data)
         zipOut.closeArchiveEntry()
     }
-
-    private fun copyZipEntry(
+        private fun copyZipEntry(
             zip: ZipFile,
             entry: java.util.zip.ZipEntry,
             zipOut: ZipArchiveOutputStream
@@ -355,23 +337,19 @@ class ApkReverseEngineer(private val context: Context) {
         zip.getInputStream(entry).use { input -> IOUtils.copy(input, zipOut) }
         zipOut.closeArchiveEntry()
     }
-
-    private fun addWebContentToZip(zipOut: ZipArchiveOutputStream, webContentDir: File) {
+        private fun addWebContentToZip(zipOut: ZipArchiveOutputStream, webContentDir: File) {
         if (!webContentDir.exists() || !webContentDir.isDirectory) {
             AppLogger.w(TAG, "web内容目录不存在或不是目录: ${webContentDir.absolutePath}")
-            return
+        return
         }
-
         val basePath = webContentDir.absolutePath
         val files =
                 webContentDir.walkTopDown().filter { it.isFile }.sortedBy { it.absolutePath }
-
         for (file in files) {
             val relativePath =
                     file.absolutePath.substring(basePath.length + 1).replace("\\", "/")
-            val entryName = "assets/flutter_assets/assets/web_content/${relativePath}"
-
-            val entry = ZipArchiveEntry(entryName)
+        val entryName = "assets/flutter_assets/assets/web_content/${relativePath}"
+        val entry = ZipArchiveEntry(entryName)
             entry.method = ZipArchiveEntry.DEFLATED
             entry.time = file.lastModified()
 
@@ -380,8 +358,7 @@ class ApkReverseEngineer(private val context: Context) {
             zipOut.closeArchiveEntry()
         }
     }
-
-    private fun modifyManifestBytes(
+        private fun modifyManifestBytes(
             manifestBytes: ByteArray,
             newPackageName: String?,
             newAppName: String?,
@@ -390,16 +367,15 @@ class ApkReverseEngineer(private val context: Context) {
     ): ByteArray {
         try {
             val reader = AxmlReader(manifestBytes)
-            val axml = Axml()
+        val axml = Axml()
             reader.accept(axml)
-
-            val manifestNode = axml.firsts.firstOrNull { it.name == "manifest" } ?: return manifestBytes
+        val manifestNode = axml.firsts.firstOrNull { it.name == "manifest" } ?: return manifestBytes
 
             var oldPackageName: String? = null
 
             if (newPackageName != null) {
                 var packageAttr = manifestNode.attrs.find { it.name == "package" }
-                if (packageAttr != null) {
+        if (packageAttr != null) {
                     oldPackageName = packageAttr.value as? String
                     packageAttr.value = newPackageName
                 } else {
@@ -412,19 +388,17 @@ class ApkReverseEngineer(private val context: Context) {
                     }
                     manifestNode.attrs.add(packageAttr)
                 }
-
-                if (!oldPackageName.isNullOrEmpty()) {
+        if (!oldPackageName.isNullOrEmpty()) {
                     replacePackageReferences(axml, oldPackageName!!, newPackageName)
                 }
             }
-
-            val androidNs =
+        val androidNs =
                     manifestNode.attrs.find { it.name == "versionCode" }?.ns
                             ?: "http://schemas.android.com/apk/res/android"
-    if (newVersionName != null) {
+        if (newVersionName != null) {
                 var versionNameAttr =
                         manifestNode.attrs.find { it.name == "versionName" && it.ns == androidNs }
-                if (versionNameAttr != null) {
+        if (versionNameAttr != null) {
                     versionNameAttr.value = newVersionName
                 } else {
                     versionNameAttr = Axml.Node.Attr().apply {
@@ -437,11 +411,10 @@ class ApkReverseEngineer(private val context: Context) {
                     manifestNode.attrs.add(versionNameAttr)
                 }
             }
-
-            if (newVersionCode != null) {
+        if (newVersionCode != null) {
                 var versionCodeAttr =
                         manifestNode.attrs.find { it.name == "versionCode" && it.ns == androidNs }
-                if (versionCodeAttr != null) {
+        if (versionCodeAttr != null) {
                     versionCodeAttr.value = newVersionCode.toIntOrNull() ?: 1
                     versionCodeAttr.type = AxmlVisitor.TYPE_INT_HEX
                 } else {
@@ -455,8 +428,7 @@ class ApkReverseEngineer(private val context: Context) {
                     manifestNode.attrs.add(versionCodeAttr)
                 }
             }
-
-            if (newAppName != null) {
+        if (newAppName != null) {
                 for (childNode in manifestNode.children) {
                     if (childNode.name == "application") {
                         var labelAttr: Axml.Node.Attr? = null
@@ -468,8 +440,7 @@ class ApkReverseEngineer(private val context: Context) {
                                 break
                             }
                         }
-
-                        if (labelAttr != null) {
+        if (labelAttr != null) {
                             labelAttr.value = newAppName
                         } else {
                             val attr = Axml.Node.Attr().apply {
@@ -485,13 +456,12 @@ class ApkReverseEngineer(private val context: Context) {
                     }
                 }
             }
-
-            val writer = AxmlWriter()
+        val writer = AxmlWriter()
             axml.accept(writer)
-            return writer.toByteArray()
+        return writer.toByteArray()
         } catch (e: Exception) {
             AppLogger.e(TAG, "修改AndroidManifest字节失败: ${e.message}", e)
-            return manifestBytes
+        return manifestBytes
         }
     }
 
@@ -515,19 +485,17 @@ class ApkReverseEngineer(private val context: Context) {
             if (!unsignedApk.exists()) {
                 val message = context.getString(R.string.apk_unsigned_not_exist, unsignedApk.absolutePath)
                 AppLogger.e(TAG, message)
-                return Pair(false, message)
+        return Pair(false, message)
             }
-
-            if (!keyStoreFile.exists()) {
+        if (!keyStoreFile.exists()) {
                 val message = context.getString(R.string.apk_keystore_not_exist, keyStoreFile.absolutePath)
                 AppLogger.e(TAG, message)
-                return Pair(false, message)
+        return Pair(false, message)
             }
 
             AppLogger.d(TAG, "开始签名APK，使用密�?${keyStoreFile.absolutePath}, 别名: ${keyAlias}")
             AppLogger.d(TAG, "密钥文件大小: ${keyStoreFile.length()}字节")
-
-            if (outputApk.exists()) outputApk.delete()
+        if (outputApk.exists()) outputApk.delete()
             outputApk.parentFile?.mkdirs()
 
             // 首先尝试使用PKCS12格式加载密钥�?
@@ -541,7 +509,7 @@ class ApkReverseEngineer(private val context: Context) {
                             outputApk,
                             "PKCS12"
                     )
-            if (pkcs12Result.first) {
+        if (pkcs12Result.first) {
                 return Pair(true, null)
             }
 
@@ -556,18 +524,17 @@ class ApkReverseEngineer(private val context: Context) {
                             outputApk,
                             "JKS"
                     )
-            if (jksResult.first) {
+        if (jksResult.first) {
                 return Pair(true, null)
             }
-
-            val errorMessage =
+        val errorMessage =
                     context.getString(R.string.apk_keystore_load_failed_both, pkcs12Result.second ?: "", jksResult.second ?: "")
             AppLogger.e(TAG, errorMessage)
-            return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
         } catch (e: Exception) {
             val errorMessage = context.getString(R.string.apk_sign_failed, e.message ?: "")
             AppLogger.e(TAG, errorMessage, e)
-            return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
         }
     }
 
@@ -586,10 +553,10 @@ class ApkReverseEngineer(private val context: Context) {
 
             // 使用KeyStoreHelper获取密钥库实�?
     val keyStore = KeyStoreHelper.getKeyStoreInstance(keyStoreType)
-            if (keyStore == null) {
+        if (keyStore == null) {
                 val errorMessage = context.getString(R.string.apk_get_keystore_instance_failed, keyStoreType)
                 AppLogger.e(TAG, errorMessage)
-                return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
             }
 
             FileInputStream(keyStoreFile).use { input ->
@@ -599,27 +566,26 @@ class ApkReverseEngineer(private val context: Context) {
                 } catch (e: Exception) {
                     val errorMessage = context.getString(R.string.apk_load_keystore_failed, keyStoreType, e.message ?: "")
                     AppLogger.e(TAG, errorMessage)
-                    return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
                 }
 
                 // 获取可用的别�?
     val aliases = keyStore.aliases()
-                val aliasList = mutableListOf<String>()
+        val aliasList = mutableListOf<String>()
                 while (aliases.hasMoreElements()) {
                     aliasList.add(aliases.nextElement())
                 }
-
-                if (aliasList.isEmpty()) {
+        if (aliasList.isEmpty()) {
                     val errorMessage = context.getString(R.string.apk_keystore_no_aliases, keyStoreType)
                     AppLogger.e(TAG, errorMessage)
-                    return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
                 } else {
                     AppLogger.d(TAG, "${keyStoreType} 密钥库中的别�?${aliasList.joinToString()}")
 
                     // 如果指定的别名不存在，但有其他别名，使用第一个别�?
     if (!aliasList.contains(keyAlias) && aliasList.isNotEmpty()) {
                         AppLogger.w(TAG, "指定的别，的${keyAlias}'不存在，将使用可用的别名: ${aliasList[0]}")
-                        val actualKeyAlias = aliasList[0]
+        val actualKeyAlias = aliasList[0]
                         return signWithKeyStore(
                                 keyStore,
                                 unsignedApk,
@@ -629,13 +595,12 @@ class ApkReverseEngineer(private val context: Context) {
                         )
                     }
                 }
-
-                return signWithKeyStore(keyStore, unsignedApk, keyAlias, keyPassword, outputApk)
+        return signWithKeyStore(keyStore, unsignedApk, keyAlias, keyPassword, outputApk)
             }
         } catch (e: Exception) {
             val errorMessage = context.getString(R.string.apk_load_keystore_format_failed, keyStoreType, e.message ?: "")
             AppLogger.e(TAG, errorMessage, e)
-            return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
         }
     }
 
@@ -650,33 +615,31 @@ class ApkReverseEngineer(private val context: Context) {
         try {
             // 获取私钥
     val key = keyStore.getKey(keyAlias, keyPassword.toCharArray())
-            if (key == null) {
+        if (key == null) {
                 val errorMessage = context.getString(R.string.apk_key_not_found_in_keystore, keyAlias)
                 AppLogger.e(TAG, errorMessage)
-                return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
             }
-
-            if (key !is PrivateKey) {
+        if (key !is PrivateKey) {
                 val errorMessage = context.getString(R.string.apk_key_not_private_key, key.javaClass.name)
                 AppLogger.e(TAG, errorMessage)
-                return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
             }
-            val privateKey = key
+        val privateKey = key
 
             // 获取证书�?
     val certificateChain = keyStore.getCertificateChain(keyAlias)
-            if (certificateChain == null || certificateChain.isEmpty()) {
+        if (certificateChain == null || certificateChain.isEmpty()) {
                 val errorMessage = context.getString(R.string.apk_cannot_get_cert_chain, keyAlias)
                 AppLogger.e(TAG, errorMessage)
-                return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
             }
-
-            val x509CertificateChain =
+        val x509CertificateChain =
                     certificateChain.map { cert ->
                         if (cert !is X509Certificate) {
                             val errorMessage = context.getString(R.string.apk_cert_not_x509, cert.javaClass.name)
                             AppLogger.e(TAG, errorMessage)
-                            return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
                         }
                         cert as X509Certificate
                     }
@@ -685,9 +648,8 @@ class ApkReverseEngineer(private val context: Context) {
     val signer =
                     ApkSigner.SignerConfig.Builder(keyAlias, privateKey, x509CertificateChain)
                             .build()
-            val signerConfigs = listOf(signer)
-
-            val apkSigner =
+        val signerConfigs = listOf(signer)
+        val apkSigner =
                     ApkSigner.Builder(signerConfigs)
                             .setInputApk(unsignedApk)
                             .setOutputApk(outputApk)
@@ -699,15 +661,15 @@ class ApkReverseEngineer(private val context: Context) {
             } catch (e: Exception) {
                 val errorMessage = context.getString(R.string.apk_signer_execution_failed, e.message ?: "")
                 AppLogger.e(TAG, errorMessage, e)
-                return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
             }
 
             AppLogger.d(TAG, "APK签名完成: ${outputApk.absolutePath}")
-            return Pair(true, null)
+        return Pair(true, null)
         } catch (e: Exception) {
             val errorMessage = context.getString(R.string.apk_sign_with_keystore_failed, e.message ?: "")
             AppLogger.e(TAG, errorMessage, e)
-            return Pair(false, errorMessage)
+        return Pair(false, errorMessage)
         }
     }
 }

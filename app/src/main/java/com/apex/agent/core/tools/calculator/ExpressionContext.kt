@@ -68,7 +68,6 @@ object ExpressionContext {
     /** 获取数组或字符串元素 */
     fun getArrayElement(array: ExpressionNode, index: ExpressionNode): Double {
         val indexValue = index.evaluate().toInt()
-
         when (array) {
             is VariableNode -> {
                 val arrayValue = variables[array.name]
@@ -89,7 +88,7 @@ object ExpressionContext {
             }
             else -> {
                 val arrayResult = array.evaluate().toString()
-                if (indexValue < 0 || indexValue >= arrayResult.length) return Double.NaN
+        if (indexValue < 0 || indexValue >= arrayResult.length) return Double.NaN
                 return arrayResult[indexValue].code.toDouble()
             }
         }
@@ -124,7 +123,7 @@ object ExpressionContext {
             name.equals("now", ignoreCase = true) -> System.currentTimeMillis().toDouble()
             name.equals("date", ignoreCase = true) -> {
                 val dateStr = args[0].toString()
-                val date =
+        val date =
                         parseDate(dateStr)
                                 ?: throw IllegalArgumentException("Cannot parse date: ${dateStr}")
                 TimeUnit.MILLISECONDS.toDays(date.time).toDouble()
@@ -133,18 +132,18 @@ object ExpressionContext {
                 val date1 =
                         parseDate(args[0].toString())
                                 ?: throw IllegalArgumentException("Cannot parse first date")
-                val date2 =
+        val date2 =
                         parseDate(args[1].toString())
                                 ?: throw IllegalArgumentException("Cannot parse second date")
-                val diffInMillis = Math.abs(date1.time - date2.time)
+        val diffInMillis = Math.abs(date1.time - date2.time)
                 TimeUnit.MILLISECONDS.toDays(diffInMillis).toDouble()
             }
             name.equals("date_add", ignoreCase = true) -> {
                 val date =
                         parseDate(args[0].toString())
                                 ?: throw IllegalArgumentException("Cannot parse date")
-                val daysToAdd = args[1].toInt()
-                val calendar = Calendar.getInstance()
+        val daysToAdd = args[1].toInt()
+        val calendar = Calendar.getInstance()
                 calendar.time = date
                 calendar.add(Calendar.DAY_OF_YEAR, daysToAdd)
                 TimeUnit.MILLISECONDS.toDays(calendar.timeInMillis).toDouble()
@@ -153,7 +152,7 @@ object ExpressionContext {
                 val date =
                         parseDate(args[0].toString())
                                 ?: throw IllegalArgumentException("Cannot parse date")
-                val calendar = Calendar.getInstance()
+        val calendar = Calendar.getInstance()
                 calendar.time = date
                 calendar.get(Calendar.DAY_OF_WEEK).toDouble()
             }
@@ -161,7 +160,7 @@ object ExpressionContext {
                 val date =
                         parseDate(args[0].toString())
                                 ?: throw IllegalArgumentException("Cannot parse date")
-                val calendar = Calendar.getInstance()
+        val calendar = Calendar.getInstance()
                 calendar.time = date
                 (calendar.get(Calendar.MONTH) + 1).toDouble()
             }
@@ -169,7 +168,7 @@ object ExpressionContext {
                 val date =
                         parseDate(args[0].toString())
                                 ?: throw IllegalArgumentException("Cannot parse date")
-                val calendar = Calendar.getInstance()
+        val calendar = Calendar.getInstance()
                 calendar.time = date
                 calendar.get(Calendar.YEAR).toDouble()
             }
@@ -177,7 +176,7 @@ object ExpressionContext {
                 val date =
                         parseDate(args[0].toString())
                                 ?: throw IllegalArgumentException("Cannot parse date")
-                val calendar = Calendar.getInstance()
+        val calendar = Calendar.getInstance()
                 calendar.time = date
                 calendar.get(Calendar.DAY_OF_MONTH).toDouble()
             }
@@ -186,7 +185,7 @@ object ExpressionContext {
             name.equals("stats.mean", ignoreCase = true) -> args.average()
             name.equals("stats.median", ignoreCase = true) -> {
                 val sorted = args.sorted()
-                if (sorted.size % 2 == 0) {
+        if (sorted.size % 2 == 0) {
                     (sorted[sorted.size / 2] + sorted[sorted.size / 2 - 1]) / 2
                 } else {
                     sorted[sorted.size / 2]
@@ -197,18 +196,18 @@ object ExpressionContext {
             name.equals("stats.sum", ignoreCase = true) -> args.sum()
             name.equals("stats.stdev", ignoreCase = true) -> {
                 val mean = args.average()
-                val variance = args.map { (it - mean).pow(2) }.average()
+        val variance = args.map { (it - mean).pow(2) }.average()
                 sqrt(variance)
             }
 
             // 转换函数
             name.equals("convert", ignoreCase = true) -> {
                 if (args.size < 3) throw IllegalArgumentException("convert requires 3 parameters")
-                val value = args[0]
+        val value = args[0]
                 val fromUnit =
                         variables["_convert_from"] as? String
                                 ?: throw IllegalArgumentException("from_unit not provided")
-                val toUnit =
+        val toUnit =
                         variables["_convert_to"] as? String
                                 ?: throw IllegalArgumentException("to_unit not provided")
 
@@ -267,7 +266,6 @@ object ExpressionContext {
     private fun factorial(n: Int): Long {
         if (n < 0) throw IllegalArgumentException("Factorial is not defined for negative numbers")
         if (n > 20) throw IllegalArgumentException("Factorial too large to calculate")
-
         var result = 1L
         for (i in 2..n) {
             result *= i
@@ -278,7 +276,7 @@ object ExpressionContext {
     /** 日期解析 */
     private fun parseDate(dateString: String): Date? {
         // 特殊情况：today()
-    if (dateString.trim() == "today()") {
+        if (dateString.trim() == "today()") {
             return Date(System.currentTimeMillis())
         }
 

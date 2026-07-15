@@ -69,13 +69,11 @@ class StreamXmlPlugin(private val includeTagsInOutput: Boolean = true) : StreamP
             lastChar = c
             return result
         }
-
         if (state == PluginState.PROCESSING) {
             // We are inside a tag, looking for the end tag.
     val matcher = endTagMatcher!!
             val result = matcher.processChar(c)
-
-            return when (result) {
+        return when (result) {
                 is StreamKmpMatchResult.Match -> {
                     // End tag fully matched. Reset state and filter this last character if needed.StreamLogger.i("StreamXmlPlugin", "Found end tag. Switching to IDLE.")
                     // Enable one-time allowance for starting a new tag right after this end tag
@@ -115,7 +113,7 @@ class StreamXmlPlugin(private val includeTagsInOutput: Boolean = true) : StreamP
                         if (lastChar == '/') {
                             // Treat self-closing tags like <br/> as plain text to avoid entering XML mode.
                             reset()
-                            return finish(true)
+        return finish(true)
                         }
                         StreamLogger.i(
                                 "StreamXmlPlugin",
@@ -140,7 +138,7 @@ class StreamXmlPlugin(private val includeTagsInOutput: Boolean = true) : StreamP
                         // Should not happen, but as a safeguard:
                         reset()
                     }
-                    return finish(includeTagsInOutput)
+        return finish(includeTagsInOutput)
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -182,13 +180,11 @@ class StreamXmlPlugin(private val includeTagsInOutput: Boolean = true) : StreamP
         state = PluginState.IDLE
         lastChar = '\u0000'
     }
-
-    private fun handleDefaultCharacter(c: Char): Boolean {
+        private fun handleDefaultCharacter(c: Char): Boolean {
         updatePunctuationAllowance(c)
         return true
     }
-
-    private fun updatePunctuationAllowance(c: Char) {
+        private fun updatePunctuationAllowance(c: Char) {
         when {
             punctuationTriggers.contains(c) || isEmojiTrigger(c) -> {
                 allowStartAfterPunctuation = true
@@ -201,8 +197,7 @@ class StreamXmlPlugin(private val includeTagsInOutput: Boolean = true) : StreamP
             }
         }
     }
-
-    private fun isEmojiTrigger(c: Char): Boolean {
+        private fun isEmojiTrigger(c: Char): Boolean {
         // Most modern emojis are surrogate pairs in UTF-16. Treat either half as a trigger.
     if (Character.isSurrogate(c)) {
             return true
@@ -210,6 +205,5 @@ class StreamXmlPlugin(private val includeTagsInOutput: Boolean = true) : StreamP
         // BMP emoji/symbols (e.g. ☀, �?are usually "OTHER_SYMBOL".
     return Character.getType(c) == Character.OTHER_SYMBOL.toInt()
     }
-
-    private fun isEmojiContinuationChar(c: Char): Boolean = emojiContinuationChars.contains(c)
+        private fun isEmojiContinuationChar(c: Char): Boolean = emojiContinuationChars.contains(c)
 }

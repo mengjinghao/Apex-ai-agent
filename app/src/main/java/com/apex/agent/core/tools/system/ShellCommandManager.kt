@@ -18,8 +18,8 @@ import com.apex.agent.core.normal.shortcut.CommandCategory
 class ShellCommandManager(private val context: Context) {
     
     private val PREFS_NAME = "shell_executor_prefs"
-    private val KEY_COMMAND_HISTORY = "command_history"
-    private val MAX_HISTORY_SIZE = 100
+        private val KEY_COMMAND_HISTORY = "command_history"
+        private val MAX_HISTORY_SIZE = 100
     
     private val prefs: SharedPreferences by lazy {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -170,7 +170,6 @@ class ShellCommandManager(private val context: Context) {
         val result = withContext(Dispatchers.IO) {
             AndroidShellExecutor.executeShellCommand(command)
         }
-        
         val record = CommandRecord(
             command = command,
             result = result,
@@ -178,7 +177,7 @@ class ShellCommandManager(private val context: Context) {
         )
         
         // 保存到历史记�?       saveCommandToHistory(record)
-    return record
+        return record
     }
     
     /**
@@ -220,7 +219,6 @@ class ShellCommandManager(private val context: Context) {
      * 获取建议的命令列表（基于历史记录和输入的前缀�?    */
     fun getSuggestedCommands(prefix: String): List<String> {
         if (prefix.isBlank()) return emptyList()
-        
         val history = getCommandHistory()
         return history
             .map { it.command }

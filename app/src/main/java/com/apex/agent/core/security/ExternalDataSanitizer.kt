@@ -102,7 +102,6 @@ class ExternalDataSanitizer {
                 riskLevel = RiskLevel.CLEAN
             )
         }
-
         val findings = mutableListOf<ExternalFinding>()
         var sanitized = input
 
@@ -131,11 +130,9 @@ class ExternalDataSanitizer {
 
         val riskLevel = determineRiskLevel(findings)
         val isClean = findings.isEmpty()
-
         if (!isClean) {
             AppLogger.w(TAG, "外部数据消毒发现 ${findings.size} 个潜在威�? 风险等级: ${riskLevel}")
         }
-
         return ExternalSanitizeResult(
             originalText = input,
             sanitizedText = sanitized,
@@ -182,7 +179,6 @@ class ExternalDataSanitizer {
                 )
             }
         }
-
         return findings
     }
 
@@ -196,7 +192,7 @@ class ExternalDataSanitizer {
         while (dataUriMatcher.find()) {
             val base64Content = dataUriMatcher.group(1) ?: continue
             val decodedFinding = reviewDecodedBase64(base64Content, dataUriMatcher.start())
-            if (decodedFinding != null) {
+        if (decodedFinding != null) {
                 findings.add(decodedFinding)
             }
         }
@@ -205,14 +201,13 @@ class ExternalDataSanitizer {
     val base64Matcher = BASE64_PATTERN.matcher(input)
         while (base64Matcher.find()) {
             val base64Content = base64Matcher.group()
-            if (base64Content.length >= MIN_BASE64_LENGTH) {
+        if (base64Content.length >= MIN_BASE64_LENGTH) {
                 val decodedFinding = reviewDecodedBase64(base64Content, base64Matcher.start())
-                if (decodedFinding != null) {
+        if (decodedFinding != null) {
                     findings.add(decodedFinding)
                 }
             }
         }
-
         return findings
     }
 
@@ -222,14 +217,13 @@ class ExternalDataSanitizer {
     private fun reviewDecodedBase64(base64Content: String, position: Int): ExternalFinding? {
         return try {
             val decoded = Base64.getDecoder().decode(base64Content.trimEnd('='))
-            val decodedText = String(decoded, Charsets.UTF_8)
+        val decodedText = String(decoded, Charsets.UTF_8)
 
             // 检查解码后的内容是否包含可疑模�?
     if (decodedText.length >= MIN_DECODED_REVIEW_LENGTH && decodedText != base64Content) {
                 val hasSuspiciousContent = COMMENT_PAYLOAD_PATTERNS.any { it.matcher(decodedText).find() }
                     || SCRIPT_OPEN_TAG_PATTERN.matcher(decodedText).find()
-
-                if (hasSuspiciousContent) {
+        if (hasSuspiciousContent) {
                     ExternalFinding(
                         type = ExternalThreatType.BASE64_ENCODED_CONTENT,
                         confidence = 0.9f,
@@ -295,7 +289,6 @@ class ExternalDataSanitizer {
             )
         }
         sanitized = SUSPICIOUS_FILE_REF_PATTERN.matcher(sanitized).replaceAll("")
-
         return SanitizeStepResult(sanitized, findings)
     }
 
@@ -316,7 +309,6 @@ class ExternalDataSanitizer {
                 )
             )
         }
-
         val sanitized = EVENT_HANDLER_PATTERN.matcher(input).replaceAll("")
         return SanitizeStepResult(sanitized, findings)
     }
@@ -326,7 +318,6 @@ class ExternalDataSanitizer {
      */
     private fun detectAndRemoveDangerousUris(input: String): SanitizeStepResult {
         val findings = mutableListOf<ExternalFinding>()
-
         val jsUriMatcher = JAVASCRIPT_URI_PATTERN.matcher(input)
         while (jsUriMatcher.find()) {
             findings.add(
@@ -339,12 +330,10 @@ class ExternalDataSanitizer {
                 )
             )
         }
-
         val sanitized = JAVASCRIPT_URI_PATTERN.matcher(input).replaceAll("")
         return SanitizeStepResult(sanitized, findings)
     }
-
-    private fun determineRiskLevel(findings: List<ExternalFinding>): RiskLevel {
+        private fun determineRiskLevel(findings: List<ExternalFinding>): RiskLevel {
         if (findings.isEmpty()) return RiskLevel.CLEAN
 
         val maxSeverity = findings.maxOf { it.confidence }

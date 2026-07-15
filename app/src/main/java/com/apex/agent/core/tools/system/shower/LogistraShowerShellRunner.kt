@@ -18,7 +18,6 @@ object LogistraShowerShellRunner : ShellRunner {
             ShellIdentity.SHELL -> AppShellIdentity.SHELL
             ShellIdentity.ROOT -> AppShellIdentity.ROOT
         }
-
         val result = AndroidShellExecutor.executeShellCommand(command, appIdentity)
         return ShellCommandResult(
             success = result.success,

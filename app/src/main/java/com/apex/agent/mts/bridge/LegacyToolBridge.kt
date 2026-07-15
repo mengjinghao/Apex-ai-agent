@@ -87,31 +87,28 @@ class LegacyToolBridge(context: Context) {
             "export_graph_to_opml", "chain_of_thought_search",
             "battery_info", "network_info", "system_settings"
         )
-
         fun inferModeConfig(toolName: String): AgentModeConfig {
             val modes = mutableSetOf<AgentMode>()
-            if (toolName in normalOnlyTools || toolName in multiAgentExtra || toolName in berserkExtra) {
+        if (toolName in normalOnlyTools || toolName in multiAgentExtra || toolName in berserkExtra) {
                 modes.add(AgentMode.NORMAL)
             }
-            if (toolName in multiAgentExtra || toolName in berserkExtra) {
+        if (toolName in multiAgentExtra || toolName in berserkExtra) {
                 modes.add(AgentMode.MULTI_AGENT)
             }
-            if (toolName in berserkExtra) {
+        if (toolName in berserkExtra) {
                 modes.add(AgentMode.BERSERK)
             }
-            if (modes.isEmpty()) {
+        if (modes.isEmpty()) {
                 return AgentModeConfig(allowedModes = setOf(AgentMode.NORMAL, AgentMode.MULTI_AGENT))
             }
-            return AgentModeConfig(allowedModes = modes)
+        return AgentModeConfig(allowedModes = modes)
         }
-
         fun applyModeConfig(spec: ToolSpec): ToolSpec {
             val config = inferModeConfig(spec.name)
-            return spec.copy(modeConfig = config)
+        return spec.copy(modeConfig = config)
         }
     }
-
-    val defaultInvoker: ToolInvoker = ToolInvoker { spec, args ->
+        val defaultInvoker: ToolInvoker = ToolInvoker { spec, args ->
         val aiTool = com.apex.agent.data.model.AITool(
             name = spec.name,
             parameters = args.map { (k, v) ->
@@ -132,27 +129,23 @@ class LegacyToolBridge(context: Context) {
             )
         }
     }
-
-    fun buildEngine(config: ExecutionConfig = ExecutionConfig()): MtsEngine {
+        fun buildEngine(config: ExecutionConfig = ExecutionConfig()): MtsEngine {
         return MtsEngine.create(defaultInvoker, emptyList(), config)
     }
-
-    fun scanAndRegisterAll(engine: MtsEngine) {
+        fun scanAndRegisterAll(engine: MtsEngine) {
         val toolSpecs = buildToolSpecsFromLegacy()
         engine.registerTools(toolSpecs)
     }
-
-    private fun buildToolSpecsFromLegacy(): List<ToolSpec> {
+        private fun buildToolSpecsFromLegacy(): List<ToolSpec> {
         val specs = mutableListOf<ToolSpec>()
         for ((name, _) in toolHandler.getAllTools()) {
             val spec = inferToolSpec(name)
-            if (spec != null) specs.add(applyModeConfig(spec))
+        if (spec != null) specs.add(applyModeConfig(spec))
         }
         specs.addAll(buildKnownToolSpecs().map { applyModeConfig(it) })
         return specs.distinctBy { it.name }
     }
-
-    private fun buildKnownToolSpecs(): List<ToolSpec> {
+        private fun buildKnownToolSpecs(): List<ToolSpec> {
         return listOf(
             ToolSpec(
                 id = "file:read_file", name = "read_file", displayName = "Read File",
@@ -606,8 +599,7 @@ class LegacyToolBridge(context: Context) {
             )
         )
     }
-
-    private fun inferToolSpec(name: String): ToolSpec? {
+        private fun inferToolSpec(name: String): ToolSpec? {
         val category = when {
             name.startsWith("browser_") -> ToolCategories.BROWSER
             name.startsWith("ffmpeg_") -> ToolCategories.MEDIA
@@ -635,7 +627,6 @@ class LegacyToolBridge(context: Context) {
                 name.startsWith("get_notifications") || name.startsWith("close_all_") || name.startsWith("trigger_tasker") -> ToolCategories.SYSTEM
             else -> ToolCategories.SYSTEM
         }
-
         return ToolSpec(
             id = "legacy:$name",
             name = name,
@@ -654,5 +645,5 @@ fun AIToolHandler.getAllTools(): Map<String, Any> {
     val field = AIToolHandler::class.java.getDeclaredField("availableTools")
     field.isAccessible = true
     @Suppress("UNCHECKED_CAST")
-    return field.get(this) as Map<String, Any>
+        return field.get(this) as Map<String, Any>
 }

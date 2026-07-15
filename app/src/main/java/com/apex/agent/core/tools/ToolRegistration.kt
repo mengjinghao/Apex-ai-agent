@@ -40,7 +40,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
         val floatingService = FloatingChatService.getInstance()
         return try {
             floatingService?.setFloatingWindowVisible(false)
-            if (showStatusIndicator) {
+        if (showStatusIndicator) {
                 floatingService?.setStatusIndicatorVisible(true)
             } else {
                 floatingService?.setStatusIndicatorVisible(false)
@@ -52,18 +52,15 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             floatingService?.setStatusIndicatorVisible(false)
         }
     }
-
-    fun s(resId: Int, vararg args: Any): String = context.getString(resId, *args)
-
-    fun formatEnvInfo(environment: String): String {
+        fun s(resId: Int, vararg args: Any): String = context.getString(resId, *args)
+        fun formatEnvInfo(environment: String): String {
         return if (!environment.isNullOrBlank() && environment != "android") {
             s(R.string.toolreg_env_info, environment)
         } else {
             ""
         }
     }
-
-    fun formatEnvArrowInfo(sourceEnv: String, destEnv: String): String {
+        fun formatEnvArrowInfo(sourceEnv: String, destEnv: String): String {
         return if (sourceEnv != "android" || destEnv != "android") {
             s(R.string.toolreg_env_arrow_info, sourceEnv, destEnv)
         } else {
@@ -124,7 +121,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "execute_in_terminal_session",
             descriptionGenerator = { tool ->
                 val command = tool.parameters.find { it.name == "command" }?.value ?: ""
-                val sessionId = tool.parameters.find { it.name == "session_id" }?.value
+        val sessionId = tool.parameters.find { it.name == "session_id" }?.value
                 s(R.string.toolreg_execute_in_terminal_session_desc, sessionId ?: "", command)
             },
             executor = { tool ->
@@ -137,7 +134,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "execute_hidden_terminal_command",
             descriptionGenerator = { tool ->
                 val command = tool.parameters.find { it.name == "command" }?.value ?: ""
-                val executorKey =
+        val executorKey =
                         tool.parameters.find { it.name == "executor_key" }?.value ?: "default"
                 s(R.string.toolreg_execute_hidden_terminal_command_desc, executorKey, command)
             },
@@ -200,7 +197,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "write_environment_variable",
             descriptionGenerator = { tool ->
                 val key = tool.parameters.find { it.name == "key" }?.value ?: ""
-                val value = tool.parameters.find { it.name == "value" }?.value
+        val value = tool.parameters.find { it.name == "value" }?.value
                 val mode = if (value.isNullOrBlank()) "clear" else "set"
                 "Write environment variable: ${key} (${mode})"
             },
@@ -217,7 +214,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             },
             executor = { tool ->
                 val softwareSettingsTools = ToolGetter.getSoftwareSettingsModifyTools(context)
-                val packageManager = handler.getOrCreatePackageManager()
+        val packageManager = handler.getOrCreatePackageManager()
                 softwareSettingsTools.listSandboxPackages(tool, packageManager)
             }
     )
@@ -226,12 +223,12 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "set_sandbox_package_enabled",
             descriptionGenerator = { tool ->
                 val packageName = tool.parameters.find { it.name == "package_name" }?.value ?: ""
-                val enabled = tool.parameters.find { it.name == "enabled" }?.value ?: ""
+        val enabled = tool.parameters.find { it.name == "enabled" }?.value ?: ""
                 "Set sandbox package enabled state: ${packageName} -> ${enabled}"
             },
             executor = { tool ->
                 val softwareSettingsTools = ToolGetter.getSoftwareSettingsModifyTools(context)
-                val packageManager = handler.getOrCreatePackageManager()
+        val packageManager = handler.getOrCreatePackageManager()
                 softwareSettingsTools.setSandboxPackageEnabled(tool, packageManager)
             }
     )
@@ -240,11 +237,11 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "execute_sandbox_script_direct",
             descriptionGenerator = { tool ->
                 val sourcePath = tool.parameters.find { it.name == "source_path" }?.value?.trim().orEmpty()
-                val hasInlineCode =
+        val hasInlineCode =
                         tool.parameters.find { it.name == "source_code" }?.value?.isNotBlank() == true
                 val label =
                         tool.parameters.find { it.name == "script_label" }?.value?.trim().orEmpty()
-                val target =
+        val target =
                         when {
                             sourcePath.isNotBlank() -> sourcePath
                             label.isNotBlank() -> label
@@ -297,7 +294,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "test_tts_playback",
             descriptionGenerator = { tool ->
                 val text = tool.parameters.find { it.name == "text" }?.value.orEmpty()
-                val preview = text.take(24).replace('\n', ' ')
+        val preview = text.take(24).replace('\n', ' ')
                 "Play one TTS test utterance using current speech settings: ${preview}"
             },
             executor = { tool ->
@@ -380,8 +377,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "set_function_model_config",
             descriptionGenerator = { tool ->
                 val functionType = tool.parameters.find { it.name == "function_type" }?.value ?: ""
-                val configId = tool.parameters.find { it.name == "config_id" }?.value ?: ""
-                val modelIndex = tool.parameters.find { it.name == "model_index" }?.value ?: "0"
+        val configId = tool.parameters.find { it.name == "config_id" }?.value ?: ""
+        val modelIndex = tool.parameters.find { it.name == "model_index" }?.value ?: "0"
                 "Set function model config: ${functionType} -> ${configId} (model_index=${modelIndex})"
             },
             executor = { tool ->
@@ -394,7 +391,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "test_model_config_connection",
             descriptionGenerator = { tool ->
                 val configId = tool.parameters.find { it.name == "config_id" }?.value ?: ""
-                val modelIndex = tool.parameters.find { it.name == "model_index" }?.value ?: "0"
+        val modelIndex = tool.parameters.find { it.name == "model_index" }?.value ?: "0"
                 "Test model config connection: ${configId} (model_index=${modelIndex})"
             },
             executor = { tool ->
@@ -445,7 +442,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                                 "ai_style" -> s(R.string.toolreg_user_pref_ai_style)
                                 else -> null
                             }
-                    if (label != null) {
+        if (label != null) {
                         params.add(label)
                     }
                 }
@@ -478,7 +475,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "update_memory",
             descriptionGenerator = { tool ->
                 val oldTitle = tool.parameters.find { it.name == "old_title" }?.value ?: ""
-                val newTitle = tool.parameters.find { it.name == "new_title" }?.value ?: oldTitle
+        val newTitle = tool.parameters.find { it.name == "new_title" }?.value ?: oldTitle
                 s(R.string.toolreg_update_memory_desc, oldTitle, newTitle)
             },
             executor = { tool ->
@@ -506,7 +503,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             descriptionGenerator = { tool ->
                 val sourceFolder = tool.parameters.find { it.name == "source_folder_path" }?.value
                 val targetFolder = tool.parameters.find { it.name == "target_folder_path" }?.value ?: ""
-                val titles = tool.parameters.find { it.name == "titles" }?.value
+        val titles = tool.parameters.find { it.name == "titles" }?.value
                 when {
                     !titles.isNullOrBlank() && !sourceFolder.isNullOrBlank() ->
                         "Move selected memories from '${sourceFolder}' to '${targetFolder}'"
@@ -528,8 +525,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "link_memories",
             descriptionGenerator = { tool ->
                 val sourceTitle = tool.parameters.find { it.name == "source_title" }?.value ?: ""
-                val targetTitle = tool.parameters.find { it.name == "target_title" }?.value ?: ""
-                val linkType = tool.parameters.find { it.name == "link_type" }?.value ?: "related"
+        val targetTitle = tool.parameters.find { it.name == "target_title" }?.value ?: ""
+        val linkType = tool.parameters.find { it.name == "link_type" }?.value ?: "related"
                 s(R.string.toolreg_link_memories_desc, sourceTitle, targetTitle, linkType)
             },
             executor = { tool ->
@@ -626,9 +623,9 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                     "__Apex_package_chat_id",
                     "__Apex_package_caller_card_id"
                 )
-                val allowedParamNames = setOf("tool_name", "params") + packageContextParamNames
+        val allowedParamNames = setOf("tool_name", "params") + packageContextParamNames
                 val unknownParamNames = tool.parameters.map { it.name }.filter { it !in allowedParamNames }
-                if (unknownParamNames.isNotEmpty()) {
+        if (unknownParamNames.isNotEmpty()) {
                     return@registerTool ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -636,9 +633,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         error = "Unexpected parameters: ${unknownParamNames.joinToString(", ")}. Only tool_name, params, and supported system context parameters are allowed"
                     )
                 }
-
-                val toolNameParams = tool.parameters.filter { it.name == "tool_name" }
-                if (toolNameParams.size != 1) {
+        val toolNameParams = tool.parameters.filter { it.name == "tool_name" }
+        if (toolNameParams.size != 1) {
                     return@registerTool ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -646,8 +642,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         error = "Exactly one tool_name parameter is required"
                     )
                 }
-                val targetToolName = toolNameParams.first().value.trim()
-                if (targetToolName.isBlank()) {
+        val targetToolName = toolNameParams.first().value.trim()
+        if (targetToolName.isBlank()) {
                     return@registerTool ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -655,8 +651,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         error = "Missing required parameter: tool_name"
                     )
                 }
-
-                if (targetToolName == "package_proxy") {
+        if (targetToolName == "package_proxy") {
                     return@registerTool ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -664,8 +659,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         error = "tool_name cannot be package_proxy"
                     )
                 }
-
-                if (!targetToolName.contains(':')) {
+        if (!targetToolName.contains(':')) {
                     return@registerTool ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -673,9 +667,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         error = "tool_name must use packageName:toolName format"
                     )
                 }
-
-                val paramsParams = tool.parameters.filter { it.name == "params" }
-                if (paramsParams.size != 1) {
+        val paramsParams = tool.parameters.filter { it.name == "params" }
+        if (paramsParams.size != 1) {
                     return@registerTool ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -683,8 +676,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         error = "Exactly one params parameter is required"
                     )
                 }
-                val paramsRaw = paramsParams.first().value.trim()
-                if (paramsRaw.isBlank()) {
+        val paramsRaw = paramsParams.first().value.trim()
+        if (paramsRaw.isBlank()) {
                     return@registerTool ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -692,8 +685,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         error = "params must be a JSON object"
                     )
                 }
-
-                val paramsObject = try {
+        val paramsObject = try {
                     JSONObject(paramsRaw)
                 } catch (_: Exception) {
                     return@registerTool ToolResult(
@@ -703,13 +695,12 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         error = "params must be a valid JSON object"
                     )
                 }
-
-                val forwardedParameters = mutableListOf<ToolParameter>()
-                val keys = paramsObject.keys()
+        val forwardedParameters = mutableListOf<ToolParameter>()
+        val keys = paramsObject.keys()
                 while (keys.hasNext()) {
                     val key = keys.next()
-                    val value = paramsObject.opt(key)
-                    val valueString = when (value) {
+        val value = paramsObject.opt(key)
+        val valueString = when (value) {
                         null, JSONObject.NULL -> "null"
                         is String -> value
                         else -> value.toString()
@@ -722,16 +713,15 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         .firstOrNull { it.name == paramName }
                         ?.value
                         ?.trim()
-                    if (!value.isNullOrBlank() && forwardedParameters.none { it.name == paramName }) {
+        if (!value.isNullOrBlank() && forwardedParameters.none { it.name == paramName }) {
                         forwardedParameters.add(ToolParameter(name = paramName, value = value))
                     }
                 }
-
-                val proxiedTool = AITool(
+        val proxiedTool = AITool(
                     name = targetToolName,
                     parameters = forwardedParameters
                 )
-                val proxiedResult = handler.executeTool(proxiedTool)
+        val proxiedResult = handler.executeTool(proxiedTool)
                 ToolResult(
                     toolName = targetToolName,
                     success = proxiedResult.success,
@@ -799,8 +789,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "browser_click",
             descriptionGenerator = { tool ->
                 val ref = tool.parameters.find { it.name == "ref" }?.value ?: ""
-                val selector = tool.parameters.find { it.name == "selector" }?.value ?: ""
-                when {
+        val selector = tool.parameters.find { it.name == "selector" }?.value ?: ""
+        when {
                     ref.isNotBlank() -> "Click browser element ref ${ref} from browser_snapshot"
                     selector.isNotBlank() -> "Click browser element by selector ${selector}"
                     else -> "Click browser element (missing ref/selector)"
@@ -975,8 +965,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                 val packageName = tool.parameters.find { it.name == "package" }?.value
                 val component = tool.parameters.find { it.name == "component" }?.value
                 val type = tool.parameters.find { it.name == "type" }?.value ?: "activity"
-
-                when {
+        when {
                     !component.isNullOrBlank() ->
                             s(R.string.toolreg_execute_intent_component_desc, component, type)
                     !packageName.isNullOrBlank() && !action.isNullOrBlank() ->
@@ -1024,12 +1013,12 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "trigger_tasker_event",
             descriptionGenerator = { tool ->
                 val taskType = tool.parameters.find { it.name == "task_type" }?.value ?: ""
-                val args = tool.parameters.filter { it.name.startsWith("arg1") }.joinToString(",")
+        val args = tool.parameters.filter { it.name.startsWith("arg1") }.joinToString(",")
                 s(R.string.toolreg_trigger_tasker_event_desc, taskType, args)
             },
             executor = { tool ->
                 val params = tool.parameters.associate { it.name to it.value }
-                val taskType = params["task_type"]
+        val taskType = params["task_type"]
                 if (taskType.isNullOrBlank()) {
                     ToolResult(
                         toolName = tool.name,
@@ -1104,7 +1093,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "update_workflow",
             descriptionGenerator = { tool ->
                 val id = tool.parameters.find { it.name == "workflow_id" }?.value ?: ""
-                val name = tool.parameters.find { it.name == "name" }?.value
+        val name = tool.parameters.find { it.name == "name" }?.value
                 if (name != null) {
                     s(R.string.toolreg_update_workflow_with_name_desc, id, name)
                 } else {
@@ -1257,7 +1246,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "send_message_to_ai",
             descriptionGenerator = { tool ->
                 val message = tool.parameters.find { it.name == "message" }?.value ?: ""
-                val preview = if (message.length > 30) "${message.take(30)}..." else message
+        val preview = if (message.length > 30) "${message.take(30)}..." else message
                 s(R.string.toolreg_send_message_to_ai_desc, preview)
             },
             executor = { tool -> runBlocking(Dispatchers.IO) { chatManagerTool.sendMessageToAI(tool) } }
@@ -1268,7 +1257,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "send_message_to_ai_advanced",
             descriptionGenerator = { tool ->
                 val message = tool.parameters.find { it.name == "message" }?.value ?: ""
-                val preview = if (message.length > 30) "${message.take(30)}..." else message
+        val preview = if (message.length > 30) "${message.take(30)}..." else message
                 s(R.string.toolreg_send_message_to_ai_desc, preview)
             },
             executor = { tool -> runBlocking(Dispatchers.IO) { chatManagerTool.sendMessageToAIAdvanced(tool) } }
@@ -1285,10 +1274,10 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "get_chat_messages",
             descriptionGenerator = { tool ->
                 val chatId = tool.parameters.find { it.name == "chat_id" }?.value ?: ""
-                val order = tool.parameters.find { it.name == "order" }?.value
+        val order = tool.parameters.find { it.name == "order" }?.value
                 val limit = tool.parameters.find { it.name == "limit" }?.value
                 val orderInfo = if (!order.isNullOrBlank()) " (${order})" else ""
-                val limitInfo = if (!limit.isNullOrBlank()) " (${limit})" else ""
+        val limitInfo = if (!limit.isNullOrBlank()) " (${limit})" else ""
                 s(R.string.toolreg_get_chat_messages_desc, chatId, orderInfo, limitInfo)
             },
             executor = { tool -> runBlocking(Dispatchers.IO) { chatManagerTool.getChatMessages(tool) } }
@@ -1302,7 +1291,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "list_files",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_list_files_desc, path, envInfo)
             },
@@ -1316,7 +1305,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "read_file",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_read_file_desc, path, envInfo)
             },
@@ -1328,11 +1317,11 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "read_file_part",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val startLine = tool.parameters.find { it.name == "start_line" }?.value ?: "1"
-                val endLine = tool.parameters.find { it.name == "end_line" }?.value
+        val endLine = tool.parameters.find { it.name == "end_line" }?.value
                 val envInfo = formatEnvInfo(environment)
-                val rangeInfo =
+        val rangeInfo =
                         if (endLine != null) {
                             s(R.string.toolreg_read_file_part_range_lines, startLine, endLine)
                         } else {
@@ -1350,7 +1339,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "read_file_full",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_read_file_full_desc, path, envInfo)
             },
@@ -1362,7 +1351,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "read_file_binary",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_read_file_binary_desc, path, envInfo)
             },
@@ -1374,10 +1363,10 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "write_file",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val append = tool.parameters.find { it.name == "append" }?.value == "true"
-                val envInfo = formatEnvInfo(environment)
-                val operation =
+        val envInfo = formatEnvInfo(environment)
+        val operation =
                         if (append) {
                             s(R.string.toolreg_write_file_append_operation)
                         } else {
@@ -1395,7 +1384,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
         name = "write_file_binary",
         descriptionGenerator = { tool ->
             val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-            val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
             val envInfo = formatEnvInfo(environment)
             s(R.string.toolreg_write_file_binary_desc, path, envInfo)
         },
@@ -1409,10 +1398,10 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "delete_file",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val recursive = tool.parameters.find { it.name == "recursive" }?.value == "true"
-                val envInfo = formatEnvInfo(environment)
-                val operation =
+        val envInfo = formatEnvInfo(environment)
+        val operation =
                         if (recursive) {
                             s(R.string.toolreg_delete_file_recursive_operation)
                         } else {
@@ -1434,14 +1423,13 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                 val className = tool.parameters.find { it.name == "className" }?.value
                 val bounds = tool.parameters.find { it.name == "bounds" }?.value
                 val index = tool.parameters.find { it.name == "index" }?.value ?: "0"
-                val indexSuffix =
+        val indexSuffix =
                         if (index != "0") {
                             s(R.string.toolreg_index_suffix, index)
                         } else {
                             ""
                         }
-
-                when {
+        when {
                     resourceId != null ->
                             s(R.string.toolreg_click_element_resourceid_desc, resourceId, indexSuffix)
                     className != null ->
@@ -1462,7 +1450,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "tap",
             descriptionGenerator = { tool ->
                 val x = tool.parameters.find { it.name == "x" }?.value ?: "?"
-                val y = tool.parameters.find { it.name == "y" }?.value ?: "?"
+        val y = tool.parameters.find { it.name == "y" }?.value ?: "?"
                 s(R.string.toolreg_tap_desc, x, y)
             },
             executor = { tool ->
@@ -1476,7 +1464,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "long_press",
             descriptionGenerator = { tool ->
                 val x = tool.parameters.find { it.name == "x" }?.value ?: "?"
-                val y = tool.parameters.find { it.name == "y" }?.value ?: "?"
+        val y = tool.parameters.find { it.name == "y" }?.value ?: "?"
                 s(R.string.toolreg_long_press_desc, x, y)
             },
             executor = { tool ->
@@ -1494,7 +1482,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "http_request",
             descriptionGenerator = { tool ->
                 val url = tool.parameters.find { it.name == "url" }?.value ?: ""
-                val method = tool.parameters.find { it.name == "method" }?.value ?: "GET"
+        val method = tool.parameters.find { it.name == "method" }?.value ?: "GET"
                 s(R.string.toolreg_http_request_desc, method, url)
             },
             executor = { tool -> runBlocking(Dispatchers.IO) { httpTools.httpRequest(tool) } }
@@ -1505,8 +1493,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "multipart_request",
             descriptionGenerator = { tool ->
                 val url = tool.parameters.find { it.name == "url" }?.value ?: ""
-                val filesParam = tool.parameters.find { it.name == "files" }?.value ?: "[]"
-                val filesCount =
+        val filesParam = tool.parameters.find { it.name == "files" }?.value ?: "[]"
+        val filesCount =
                         try {
                             JSONArray(filesParam).length()
                         } catch (e: Exception) {
@@ -1525,8 +1513,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             descriptionGenerator = { tool ->
                 val action =
                         tool.parameters.find { it.name == "action" }?.value?.lowercase() ?: "get"
-                val domain = tool.parameters.find { it.name == "domain" }?.value ?: ""
-                when (action) {
+        val domain = tool.parameters.find { it.name == "domain" }?.value ?: ""
+        when (action) {
                     "get" ->
                             if (domain.isBlank()) {
                                 s(R.string.toolreg_manage_cookies_get_all_desc)
@@ -1551,7 +1539,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "file_exists",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_file_exists_desc, path, envInfo)
             },
@@ -1565,8 +1553,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "move_file",
             descriptionGenerator = { tool ->
                 val source = tool.parameters.find { it.name == "source" }?.value ?: ""
-                val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_move_file_desc, source, destination, envInfo)
             },
@@ -1578,16 +1566,15 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "copy_file",
             descriptionGenerator = { tool ->
                 val source = tool.parameters.find { it.name == "source" }?.value ?: ""
-                val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
-                val sourceEnv = tool.parameters.find { it.name == "source_environment" }?.value
+        val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
+        val sourceEnv = tool.parameters.find { it.name == "source_environment" }?.value
                 val destEnv = tool.parameters.find { it.name == "dest_environment" }?.value
                 val environment = tool.parameters.find { it.name == "environment" }?.value
 
                 // 确定源和目标环境
     val srcEnv = sourceEnv ?: environment ?: "android"
-                val dstEnv = destEnv ?: environment ?: "android"
-
-                val envInfo = formatEnvArrowInfo(srcEnv, dstEnv)
+        val dstEnv = destEnv ?: environment ?: "android"
+        val envInfo = formatEnvArrowInfo(srcEnv, dstEnv)
                 s(R.string.toolreg_copy_file_desc, source, destination, envInfo)
             },
             executor = { tool -> runBlocking(Dispatchers.IO) { fileSystemTools.copyFile(tool) } }
@@ -1598,7 +1585,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "make_directory",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_make_directory_desc, path, envInfo)
             },
@@ -1612,8 +1599,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "find_files",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val pattern = tool.parameters.find { it.name == "pattern" }?.value ?: "*"
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val pattern = tool.parameters.find { it.name == "pattern" }?.value ?: "*"
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_find_files_desc, path, pattern, envInfo)
             },
@@ -1627,7 +1614,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "file_info",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_file_info_desc, path, envInfo)
             },
@@ -1639,7 +1626,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "apply_file",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_apply_file_desc, path, envInfo)
             },
@@ -1662,8 +1649,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "zip_files",
             descriptionGenerator = { tool ->
                 val source = tool.parameters.find { it.name == "source" }?.value ?: ""
-                val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_zip_files_desc, source, destination, envInfo)
             },
@@ -1675,8 +1662,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "unzip_files",
             descriptionGenerator = { tool ->
                 val source = tool.parameters.find { it.name == "source" }?.value ?: ""
-                val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_unzip_files_desc, source, destination, envInfo)
             },
@@ -1690,7 +1677,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "open_file",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_open_file_desc, path, envInfo)
             },
@@ -1702,7 +1689,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "share_file",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_share_file_desc, path, envInfo)
             },
@@ -1716,11 +1703,11 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "grep_code",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val pattern = tool.parameters.find { it.name == "pattern" }?.value ?: ""
-                val filePattern = tool.parameters.find { it.name == "file_pattern" }?.value
+        val pattern = tool.parameters.find { it.name == "pattern" }?.value ?: ""
+        val filePattern = tool.parameters.find { it.name == "file_pattern" }?.value
                 val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
-                if (filePattern != null && filePattern != "*") {
+        if (filePattern != null && filePattern != "*") {
                     s(R.string.toolreg_grep_code_with_file_pattern_desc, path, pattern, envInfo, filePattern)
                 } else {
                     s(R.string.toolreg_grep_code_desc, path, pattern, envInfo)
@@ -1736,10 +1723,10 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "grep_context",
             descriptionGenerator = { tool ->
                 val path = tool.parameters.find { it.name == "path" }?.value ?: ""
-                val intent = tool.parameters.find { it.name == "intent" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val intent = tool.parameters.find { it.name == "intent" }?.value ?: ""
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
-                val preview = if (intent.length > 40) "${intent.take(40)}..." else intent
+        val preview = if (intent.length > 40) "${intent.take(40)}..." else intent
                 s(R.string.toolreg_grep_context_desc, path, preview, envInfo)
             },
             executor = { tool ->
@@ -1752,8 +1739,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "download_file",
             descriptionGenerator = { tool ->
                 val url = tool.parameters.find { it.name == "url" }?.value ?: ""
-                val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
-                val environment = tool.parameters.find { it.name == "environment" }?.value
+        val destination = tool.parameters.find { it.name == "destination" }?.value ?: ""
+        val environment = tool.parameters.find { it.name == "environment" }?.value
                 val envInfo = formatEnvInfo(environment)
                 s(R.string.toolreg_download_file_desc, url, destination, envInfo)
             },
@@ -1784,7 +1771,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "modify_system_setting",
             descriptionGenerator = { tool ->
                 val key = tool.parameters.find { it.name == "key" }?.value ?: ""
-                val value = tool.parameters.find { it.name == "value" }?.value ?: ""
+        val value = tool.parameters.find { it.name == "value" }?.value ?: ""
                 s(R.string.toolreg_modify_system_setting_desc, key, value)
             },
             executor = { tool ->
@@ -1866,10 +1853,9 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "get_notifications",
             descriptionGenerator = { tool ->
                 val limit = tool.parameters.find { it.name == "limit" }?.value ?: "10"
-                val includeOngoing =
+        val includeOngoing =
                         tool.parameters.find { it.name == "include_ongoing" }?.value == "true"
-
-                if (includeOngoing) {
+        if (includeOngoing) {
                     s(R.string.toolreg_get_notifications_desc_with_ongoing, limit)
                 } else {
                     s(R.string.toolreg_get_notifications_desc, limit)
@@ -1885,8 +1871,8 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "get_app_usage_time",
             descriptionGenerator = { tool ->
                 val packageName = tool.parameters.find { it.name == "package_name" }?.value.orEmpty()
-                val sinceHours = tool.parameters.find { it.name == "since_hours" }?.value ?: "24"
-                if (packageName.isNotBlank()) {
+        val sinceHours = tool.parameters.find { it.name == "since_hours" }?.value ?: "24"
+        if (packageName.isNotBlank()) {
                     "Get app usage time for ${packageName} in the last ${sinceHours} hours"
                 } else {
                     "Get app usage time ranking in the last ${sinceHours} hours"
@@ -1903,7 +1889,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             descriptionGenerator = { tool ->
                 val highAccuracy =
                         tool.parameters.find { it.name == "high_accuracy" }?.value == "true"
-                if (highAccuracy) {
+        if (highAccuracy) {
                     s(R.string.toolreg_get_device_location_high_accuracy_desc)
                 } else {
                     s(R.string.toolreg_get_device_location_desc)
@@ -1936,7 +1922,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
                         delayMs = 200
                     ) { t ->
                         val (path, _) = uiTools.captureScreenshot(t)
-                        if (path.isNullOrBlank()) {
+        if (path.isNullOrBlank()) {
                             ToolResult(toolName = t.name, success = false, result = StringResultData(""), error = "Screenshot failed")
                         } else {
                             ToolResult(toolName = t.name, success = true, result = StringResultData(path), error = null)
@@ -1950,11 +1936,11 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "run_ui_subagent",
             descriptionGenerator = { tool ->
                 val intent = tool.parameters.find { it.name == "intent" }?.value ?: ""
-                val maxSteps = tool.parameters.find { it.name == "max_steps" }?.value ?: "20"
-                val agentId = tool.parameters.find { it.name == "agent_id" }?.value
+        val maxSteps = tool.parameters.find { it.name == "max_steps" }?.value ?: "20"
+        val agentId = tool.parameters.find { it.name == "agent_id" }?.value
                 buildString {
                     append(s(R.string.toolreg_run_ui_subagent_desc, intent, maxSteps))
-                    if (!agentId.isNullOrBlank()) {
+        if (!agentId.isNullOrBlank()) {
                         append(s(R.string.toolreg_agent_id_suffix, agentId))
                     }
                     append(s(R.string.toolreg_run_ui_subagent_hint))
@@ -1996,9 +1982,9 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "swipe",
             descriptionGenerator = { tool ->
                 val startX = tool.parameters.find { it.name == "start_x" }?.value ?: "?"
-                val startY = tool.parameters.find { it.name == "start_y" }?.value ?: "?"
-                val endX = tool.parameters.find { it.name == "end_x" }?.value ?: "?"
-                val endY = tool.parameters.find { it.name == "end_y" }?.value ?: "?"
+        val startY = tool.parameters.find { it.name == "start_y" }?.value ?: "?"
+        val endX = tool.parameters.find { it.name == "end_x" }?.value ?: "?"
+        val endY = tool.parameters.find { it.name == "end_y" }?.value ?: "?"
                 s(R.string.toolreg_swipe_desc, startX, startY, endX, endY)
             },
             executor = { tool ->
@@ -2036,7 +2022,7 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             name = "ffmpeg_convert",
             descriptionGenerator = { tool ->
                 val inputPath = tool.parameters.find { it.name == "input_path" }?.value ?: ""
-                val outputPath = tool.parameters.find { it.name == "output_path" }?.value ?: ""
+        val outputPath = tool.parameters.find { it.name == "output_path" }?.value ?: ""
                 s(R.string.toolreg_ffmpeg_convert_desc, inputPath, outputPath)
             },
             executor = { tool ->

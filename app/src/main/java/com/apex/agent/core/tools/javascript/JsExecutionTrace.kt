@@ -12,12 +12,9 @@ import kotlinx.serialization.json.JsonPrimitive
 
 internal interface JsExecutionListener {
     fun onCallLog(callId: String, level: String, message: String) {}
-
-    fun onIntermediateResult(callId: String, value: Any) {}
-
-    fun onCompleted(callId: String, result: String) {}
-
-    fun onFailed(callId: String, error: String) {}
+        fun onIntermediateResult(callId: String, value: Any) {}
+        fun onCompleted(callId: String, result: String) {}
+        fun onFailed(callId: String, error: String) {}
 }
 
 internal class JsExecutionTraceRecorder(
@@ -27,7 +24,7 @@ internal class JsExecutionTraceRecorder(
     private val envFilePath: String?
 ) : JsExecutionListener {
     private val startedAtMs = System.currentTimeMillis()
-    private val events = mutableListOf<String>()
+        private val events = mutableListOf<String>()
 
     @Synchronized
     override fun onCallLog(callId: String, level: String, message: String) {
@@ -107,8 +104,7 @@ internal class JsExecutionTraceRecorder(
             requestedWaitMs = requestedWaitMs
         )
     }
-
-    fun writeTo(file: File, payload: SandboxScriptExecutionResultData) {
+        fun writeTo(file: File, payload: SandboxScriptExecutionResultData) {
         val parent = file.parentFile
         if (parent != null && !parent.exists()) {
             parent.mkdirs()
@@ -121,8 +117,7 @@ internal class JsExecutionTraceRecorder(
             Charsets.UTF_8
         )
     }
-
-    private fun parseJsonText(text: String): JsonElement? {
+        private fun parseJsonText(text: String): JsonElement? {
         val normalized = text.trim()
         if (normalized.isEmpty()) {
             return JsonObject(emptyMap())
@@ -133,8 +128,7 @@ internal class JsExecutionTraceRecorder(
             JsonPrimitive(normalized)
         }
     }
-
-    private fun toJsonElement(value: Any): JsonElement? {
+        private fun toJsonElement(value: Any): JsonElement? {
         return when (value) {
             null -> null
             is JsonElement -> value
@@ -154,8 +148,7 @@ internal class JsExecutionTraceRecorder(
             else -> JsonPrimitive(value.toString())
         }
     }
-
-    private fun summarizeValue(value: Any?, maxLength: Int = 240, depth: Int = 0): String {
+        private fun summarizeValue(value: Any?, maxLength: Int = 240, depth: Int = 0): String {
         return when (value) {
             null -> ""
             is String -> truncateText(collapseWhitespace(value), maxLength)
@@ -168,8 +161,7 @@ internal class JsExecutionTraceRecorder(
             else -> truncateText(collapseWhitespace(value.toString()), maxLength)
         }
     }
-
-    private fun summarizeJsonElement(
+        private fun summarizeJsonElement(
         element: JsonElement,
         maxLength: Int,
         depth: Int
@@ -189,8 +181,7 @@ internal class JsExecutionTraceRecorder(
             is JsonObject -> summarizeMap(element, maxLength, depth)
         }
     }
-
-    private fun summarizeIterable(
+        private fun summarizeIterable(
         values: List<Any?>,
         maxLength: Int,
         depth: Int
@@ -206,8 +197,7 @@ internal class JsExecutionTraceRecorder(
         val suffix = if (values.size > 3) ", +${values.size - 3} more" else ""
         return truncateText("[${items.joinToString(", ")}${suffix}]", maxLength)
     }
-
-    private fun summarizeMap(
+        private fun summarizeMap(
         values: Map<*, *>,
         maxLength: Int,
         depth: Int
@@ -222,32 +212,29 @@ internal class JsExecutionTraceRecorder(
         }
         if (depth >= 2) {
             val preview = entries.take(3).joinToString(", ") { it.first }
-            return "{${preview}${if (entries.size > 3) ", ..." else ""}}"
+        return "{${preview}${if (entries.size > 3) ", ..." else ""}}"
         }
-
         val parts =
             entries
                 .take(4)
                 .mapNotNull { (key, value) ->
                     val summary = summarizeValue(value, 120, depth + 1)
-                    if (summary.isBlank()) null else "${key}=${summary}"
+        if (summary.isBlank()) null else "${key}=${summary}"
                 }
                 .toMutableList()
         if (parts.isEmpty()) {
             val preview = entries.take(3).joinToString(", ") { it.first }
-            return "{${preview}${if (entries.size > 3) ", ..." else ""}}"
+        return "{${preview}${if (entries.size > 3) ", ..." else ""}}"
         }
         if (entries.size > 4) {
             parts += "+${entries.size - 4} more"
         }
         return truncateText(parts.joinToString("; "), maxLength)
     }
-
-    private fun collapseWhitespace(text: String): String {
+        private fun collapseWhitespace(text: String): String {
         return text.replace(Regex("\\s+"), " ").trim()
     }
-
-    private fun truncateText(text: String, maxLength: Int): String {
+        private fun truncateText(text: String, maxLength: Int): String {
         if (text.length <= maxLength) {
             return text
         }

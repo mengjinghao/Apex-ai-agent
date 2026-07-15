@@ -31,18 +31,18 @@ import org.json.JSONObject
  * 问题库管理类 - 提供分析对话内容并存储为结构化记忆图谱的功能�?/
 object ProblemLibrary {
     private const val TAG = "ProblemLibrary"
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var apiPreferences: ApiPreferences? = null
+        private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private var apiPreferences: ApiPreferences? = null
     private val mutex = Mutex()
 
     @Volatile private var isInitialized = false
 
     // --- Data classes for parsing the new structured analysis ---
     private data class ParsedLink(val sourceTitle: String, val targetTitle: String, val type: String, val description: String, val weight: Float = 1.0f)
-    private data class ParsedEntity(val title: String, val content: String, val tags: List<String>, val aliasFor: String?, val folderPath: String)
-    private data class ParsedUpdate(val titleToUpdate: String, val newContent: String, val reason: String, val newCredibility: Float?, val newImportance: Float)
-    private data class ParsedMerge(val sourceTitles: List<String>, val newTitle: String, val newContent: String, val newTags: List<String>, val folderPath: String, val reason: String)
-    private data class ParsedAnalysis(
+        private data class ParsedEntity(val title: String, val content: String, val tags: List<String>, val aliasFor: String?, val folderPath: String)
+        private data class ParsedUpdate(val titleToUpdate: String, val newContent: String, val reason: String, val newCredibility: Float?, val newImportance: Float)
+        private data class ParsedMerge(val sourceTitles: List<String>, val newTitle: String, val newContent: String, val newTags: List<String>, val folderPath: String, val reason: String)
+        private data class ParsedAnalysis(
         val mainProblem: ParsedEntity?,
         val extractedEntities: List<ParsedEntity> = emptyList(),
         val links: List<ParsedLink> = emptyList(),
@@ -50,9 +50,7 @@ object ProblemLibrary {
         val mergedEntities: List<ParsedMerge> = emptyList(),
         val userPreferences: String = ""
     )
-
-
-    fun initialize(context: Context) {
+        fun initialize(context: Context) {
         synchronized(ProblemLibrary::class.java) {
             if (isInitialized) return
             AppLogger.d(TAG, "正在初始的ProblemLibrary")
@@ -77,8 +75,7 @@ object ProblemLibrary {
             }
         }
     }
-
-    fun saveProblemAsync(
+        fun saveProblemAsync(
             context: Context,
             toolHandler: AIToolHandler,
             conversationHistory: List<Pair<String, String>>,
@@ -101,8 +98,7 @@ object ProblemLibrary {
             }
         }
     }
-
-    private fun ensureInitialized(context: Context) {
+        private fun ensureInitialized(context: Context) {
         if (!isInitialized) {
             initialize(context)
         }
@@ -114,14 +110,12 @@ object ProblemLibrary {
     private suspend fun autoCategorizeMemories(context: Context, aiService: AIService) {
         mutex.withLock {
             val profileId = preferencesManager.activeProfileIdFlow.first()
-            val memoryRepository = MemoryRepository(context, profileId)
-            
-            val allMemories = memoryRepository.getAllMemories()
-            val uncategorizedMemories = allMemories.filter { memory ->
+        val memoryRepository = MemoryRepository(context, profileId)
+        val allMemories = memoryRepository.getAllMemories()
+        val uncategorizedMemories = allMemories.filter { memory ->
                 memory.folderPath.isNullOrEmpty()
             }
-            
-            if (uncategorizedMemories.isEmpty()) {
+        if (uncategorizedMemories.isEmpty()) {
                 AppLogger.d(TAG, "没有未分类的记忆，跳过自动分析）
                 return@withLock
             }
@@ -131,7 +125,7 @@ object ProblemLibrary {
             // 获取现有文件夹列�?
     val existingFolders = memoryRepository.getAllFolderPaths()
             
-            // 分批处理（每�?条）
+            // 分批处理（每�条）
     val batches = uncategorizedMemories.chunked(10)
             batches.forEachIndexed { batchIndex: Int, batch: List<Memory> ->
                 try {
@@ -162,9 +156,8 @@ object ProblemLibrary {
             memoriesDigest = memoriesDigest,
             useEnglish = useEnglish
         )
-
         val userMessage = FunctionalPrompts.memoryAutoCategorizeUserMessage(useEnglish)
-            val messages = listOf(Pair("system", systemPrompt), Pair("user", userMessage)).toPromptTurns()
+        val messages = listOf(Pair("system", systemPrompt), Pair("user", userMessage)).toPromptTurns()
         val result = StringBuilder()
         
         withContext(Dispatchers.IO) {
@@ -200,15 +193,14 @@ object ProblemLibrary {
     ) {
         try {
             val cleanJson = ChatUtils.extractJsonArray(jsonString)
-            if (cleanJson.isEmpty() || !cleanJson.startsWith("[")) return
+        if (cleanJson.isEmpty() || !cleanJson.startsWith("[")) return
             
             val jsonArray = JSONArray(cleanJson)
-            val titleToFolderMap = mutableMapOf<String, String>()
-            
-            for (i in 0 until jsonArray.length()) {
+        val titleToFolderMap = mutableMapOf<String, String>()
+        for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
-                val title = obj.getString("title")
-                val folder = obj.getString("folder")
+        val title = obj.getString("title")
+        val folder = obj.getString("folder")
                 titleToFolderMap[title] = folder
             }
             
@@ -244,7 +236,7 @@ object ProblemLibrary {
     ) {
         mutex.withLock {
             val profileId = preferencesManager.activeProfileIdFlow.first()
-            val memoryRepository = MemoryRepository(context, profileId)
+        val memoryRepository = MemoryRepository(context, profileId)
 
             // Prune tool results to reduce token usage
     val prunedContent =
@@ -265,14 +257,12 @@ object ProblemLibrary {
                         pruneToolResultContent(context, cleanedContent)
                     )
                 }
-
-            if (processedHistory.isEmpty()) {
+        if (processedHistory.isEmpty()) {
                 AppLogger.w(TAG, "处理后的会話历史为空，跳过保存问题记的）
                 return@withLock
             }
-
-            val query = processedHistory.lastOrNull { it.first == "user" }?.second ?: ""
-            if (query.isEmpty()) {
+        val query = processedHistory.lastOrNull { it.first == "user" }?.second ?: ""
+        if (query.isEmpty()) {
                 AppLogger.w(TAG, "未找到用户查询消息，跳过保存")
                 return@withLock
             }
@@ -302,14 +292,14 @@ object ProblemLibrary {
                 AppLogger.d(TAG, "开始合${{analysis.mergedEntities.size} 组记�?.")
                 analysis.mergedEntities.forEach { merge ->
                     AppLogger.d(TAG, "正在合并: ${merge.sourceTitles.joinToString(", ")} -> '${merge.newTitle}'. 原因: ${merge.reason}")
-                    val mergedMemory = memoryRepository.mergeMemories(
+        val mergedMemory = memoryRepository.mergeMemories(
                         sourceTitles = merge.sourceTitles,
                         newTitle = merge.newTitle,
                         newContent = merge.newContent,
                         newTags = merge.newTags,
                         folderPath = merge.folderPath
                     )
-                    if (mergedMemory != null) {
+        if (mergedMemory != null) {
                         createdMemories[mergedMemory.title] = mergedMemory
                     }
                 }
@@ -320,16 +310,16 @@ object ProblemLibrary {
                 AppLogger.d(TAG, "开始更�?{analysis.updatedEntities.size} 个现有记�?.")
                 analysis.updatedEntities.forEach { update ->
                     val memoryToUpdate = memoryRepository.findMemoryByTitle(update.titleToUpdate)
-                    if (memoryToUpdate != null) {
+        if (memoryToUpdate != null) {
                         AppLogger.d(TAG, "正在更新记忆: '${update.titleToUpdate}'. 原因: ${update.reason}")
-                        val updatedMemory = memoryRepository.updateMemory(
+        val updatedMemory = memoryRepository.updateMemory(
                                 memory = memoryToUpdate,
                                 newTitle = memoryToUpdate.title, // For now, let's not change the title
                                 newContent = update.newContent,
                                 newCredibility = update.newCredibility ?: memoryToUpdate.credibility,
                                 newImportance = update.newImportance ?: memoryToUpdate.importance
                         )
-                        if (updatedMemory != null) {
+        if (updatedMemory != null) {
                             createdMemories[updatedMemory.title] = updatedMemory
                         }
                     } else {
@@ -339,7 +329,7 @@ object ProblemLibrary {
             }
 
             // Update user preferences (this logic remains)
-    if (analysis.userPreferences.isNotEmpty()) {
+        if (analysis.userPreferences.isNotEmpty()) {
                 try {
                     withContext(Dispatchers.IO) {
                         updateUserPreferencesFromAnalysis(context, analysis.userPreferences)
@@ -364,14 +354,14 @@ object ProblemLibrary {
                 // 1. Create main problem memory
     val mainProblemMemory = analysis.mainProblem?.let { mainProblem ->
                     val existingMemory = memoryRepository.findMemoryByTitle(mainProblem.title)
-                    if (existingMemory != null) {
+        if (existingMemory != null) {
                         AppLogger.d(TAG, "1. 发现同名核心记忆，更新内�?${mainProblem.title}'")
                         existingMemory.content = mainProblem.content
                         memoryRepository.saveMemory(existingMemory)
                         existingMemory
                     } else {
                         AppLogger.d(TAG, "1. 创建主要问题记忆节点: '${mainProblem.title}'")
-                        val memory = Memory(
+        val memory = Memory(
                             title = mainProblem.title,
                             content = mainProblem.content,
                             importance = 0.8f, // Main problems are highly important
@@ -392,14 +382,13 @@ object ProblemLibrary {
                 // 2. Process entities with new LLM-driven deduplication logic
                 analysis.extractedEntities.forEach { entity ->
                     AppLogger.d(TAG, "2. 处理实体: '${entity.title}'")
-                    var memory: Memory? = null
+        var memory: Memory? = null
 
                     if (!entity.aliasFor.isNullOrBlank()) {
                         // This entity is an alias for an existing one, as determined by the LLM.AppLogger.d(TAG, "   -> LLM 识别此实体为 '${entity.aliasFor}' 的别名，)
                         // Try to find the canonical memory, first in the ones we just created, then in the DB.
                         memory = createdMemories[entity.aliasFor] ?: memoryRepository.findMemoryByTitle(entity.aliasFor)
-
-                        if (memory != null) {
+        if (memory != null) {
                             AppLogger.d(TAG, "   -> 复用已存在的记忆节点 (ID: ${memory.id}).")
                         } else {
                             // This is an edge case: LLM said it's an alias, but we can't find the original.
@@ -437,13 +426,12 @@ object ProblemLibrary {
                     // Try to find target: first in newly created/updated memories, then in existing DB
     val target = createdMemories[link.targetTitle] 
                         ?: memoryRepository.findMemoryByTitle(link.targetTitle)
-                    
-                    if (source != null && target != null) {
+        if (source != null && target != null) {
                         AppLogger.d(TAG, "   -> 正在链接: '${link.sourceTitle}' --(${link.type}, weight=${link.weight})--> '${link.targetTitle}'")
                         memoryRepository.linkMemories(source, target, link.type, weight = link.weight, description = link.description)
                     } else {
                         AppLogger.w(TAG, "   -> 无法创建链接，源或目标实体未找到: ${link.sourceTitle} -> ${link.targetTitle}")
-                        if (source == null) AppLogger.w(TAG, "      源节�?${link.sourceTitle}' 未找的）
+        if (source == null) AppLogger.w(TAG, "      源节�?${link.sourceTitle}' 未找的）
                         if (target == null) AppLogger.w(TAG, "      目标节点 '${link.targetTitle}' 未找的）
                     }
                 }
@@ -470,7 +458,7 @@ object ProblemLibrary {
     ): ParsedAnalysis {
         try {
             val useEnglish = LocaleUtils.getCurrentLanguage(context).lowercase().startsWith("en")
-            val currentPreferences = withContext(Dispatchers.IO) {
+        val currentPreferences = withContext(Dispatchers.IO) {
                 var preferences = ""
                 preferencesManager.getUserPreferencesFlow().take(1).collect { profile ->
                     preferences = buildPreferencesText(context, profile)
@@ -481,8 +469,8 @@ object ProblemLibrary {
             // --- Hybrid Strategy: Local rough search + LLM final decision ---
             // 1. Use a compact search query (question-focused) for rough candidate selection.
     val contextQuery = buildCandidateSearchQuery(query, solution)
-            val searchConfig = MemorySearchSettingsPreferences(context, profileId).load()
-            val candidateMemories = memoryRepository.searchMemories(
+        val searchConfig = MemorySearchSettingsPreferences(context, profileId).load()
+        val candidateMemories = memoryRepository.searchMemories(
                 query = contextQuery,
                 scoreMode = searchConfig.scoreMode,
                 keywordWeight = searchConfig.keywordWeight,
@@ -499,7 +487,7 @@ object ProblemLibrary {
                     "searchQueryLen=${contextQuery.length}"
             )
             AppLogger.d(TAG, "候选检索查询（截断�?${contextQuery.take(220)}")
-            if (candidateMemories.isEmpty()) {
+        if (candidateMemories.isEmpty()) {
                 AppLogger.d(TAG, "候选记忆列表为空（通过阈值过滤后无结果）的）
             } else {
                 candidateMemories.forEachIndexed { index, memory ->
@@ -520,8 +508,7 @@ object ProblemLibrary {
 
             // 2. Proactively find duplicates among candidates and instruct LLM to merge them
     val duplicatesPromptPart = findAndDescribeDuplicates(candidateMemories, memoryRepository, useEnglish)
-
-            val existingMemoriesPrompt = if (candidateMemories.isNotEmpty()) {
+        val existingMemoriesPrompt = if (candidateMemories.isNotEmpty()) {
                 FunctionalPrompts.knowledgeGraphExistingMemoriesPrefix(useEnglish) +
                     candidateMemories.joinToString("\n") { "- \"${it.title}\": ${it.content.take(150).replace("\n", " ")}..." }
             } else {
@@ -530,22 +517,20 @@ object ProblemLibrary {
 
             // 获取现有文件夹列�?
     val existingFolders = memoryRepository.getAllFolderPaths()
-            val existingFoldersPrompt = FunctionalPrompts.knowledgeGraphExistingFoldersPrompt(
+        val existingFoldersPrompt = FunctionalPrompts.knowledgeGraphExistingFoldersPrompt(
                 existingFolders = existingFolders,
                 useEnglish = useEnglish
             )
-
-            val systemPrompt = FunctionalPrompts.buildKnowledgeGraphExtractionPrompt(
+        val systemPrompt = FunctionalPrompts.buildKnowledgeGraphExtractionPrompt(
                 duplicatesPromptPart = duplicatesPromptPart,
                 existingMemoriesPrompt = existingMemoriesPrompt,
                 existingFoldersPrompt = existingFoldersPrompt,
                 currentPreferences = currentPreferences,
                 useEnglish = useEnglish
             )
-
-            val analysisMessage = buildAnalysisMessage(context, query, solution, conversationHistory, useEnglish)
-            val messages = listOf(Pair("system", systemPrompt), Pair("user", analysisMessage)).toPromptTurns()
-            val result = StringBuilder()
+        val analysisMessage = buildAnalysisMessage(context, query, solution, conversationHistory, useEnglish)
+        val messages = listOf(Pair("system", systemPrompt), Pair("user", analysisMessage)).toPromptTurns()
+        val result = StringBuilder()
 
             withContext(Dispatchers.IO) {
                 val stream =
@@ -565,21 +550,17 @@ object ProblemLibrary {
             
             // Update request count
             apiPreferences?.incrementRequestCountForProviderModel(aiService.providerModel)
-
-            return parseAnalysisResult(context, ChatUtils.removeThinkingContent(result.toString()))
+        return parseAnalysisResult(context, ChatUtils.removeThinkingContent(result.toString()))
         } catch (e: Exception) {
             AppLogger.e(TAG, "生成分析失败", e)
-            return ParsedAnalysis(null)
+        return ParsedAnalysis(null)
         }
     }
-
-    private fun buildCandidateSearchQuery(query: String, solution: String): String {
+        private fun buildCandidateSearchQuery(query: String, solution: String): String {
         val coreQuestion = extractCoreQuestionText(query)
         val fallbackQuestion = normalizeCandidateSearchText(query, maxLen = 800)
-
         val selectedQuestion = if (coreQuestion.isNotBlank()) coreQuestion else fallbackQuestion
         if (selectedQuestion.isBlank()) return normalizeCandidateSearchText(solution, maxLen = 300)
-
         val conciseSolution = normalizeCandidateSearchText(solution, maxLen = 180)
 
         // 优先问题文本，附带少量解答上下文（避免历史记录噪声）�?
@@ -589,38 +570,31 @@ object ProblemLibrary {
             selectedQuestion
         }
     }
-
-    private fun extractCoreQuestionText(rawQuery: String): String {
+        private fun extractCoreQuestionText(rawQuery: String): String {
         val compact = rawQuery.replace("\r\n", "\n")
-
         val cn = Regex("(?s)问题\\s*[的]\\s*(.+)(?:\\n\\s*解决方案\\s*[的]|\\z)")
             .find(compact)
             ?.groupValues
             ?.getOrNull(1)
             ?.trim()
-
         val en = Regex("(?s)Question\\s*:\\s*(.+)(?:\\n\\s*Solution\\s*:|\\z)")
             .find(compact)
             ?.groupValues
             ?.getOrNull(1)
             ?.trim()
-
         val selected = when {
             !cn.isNullOrBlank() -> cn
             !en.isNullOrBlank() -> en
             else -> compact
         }
-
         val filtered = selected
             .lineSequence()
             .filterNot { it.trimStart().startsWith("历史记录:") }
             .filterNot { it.trimStart().startsWith("History:") }
             .joinToString("\n")
-
         return normalizeCandidateSearchText(filtered, maxLen = 500)
     }
-
-    private fun normalizeCandidateSearchText(raw: String, maxLen: Int): String {
+        private fun normalizeCandidateSearchText(raw: String, maxLen: Int): String {
         return raw
             .replace(ChatMarkupRegex.toolTag, " ")
             .replace(ChatMarkupRegex.toolSelfClosingTag, " ")
@@ -645,10 +619,9 @@ object ProblemLibrary {
     private suspend fun findAndDescribeDuplicates(candidateMemories: List<Memory>, memoryRepository: MemoryRepository, useEnglish: Boolean): String {
         val titles = candidateMemories.map { it.title }.distinct()
         val duplicatesFound = mutableListOf<String>()
-
         for (title in titles) {
             val memoriesWithSameTitle = memoryRepository.findMemoriesByTitle(title)
-            if (memoriesWithSameTitle.size > 1) {
+        if (memoriesWithSameTitle.size > 1) {
                 duplicatesFound.add(
                     FunctionalPrompts.knowledgeGraphDuplicateTitleInstruction(
                         title = title,
@@ -658,15 +631,13 @@ object ProblemLibrary {
                 )
             }
         }
-
         return if (duplicatesFound.isNotEmpty()) {
             FunctionalPrompts.knowledgeGraphDuplicateHeader(useEnglish) + duplicatesFound.joinToString("\n") + "\n"
         } else {
             ""
         }
     }
-
-    private fun buildAnalysisMessage(
+        private fun buildAnalysisMessage(
             context: Context,
             query: String,
             solution: String,
@@ -705,14 +676,13 @@ object ProblemLibrary {
     private fun parseAnalysisResult(context: Context, jsonString: String): ParsedAnalysis {
         return try {
             val cleanJson = ChatUtils.extractJson(jsonString)
-            if (cleanJson.isEmpty() || !cleanJson.startsWith("{")) return ParsedAnalysis(null)
+        if (cleanJson.isEmpty() || !cleanJson.startsWith("{")) return ParsedAnalysis(null)
 
             // Handle the case where AI decides not to extract any knowledge
     if (cleanJson == "{}") {
                 return ParsedAnalysis(null)
             }
-
-            val json = JSONObject(cleanJson)
+        val json = JSONObject(cleanJson)
             
             // 【新增】输的AI 返回的完的JSON 指令
             AppLogger.d(TAG, "AI 返回的完的JSON 指令:\n${json.toString(2)}")
@@ -733,8 +703,8 @@ object ProblemLibrary {
     val extractedEntities = json.optJSONArray("new")?.let { entitiesArray ->
                 List(entitiesArray.length()) { i ->
                     val entityArr = entitiesArray.getJSONArray(i)
-                    val tags = entityArr.optJSONArray(2)?.let { tagsArray -> List(tagsArray.length()) { j -> tagsArray.getString(j) } } ?: emptyList()
-                    val aliasFor = if (!entityArr.isNull(4)) entityArr.getString(4) else null
+        val tags = entityArr.optJSONArray(2)?.let { tagsArray -> List(tagsArray.length()) { j -> tagsArray.getString(j) } } ?: emptyList()
+        val aliasFor = if (!entityArr.isNull(4)) entityArr.getString(4) else null
                     ParsedEntity(
                         title = entityArr.getString(0),
                         content = entityArr.getString(1),
@@ -763,7 +733,7 @@ object ProblemLibrary {
     val updatedEntities = json.optJSONArray("update")?.let { updatesArray ->
                 List(updatesArray.length()) { i ->
                     val updateArr = updatesArray.getJSONArray(i)
-                    val credibility = if (!updateArr.isNull(3)) updateArr.getDouble(3).toFloat() else null
+        val credibility = if (!updateArr.isNull(3)) updateArr.getDouble(3).toFloat() else null
                     val importance = if (!updateArr.isNull(4)) updateArr.getDouble(4).toFloat() else null
                     ParsedUpdate(
                         titleToUpdate = updateArr.getString(0),
@@ -779,7 +749,7 @@ object ProblemLibrary {
     val mergedEntities = json.optJSONArray("merge")?.let { mergeArray ->
                 List(mergeArray.length()) { i ->
                     val mergeObj = mergeArray.getJSONObject(i)
-                    val sourceTitles = mergeObj.getJSONArray("source_titles").let { titles ->
+        val sourceTitles = mergeObj.getJSONArray("source_titles").let { titles ->
                         List(titles.length()) { j -> titles.getString(j) }
                     }
                     ParsedMerge(
@@ -794,8 +764,7 @@ object ProblemLibrary {
                     )
                 }
             } ?: emptyList()
-
-            val userPreferences = json.optJSONObject("user")?.let {
+        val userPreferences = json.optJSONObject("user")?.let {
                 parseUserPreferences(context, it)
             } ?: ""
 
@@ -812,14 +781,13 @@ object ProblemLibrary {
             ParsedAnalysis(null)
         }
     }
-
-    private fun parseUserPreferences(context: Context, preferencesObj: JSONObject): String {
+        private fun parseUserPreferences(context: Context, preferencesObj: JSONObject): String {
         val preferenceParts = mutableListOf<String>()
         // Helper to add preference if it exists and is not "<UNCHANGED>"
-    fun addPref(key: String, prefix: String) {
+        fun addPref(key: String, prefix: String) {
             if (preferencesObj.has(key) && preferencesObj.get(key) != "<UNCHANGED>") {
                 val value = preferencesObj.get(key).toString()
-                if (value.isNotEmpty()) preferenceParts.add("${prefix}: ${value}")
+        if (value.isNotEmpty()) preferenceParts.add("${prefix}: ${value}")
             }
         }
         addPref("age", context.getString(R.string.profile_birth_year))
@@ -830,18 +798,16 @@ object ProblemLibrary {
         addPref("aiStyle", context.getString(R.string.profile_ai_style))
         return preferenceParts.joinToString("; ")
     }
-
-
-    private fun buildPreferencesText(context: Context, profile: com.apex.data.model.PreferenceProfile): String {
+        private fun buildPreferencesText(context: Context, profile: com.apex.data.model.PreferenceProfile): String {
         val parts = mutableListOf<String>()
         if (profile.gender.isNotEmpty()) parts.add(context.getString(R.string.profile_gender_value, profile.gender))
         if (profile.birthDate > 0) {
             val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
             parts.add(context.getString(R.string.profile_birth_date, dateFormat.format(java.util.Date(profile.birthDate))))
-            val today = java.util.Calendar.getInstance()
-            val birthCal = java.util.Calendar.getInstance().apply { timeInMillis = profile.birthDate }
-            var age = today.get(java.util.Calendar.YEAR) - birthCal.get(java.util.Calendar.YEAR)
-            if (today.get(java.util.Calendar.DAY_OF_YEAR) < birthCal.get(java.util.Calendar.DAY_OF_YEAR)) {
+        val today = java.util.Calendar.getInstance()
+        val birthCal = java.util.Calendar.getInstance().apply { timeInMillis = profile.birthDate }
+        var age = today.get(java.util.Calendar.YEAR) - birthCal.get(java.util.Calendar.YEAR)
+        if (today.get(java.util.Calendar.DAY_OF_YEAR) < birthCal.get(java.util.Calendar.DAY_OF_YEAR)) {
                 age--
             }
             parts.add(context.getString(R.string.profile_age, age))
@@ -852,15 +818,13 @@ object ProblemLibrary {
         if (profile.aiStyle.isNotEmpty()) parts.add(context.getString(R.string.profile_ai_style_value, profile.aiStyle))
         return parts.joinToString("; ")
     }
-
-    private suspend fun updateUserPreferencesFromAnalysis(context: Context, preferencesText: String) {
+        private suspend fun updateUserPreferencesFromAnalysis(context: Context, preferencesText: String) {
         if (preferencesText.isEmpty()) return
 
         fun extractValue(match: MatchResult): String? {
             if (match == null) return null
             return if (match.groupValues.size > 1) match.groupValues.last().trim() else null
         }
-
         val birthDateMatch = "(出生日期|出生年月日|Birth Date|Date of Birth)[:：\\s]+([\\d-]+)".toRegex().find(preferencesText)
         val birthYearMatch = "(出生年份|年龄|Birth year|Age)[:：\\s]+(\\d+)".toRegex().find(preferencesText)
         val genderMatch = "(性别|Gender)[:：\\s]+([^;]+)".toRegex().find(preferencesText)
@@ -868,20 +832,19 @@ object ProblemLibrary {
         val identityMatch = "(身份(认同�?|Identity( recognition))[:：\\s]+([^;]+)".toRegex().find(preferencesText)
         val occupationMatch = "(职业|Occupation)[:：\\s]+([^;]+)".toRegex().find(preferencesText)
         val aiStyleMatch = "(AI风格|期待的AI风格|偏好的AI风格|AI Style|Expected AI Style|Preferred AI Style)[:：\\s]+([^;]+)".toRegex().find(preferencesText)
-
         var birthDateTimestamp: Long? = null
         if (birthDateMatch != null) {
             try {
                 val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                val date = extractValue(birthDateMatch)?.let { dateFormat.parse(it) }
-                if (date != null) birthDateTimestamp = date.time
+        val date = extractValue(birthDateMatch)?.let { dateFormat.parse(it) }
+        if (date != null) birthDateTimestamp = date.time
             } catch (e: Exception) {
                 AppLogger.e(TAG, "解析出生日期失败: ${e.message}")
             }
         } else if (birthYearMatch != null) {
             try {
                 val year = extractValue(birthYearMatch)?.toInt()
-                if (year == null) return
+        if (year == null) return
                 val calendar = java.util.Calendar.getInstance()
                 calendar.set(year, java.util.Calendar.JANUARY, 1, 0, 0, 0)
                 calendar.set(java.util.Calendar.MILLISECOND, 0)

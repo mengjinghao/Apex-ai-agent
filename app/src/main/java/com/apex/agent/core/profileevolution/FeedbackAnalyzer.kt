@@ -17,7 +17,6 @@ class FeedbackAnalyzer(private val context: Context) {
      */
     suspend fun analyzeFeedback(messages: List<ChatMessage>): FeedbackAnalysisResult = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "开始分析用户反馈，消息数量: ${messages.size}")
-        
         val result = FeedbackAnalysisResult()
         
         // 分析明确反馈
@@ -38,7 +37,6 @@ class FeedbackAnalyzer(private val context: Context) {
      */
     private fun analyzeExplicitFeedback(messages: List<ChatMessage>, result: FeedbackAnalysisResult) {
         val userMessages = messages.filter { it.sender == "user" }
-        
         for (message in userMessages) {
             val content = message.content
             
@@ -58,11 +56,9 @@ class FeedbackAnalyzer(private val context: Context) {
         val positiveKeywords = listOf(
             "满意", "很好", "不错", "�? "优秀", "喜欢", "�? "感谢", "谢谢"
         )
-        
         val negativeKeywords = listOf(
             "不满�? "不好", "�? "糟糕", "失望", "讨厌", "不喜�? "错误", "问题"
         )
-        
         var positiveScore = 0
         var negativeScore = 0
         
@@ -71,7 +67,6 @@ class FeedbackAnalyzer(private val context: Context) {
                 positiveScore++
             }
         }
-        
         for (keyword in negativeKeywords) {
             if (content.contains(keyword)) {
                 negativeScore++
@@ -95,7 +90,6 @@ class FeedbackAnalyzer(private val context: Context) {
         val suggestionKeywords = listOf(
             "建议", "希望", "期望", "应该", "可以", "更好", "改进", "优化"
         )
-        
         for (keyword in suggestionKeywords) {
             if (content.contains(keyword)) {
                 result.suggestions.add(content)
@@ -111,7 +105,6 @@ class FeedbackAnalyzer(private val context: Context) {
         val preferenceKeywords = listOf(
             "喜欢", "偏好", "倾向", "希望", "想要", "需�?
         )
-        
         for (keyword in preferenceKeywords) {
             if (content.contains(keyword)) {
                 result.preferences.add(content)
@@ -126,7 +119,6 @@ class FeedbackAnalyzer(private val context: Context) {
     private fun analyzeImplicitFeedback(messages: List<ChatMessage>, result: FeedbackAnalysisResult) {
         // 分析回复速度
     val responseTimes = mutableListOf<Long>()
-        
         for (i in 1 until messages.size) {
             val prevMessage = messages[i-1]
             val currentMessage = messages[i]
@@ -134,12 +126,11 @@ class FeedbackAnalyzer(private val context: Context) {
             if (prevMessage.sender != "user" && currentMessage.sender == "user") {
                 // 计算用户回复时间（简化版�?
     val responseTime = estimateResponseTime(prevMessage.timestamp, currentMessage.timestamp)
-                if (responseTime > 0) {
+        if (responseTime > 0) {
                     responseTimes.add(responseTime)
                 }
             }
         }
-        
         if (responseTimes.isNotEmpty()) {
             val avgResponseTime = responseTimes.average()
             result.avgResponseTime = avgResponseTime
@@ -173,18 +164,15 @@ class FeedbackAnalyzer(private val context: Context) {
      */
     private fun analyzeEmotionalFeedback(messages: List<ChatMessage>, result: FeedbackAnalysisResult) {
         val userMessages = messages.filter { it.sender == "user" }
-        
         var positiveEmotionCount = 0
         var negativeEmotionCount = 0
         
         val positiveEmotions = listOf(
             "开�? "高兴", "快乐", "喜悦", "兴奋", "愉快"
         )
-        
         val negativeEmotions = listOf(
             "伤心", "难过", "愤�? "焦虑", "困惑", "失望"
         )
-        
         for (message in userMessages) {
             val content = message.content
             
@@ -194,8 +182,7 @@ class FeedbackAnalyzer(private val context: Context) {
                     break
                 }
             }
-            
-            for (emotion in negativeEmotions) {
+        for (emotion in negativeEmotions) {
                 if (content.contains(emotion)) {
                     negativeEmotionCount++
                     break
@@ -249,7 +236,7 @@ class FeedbackAnalyzer(private val context: Context) {
             appendLine()
             
             appendLine("## 建议反馈")
-            if (result.suggestions.isNotEmpty()) {
+        if (result.suggestions.isNotEmpty()) {
                 result.suggestions.forEachIndexed { index, suggestion ->
                     appendLine("${index + 1}. ${suggestion}")
                 }
@@ -259,7 +246,7 @@ class FeedbackAnalyzer(private val context: Context) {
             appendLine()
             
             appendLine("## 偏好反馈")
-            if (result.preferences.isNotEmpty()) {
+        if (result.preferences.isNotEmpty()) {
                 result.preferences.forEachIndexed { index, preference ->
                     appendLine("${index + 1}. ${preference}")
                 }

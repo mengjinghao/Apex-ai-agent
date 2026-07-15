@@ -15,14 +15,13 @@ object EndpointCompleter {
         if (trimmedEndpoint.endsWith("#")) {
             return trimmedEndpoint.removeSuffix("#")
         }
-
         val endpointWithoutSlash = trimmedEndpoint.removeSuffix("/")
 
         // å°è¯è§£æURLå¹¶å¤æ­å®æ¯å¦ä¸ºä¸ä¸ªéè¦è¡¥å¨çURL
     try {
             // ä½¿ç¨åå«å°¾é¨ææ çç«¯ç¹è¿è¡è§£æï¼ä»¥æ­£ç¡®è¯å«è·¯å¾?
     val url = URL(trimmedEndpoint)
-            val path = url.path.removeSuffix("/")
+        val path = url.path.removeSuffix("/")
 
             // 1. å¦æè·¯å¾ä¸ºç©º (e.g., https://api.example.com)ï¼åè¡¥å¨ä¸ºæ åè·¯å¾?
     if (path.isNullOrEmpty()) {
@@ -39,40 +38,32 @@ object EndpointCompleter {
         // å¦æä¸ç¬¦åè¡¥å¨ç¹å¾ï¼åè¿ååå§è¾å?
     return endpoint
     }
-
-    private fun completeResponsesEndpoint(endpoint: String): String {
+        private fun completeResponsesEndpoint(endpoint: String): String {
         val trimmedEndpoint = endpoint.trim()
         if (trimmedEndpoint.endsWith("#")) {
             return trimmedEndpoint.removeSuffix("#")
         }
-
         val endpointWithoutSlash = trimmedEndpoint.removeSuffix("/")
 
         try {
             val url = URL(trimmedEndpoint)
-            val path = url.path.removeSuffix("/")
-
-            if (path.isEmpty()) {
+        val path = url.path.removeSuffix("/")
+        if (path.isEmpty()) {
                 return "${endpointWithoutSlash}/v1/responses"
             }
-
-            if (path.endsWith("/v1", ignoreCase = true)) {
+        if (path.endsWith("/v1", ignoreCase = true)) {
                 return "${endpointWithoutSlash}/responses"
             }
         } catch (_: Exception) {
         }
-
         return endpoint
     }
-
-    fun completeEndpoint(endpoint: String, providerType: ApiProviderType): String {
+        fun completeEndpoint(endpoint: String, providerType: ApiProviderType): String {
         val trimmedEndpoint = endpoint.trim()
         if (trimmedEndpoint.endsWith("#")) {
             return trimmedEndpoint.removeSuffix("#")
         }
-
         val endpointWithoutSlash = trimmedEndpoint.removeSuffix("/")
-
         when (providerType) {
             ApiProviderType.OPENAI_RESPONSES,
             ApiProviderType.OPENAI_RESPONSES_GENERIC -> {
@@ -83,22 +74,19 @@ object EndpointCompleter {
             ApiProviderType.ANTHROPIC_GENERIC -> {
                 try {
                     val url = URL(trimmedEndpoint)
-                    val path = url.path.removeSuffix("/")
-
-                    if (path.isEmpty()) {
+        val path = url.path.removeSuffix("/")
+        if (path.isEmpty()) {
                         return "${endpointWithoutSlash}/v1/messages"
                     }
-
-                    if (path.endsWith("/anthropic", ignoreCase = true)) {
+        if (path.endsWith("/anthropic", ignoreCase = true)) {
                         return "${endpointWithoutSlash}/v1/messages"
                     }
-
-                    if (path.endsWith("/v1", ignoreCase = true)) {
+        if (path.endsWith("/v1", ignoreCase = true)) {
                         return "${endpointWithoutSlash}/messages"
                     }
                 } catch (e: Exception) {
                     // å¦æä¸æ¯ä¸ä¸ªææçURLï¼åä¸è¿è¡ä»»ä½æä½?               }
-    return endpoint
+        return endpoint
             }
 
             ApiProviderType.GOOGLE,

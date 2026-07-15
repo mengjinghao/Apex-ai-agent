@@ -90,14 +90,11 @@ class MtsEngine private constructor(
         }
         return summary
     }
-
-    fun analyzeIntent(userInput: String): IntentAnalysis {
+        fun analyzeIntent(userInput: String): IntentAnalysis {
         return router.analyzeIntent(userInput)
     }
-
-    fun searchTools(query: String, topK: Int = 5) = registry.search(query, topK)
-
-    fun optimizePrompts(
+        fun searchTools(query: String, topK: Int = 5) = registry.search(query, topK)
+        fun optimizePrompts(
         userInput: String? = null,
         context: OptimizationContext = OptimizationContext()
     ): OptimizationResult {
@@ -109,23 +106,19 @@ class MtsEngine private constructor(
             optimizer.optimize(modeTools, effectiveContext)
         }
     }
-
-    fun buildDefinitions(
+        fun buildDefinitions(
         tools: List<ToolSpec>? = null,
         config: ProtocolConfig = ProtocolConfig()
     ) = protocolAdapter.buildDefinitions(tools ?: getToolsByMode(), config)
-
-    fun parseToolCalls(
+        fun parseToolCalls(
         response: String,
         protocol: com.apex.agent.mts.adapter.Protocol = com.apex.agent.mts.adapter.Protocol.AUTO
     ) = protocolAdapter.parseToolCalls(response, { registry.getByName(it) }, protocol)
-
-    fun registerTool(tool: ToolSpec) = registry.register(tool)
-    fun registerTools(tools: List<ToolSpec>) = registry.registerBatch(tools)
-    fun unregisterTool(toolId: String) = registry.unregister(toolId)
-    fun getTool(name: String) = registry.getByName(name)
-
-    val isBerserk: Boolean get() = currentMode == AgentMode.BERSERK
+        fun registerTool(tool: ToolSpec) = registry.register(tool)
+        fun registerTools(tools: List<ToolSpec>) = registry.registerBatch(tools)
+        fun unregisterTool(toolId: String) = registry.unregister(toolId)
+        fun getTool(name: String) = registry.getByName(name)
+        val isBerserk: Boolean get() = currentMode == AgentMode.BERSERK
 
     suspend fun berserkExecute(
         calls: List<ParsedToolCall>,
@@ -135,14 +128,14 @@ class MtsEngine private constructor(
         if (orchestrator != null) {
             return withTimeout(timeoutMinutes * 60_000L) {
                 val startTime = System.currentTimeMillis()
-                val results = coroutineScope {
+        val results = coroutineScope {
                     calls.map { call ->
                         async { orchestrator.executeBerserk(call) }
                     }.map { it.await() }
                 }
-                val succeeded = results.count { it.outcome is ToolOutcome.Success }
-                val failed = results.count { it.outcome is ToolOutcome.Failure }
-                val cancelled = results.count { it.outcome is ToolOutcome.Cancelled }
+        val succeeded = results.count { it.outcome is ToolOutcome.Success }
+        val failed = results.count { it.outcome is ToolOutcome.Failure }
+        val cancelled = results.count { it.outcome is ToolOutcome.Cancelled }
                 results.forEach { r ->
                     observability.recordCall(
                         com.apex.agent.mts.observer.ToolCallRecord(
@@ -192,18 +185,17 @@ class MtsEngine private constructor(
                         arguments = args,
                         rawName = toolName
                     )
-                    val plan = listOf(call)
-                    val summary = execute(plan, ExecutionContext(agentMode = AgentMode.BERSERK))
+        val plan = listOf(call)
+        val summary = execute(plan, ExecutionContext(agentMode = AgentMode.BERSERK))
                     summary.results.firstOrNull()
                 }
             }.mapNotNull { it.await() }
         }
     }
-
-    val summary: String
+        val summary: String
         get() {
             val toolCount = registry.size()
-            val dist = modeDistribution
+        val dist = modeDistribution
             val metrics = observability.summary
             return """
 MTS Engine Status
@@ -214,42 +206,35 @@ Registered tools (total): $toolCount
 $metrics
             """.trimIndent()
         }
-
-    class Builder(private val invoker: ToolInvoker) {
+        class Builder(private val invoker: ToolInvoker) {
         private val registry = ToolRegistry()
         private val router = IntelligentRouter(registry)
         private val observability = ToolObservability()
-
         fun withDefaultConfig(): Builder {
             executorConfig = ExecutionConfig()
             protocolConfig = ProtocolConfig()
-            return this
+        return this
         }
-
         private var executorConfig: ExecutionConfig = ExecutionConfig()
         private var protocolConfig: ProtocolConfig = ProtocolConfig()
-
         fun executorConfig(config: ExecutionConfig): Builder {
             executorConfig = config
             return this
         }
-
         fun protocolConfig(config: ProtocolConfig): Builder {
             protocolConfig = config
             return this
         }
-
         fun registerAll(tools: List<ToolSpec>): Builder {
             registry.registerBatch(tools)
-            return this
+        return this
         }
-
         fun build(): MtsEngine {
             val executor = SmartExecutor(registry, invoker, executorConfig)
-            val optimizer = PromptOptimizer(registry)
-            val adapter = ToolCallProtocolAdapter()
-            val orchestrator = BerserkModeOrchestrator(registry, invoker)
-            return MtsEngine(registry, router, executor, optimizer, adapter, observability, orchestrator)
+        val optimizer = PromptOptimizer(registry)
+        val adapter = ToolCallProtocolAdapter()
+        val orchestrator = BerserkModeOrchestrator(registry, invoker)
+        return MtsEngine(registry, router, executor, optimizer, adapter, observability, orchestrator)
         }
     }
 

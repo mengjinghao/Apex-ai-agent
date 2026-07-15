@@ -7,8 +7,7 @@ internal class JsToolPkgExecutionContext {
         val functionName: String,
         val codeSnippet: String
     )
-
-    private val resolverLock = Any()
+        private val resolverLock = Any()
 
     @Volatile
     private var temporaryTextResolver: ((String, String) -> String)? = null
@@ -20,17 +19,14 @@ internal class JsToolPkgExecutionContext {
             codeSnippet = buildSnippet(script, functionName)
         )
     }
-
-    fun hasActivePluginIdForLogs(snapshot: LogSnapshot): Boolean {
+        fun hasActivePluginIdForLogs(snapshot: LogSnapshot): Boolean {
         return snapshot?.pluginTag?.isNotBlank() == true
     }
-
-    fun withPluginTag(snapshot: LogSnapshot?, message: String): String {
+        fun withPluginTag(snapshot: LogSnapshot?, message: String): String {
         val tag = compactTag(snapshot?.pluginTag)
         return if (message.startsWith("[${tag}] ")) message else "[${tag}] ${message}"
     }
-
-    fun withCodeContext(snapshot: LogSnapshot?, message: String): String {
+        fun withCodeContext(snapshot: LogSnapshot?, message: String): String {
         val functionName = snapshot?.functionName.orEmpty()
         val codeSnippet = snapshot?.codeSnippet.orEmpty()
         if (functionName.isBlank() && codeSnippet.isBlank()) {
@@ -38,16 +34,15 @@ internal class JsToolPkgExecutionContext {
         }
         return buildString {
             append(message)
-            if (functionName.isNotBlank()) {
+        if (functionName.isNotBlank()) {
                 append("\nExecution Function: ").append(functionName)
             }
-            if (codeSnippet.isNotBlank()) {
+        if (codeSnippet.isNotBlank()) {
                 append("\nCode Context:\n").append(codeSnippet)
             }
         }
     }
-
-    fun <T> withTemporaryTextResourceResolver(
+        fun <T> withTemporaryTextResourceResolver(
         resolver: (String, String) -> String?,
         block: () -> T
     ): T {
@@ -61,8 +56,7 @@ internal class JsToolPkgExecutionContext {
             }
         }
     }
-
-    fun resolveTemporaryTextResource(
+        fun resolveTemporaryTextResource(
         packageNameOrSubpackageId: String,
         resourcePath: String,
         onResolverFailure: (Exception) -> Unit
@@ -75,8 +69,7 @@ internal class JsToolPkgExecutionContext {
             null
         }
     }
-
-    fun hasTemporaryTextResourceResolver(): Boolean = temporaryTextResolver != null
+        fun hasTemporaryTextResourceResolver(): Boolean = temporaryTextResolver != null
 
     private fun resolvePluginTag(functionName: String, params: Map<String, Any?>): String {
         firstNonBlank(
@@ -84,7 +77,6 @@ internal class JsToolPkgExecutionContext {
             params["pluginId"],
             params["hookId"]
         )?.let { return it }
-
         val packageName =
             firstNonBlank(
                 params["toolPkgId"],
@@ -99,8 +91,7 @@ internal class JsToolPkgExecutionContext {
             "${normalizedFunction}:${packageName}"
         }
     }
-
-    private fun buildSnippet(script: String, functionName: String): String {
+        private fun buildSnippet(script: String, functionName: String): String {
         val normalized = script.replace("\r\n", "\n")
         if (normalized.isBlank()) {
             return ""
@@ -127,7 +118,7 @@ internal class JsToolPkgExecutionContext {
             if (anchor >= 0) {
                 append("anchorLine=").append(anchor + 1).append('\n')
             }
-            for (index in start.coerceAtLeast(0)..end.coerceAtMost(lines.lastIndex)) {
+        for (index in start.coerceAtLeast(0)..end.coerceAtMost(lines.lastIndex)) {
                 append((index + 1).toString().padStart(4, ' '))
                     .append(" | ")
                     .append(lines[index])
@@ -135,8 +126,7 @@ internal class JsToolPkgExecutionContext {
             }
         }.trimEnd().take(2200)
     }
-
-    private fun compactTag(raw: String): String {
+        private fun compactTag(raw: String): String {
         val value = raw?.trim().orEmpty()
         if (value.isBlank()) {
             return "runtime"
@@ -148,8 +138,7 @@ internal class JsToolPkgExecutionContext {
             .removeSuffix(".toolpkg")
             .ifBlank { value }
     }
-
-    private fun firstNonBlank(vararg values: Any): String? {
+        private fun firstNonBlank(vararg values: Any): String? {
         return values
             .asSequence()
             .mapNotNull { it?.toString()?.trim() }

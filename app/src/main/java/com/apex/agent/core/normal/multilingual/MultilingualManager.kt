@@ -187,7 +187,6 @@ class MultilingualManager(
                 stats[detection.secondaryLanguage] = (stats[detection.secondaryLanguage] ?: 0) + 1
             }
         }
-
         return when (config.responseLanguage) {
             ResponseLanguagePolicy.ALWAYS_PREFERRED -> config.preferredLanguage
             ResponseLanguagePolicy.MATCH_USER -> detection.primaryLanguage

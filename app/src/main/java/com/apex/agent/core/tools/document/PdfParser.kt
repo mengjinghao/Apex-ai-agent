@@ -17,19 +17,16 @@ class PdfParser : DocumentParser {
     override suspend fun parse(inputStream: InputStream, fileName: String): DocumentParseResult {
         return try {
             val document = PDDocument.load(inputStream)
-            val textStripper = PDFTextStripper()
+        val textStripper = PDFTextStripper()
             textStripper.sortByPosition = true
             val textContent = textStripper.getText(document)
-
-            val renderer = PDFRenderer(document)
-            val images = mutableListOf<ByteArray>()
-
-            for (i in 1..document.numberOfPages) {
+        val renderer = PDFRenderer(document)
+        val images = mutableListOf<ByteArray>()
+        for (i in 1..document.numberOfPages) {
                 val image = renderer.renderImageWithDPI(i - 1, 150.0f, ImageType.RGB)
                 images.add(imageToByteArray(image))
             }
-
-            val pages = (1..document.numberOfPages).map { pageNum ->
+        val pages = (1..document.numberOfPages).map { pageNum ->
                 textStripper.startPage = pageNum
                 textStripper.endPage = pageNum
                 DocumentPage(
@@ -38,8 +35,7 @@ class PdfParser : DocumentParser {
                     image = if (pageNum - 1 < images.size) images[pageNum - 1] else null
                 )
             }
-
-            val metadata = mutableMapOf<String, String>()
+        val metadata = mutableMapOf<String, String>()
             document.documentInformation?.let { info ->
                 info.title?.let { metadata["title"] = it }
                 info.author?.let { metadata["author"] = it }
@@ -70,7 +66,7 @@ class PdfParser : DocumentParser {
     override suspend fun extractText(inputStream: InputStream, fileName: String): String {
         return try {
             val document = PDDocument.load(inputStream)
-            val textStripper = PDFTextStripper()
+        val textStripper = PDFTextStripper()
             textStripper.sortByPosition = true
             val text = textStripper.getText(document)
             document.close()
@@ -79,8 +75,7 @@ class PdfParser : DocumentParser {
             ""
         }
     }
-
-    private fun imageToByteArray(image: BufferedImage): ByteArray {
+        private fun imageToByteArray(image: BufferedImage): ByteArray {
         val baos = ByteArrayOutputStream()
         ImageIO.write(image, "PNG", baos)
         return baos.toByteArray()

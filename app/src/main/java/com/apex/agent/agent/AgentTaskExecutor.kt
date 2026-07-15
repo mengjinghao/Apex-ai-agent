@@ -80,8 +80,8 @@ class AgentTaskExecutor(
 ) {
 
     private val _taskStates = ConcurrentHashMap<String, MutableStateFlow<TaskExecutionState>>()
-    private val runningJobs = ConcurrentHashMap<String, Job>()
-    private val taskCounter = AtomicLong(0)
+        private val runningJobs = ConcurrentHashMap<String, Job>()
+        private val taskCounter = AtomicLong(0)
 
     /**
      * 提交任务执行。
@@ -101,7 +101,6 @@ class AgentTaskExecutor(
         val taskId = task.taskId.ifBlank {
             "exec_${taskCounter.incrementAndGet()}_${System.currentTimeMillis()}"
         }
-
         val initialState = TaskExecutionState.Pending
         val stateFlow = MutableStateFlow(initialState)
         _taskStates[taskId] = stateFlow
@@ -125,8 +124,7 @@ class AgentTaskExecutor(
 
                 // 执行（带重试）
     val result = executeWithRetry(agent, task, config, taskId, onStateUpdate)
-
-                val finalState = if (result.success) {
+        val finalState = if (result.success) {
                     TaskExecutionState.Completed(result)
                 } else {
                     TaskExecutionState.Failed(
@@ -225,8 +223,7 @@ class AgentTaskExecutor(
             kotlinx.coroutines.coroutineScope {
                 ensureNotCancelled(taskId)
             }
-
-            val result = try {
+        val result = try {
                 if (config.timeoutMs > 0) {
                     withTimeoutOrNull(config.timeoutMs) {
                         agent.execute(task)
@@ -274,7 +271,6 @@ class AgentTaskExecutor(
                 currentDelay = (currentDelay * config.backoffMultiplier).toLong()
             }
         }
-
         return lastResult ?: SubTaskResult(
             taskId = task.taskId,
             success = false,
@@ -282,15 +278,13 @@ class AgentTaskExecutor(
             errorMessage = "Task failed after $totalAttempts attempts"
         )
     }
-
-    private fun ensureNotCancelled(taskId: String) {
+        private fun ensureNotCancelled(taskId: String) {
         val job = runningJobs[taskId]
         if (job != null && job.isCancelled) {
             throw CancellationException("Task $taskId was cancelled")
         }
     }
-
-    private fun updateState(
+        private fun updateState(
         taskId: String,
         state: TaskExecutionState,
         onStateUpdate: (TaskExecutionState) -> Unit

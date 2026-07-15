@@ -34,7 +34,6 @@ open class FileSystemEnhancedTools(protected val context: Context) {
         val environment = tool.parameters.find { it.name == "environment" }?.value
 
         PathValidator.validateAndroidPath(path, tool.name)?.let { return it }
-
         if (path.isBlank()) {
             return ToolResult(
                 toolName = tool.name,
@@ -43,12 +42,10 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Path parameter is required"
             )
         }
-
         return try {
             withContext(Dispatchers.IO) {
                 val directory = File(path)
-
-                if (!directory.exists()) {
+        if (!directory.exists()) {
                     return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -56,8 +53,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                         error = "Directory does not exist: ${path}"
                     )
                 }
-
-                if (!directory.isDirectory) {
+        if (!directory.isDirectory) {
                     return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -65,10 +61,9 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                         error = "Path is not a directory: ${path}"
                     )
                 }
-
-                val results = mutableListOf<JSONObject>()
-                val fileRegex = Regex(filePattern.replace("*", ".*"))
-                val contentRegex = if (contentPattern.isNotEmpty()) {
+        val results = mutableListOf<JSONObject>()
+        val fileRegex = Regex(filePattern.replace("*", ".*"))
+        val contentRegex = if (contentPattern.isNotEmpty()) {
                     if (ignoreCase) {
                         Regex(contentPattern, RegexOption.IGNORE_CASE)
                     } else {
@@ -99,8 +94,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                                         contentMatch = false
                                     }
                                 }
-                                
-                                if (contentMatch && currentCount < maxResults) {
+        if (contentMatch && currentCount < maxResults) {
                                     results.add(JSONObject().apply {
                                         put("path", file.absolutePath)
                                         put("name", file.name)
@@ -115,8 +109,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 }
 
                 searchDirectory(directory)
-
-                val resultObject = JSONObject().apply {
+        val resultObject = JSONObject().apply {
                     put("searchPath", path)
                     put("searchPattern", filePattern)
                     put("contentPattern", contentPattern)
@@ -160,7 +153,6 @@ open class FileSystemEnhancedTools(protected val context: Context) {
         } else {
             paths.split(",").map { it.trim() }
         }
-
         if (pathList.isEmpty()) {
             return ToolResult(
                 toolName = tool.name,
@@ -169,7 +161,6 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Paths parameter is required"
             )
         }
-
         if (operation.isBlank()) {
             return ToolResult(
                 toolName = tool.name,
@@ -178,21 +169,17 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Operation parameter is required"
             )
         }
-
         return try {
             withContext(Dispatchers.IO) {
                 val results = mutableListOf<JSONObject>()
-
-                for ((index, srcPath) in pathList.withIndex()) {
+        for ((index, srcPath) in pathList.withIndex()) {
                     val srcFile = File(srcPath)
-
-                    val result = JSONObject().apply {
+        val result = JSONObject().apply {
                         put("source", srcPath)
                         put("success", true)
                         put("operation", operation)
                     }
-
-                    when (operation.lowercase()) {
+        when (operation.lowercase()) {
                         "rename" -> {
                             if (targetPath.isBlank()) {
                                 result.put("success", false)
@@ -203,8 +190,8 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                                 } else {
                                     srcFile.name
                                 }
-                                val destFile = File(targetPath, newName)
-                                if (srcFile.renameTo(destFile)) {
+        val destFile = File(targetPath, newName)
+        if (srcFile.renameTo(destFile)) {
                                     result.put("target", destFile.absolutePath)
                                 } else {
                                     result.put("success", false)
@@ -220,8 +207,8 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                             } else {
                                 val destDir = File(targetPath)
                                 destDir.mkdirs()
-                                val destFile = File(destDir, srcFile.name)
-                                if (srcFile.renameTo(destFile)) {
+        val destFile = File(destDir, srcFile.name)
+        if (srcFile.renameTo(destFile)) {
                                     result.put("target", destFile.absolutePath)
                                 } else {
                                     result.put("success", false)
@@ -237,7 +224,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                             } else {
                                 val destDir = File(targetPath)
                                 destDir.mkdirs()
-                                val destFile = File(destDir, srcFile.name)
+        val destFile = File(destDir, srcFile.name)
                                 srcFile.copyTo(destFile, overwrite = true)
                                 result.put("target", destFile.absolutePath)
                             }
@@ -260,8 +247,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
 
                     results.add(result)
                 }
-
-                val resultObject = JSONObject().apply {
+        val resultObject = JSONObject().apply {
                     put("operation", operation)
                     put("totalFiles", pathList.size)
                     put("results", JSONArray(results))
@@ -304,7 +290,6 @@ open class FileSystemEnhancedTools(protected val context: Context) {
         } else {
             paths.split(",").map { it.trim() }
         }
-
         if (pathList.isEmpty()) {
             return ToolResult(
                 toolName = tool.name,
@@ -313,7 +298,6 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Paths parameter is required"
             )
         }
-
         if (outputPath.isBlank()) {
             return ToolResult(
                 toolName = tool.name,
@@ -322,31 +306,28 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Output path parameter is required"
             )
         }
-
         return try {
             withContext(Dispatchers.IO) {
                 val outputFile = File(outputPath)
-                var originalSize = 0L
+        var originalSize = 0L
                 var filesProcessed = 0
 
                 if (format.lowercase() == "zip") {
                     ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
                         for (srcPath in pathList) {
                             val srcFile = File(srcPath)
-                            if (srcFile.exists()) {
+        if (srcFile.exists()) {
                                 addFileToZip(zipOut, srcFile, "")
                                 originalSize += srcFile.length()
                                 filesProcessed++
                             }
                         }
                     }
-
-                    val compressedSize = outputFile.length()
-                    val compressionRatio = if (originalSize > 0) {
+        val compressedSize = outputFile.length()
+        val compressionRatio = if (originalSize > 0) {
                         "%.1f%%".format(100 - (compressedSize * 100) / originalSize)
                     } else "0%"
-
-                    val resultObject = JSONObject().apply {
+        val resultObject = JSONObject().apply {
                         put("outputPath", outputPath)
                         put("format", format)
                         put("filesProcessed", filesProcessed)
@@ -381,11 +362,10 @@ open class FileSystemEnhancedTools(protected val context: Context) {
             )
         }
     }
-
-    private fun addFileToZip(zipOut: ZipOutputStream, file: File, path: String) {
+        private fun addFileToZip(zipOut: ZipOutputStream, file: File, path: String) {
         if (file.isDirectory) {
             val dirPath = if (path.isBlank()) file.name + "/" else "${path}${file.name}/"
-            val entry = ZipEntry(dirPath)
+        val entry = ZipEntry(dirPath)
             zipOut.putNextEntry(entry)
             zipOut.closeEntry()
 
@@ -394,7 +374,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
             }
         } else {
             val filePath = if (path.isBlank()) file.name else "${path}${file.name}"
-            val entry = ZipEntry(filePath)
+        val entry = ZipEntry(filePath)
             entry.time = file.lastModified()
             zipOut.putNextEntry(entry)
             FileInputStream(file).use { fis ->
@@ -419,11 +399,10 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Zip path parameter is required"
             )
         }
-
         return try {
             withContext(Dispatchers.IO) {
                 val zipFile = File(zipPath)
-                if (!zipFile.exists()) {
+        if (!zipFile.exists()) {
                     return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -431,22 +410,20 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                         error = "Zip file does not exist: ${zipPath}"
                     )
                 }
-
-                val extractDir = if (extractPath.isBlank()) {
+        val extractDir = if (extractPath.isBlank()) {
                     File(zipFile.parent, zipFile.nameWithoutExtension)
                 } else {
                     File(extractPath)
                 }
                 extractDir.mkdirs()
-
-                val extractedFiles = mutableListOf<String>()
+        val extractedFiles = mutableListOf<String>()
 
                 ZipInputStream(FileInputStream(zipFile)).use { zipIn ->
                     var entry: ZipEntry?
                     while (zipIn.nextEntry.also { entry = it }) != null {
                         entry?.let { zipEntry ->
                             val destFile = File(extractDir, zipEntry.name)
-                            if (zipEntry.isDirectory) {
+        if (zipEntry.isDirectory) {
                                 destFile.mkdirs()
                             } else {
                                 destFile.parentFile?.mkdirs()
@@ -459,8 +436,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                         }
                     }
                 }
-
-                val resultObject = JSONObject().apply {
+        val resultObject = JSONObject().apply {
                     put("extractPath", extractDir.absolutePath)
                     put("format", format)
                     put("extractedFiles", JSONArray(extractedFiles))
@@ -500,7 +476,6 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Source path parameter is required"
             )
         }
-
         if (targetPath.isBlank()) {
             return ToolResult(
                 toolName = tool.name,
@@ -509,12 +484,11 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Target path parameter is required"
             )
         }
-
         return try {
             withContext(Dispatchers.IO) {
                 val sourceDir = File(sourcePath)
-                val targetDir = File(targetPath)
-                if (!sourceDir.isDirectory) {
+        val targetDir = File(targetPath)
+        if (!sourceDir.isDirectory) {
                     return@withContext ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -524,17 +498,14 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 }
 
                 targetDir.mkdirs()
-
-                val copiedFiles = mutableListOf<String>()
-                val deletedFiles = mutableListOf<String>()
-                val skippedFiles = mutableListOf<String>()
-
-                val existingInTarget = mutableSetOf<String>()
+        val copiedFiles = mutableListOf<String>()
+        val deletedFiles = mutableListOf<String>()
+        val skippedFiles = mutableListOf<String>()
+        val existingInTarget = mutableSetOf<String>()
                 targetDir.listFiles()?.forEach { f ->
                     existingInTarget.add(f.relativeTo(targetDir).path)
                 }
-
-                fun copyFile(srcFile: File, relativePath: String = "") {
+        fun copyFile(srcFile: File, relativePath: String = "") {
                     if (srcFile.isDirectory) {
                         val destDir = File(targetDir, relativePath)
                         destDir.mkdirs()
@@ -548,7 +519,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                         }
                     } else {
                         val destFile = File(targetDir, relativePath)
-                        if (!destFile.exists()) {
+        if (!destFile.exists()) {
                             if (srcFile.lastModified() > destFile.lastModified() || srcFile.length() != destFile.length()) {
                                 srcFile.copyTo(destFile, overwrite = true)
                                 copiedFiles.add(relativePath)
@@ -565,14 +536,13 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 sourceDir.listFiles()?.forEach { srcFile ->
                     copyFile(srcFile, srcFile.name)
                 }
-
-                if (mode == "mirror") {
+        if (mode == "mirror") {
                     val sourceFiles = mutableSetOf<String>()
-                    fun collectSourceFiles(dir: File, prefix: String = "") {
+        fun collectSourceFiles(dir: File, prefix: String = "") {
                         dir.listFiles()?.forEach { f ->
                             val relPath = if (prefix.isBlank()) f.name else "${prefix}/${f.name}"
                             sourceFiles.add(relPath)
-                            if (f.isDirectory) {
+        if (f.isDirectory) {
                                 collectSourceFiles(f, relPath)
                             }
                         }
@@ -588,8 +558,7 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                         }
                     }
                 }
-
-                val resultObject = JSONObject().apply {
+        val resultObject = JSONObject().apply {
                     put("sourcePath", sourceDir.absolutePath)
                     put("targetPath", targetDir.absolutePath)
                     put("copiedFiles", JSONArray(copiedFiles))
@@ -633,7 +602,6 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Path parameter is required"
             )
         }
-
         if (operation.isBlank()) {
             return ToolResult(
                 toolName = tool.name,
@@ -642,13 +610,12 @@ open class FileSystemEnhancedTools(protected val context: Context) {
                 error = "Operation parameter is required"
             )
         }
-
         return try {
             withContext(Dispatchers.IO) {
                 val resultObject = JSONObject().apply {
                     put("path", path)
                     put("operation", operation)
-                    when (operation.lowercase()) {
+        when (operation.lowercase()) {
                         "status" -> {
                             put("status", "clean")
                             put("branch", "main")

@@ -18,18 +18,18 @@ BEHAVIOR GUIDELINES:
 - Keep responses concise and clear. Avoid lengthy explanations unless requested.
 - Don't repeat previous conversation steps. Maintain context naturally.
 - Acknowledge your limitations honestly. If you don't know something, say so."""
-    private const val BEHAVIOR_GUIDELINES_ENDING_EN = """
+        private const val BEHAVIOR_GUIDELINES_ENDING_EN = """
 - End every response in exactly ONE of the following ways:
   1. Tool Call: To perform an action. A tool call must be the absolute last thing in your response. Nothing can follow it.2. Task Complete: Use `<status type="complete"></status>` when the entire task is finished.3. Wait for User: Use `<status type="wait_for_user_need"></status>` if you need user input or are unsure how to proceed.
 - Critical Rule: The three ending methods are mutually exclusive. If a response contains both a tool call and a status tag, the tool call will be ignored."""
-    private const val BEHAVIOR_GUIDELINES_EN =
+        private const val BEHAVIOR_GUIDELINES_EN =
         BEHAVIOR_GUIDELINES_CORE_EN + BEHAVIOR_GUIDELINES_ENDING_EN
 
     private const val BEHAVIOR_GUIDELINES_CORE_CN = """
 行为准则 工具调度：所有工具都可以并行或串行调用。根据任务需要选择即可，工具系统会自行决定并处理执行冲突问题，- 回答应简洁明了，除非用户要求，否则避免冗长的解释 不要重复之前的对话步骤，自然地保持上下文 坦诚承认自己的局限性，如果不知道某事，就直接说明，""
-    private const val BEHAVIOR_GUIDELINES_ENDING_CN = """
+        private const val BEHAVIOR_GUIDELINES_ENDING_CN = """
 - 每次响应都必须以以下三种方式之一结束 1. 工具调用：用于执行操作。工具调用必须是响应的最后一部分，后面不能有任何内容 2. 任务完成：当整个任务完成时，使用 `<status type="complete"></status>` 3. 等待用户：当你需要用户输入或不确定如何继续时，使，`<status type="wait_for_user_need"></status>` 关键规则：以上三种结束方式互斥。如果响应中同时包含工具调用和状态标签，工具调用将被忽略。"
-    private const val BEHAVIOR_GUIDELINES_CN =
+        private const val BEHAVIOR_GUIDELINES_CN =
         BEHAVIOR_GUIDELINES_CORE_CN + BEHAVIOR_GUIDELINES_ENDING_CN
 
     private const val TOOL_USAGE_GUIDELINES_EN = """
@@ -46,7 +46,7 @@ To use a tool, use this format in your response:
 When outputting XML (e.g., <tool>, <status>), insert a newline before it and ensure the opening tag starts at the beginning of a line.
 
 Based on user needs, proactively select the most appropriate tool or combination of tools. For complex tasks, you can break down the problem and use different tools step by step to solve it. After using each tool, clearly explain the execution results and suggest the next steps."""
-    private const val TOOL_USAGE_GUIDELINES_CN = """
+        private const val TOOL_USAGE_GUIDELINES_CN = """
 调用工具时，用户会看到你的响应，然后会自动将工具结果发送回给你。
 调用工具前，请简要说明你要做什么。
 使用工具时，请使用以下格式：
@@ -57,13 +57,11 @@ Based on user needs, proactively select the most appropriate tool or combination
 
 输出XML（如 <tool>，status>）时，必须在XML前换行，并确保起始标签位于行首，
 根据用户需求，主动选择最合适的工具或工具组合。对于复杂任务，你可以分解问题并使用不同的工具逐步解决。使用每个工具后，清楚地解释执行结果并建议下一步，""
-
-    private fun getBehaviorGuidelines(useEnglish: Boolean, disableStatusTags: Boolean): String {
+        private fun getBehaviorGuidelines(useEnglish: Boolean, disableStatusTags: Boolean): String {
         if (disableStatusTags) return ""
         return if (useEnglish) BEHAVIOR_GUIDELINES_EN else BEHAVIOR_GUIDELINES_CN
     }
-
-    private fun getToolUsageGuidelines(useEnglish: Boolean, disableStatusTags: Boolean): String {
+        private fun getToolUsageGuidelines(useEnglish: Boolean, disableStatusTags: Boolean): String {
         val guidelines = if (useEnglish) TOOL_USAGE_GUIDELINES_EN else TOOL_USAGE_GUIDELINES_CN
         if (!disableStatusTags) {
             return guidelines
@@ -80,8 +78,7 @@ Based on user needs, proactively select the most appropriate tool or combination
             )
         }
     }
-
-    private const val PACKAGE_SYSTEM_GUIDELINES_EN = """
+        private const val PACKAGE_SYSTEM_GUIDELINES_EN = """
 PACKAGE SYSTEM
 - Some additional functionality is available through packages
 - To use a package, simply activate it with:
@@ -90,19 +87,21 @@ PACKAGE SYSTEM
   </tool>
 - This will show you all the tools in the package and how to use them
 - Only after activating a package, you can use its tools directly"""
-    private const val PACKAGE_SYSTEM_GUIDELINES_CN = """
+        private const val PACKAGE_SYSTEM_GUIDELINES_CN = """
 包系统：
 - 一些额外功能通过包提 要使用包，只需激活它 <tool name="use_package">
   <param name="package_name">package_name_here</param>
   </tool>
 - 这将显示包中的所有工具及其使用方 只有在激活包后，才能直接使用其工。"
 
-    // Tool Call API 模式下的工具使用简要说明（保留重要的调用前描述指示   private const val TOOL_USAGE_BRIEF_EN = """
+    // Tool Call API 模式下的工具使用简要说明（保留重要的调用前描述指示
+    private const val TOOL_USAGE_BRIEF_EN = """
 Before calling a tool, briefly describe what you are about to do."""
-    private const val TOOL_USAGE_BRIEF_CN = """
+        private const val TOOL_USAGE_BRIEF_CN = """
 调用工具前，请简要说明你要做什么。"
 
-    // Tool Call API 模式下的包系统说明（不使用XML格式   private const val PACKAGE_SYSTEM_GUIDELINES_TOOL_CALL_EN = """
+    // Tool Call API 模式下的包系统说明（不使用XML格式
+    private const val PACKAGE_SYSTEM_GUIDELINES_TOOL_CALL_EN = """
 PACKAGE SYSTEM
 - Some additional functionality is available through packages
 - To use a package, call the use_package function with the package_name parameter
@@ -110,13 +109,11 @@ PACKAGE SYSTEM
 - For package tools, call package_proxy:
   - Set tool_name to the actual package tool name (e.g. packageName:toolName)
   - Put target tool arguments in params as a JSON object"""
-
-    private const val PACKAGE_SYSTEM_GUIDELINES_TOOL_CALL_CN = """
+        private const val PACKAGE_SYSTEM_GUIDELINES_TOOL_CALL_CN = """
 包系统：
 - 一些额外功能通过包提 要使用包，调用use_package 函数并传，package_name 参数
 - 只要本次聊天中该包曾出现，use_package，就视为该包已激 调用包工具请使用 package_proxy - tool_name 填写真实工具名（例如 packageName:toolName - 将目标工具参数放，params（JSON对象。"
-
-    private fun getAvailableToolsEn(
+        private fun getAvailableToolsEn(
         hasImageRecognition: Boolean,
         chatModelHasDirectImage: Boolean,
         hasAudioRecognition: Boolean,
@@ -140,12 +137,10 @@ PACKAGE SYSTEM
             dispatchToolPromptComposeHooks = dispatchToolPromptComposeHooks
         )
     }
-
-    private fun getMemoryToolsEn(toolVisibility: Map<String, Boolean>): String {
+        private fun getMemoryToolsEn(toolVisibility: Map<String, Boolean>): String {
         return SystemToolPrompts.generateMemoryToolsPromptEn(toolVisibility)
     }
-
-    private fun getAvailableToolsCn(
+        private fun getAvailableToolsCn(
         hasImageRecognition: Boolean,
         chatModelHasDirectImage: Boolean,
         hasAudioRecognition: Boolean,
@@ -169,8 +164,7 @@ PACKAGE SYSTEM
             dispatchToolPromptComposeHooks = dispatchToolPromptComposeHooks
         )
     }
-
-    private fun getMemoryToolsCn(toolVisibility: Map<String, Boolean>): String {
+        private fun getMemoryToolsCn(toolVisibility: Map<String, Boolean>): String {
         return SystemToolPrompts.generateMemoryToolsPromptCn(toolVisibility)
     }
 
@@ -281,11 +275,9 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
     var result = systemPrompt
 
     result = result.replace("BEGIN_SELF_INTRODUCTION_SECTION", customIntroPrompt)
-
-    return result
+        return result
   }
-
-  private fun buildGroupOrchestrationHint(
+        private fun buildGroupOrchestrationHint(
       useEnglish: Boolean,
       roleName: String,
       participantNamesText: String
@@ -338,11 +330,11 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
           dispatchToolPromptComposeHooks: (PromptHookContext) -> PromptHookContext = PromptHookRegistry::dispatchToolPromptComposeHooks
   ): String {
     val importedPackages = packageManager.getImportedPackages()
-    val packageSystemVisible = enableTools && (toolVisibility["use_package"] ?: true)
-    val mcpServers = packageManager.getAvailableServerPackages().filterKeys { serverName ->
+        val packageSystemVisible = enableTools && (toolVisibility["use_package"] ?: true)
+        val mcpServers = packageManager.getAvailableServerPackages().filterKeys { serverName ->
         allowedMcpServerNames?.contains(serverName) ?: true
     }
-    val skillPackages = try {
+        val skillPackages = try {
         SkillRepository.getInstance(
             com.apex.core.application.ApexApplication.instance.applicationContext
         ).getAiVisibleSkillPackages().filterKeys { skillName ->
@@ -365,16 +357,15 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
     // Check if any packages (JS, MCP, or Skills) are available
     val hasPackages = packageSystemVisible &&
         (validImportedPackages.isNotEmpty() || mcpServers.isNotEmpty() || skillPackages.isNotEmpty())
-
-    if (hasPackages) {
+        if (hasPackages) {
       packagesSection.appendLine("Available packages:")
 
       // List imported JS packages (only those that still exist)
-    for (packageName in validImportedPackages) {
+        for (packageName in validImportedPackages) {
         val packageTools = packageManager.getPackageTools(packageName)
         if (packageTools != null) {
           val preferredLanguage = if (useEnglish) "en" else "zh"
-          val resolvedDescription = try {
+        val resolvedDescription = try {
               packageTools.description.resolve(preferredLanguage)
           } catch (_: Exception) {
               packageTools.description.toString()
@@ -399,8 +390,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
     } else if (packageSystemVisible) {
       packagesSection.appendLine("No packages are currently available.")
     }
-
-    if (packageSystemVisible) {
+        if (packageSystemVisible) {
       // Information about using packages
       packagesSection.appendLine()
       packagesSection.appendLine("To use a package:")
@@ -415,11 +405,10 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
     } else {
         if (useEnglish) SYSTEM_PROMPT_TEMPLATE else SYSTEM_PROMPT_TEMPLATE_CN
     }
-    val thinkingGuidancePromptToUse = if (useEnglish) THINKING_GUIDANCE_PROMPT else THINKING_GUIDANCE_PROMPT_CN
+        val thinkingGuidancePromptToUse = if (useEnglish) THINKING_GUIDANCE_PROMPT else THINKING_GUIDANCE_PROMPT_CN
     val defaultBehaviorGuidelines = if (useEnglish) BEHAVIOR_GUIDELINES_EN else BEHAVIOR_GUIDELINES_CN
     val behaviorGuidelines = getBehaviorGuidelines(useEnglish, disableStatusTags)
-
-    val workspaceRuleFile =
+        val workspaceRuleFile =
         WorkspaceAttachmentProcessor.readWorkspaceRootRuleFile(
             context = context,
             workspacePath = workspacePath,
@@ -480,7 +469,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
             )
         }
     )
-    val availableToolsCn = if (useToolCallApi) "" else (
+        val availableToolsCn = if (useToolCallApi) "" else (
         if (enableMemoryQuery) {
             getMemoryToolsCn(toolVisibility) +
                 getAvailableToolsCn(
@@ -555,14 +544,12 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
                 .replace("AVAILABLE_TOOLS_SECTION", "")
                 .replace(defaultBehaviorGuidelines, "")
                 .replace(workspaceGuidelines, "")
-            if (behaviorGuidelines.isNotEmpty()) {
+        if (behaviorGuidelines.isNotEmpty()) {
                 prompt = prompt.replace(behaviorGuidelines, "")
             }
         }
     }
-
-
-    if (disableLatexDescription) {
+        if (disableLatexDescription) {
         prompt = prompt
                 .replace(Regex("(?m)^\\s*FORMULA FORMATTING:.*(?:\\r?\\n)?"), "")
                 .replace(Regex("(?m)^\\s*公式格式化：.*(?:\\r?\\n)?"), "")
@@ -570,8 +557,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
 
     // Clean up multiple consecutive blank lines (replace 3+ newlines with 2)
     prompt = prompt.replace(Regex("\n{3,}"), "\n\n")
-
-    return prompt
+        return prompt
   }
   
   /**
@@ -589,8 +575,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
       if (workspaceRuleFileName.isNullOrBlank() || workspaceRuleFileContent.isBlank()) {
           return ""
       }
-
-      return if (useEnglish) {
+        return if (useEnglish) {
           """
           WORKSPACE ROOT RULE FILE:
           - The workspace root contains `${workspaceRuleFileName}`. Treat the following content as project-specific workspace instructions.
@@ -606,8 +591,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
           """.trimIndent()
       }
   }
-
-  private fun getWorkspaceGuidelines(
+        private fun getWorkspaceGuidelines(
       context: Context,
       workspacePath: String?,
       workspaceEnv: String?,
@@ -616,9 +600,9 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
       workspaceRuleFileContent: String = ""
   ): String {
       val envLabel = workspaceEnv?.trim().orEmpty().ifBlank { "android" }
-      val shouldShowEnv = envLabel.isNotBlank()
+        val shouldShowEnv = envLabel.isNotBlank()
         val externalStoragePath = context.getExternalFilesDir(null)?.absolutePath ?: "/sdcard"
-      val appFilesPath = context.filesDir.absolutePath
+        val appFilesPath = context.filesDir.absolutePath
       return if (!workspacePath.isNullOrBlank()) {
           val baseGuidelines =
               if (useEnglish) {
@@ -639,12 +623,12 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
               - 当前工作区根目录，`${workspacePath}`${if (shouldShowEnv) "（environment=${envLabel}?else ""}             - 所有工作区文件操作都要把这个精确路径当作根路径             - 使用工具读取、写入、搜索、列目录、移动或删除工作区文件时，不要使用相对路径，必须使用了`${workspacePath}` 为根的绝对路径，              ${if (shouldShowEnv) "- 通过工具操作工作区文件时，每次都必须同时传入 `environment=\"${envLabel}\"` 和对应的工作区路径， else ""}
               - 相对路径只用于文件内容里的项目内部引用，不用于工具参数，              - 终端挂载说明：常见挂载包含`${externalStoragePath} -> /sdcard`、`${externalStoragePath} -> ${externalStoragePath}`，以及应用沙，`${appFilesPath} -> 同路径`             - 若工作区位于已挂载路径中，直接在 Linux 终端环境中执行工作区文件；无需先复制再执行             - **代码修改最佳实：修改任何文件之前，建议组合使用 `grep_code` ，`grep_context` 定位并理解相关代码及其上下文，避免在未理解项目结构时盲改             """.trimIndent()
           }
-          val workspaceRuleFileSection = buildWorkspaceRuleFileSection(
+        val workspaceRuleFileSection = buildWorkspaceRuleFileSection(
               workspaceRuleFileName = workspaceRuleFileName,
               workspaceRuleFileContent = workspaceRuleFileContent,
               useEnglish = useEnglish
           )
-          if (workspaceRuleFileSection.isBlank()) {
+        if (workspaceRuleFileSection.isBlank()) {
               baseGuidelines
           } else {
               "${baseGuidelines}\n\n${workspaceRuleFileSection}"
@@ -733,8 +717,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
                     )
             )
         )
-
-    val basePrompt =
+        val basePrompt =
         beforeContext.systemPrompt ?: getSystemPrompt(
             context = context,
             packageManager = packageManager,
@@ -761,9 +744,8 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
             allowedMcpServerNames = allowedMcpServerNames,
             dispatchToolPromptComposeHooks = dispatchToolPromptComposeHooks
         )
-
-    var composedPrompt = applyCustomPrompts(basePrompt, customIntroPrompt)
-    if (enableGroupOrchestrationHint) {
+        var composedPrompt = applyCustomPrompts(basePrompt, customIntroPrompt)
+        if (enableGroupOrchestrationHint) {
       val safeRoleName = groupOrchestrationRoleName.ifBlank { if (useEnglish) "assistant" else "助手" }
       composedPrompt += buildGroupOrchestrationHint(
           useEnglish = useEnglish,
@@ -771,15 +753,14 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
           participantNamesText = groupParticipantNamesText
       )
     }
-
-    val composeContext =
+        val composeContext =
         dispatchSystemPromptComposeHooks(
             beforeContext.copy(
                 stage = "compose_system_prompt_sections",
                 systemPrompt = composedPrompt
             )
         )
-    val afterComposePrompt = composeContext.systemPrompt ?: composedPrompt
+        val afterComposePrompt = composeContext.systemPrompt ?: composedPrompt
     val afterContext =
         dispatchSystemPromptComposeHooks(
             composeContext.copy(
@@ -787,7 +768,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
                 systemPrompt = afterComposePrompt
             )
         )
-    return afterContext.systemPrompt ?: afterComposePrompt
+        return afterContext.systemPrompt ?: afterComposePrompt
   }
 
   /** Convenience overload for default prompt generation. */

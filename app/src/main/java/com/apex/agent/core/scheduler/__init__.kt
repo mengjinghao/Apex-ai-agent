@@ -3,7 +3,7 @@ package com.apex.agent.core.scheduler
 /**
  * Cron 调度系统包初始化文件
  * 
- * 提供完整的定时任务调度功�?支持:
+ * 提供完整的定时任务调度功�支持:
  * - 自然语言 cron 表达式解�? * - 多平台任务投�?(Telegram, Discord, Email 等）
  * - 多种任务类型 (日报、备份、审计、自动报告等�? * - WorkManager 后台调度
  * 

@@ -33,7 +33,10 @@ private val context: Context) {
 }
 }
     // Available tools regis
-try    private val availableTools = ConcurrentHashMap<String, ToolExecutor>()    private val toolHooks = CopyOnWriteArrayList<AIToolHook>()    private val defaultToolsRegistered = AtomicBoolean(false)    private val registrationLock = Any()    // Tool permission system
+try    private val availableTools = ConcurrentHashMap<String, ToolExecutor>()
+        private val toolHooks = CopyOnWriteArrayList<AIToolHook>()
+        private val defaultToolsRegistered = AtomicBoolean(false)
+        private val registrationLock = Any()    // Tool permission system
     private val toolPermissionSystem = ToolPermissionSystem.getInstance(context)
 
     /** Get the tool permission system for UI use */    fun getToolPermissionSystem(): ToolPermissionSystem {
@@ -117,13 +120,15 @@ eventName
 /** Force refresh permission request state Can be called if permission dialog is not showing */    fun refreshPermissionState(): Boolean {
         return toolPermissionSystem.refreshPermissionRequestState()
 }
-// 工具注册的唯一方法 - 提供完整信息的注�?   fun registerTool(            name: String,            descriptionGenerator: ((AITool) -> String)? = null,            executor: ToolExecutor    ) {
+// 工具注册的唯一方法 - 提供完整信息的注�?
+    fun registerTool(            name: String,            descriptionGenerator: ((AITool) -> String)? = null,            executor: ToolExecutor    ) {
         availableTools[name] = executor        // 注册描述生成器（如果提供�?
     if (descriptionGenerator != null) {
             toolPermissionSystem.registerOperationDescription(name, descriptionGenerator)
 }
 }
-    // 添加重载方法接受函数式接口作为executor的便捷写�?   fun registerTool(            name: String,            descriptionGenerator: ((AITool) -> String)? = null,            executor: (AITool) -> ToolResult    ) {
+    // 添加重载方法接受函数式接口作为executor的便捷写�?
+    fun registerTool(            name: String,            descriptionGenerator: ((AITool) -> String)? = null,            executor: (AITool) -> ToolResult    ) {
         registerTool(                name = name,                descriptionGenerator = descriptionGenerator,                executor =                        object : ToolExecutor {
                             override fun invoke(tool: AITool): ToolResult {
                                 return executor(tool)
@@ -138,7 +143,7 @@ eventName
 }
 }
     // Package manager instance (lazy initialized)
-    private var packageManagerInstance: PackageManager? = null
+        private var packageManagerInstance: PackageManager? = null
 
     /** Gets or creates the package manager instance */    fun getOrCreatePackageManager(): PackageManager {
         return packageManagerInstance                ?: run {
@@ -148,7 +153,9 @@ eventName
 
 
     /** Replace a tool invocation in the response with its result */    private fun replaceToolInvocation(            response: String,            invocation: ToolInvocation,            result: String    ): String {
-        val before = response.substring(0, invocation.responseLocation.first)        val after = response.substring(invocation.responseLocation.last + 1)        return "�?{
+        val before = response.substring(0, invocation.responseLocation.first)
+        val after = response.substring(invocation.responseLocation.last + 1)
+        return "�?{
 before
 }
 \n**Tool Result [${
@@ -210,9 +217,13 @@ toolName
 executor = availableTools[toolName]
 }
 if (executor == null && toolName.contains(':')) {
-            val packageName = toolName.substringBefore(':', missingDelimiterValue = "")            if (packageName.isNotBlank()) {
+            val packageName = toolName.substringBefore(':', missingDelimiterValue = "")
+        if (packageName.isNotBlank()) {
                 try {
-                    val packageManager = getOrCreatePackageManager()                    val isPackageAvailable = packageManager.getAvailablePackages().containsKey(packageName)                    val isMcpAvailable = packageManager.getAvailableServerPackages().containsKey(packageName)                    if (isPackageAvailable || isMcpAvailable) {
+                    val packageManager = getOrCreatePackageManager()
+        val isPackageAvailable = packageManager.getAvailablePackages().containsKey(packageName)
+        val isMcpAvailable = packageManager.getAvailableServerPackages().containsKey(packageName)
+        if (isPackageAvailable || isMcpAvailable) {
                         AppLogger.d(TAG, "Auto-activating package '�?{
 packageName
 }
@@ -237,23 +248,30 @@ toolName
 return executor
 }
 /** Executes a tool directly */    fun executeTool(tool: AITool): ToolResult {
-        notifyToolCallRequested(tool)        val executor = getToolExecutorOrActivate(tool.name)        if (executor == null) {
+        notifyToolCallRequested(tool)
+        val executor = getToolExecutorOrActivate(tool.name)
+        if (executor == null) {
             val notFoundResult =                    ToolResult(                            toolName = tool.name,                            success = false,                            result = StringResult
 data(""),                            error = "Tool not found: ${
 tool.name
 }
-"                    )            notifyToolExecutionResult(tool, notFoundResult)            notifyToolExecutionFinished(tool)            return notFoundResult
+"                    )            notifyToolExecutionResult(tool, notFoundResult)            notifyToolExecutionFinished(tool)
+        return notFoundResult
 }
 // Validate parameters
-    val validationResult = executor.validateParameters(tool)        if (!validationResult.valid) {
+    val validationResult = executor.validateParameters(tool)
+        if (!validationResult.valid) {
             val validationFailedResult =                    ToolResult(                            toolName = tool.name,                            success = false,                            result = StringResult
-data(""),                            error = validationResult.errorMessage                    )            notifyToolExecutionResult(tool, validationFailedResult)            notifyToolExecutionFinished(tool)            return validationFailedResult
+data(""),                            error = validationResult.errorMessage                    )            notifyToolExecutionResult(tool, validationFailedResult)            notifyToolExecutionFinished(tool)
+        return validationFailedResult
 }
-notifyToolExecutionStarted(tool)        return try {
+notifyToolExecutionStarted(tool)
+        return try {
             val result = executor.invoke(tool)            notifyToolExecutionResult(tool, result)            result
 }
 catch (e: Exception) {
-            notifyToolExecutionError(tool, e)            throw e
+            notifyToolExecutionError(tool, e)
+        throw e
 }
 finally {
             notifyToolExecutionFinished(tool)

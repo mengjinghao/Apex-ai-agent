@@ -20,8 +20,7 @@ class GitHubService {
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
-    
-    private val baseUrl = "https://api.github.com"
+        private val baseUrl = "https://api.github.com"
     
     /**
      * 测试 GitHub 连接
@@ -29,11 +28,10 @@ class GitHubService {
     suspend fun testConnection(authConfig: GitHubAuthConfig): Result<String> = withContext(Dispatchers.IO) {
         try {
             val request = buildAuthenticatedRequest("/user", authConfig)
-            val response = client.newCall(request).execute()
-            
-            if (response.isSuccessful) {
+        val response = client.newCall(request).execute()
+        if (response.isSuccessful) {
                 val body = response.body?.string()
-                val json = JSONObject(body ?: "{}")
+        val json = JSONObject(body ?: "{}")
                 Result.success("Connected as: ${json.optString("login")}")
             } else {
                 Result.failure(Exception("Authentication failed: ${response.code}"))
@@ -49,11 +47,10 @@ class GitHubService {
     suspend fun getRepositoryInfo(owner: String, repo: String, authConfig: GitHubAuthConfig): Result<RepositoryInfo> = withContext(Dispatchers.IO) {
         try {
             val request = buildAuthenticatedRequest("/repos/${owner}/${repo}", authConfig)
-            val response = client.newCall(request).execute()
-            
-            if (response.isSuccessful) {
+        val response = client.newCall(request).execute()
+        if (response.isSuccessful) {
                 val body = response.body?.string()
-                val json = JSONObject(body ?: "{}")
+        val json = JSONObject(body ?: "{}")
                 
                 Result.success(
                     RepositoryInfo(
@@ -93,13 +90,11 @@ class GitHubService {
             } else {
                 "/repos/${owner}/${repo}/contents/${path}?ref=${branch}"
             }
-            
-            val request = buildAuthenticatedRequest(urlPath, authConfig)
-            val response = client.newCall(request).execute()
-            
-            if (response.isSuccessful) {
+        val request = buildAuthenticatedRequest(urlPath, authConfig)
+        val response = client.newCall(request).execute()
+        if (response.isSuccessful) {
                 val body = response.body?.string()
-                val nodes = parseFileTree(JSONObject(body ?: "{}"), path)
+        val nodes = parseFileTree(JSONObject(body ?: "{}"), path)
                 Result.success(nodes)
             } else {
                 Result.failure(Exception("Failed to fetch file tree: ${response.code}"))
@@ -124,14 +119,12 @@ class GitHubService {
                 "/repos/${owner}/${repo}/contents/${path}?ref=${branch}",
                 authConfig
             )
-            val response = client.newCall(request).execute()
-            
-            if (response.isSuccessful) {
+        val response = client.newCall(request).execute()
+        if (response.isSuccessful) {
                 val body = response.body?.string()
-                val json = JSONObject(body ?: "{}")
-                
-                val content = json.optString("content", "")
-                val decodedContent = if (json.optBoolean("encoded", false)) {
+        val json = JSONObject(body ?: "{}")
+        val content = json.optString("content", "")
+        val decodedContent = if (json.optBoolean("encoded", false)) {
                     android.util.Base64.decode(content, android.util.Base64.DEFAULT).toString(Charsets.UTF_8)
                 } else {
                     content
@@ -166,10 +159,9 @@ class GitHubService {
         try {
             // 尝试常见�?README 文件�?
     val readmeNames = listOf("README.md", "README.rst", "README.txt", "readme.md")
-            
-            for (readmeName in readmeNames) {
+        for (readmeName in readmeNames) {
                 val result = getFileContent(owner, repo, readmeName, branch, authConfig)
-                if (result.isSuccess) {
+        if (result.isSuccess) {
                     return@withContext result
                 }
             }
@@ -190,14 +182,12 @@ class GitHubService {
     ): Result<List<String>> = withContext(Dispatchers.IO) {
         try {
             val request = buildAuthenticatedRequest("/repos/${owner}/${repo}/branches", authConfig)
-            val response = client.newCall(request).execute()
-            
-            if (response.isSuccessful) {
+        val response = client.newCall(request).execute()
+        if (response.isSuccessful) {
                 val body = response.body?.string()
-                val jsonArray = org.json.JSONArray(body ?: "[]")
-                val branches = mutableListOf<String>()
-                
-                for (i in 0 until jsonArray.length()) {
+        val jsonArray = org.json.JSONArray(body ?: "[]")
+        val branches = mutableListOf<String>()
+        for (i in 0 until jsonArray.length()) {
                     val branch = jsonArray.getJSONObject(i)
                     branches.add(branch.getString("name"))
                 }
@@ -222,19 +212,17 @@ class GitHubService {
     ): Result<List<String>> = withContext(Dispatchers.IO) {
         try {
             val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
-            val request = buildAuthenticatedRequest(
+        val request = buildAuthenticatedRequest(
                 "/search/code?q=repo:${owner}/${repo}+${encodedQuery}",
                 authConfig
             )
-            val response = client.newCall(request).execute()
-            
-            if (response.isSuccessful) {
+        val response = client.newCall(request).execute()
+        if (response.isSuccessful) {
                 val body = response.body?.string()
-                val json = JSONObject(body ?: "{}")
-                val items = json.optJSONArray("items") ?: org.json.JSONArray("[]")
-                
-                val paths = mutableListOf<String>()
-                for (i in 0 until items.length()) {
+        val json = JSONObject(body ?: "{}")
+        val items = json.optJSONArray("items") ?: org.json.JSONArray("[]")
+        val paths = mutableListOf<String>()
+        for (i in 0 until items.length()) {
                     val item = items.getJSONObject(i)
                     paths.add(item.getString("path"))
                 }
@@ -254,7 +242,6 @@ class GitHubService {
     private fun buildAuthenticatedRequest(path: String, authConfig: GitHubAuthConfig): Request {
         val url = "${baseUrl}${path}"
         val builder = Request.Builder().url(url)
-        
         when (authConfig.authType) {
             AuthType.PUBLIC -> {
                 // 无需认证
@@ -276,7 +263,6 @@ class GitHubService {
         
         // GitHub API v3 需要这�?header
         builder.addHeader("Accept", "application/vnd.github.v3+json")
-        
         return builder.build()
     }
     
@@ -289,32 +275,29 @@ class GitHubService {
         // 检查是否是单个文件
     if (json.has("type")) {
             val type = json.getString("type")
-            if (type == "file") {
+        if (type == "file") {
                 nodes.add(createFileNode(json, basePath))
             }
-            return nodes
+        return nodes
         }
         
         // 检查是否是目录列表
     if (json.has("tree")) {
             val tree = json.getJSONArray("tree")
-            for (i in 0 until tree.length()) {
+        for (i in 0 until tree.length()) {
                 val item = tree.getJSONObject(i)
-                val node = createNodeFromTreeItem(item, basePath)
-                if (node != null) {
+        val node = createNodeFromTreeItem(item, basePath)
+        if (node != null) {
                     nodes.add(node)
                 }
             }
         }
-        
         return nodes
     }
-    
-    private fun createNodeFromTreeItem(item: JSONObject, basePath: String): GitHubFileNode? {
+        private fun createNodeFromTreeItem(item: JSONObject, basePath: String): GitHubFileNode? {
         val type = item.getString("type")
         val path = item.getString("path")
         val fullPath = if (basePath.isEmpty()) path else "${basePath}/${path}"
-        
         return when (type) {
             "blob" -> createFileNode(item, fullPath)
             "tree" -> GitHubFileNode.Directory(
@@ -326,13 +309,11 @@ class GitHubService {
             else -> null
         }
     }
-    
-    private fun createFileNode(json: JSONObject, path: String): GitHubFileNode.File {
+        private fun createFileNode(json: JSONObject, path: String): GitHubFileNode.File {
         val name = path.substringAfterLast("/")
         val size = json.optLong("size", 0)
         val fileType = detectFileType(name)
         val language = detectLanguage(name)
-        
         return GitHubFileNode.File(
             name = name,
             path = path,
@@ -343,10 +324,8 @@ class GitHubService {
             sha = json.optString("sha")
         )
     }
-    
-    private fun detectFileType(fileName: String): FileType {
+        private fun detectFileType(fileName: String): FileType {
         val extension = fileName.substringAfterLast(".", "").lowercase()
-        
         return when (extension) {
             "kt", "java", "py", "js", "ts", "cpp", "c", "h", "rs", "go" -> FileType.SOURCE_CODE
             "xml", "json", "yml", "yaml", "toml", "properties" -> FileType.CONFIG
@@ -355,10 +334,8 @@ class GitHubService {
             else -> FileType.OTHER
         }
     }
-    
-    private fun detectLanguage(fileName: String): String? {
+        private fun detectLanguage(fileName: String): String? {
         val extension = fileName.substringAfterLast(".", "").lowercase()
-        
         return when (extension) {
             "kt" -> "Kotlin"
             "java" -> "Java"

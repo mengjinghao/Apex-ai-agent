@@ -12,7 +12,7 @@ object ToolAdapterManager {
 
     // 工具执行历史
     private val executionHistory = mutableListOf<ToolExecutionRecord>()
-    private val MAX_HISTORY_SIZE = 100
+        private val MAX_HISTORY_SIZE = 100
     
     // 工具使用统计
     private val usageStats = mutableMapOf<String, ToolUsageStat>()
@@ -49,18 +49,15 @@ object ToolAdapterManager {
      */
     suspend fun executeTool(toolName: String, parameters: Map<String, Any>): ToolResultData {
         val startTime = System.currentTimeMillis()
-        
         val tool = ToolRegistry.getTool(toolName)
         if (tool == null) {
             recordExecution(toolName, parameters, false, startTime, "工具不存�?
             return StringResultData("错误：工具不存在，toolName")
         }
-
         if (!tool.isAvailable()) {
             recordExecution(toolName, parameters, false, startTime, "工具不可的）
             return StringResultData("错误：工具不可用了toolName")
         }
-
         return try {
             val result = tool.execute(parameters)
             recordExecution(toolName, parameters, true, startTime)
@@ -95,7 +92,6 @@ object ToolAdapterManager {
         if (tool == null) {
             return null
         }
-
         val stat = usageStats[toolName]
         
         return mapOf(
@@ -150,8 +146,7 @@ object ToolAdapterManager {
     fun clearAllCache() {
         // 目前缓存主要在各个工具适配器内�?       // 这里可以添加清除各个工具缓存的逻辑
     }
-
-    private fun recordExecution(
+        private fun recordExecution(
         toolName: String,
         parameters: Map<String, Any>,
         success: Boolean,
@@ -177,8 +172,7 @@ object ToolAdapterManager {
             executionHistory.removeAt(0)
         }
     }
-
-    private fun updateUsageStats(toolName: String, success: Boolean) {
+        private fun updateUsageStats(toolName: String, success: Boolean) {
         val stat = usageStats.getOrPut(toolName) {
             ToolUsageStat(
                 toolName = toolName,
@@ -217,7 +211,6 @@ object ToolAdapterManager {
     ) {
         val successRate: Double
             get() = if (totalCount == 0) 0.0 else successCount.toDouble() / totalCount.toDouble()
-        
         val avgDurationMs: Double
             get() = if (totalCount == 0) 0.0 else totalDurationMs.toDouble() / totalCount.toDouble()
     }

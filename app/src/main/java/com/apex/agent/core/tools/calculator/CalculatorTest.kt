@@ -38,7 +38,7 @@ class CalculatorTest {
         private fun testExpression(expression: String, expected: String) {
             try {
                 val result = JsCalculator.calc(expression)
-                if (result == expected) {
+        if (result == expected) {
                     println("测试通过: ${expression} = ${result}")
                 } else {
                     println("测试失败: ${expression} = ${result}, 期望�?${expected}")

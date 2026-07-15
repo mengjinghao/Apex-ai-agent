@@ -62,25 +62,22 @@ class LoRATuner(private val context: Context) {
         fun onComplete(outputPath: String)
         fun onError(error: String)
     }
-
-    private val loraDir: File
+        private val loraDir: File
         get() = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             "Apex/models/lora"
         )
-
-    fun getLoRAModels(): List<LoRAModel> {
+        fun getLoRAModels(): List<LoRAModel> {
         val models = mutableListOf<LoRAModel>()
-
         if (!loraDir.exists()) {
             AppLogger.w(TAG, "LoRA目录不存�? ${loraDir.absolutePath}")
-            return models
+        return models
         }
 
         loraDir.listFiles { file -> file.isDirectory }
             ?.forEach { folder ->
                 val metadataFile = File(folder, "lora_metadata.json")
-                if (metadataFile.exists()) {
+        if (metadataFile.exists()) {
                     try {
                         val metadata = org.json.JSONObject(metadataFile.readText())
                         models.add(
@@ -103,20 +100,17 @@ class LoRATuner(private val context: Context) {
         AppLogger.d(TAG, "找到 ${models.size} 个LoRA模型")
         return models.sortedByDescending { it.createdAt }
     }
-
-    fun createTrainingConfig(config: LoRAConfig): File? {
+        fun createTrainingConfig(config: LoRAConfig): File? {
         return try {
             if (!loraDir.exists()) {
                 loraDir.mkdirs()
             }
-
-            val configDir = File(loraDir, config.name.replace(" ", "_").lowercase())
-            if (!configDir.exists()) {
+        val configDir = File(loraDir, config.name.replace(" ", "_").lowercase())
+        if (!configDir.exists()) {
                 configDir.mkdirs()
             }
-
-            val configFile = File(configDir, "training_config.json")
-            val metadata = org.json.JSONObject().apply {
+        val configFile = File(configDir, "training_config.json")
+        val metadata = org.json.JSONObject().apply {
                 put("name", config.name)
                 put("base_model", config.baseModelId)
                 put("rank", config.rank)
@@ -135,28 +129,25 @@ class LoRATuner(private val context: Context) {
             null
         }
     }
-
-    fun prepareTrainingData(
+        fun prepareTrainingData(
         sourceTexts: List<String>,
         taskType: String,
         config: LoRAConfig
     ): Boolean {
         return try {
             val configDir = File(config.outputPath)
-            val dataDir = File(configDir, "training_data")
-            if (!dataDir.exists()) {
+        val dataDir = File(configDir, "training_data")
+        if (!dataDir.exists()) {
                 dataDir.mkdirs()
             }
-
-            val trainingData = org.json.JSONArray()
+        val trainingData = org.json.JSONArray()
             sourceTexts.forEach { text ->
                 trainingData.put(org.json.JSONObject().apply {
                     put("text", text)
                     put("task_type", taskType)
                 })
             }
-
-            val dataFile = File(dataDir, "training_data.json")
+        val dataFile = File(dataDir, "training_data.json")
             dataFile.writeText(trainingData.toString(2))
 
             AppLogger.d(TAG, "准备训练数据: ${trainingData.length()} 条样�?)
@@ -166,8 +157,7 @@ class LoRATuner(private val context: Context) {
             false
         }
     }
-
-    fun startTraining(
+        fun startTraining(
         config: LoRAConfig,
         callback: TrainingCallback
     ) {
@@ -182,14 +172,12 @@ class LoRATuner(private val context: Context) {
                         estimatedTimeRemaining = config.trainingSteps * 100L
                     )
                 )
-
-                for (step in 0 until config.trainingSteps) {
+        for (step in 0 until config.trainingSteps) {
                     if (Thread.currentThread().isInterrupted) {
                         callback.onError("训练被中�?)
                         return@Thread
                     }
-
-                    val simulatedLoss = 1.0f / (1.0f + step * 0.1f) + (Math.random() * 0.1f).toFloat()
+        val simulatedLoss = 1.0f / (1.0f + step * 0.1f) + (Math.random() * 0.1f).toFloat()
 
                     callback.onProgress(
                         TrainingProgress(
@@ -213,8 +201,7 @@ class LoRATuner(private val context: Context) {
                         estimatedTimeRemaining = 0L
                     )
                 )
-
-                val outputFile = File(config.outputPath, "${config.name}.safetensors")
+        val outputFile = File(config.outputPath, "${config.name}.safetensors")
                 outputFile.createNewFile()
 
                 callback.onComplete(outputFile.absolutePath)
@@ -225,8 +212,7 @@ class LoRATuner(private val context: Context) {
             }
         }.start()
     }
-
-    fun mergeLoRAWithBase(
+        fun mergeLoRAWithBase(
         baseModelPath: String,
         loraPath: String,
         outputPath: String,
@@ -245,8 +231,7 @@ class LoRATuner(private val context: Context) {
                 )
 
                 Thread.sleep(1000)
-
-                val outputFile = File(outputPath)
+        val outputFile = File(outputPath)
                 outputFile.parentFile?.mkdirs()
                 outputFile.createNewFile()
 
@@ -258,8 +243,7 @@ class LoRATuner(private val context: Context) {
             }
         }.start()
     }
-
-    fun getSuggestedRankForModel(baseModelSize: Long): Int {
+        fun getSuggestedRankForModel(baseModelSize: Long): Int {
         return when {
             baseModelSize < 1024 * 1024 * 1024 -> 4
             baseModelSize < 3 * 1024 * 1024 * 1024 -> 8
@@ -267,8 +251,7 @@ class LoRATuner(private val context: Context) {
             else -> 32
         }
     }
-
-    fun estimateLoRASize(baseModelSize: Long, rank: Int, layers: Int = 4): Long {
+        fun estimateLoRASize(baseModelSize: Long, rank: Int, layers: Int = 4): Long {
         val parameterCount = layers * 2 * rank * 4096
         return (parameterCount * 4L).coerceAtMost(baseModelSize / 10)
     }

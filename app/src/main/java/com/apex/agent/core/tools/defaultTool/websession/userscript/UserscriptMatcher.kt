@@ -87,8 +87,8 @@ internal object UserscriptMatcher {
                     }
                 }
         val schemePart = trimmed.substringBefore("://")
-    val afterScheme = trimmed.substringAfter("://", "")
-    val hostPart = afterScheme.substringBefore("/")
+        val afterScheme = trimmed.substringAfter("://", "")
+        val hostPart = afterScheme.substringBefore("/")
         val pathPart = afterScheme.substringAfter("/", "")
         val schemeMatches =
                 when (schemePart) {

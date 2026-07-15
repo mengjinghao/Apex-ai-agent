@@ -14,7 +14,7 @@ class TranslationServiceFactory private constructor(
     private var currentProvider: TranslationProvider = TranslationProvider.OPENAI
 
     private val _isInitialized = MutableStateFlow(false)
-    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+        val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
     companion object {
         private const val TAG = "TranslationServiceFactory"
@@ -28,8 +28,7 @@ class TranslationServiceFactory private constructor(
             }
         }
     }
-
-    fun getService(): TranslationService? = currentService
+        fun getService(): TranslationService? = currentService
 
     suspend fun createService(provider: TranslationProvider, config: TranslationConfig? = null): Boolean {
         try {
@@ -52,16 +51,14 @@ class TranslationServiceFactory private constructor(
             } else {
                 AppLogger.e(TAG, "Failed to initialize translation service: ${provider}")
             }
-
-            return success
+        return success
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error creating translation service: ${provider}", e)
             _isInitialized.value = false
             return false
         }
     }
-
-    fun getCurrentProvider(): TranslationProvider = currentProvider
+        fun getCurrentProvider(): TranslationProvider = currentProvider
 
     suspend fun switchProvider(provider: TranslationProvider, config: TranslationConfig? = null): Boolean {
         return createService(provider, config)

@@ -27,20 +27,16 @@ class SharedMemoryPool private constructor() {
                 INSTANCE ?: SharedMemoryPool().also { INSTANCE = it }
             }
         }
-
         fun resetInstance() {
             INSTANCE?.clear()
             INSTANCE = null
         }
     }
-
-    private val taskMemoryPool: ConcurrentHashMap<String, MutableList<SharedMemoryEntry>> = ConcurrentHashMap()
-    private val memorySubscribers: ConcurrentHashMap<String, MutableList<(SharedMemoryEntry) -> Unit>> = ConcurrentHashMap()
-    private val modeSubscribers: ConcurrentHashMap<AgentMode, MutableList<(SharedMemoryEntry) -> Unit>> = ConcurrentHashMap()
-
-    fun writeSharedMemory(entry: SharedMemoryEntry) {
+        private val taskMemoryPool: ConcurrentHashMap<String, MutableList<SharedMemoryEntry>> = ConcurrentHashMap()
+        private val memorySubscribers: ConcurrentHashMap<String, MutableList<(SharedMemoryEntry) -> Unit>> = ConcurrentHashMap()
+        private val modeSubscribers: ConcurrentHashMap<AgentMode, MutableList<(SharedMemoryEntry) -> Unit>> = ConcurrentHashMap()
+        fun writeSharedMemory(entry: SharedMemoryEntry) {
         val taskMemories = taskMemoryPool.getOrPut(entry.taskId) { CopyOnWriteArrayList() }
-
         if (entry.isFinal && taskMemories.any { it.entryId == entry.entryId }) {
             throw IllegalStateException("Memory already marked as final: ${entry.entryId}")
         }
@@ -52,80 +48,65 @@ class SharedMemoryPool private constructor() {
         notifySubscribers(entry)
         notifyModeSubscribers(entry)
     }
-
-    fun getTaskSharedMemories(taskId: String): List<SharedMemoryEntry> {
+        fun getTaskSharedMemories(taskId: String): List<SharedMemoryEntry> {
         return taskMemoryPool[taskId]?.toList() ?: emptyList()
     }
-
-    fun getUnreadMemoriesForAgent(taskId: String, agentRole: String): List<SharedMemoryEntry> {
+        fun getUnreadMemoriesForAgent(taskId: String, agentRole: String): List<SharedMemoryEntry> {
         val memories = taskMemoryPool[taskId] ?: return emptyList()
         val unreadMemories = memories.filter { !it.isRead.contains(agentRole) }
         unreadMemories.forEach { it.isRead.add(agentRole) }
         return unreadMemories
     }
-
-    fun getAllMemories(): List<SharedMemoryEntry> {
+        fun getAllMemories(): List<SharedMemoryEntry> {
         return taskMemoryPool.values.flatMap { it.toList() }
     }
-
-    fun getMemoriesByPriority(minPriority: Int): List<SharedMemoryEntry> {
+        fun getMemoriesByPriority(minPriority: Int): List<SharedMemoryEntry> {
         return taskMemoryPool.values.flatMap { it.toList() }
             .filter { it.priority >= minPriority }
             .sortedByDescending { it.priority }
     }
-
-    fun getMemoriesByRole(agentRole: String): List<SharedMemoryEntry> {
+        fun getMemoriesByRole(agentRole: String): List<SharedMemoryEntry> {
         return taskMemoryPool.values.flatMap { it.toList() }
             .filter { it.agentRole == agentRole }
             .sortedByDescending { it.timestamp }
     }
-
-    fun subscribeTaskMemory(taskId: String, onMemoryUpdate: (SharedMemoryEntry) -> Unit) {
+        fun subscribeTaskMemory(taskId: String, onMemoryUpdate: (SharedMemoryEntry) -> Unit) {
         val subscribers = memorySubscribers.getOrPut(taskId) { CopyOnWriteArrayList() }
         synchronized(subscribers) {
             subscribers.add(onMemoryUpdate)
         }
     }
-
-    fun unsubscribeTaskMemory(taskId: String, onMemoryUpdate: (SharedMemoryEntry) -> Unit) {
+        fun unsubscribeTaskMemory(taskId: String, onMemoryUpdate: (SharedMemoryEntry) -> Unit) {
         memorySubscribers[taskId]?.remove(onMemoryUpdate)
     }
-
-    fun subscribeByMode(mode: AgentMode, callback: (SharedMemoryEntry) -> Unit) {
+        fun subscribeByMode(mode: AgentMode, callback: (SharedMemoryEntry) -> Unit) {
         val subscribers = modeSubscribers.getOrPut(mode) { CopyOnWriteArrayList() }
         synchronized(subscribers) {
             subscribers.add(callback)
         }
     }
-
-    fun unsubscribeByMode(mode: AgentMode, callback: (SharedMemoryEntry) -> Unit) {
+        fun unsubscribeByMode(mode: AgentMode, callback: (SharedMemoryEntry) -> Unit) {
         modeSubscribers[mode]?.remove(callback)
     }
-
-    fun getTasksWithMemory(): Set<String> {
+        fun getTasksWithMemory(): Set<String> {
         return taskMemoryPool.keys.toSet()
     }
-
-    fun countByTask(taskId: String): Int {
+        fun countByTask(taskId: String): Int {
         return taskMemoryPool[taskId]?.size ?: 0
     }
-
-    fun totalSize(): Int {
+        fun totalSize(): Int {
         return taskMemoryPool.values.sumOf { it.size }
     }
-
-    fun clearTaskMemory(taskId: String) {
+        fun clearTaskMemory(taskId: String) {
         taskMemoryPool.remove(taskId)
         memorySubscribers.remove(taskId)
     }
-
-    fun clear() {
+        fun clear() {
         taskMemoryPool.clear()
         memorySubscribers.clear()
         modeSubscribers.clear()
     }
-
-    private fun notifySubscribers(entry: SharedMemoryEntry) {
+        private fun notifySubscribers(entry: SharedMemoryEntry) {
         memorySubscribers[entry.taskId]?.forEach { subscriber ->
             try {
                 subscriber(entry)
@@ -134,8 +115,7 @@ class SharedMemoryPool private constructor() {
             }
         }
     }
-
-    private fun notifyModeSubscribers(entry: SharedMemoryEntry) {
+        private fun notifyModeSubscribers(entry: SharedMemoryEntry) {
         modeSubscribers.forEach { (mode, callbacks) ->
             callbacks.forEach { cb ->
                 try {

@@ -34,25 +34,20 @@ import com.apex.agent.core.tools.defaultTool.standard.name
 /** Utility class for managing tool executions */
 object ToolExecutionManager {
     private const val TAG = "ToolExecutionManager"
-    private const val PACKAGE_PROXY_TOOL_NAME = "package_proxy"
-    private const val PACKAGE_CALLER_NAME_PARAM = "__Apex_package_caller_name"
-    private const val PACKAGE_CHAT_ID_PARAM = "__Apex_package_chat_id"
-
-
-    private data class ResolvedToolTarget(
+        private const val PACKAGE_PROXY_TOOL_NAME = "package_proxy"
+        private const val PACKAGE_CALLER_NAME_PARAM = "__Apex_package_caller_name"
+        private const val PACKAGE_CHAT_ID_PARAM = "__Apex_package_chat_id"
+        private data class ResolvedToolTarget(
         val tool: AITool,
         val displayName: String
     )
-
-    private fun ensureEndsWithNewline(content: String): String {
+        private fun ensureEndsWithNewline(content: String): String {
         return if (content.endsWith("\n")) content else "${content}\n"
     }
-
-    private fun resolveToolTarget(tool: AITool): ResolvedToolTarget {
+        private fun resolveToolTarget(tool: AITool): ResolvedToolTarget {
         if (tool.name != PACKAGE_PROXY_TOOL_NAME) {
             return ResolvedToolTarget(tool = tool, displayName = tool.name)
         }
-
         val targetToolName = tool.parameters
             .firstOrNull { it.name == "tool_name" }
             ?.value
@@ -61,27 +56,23 @@ object ToolExecutionManager {
         if (targetToolName.isBlank()) {
             return ResolvedToolTarget(tool = tool, displayName = tool.name)
         }
-
         val forwardedParameters = resolveProxyParameters(tool)
         return ResolvedToolTarget(
             tool = AITool(name = targetToolName, parameters = forwardedParameters),
             displayName = targetToolName
         )
     }
-
-    private fun resolveDisplayToolName(tool: AITool): String {
+        private fun resolveDisplayToolName(tool: AITool): String {
         return resolveToolTarget(tool).displayName
     }
-
-    private fun isJsPackageTool(toolName: String, jsPackageNames: Set<String>): Boolean {
+        private fun isJsPackageTool(toolName: String, jsPackageNames: Set<String>): Boolean {
         val toolNameParts = toolName.split(':', limit = 2)
         val packageName = toolNameParts.getOrNull(0)
         return toolNameParts.size == 2 &&
             packageName != null &&
             jsPackageNames.contains(packageName)
     }
-
-    private fun addPackageContextParamIfMissing(
+        private fun addPackageContextParamIfMissing(
         params: MutableList<ToolParameter>,
         name: String,
         value: String?
@@ -94,8 +85,7 @@ object ToolExecutionManager {
         }
         params.add(ToolParameter(name, value))
     }
-
-    private fun injectPackageCallContext(
+        private fun injectPackageCallContext(
         invocation: ToolInvocation,
         jsPackageNames: Set<String>,
         callerName: String?,
@@ -105,27 +95,20 @@ object ToolExecutionManager {
         if (!isJsPackageTool(resolvedTargetTool.name, jsPackageNames)) {
             return invocation
         }
-
         val updatedParams = invocation.tool.parameters.toMutableList()
         addPackageContextParamIfMissing(updatedParams, PACKAGE_CALLER_NAME_PARAM, callerName)
         addPackageContextParamIfMissing(updatedParams, PACKAGE_CHAT_ID_PARAM, callerChatId)
-
         if (updatedParams.size == invocation.tool.parameters.size) {
             return invocation
         }
-
         return invocation.copy(
             tool = invocation.tool.copy(parameters = updatedParams)
         )
     }
-
-    private fun getParameterValue(tool: AITool, name: String): String? {
+        private fun getParameterValue(tool: AITool, name: String): String? {
         return tool.parameters.firstOrNull { it.name == name }?.value?.trim()
     }
-
-
-
-    private fun resolveProxyParameters(tool: AITool): List<ToolParameter> {
+        private fun resolveProxyParameters(tool: AITool): List<ToolParameter> {
         val paramsRaw = tool.parameters
             .firstOrNull { it.name == "params" }
             ?.value
@@ -134,14 +117,13 @@ object ToolExecutionManager {
         if (paramsRaw.isBlank()) {
             return emptyList()
         }
-
         val paramsObject = runCatching { JSONObject(paramsRaw) }.getOrNull() ?: return emptyList()
         val forwardedParameters = mutableListOf<ToolParameter>()
         val keys = paramsObject.keys()
         while (keys.hasNext()) {
             val key = keys.next()
-            val value = paramsObject.opt(key)
-            val valueString = when (value) {
+        val value = paramsObject.opt(key)
+        val valueString = when (value) {
                 null, JSONObject.NULL -> "null"
                 is String -> value
                 else -> value.toString()
@@ -163,24 +145,21 @@ object ToolExecutionManager {
         charStream.splitBy(plugins).collect { group ->
             val chunkContent = StringBuilder()
             group.stream.collect { chunk -> chunkContent.append(chunk) }
-            val chunkString = chunkContent.toString()
-
-            if (chunkString.isEmpty()) return@collect
+        val chunkString = chunkContent.toString()
+        if (chunkString.isEmpty()) return@collect
 
             if (group.tag is StreamXmlPlugin) {
                 ChatMarkupRegex.toolCallPattern.findAll(chunkString).forEach { toolMatch ->
                     val toolName = toolMatch.groupValues.getOrNull(2) ?: return@forEach
                     val toolBody = toolMatch.groupValues.getOrNull(3).orEmpty()
-
-                    val parameters = mutableListOf<ToolParameter>()
+        val parameters = mutableListOf<ToolParameter>()
                     MessageContentParser.toolParamPattern.findAll(toolBody)
                         .forEach { paramMatch ->
                             val paramName = paramMatch.groupValues[1]
                             val paramValue = paramMatch.groupValues[2]
                             parameters.add(ToolParameter(paramName, unescapeXml(paramValue)))
                         }
-
-                    val tool = AITool(name = toolName, parameters = parameters)
+        val tool = AITool(name = toolName, parameters = parameters)
                     invocations.add(
                         ToolInvocation(
                             tool = tool,
@@ -216,11 +195,9 @@ object ToolExecutionManager {
     if (result.endsWith("]]>")) {
             result = result.substring(0, result.length - 3)
         }
-
         if (result.startsWith("<![CDATA[")) {
             result = result.substring(9)
         }
-
         return result.replace("&lt;", "<")
             .replace("&gt;", ">")
             .replace("&amp;", "&")
@@ -253,7 +230,6 @@ object ToolExecutionManager {
                 )
             }
         }
-
         return executor.invokeAndStream(invocation.tool).catch { e ->
             AppLogger.e(TAG, "Tool execution error: ${invocation.tool.name}", e)
             toolHandler?.notifyToolExecutionError(invocation.tool, e)
@@ -284,11 +260,10 @@ object ToolExecutionManager {
 
         // 检查是否强制拒绝权限（deny_tool标记�?
     val hasPromptForPermission = !invocation.rawText.contains("deny_tool")
-
         if (hasPromptForPermission) {
             // 检查权限，如果需要则弹出权限请求界面
     val toolPermissionSystem = toolHandler.getToolPermissionSystem()
-            val hasPermission = toolPermissionSystem.checkToolPermission(permissionTool)
+        val hasPermission = toolPermissionSystem.checkToolPermission(permissionTool)
 
             // 如果权限被拒绝，创建错误结果
     if (!hasPermission) {
@@ -304,11 +279,11 @@ object ToolExecutionManager {
                     granted = false,
                     reason = errorResult.error
                 )
-                return Pair(false, errorResult)
+        return Pair(false, errorResult)
             }
 
             toolHandler.notifyToolPermissionChecked(permissionTool, granted = true)
-            return Pair(true, null)
+        return Pair(true, null)
         }
 
         toolHandler.notifyToolPermissionChecked(
@@ -342,19 +317,18 @@ object ToolExecutionManager {
         val permissionDeniedResults = mutableListOf<ToolResult>()
         for (invocation in invocations) {
             toolHandler.notifyToolCallRequested(invocation.tool)
-            val (hasPermission, errorResult) = checkToolPermission(toolHandler, invocation)
-            if (hasPermission) {
+        val (hasPermission, errorResult) = checkToolPermission(toolHandler, invocation)
+        if (hasPermission) {
                 permittedInvocations.add(invocation)
             } else {
                 errorResult?.let {
                     permissionDeniedResults.add(it)
-                    val toolResultStatusContent =
+        val toolResultStatusContent =
                         ConversationMarkupManager.formatToolResultForMessage(it)
                     collector.emit(ensureEndsWithNewline(toolResultStatusContent))
                 }
             }
         }
-
         val injectedInvocations =
             if (callerName.isNullOrBlank() && callerChatId.isNullOrBlank()) {
                 permittedInvocations
@@ -370,7 +344,7 @@ object ToolExecutionManager {
                 }
             }
 
-        // 2. 按并�?串行对工具进行分�?
+        // 2. 按并�串行对工具进行分�?
     val parallelizableToolNames = setOf(
             "list_files", "read_file", "read_file_part", "read_file_full", "file_exists",
             "find_files", "file_info", "grep_code", "calculate", "ffmpeg_info",
@@ -419,14 +393,12 @@ object ToolExecutionManager {
     ): ToolResult {
         val toolName = invocation.tool.name
         val displayToolName = resolveDisplayToolName(invocation.tool)
-
         return try {
             // 首先尝试使用传统工具执行�?
     val executor = toolHandler.getToolExecutorOrActivate(toolName)
-            
-            if (executor != null) {
+        if (executor != null) {
                 // 使用传统工具执行器执�?               toolHandler.notifyToolExecutionStarted(invocation.tool)
-    val collectedResults = mutableListOf<ToolResult>()
+        val collectedResults = mutableListOf<ToolResult>()
                 executeToolSafely(invocation, executor, toolHandler).collect { result ->
                     collectedResults.add(result)
                     // 实时输出每个结果
@@ -445,15 +417,13 @@ object ToolExecutionManager {
                             error = "The tool execution returned no results."
                         )
                     toolHandler.notifyToolExecutionResult(invocation.tool, emptyResult)
-                    return emptyResult
+        return emptyResult
                 }
-
-                val lastResult = collectedResults.last()
-                val combinedResultString = collectedResults.joinToString("\n") { res ->
+        val lastResult = collectedResults.last()
+        val combinedResultString = collectedResults.joinToString("\n") { res ->
                     (if (res.success) res.result.toString() else "Step error: ${res.error ?: "Unknown error"}").trim()
                 }.trim()
-
-                val finalResult =
+        val finalResult =
                     ToolResult(
                         toolName = displayToolName,
                         success = lastResult.success,
@@ -461,12 +431,12 @@ object ToolExecutionManager {
                         error = lastResult.error
                     )
                 toolHandler.notifyToolExecutionResult(invocation.tool, finalResult)
-                return finalResult
+        return finalResult
             } else {
                 // 尝试使用新的工具适配�?               AppLogger.d(TAG, "尝试使用工具适配器执行工�?${toolName}")
-    val toolResult = executeWithToolAdapter(invocation, displayToolName, collector)
+        val toolResult = executeWithToolAdapter(invocation, displayToolName, collector)
                 toolHandler.notifyToolExecutionResult(invocation.tool, toolResult)
-                return toolResult
+        return toolResult
             }
         } finally {
             toolHandler.notifyToolExecutionFinished(invocation.tool)
@@ -502,20 +472,19 @@ object ToolExecutionManager {
     val toolResultStatusContent =
                 ConversationMarkupManager.formatToolResultForMessage(result)
             collector.emit(ensureEndsWithNewline(toolResultStatusContent))
-            
-            return result
+        return result
         } catch (e: Exception) {
             AppLogger.e(TAG, "工具适配器执行失�?${invocation.tool.name}", e)
-            val errorMessage = "工具适配器执行失�?${e.message}"
-            val errorResult = ToolResult(
+        val errorMessage = "工具适配器执行失�?${e.message}"
+        val errorResult = ToolResult(
                 toolName = displayToolName,
                 success = false,
                 result = StringResultData(""),
                 error = errorMessage
             )
-            val errorContent = ConversationMarkupManager.formatToolResultForMessage(errorResult)
+        val errorContent = ConversationMarkupManager.formatToolResultForMessage(errorResult)
             collector.emit(ensureEndsWithNewline(errorContent))
-            return errorResult
+        return errorResult
         }
     }
 
@@ -535,11 +504,11 @@ object ToolExecutionManager {
 
             toolName.contains(':') -> {
                 val parts = toolName.split(':', limit = 2)
-                val packName = parts[0]
+        val packName = parts[0]
                 val toolNamePart = parts.getOrNull(1) ?: ""
-                val isJsPackageAvailable = packageManager.getAvailablePackages().containsKey(packName)
-                val isMcpServerAvailable = packageManager.getAvailableServerPackages().containsKey(packName)
-                val isAvailable = isJsPackageAvailable || isMcpServerAvailable
+        val isJsPackageAvailable = packageManager.getAvailablePackages().containsKey(packName)
+        val isMcpServerAvailable = packageManager.getAvailableServerPackages().containsKey(packName)
+        val isAvailable = isJsPackageAvailable || isMcpServerAvailable
 
                 if (!isAvailable) {
                     "The tool package or MCP server '${packName}' does not exist."
@@ -547,12 +516,11 @@ object ToolExecutionManager {
                     // 包存在，检查是否已激活（通过检查该包的任何工具是否已注册）
     val packageTools =
                         packageManager.getPackageTools(packName)?.tools ?: emptyList()
-                    val isAdviceTool = packageTools.any { it.advice && it.name == toolNamePart }
-                    val isPackageActivated = packageTools
+        val isAdviceTool = packageTools.any { it.advice && it.name == toolNamePart }
+        val isPackageActivated = packageTools
                         .filter { !it.advice }
                         .any { toolHandler.getToolExecutor("${packName}:${it.name}") != null }
-
-                    if (isAdviceTool) {
+        if (isAdviceTool) {
                         "Tool '${toolNamePart}' is an advice-only entry in package '${packName}' and is not executable."
                     } else if (isPackageActivated) {
                         // 包已激活但工具不存�?                       "Tool '${toolNamePart}' does not exist in tool package '${packName}'. Please use the 'use_package' tool and specify package name '${packName}' to list all available tools in this package."
@@ -565,7 +533,7 @@ object ToolExecutionManager {
             else -> {
                 // 检查是否直接把包名当作工具名调用了
     val isPackageName = packageManager.getAvailablePackages().containsKey(toolName)
-                if (isPackageName) {
+        if (isPackageName) {
                     "Error: '${toolName}' is a tool package, not a tool. Please use the 'use_package' tool with package name '${toolName}' to activate this package before using its tools."
                 } else {
                     "Tool '${toolName}' is unavailable or does not exist. If this is a tool inside a package, call it using the 'packName:toolName' format."

@@ -18,7 +18,6 @@ class AndroidShellExecutor {
         fun setContext(appContext: Context) {
             context = appContext.applicationContext
         }
-
         private fun getPermissionLevelLabel(level: AndroidPermissionLevel): String {
             return when (level) {
                 AndroidPermissionLevel.STANDARD -> "STANDARD"
@@ -28,23 +27,20 @@ class AndroidShellExecutor {
                 AndroidPermissionLevel.ROOT -> "ROOT"
             }
         }
-
         private fun buildStrictUnavailableReason(
             level: AndroidPermissionLevel,
             executorAvailable: Boolean,
             permStatus: ShellExecutor.PermissionStatus
         ): String {
             val reasons = mutableListOf<String>()
-
-            if (!executorAvailable) {
+        if (!executorAvailable) {
                 reasons += "executor unavailable"
             }
-            if (!permStatus.granted) {
+        if (!permStatus.granted) {
                 reasons += permStatus.reason.trim().ifEmpty { "permission not granted" }
             }
-
-            val reasonText = reasons.distinct().joinToString("; ").ifBlank { "unknown reason" }
-            return "Current ${getPermissionLevelLabel(level)} unavailable: ${reasonText}"
+        val reasonText = reasons.distinct().joinToString("; ").ifBlank { "unknown reason" }
+        return "Current ${getPermissionLevelLabel(level)} unavailable: ${reasonText}"
         }
 
         /**
@@ -63,43 +59,36 @@ class AndroidShellExecutor {
 
             val preferredLevel = androidPermissionPreferences.getPreferredPermissionLevel()
             AppLogger.d(TAG, "Using preferred permission level: ${preferredLevel}, identity=${identity}")
-
-            val actualLevel = preferredLevel ?: AndroidPermissionLevel.STANDARD
+        val actualLevel = preferredLevel ?: AndroidPermissionLevel.STANDARD
 
             val preferredExecutor = ShellExecutorFactory.getExecutor(ctx, actualLevel)
-            val permStatus = preferredExecutor.hasPermission()
-            val executorAvailable = preferredExecutor.isAvailable()
-
-            if (executorAvailable && permStatus.granted) {
+        val permStatus = preferredExecutor.hasPermission()
+        val executorAvailable = preferredExecutor.isAvailable()
+        if (executorAvailable && permStatus.granted) {
                 val result = preferredExecutor.executeCommand(command, identity)
-                return CommandResult(result.success, result.stdout, result.stderr, result.exitCode)
+        return CommandResult(result.success, result.stdout, result.stderr, result.exitCode)
             }
-
-            val reason = buildStrictUnavailableReason(actualLevel, executorAvailable, permStatus)
+        val reason = buildStrictUnavailableReason(actualLevel, executorAvailable, permStatus)
 
             AppLogger.d(TAG, "Strict permission mode enabled, no fallback. ${reason}")
-            return CommandResult(false, "", reason, -1)
+        return CommandResult(false, "", reason, -1)
         }
 
         suspend fun startShellProcess(command: String): ShellProcess {
             val ctx = context ?: throw IllegalStateException("Context not initialized")
-
-            val preferredLevel = androidPermissionPreferences.getPreferredPermissionLevel()
+        val preferredLevel = androidPermissionPreferences.getPreferredPermissionLevel()
             AppLogger.d(TAG, "Starting process with preferred permission level: ${preferredLevel}")
-
-            val actualLevel = preferredLevel ?: AndroidPermissionLevel.STANDARD
+        val actualLevel = preferredLevel ?: AndroidPermissionLevel.STANDARD
             val preferredExecutor = ShellExecutorFactory.getExecutor(ctx, actualLevel)
-            val permStatus = preferredExecutor.hasPermission()
-            val executorAvailable = preferredExecutor.isAvailable()
-
-            if (executorAvailable && permStatus.granted) {
+        val permStatus = preferredExecutor.hasPermission()
+        val executorAvailable = preferredExecutor.isAvailable()
+        if (executorAvailable && permStatus.granted) {
                 return preferredExecutor.startProcess(command)
             }
-
-            val reason = buildStrictUnavailableReason(actualLevel, executorAvailable, permStatus)
+        val reason = buildStrictUnavailableReason(actualLevel, executorAvailable, permStatus)
 
             AppLogger.d(TAG, "Strict permission mode enabled, no fallback. ${reason}")
-            throw SecurityException(reason)
+        throw SecurityException(reason)
         }
     }
 

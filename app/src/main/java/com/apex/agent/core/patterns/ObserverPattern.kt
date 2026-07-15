@@ -15,8 +15,7 @@ class Subscription(
     private val onClose: () -> Unit
 ) : AutoCloseable {
     private val closed = AtomicBoolean(false)
-
-    val isActive: Boolean get() = !closed.get()
+        val isActive: Boolean get() = !closed.get()
 
     override fun close() {
         if (closed.compareAndSet(false, true)) {
@@ -29,14 +28,14 @@ class Subscription(
 interface Observable<T> {
     fun subscribe(observer: T): Subscription
     fun unsubscribe(observer: T)
-    fun notifyObservers()
+        fun notifyObservers()
 }
 
 /** 线程安全的可观察实现 */
 class ObservableImpl<T> : Observable<T> {
 
     private val observers = CopyOnWriteArrayList<T>()
-    private val subscriptions = CopyOnWriteArrayList<Subscription>()
+        private val subscriptions = CopyOnWriteArrayList<Subscription>()
 
     override fun subscribe(observer: T): Subscription {
         observers.add(observer)
@@ -53,10 +52,8 @@ class ObservableImpl<T> : Observable<T> {
     override fun notifyObservers() {
         observers.forEach { /* 子类实现具体通知逻辑 */ }
     }
-
-    fun getObservers(): List<T> = observers.toList()
-
-    fun clear() {
+        fun getObservers(): List<T> = observers.toList()
+        fun clear() {
         observers.clear()
         subscriptions.clear()
     }
@@ -68,16 +65,16 @@ sealed class AgentLifecycleEvent {
     data class StateChanged(val from: String, val to: String) : AgentLifecycleEvent()
     data class ErrorOccurred(val error: String, val severity: String) : AgentLifecycleEvent()
     data class MetricsUpdated(val cpuUsage: Double, val memoryUsage: Long, val activeTasks: Int) : AgentLifecycleEvent()
-    object Shutdown : AgentLifecycleEvent()
+        object Shutdown : AgentLifecycleEvent()
 }
 
 /** 代理状态观察者接口 */
 interface AgentStateObserver {
     fun onStateChanged(event: AgentLifecycleEvent.StateChanged)
-    fun onError(event: AgentLifecycleEvent.ErrorOccurred)
-    fun onMetricsUpdate(event: AgentLifecycleEvent.MetricsUpdated)
-    fun onInitialized() {}
-    fun onShutdown() {}
+        fun onError(event: AgentLifecycleEvent.ErrorOccurred)
+        fun onMetricsUpdate(event: AgentLifecycleEvent.MetricsUpdated)
+        fun onInitialized() {}
+        fun onShutdown() {}
 }
 
 /** Agent 状态可观察实现 */
@@ -87,22 +84,18 @@ class AgentStateObservable : ObservableImpl<AgentStateObserver>() {
         val event = AgentLifecycleEvent.StateChanged(from, to)
         getObservers().forEach { it.onStateChanged(event) }
     }
-
-    fun fireError(error: String, severity: String = "ERROR") {
+        fun fireError(error: String, severity: String = "ERROR") {
         val event = AgentLifecycleEvent.ErrorOccurred(error, severity)
         getObservers().forEach { it.onError(event) }
     }
-
-    fun fireMetricsUpdate(cpu: Double, memory: Long, tasks: Int) {
+        fun fireMetricsUpdate(cpu: Double, memory: Long, tasks: Int) {
         val event = AgentLifecycleEvent.MetricsUpdated(cpu, memory, tasks)
         getObservers().forEach { it.onMetricsUpdate(event) }
     }
-
-    fun fireInitialized() {
+        fun fireInitialized() {
         getObservers().forEach { it.onInitialized() }
     }
-
-    fun fireShutdown() {
+        fun fireShutdown() {
         getObservers().forEach { it.onShutdown() }
     }
 }

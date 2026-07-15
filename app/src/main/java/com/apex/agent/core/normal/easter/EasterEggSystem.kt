@@ -73,7 +73,7 @@ class EasterEggSystem {
     private val eggs = mutableListOf<EasterEgg>()
         private val discoveredEggs = ConcurrentHashMap<String, MutableSet<String>>()  // userId -> eggIds
     private val lastTriggered = ConcurrentHashMap<String, Long>()  // eggId -> 上次触发时间
-        init {
+    init {
         registerBuiltinEggs()
     }
 

@@ -19,33 +19,26 @@ import rikka.shizuku.Shizuku
  */
 object ShizukuManager {
     private const val TAG = "ShizukuManager"
-    private const val SHIZUKU_PACKAGE = "moe.shizuku.privileged.api"
-    private const val SUI_PACKAGE = "rikka.sui"
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val mainHandler = Handler(Looper.getMainLooper())
+        private const val SHIZUKU_PACKAGE = "moe.shizuku.privileged.api"
+        private const val SUI_PACKAGE = "rikka.sui"
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val mainHandler = Handler(Looper.getMainLooper())
 
     // 状态流
     private val _isInitialized = MutableStateFlow(false)
-    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
-
-    private val _isShizukuInstalled = MutableStateFlow(false)
-    val isShizukuInstalled: StateFlow<Boolean> = _isShizukuInstalled.asStateFlow()
-
-    private val _isServiceAvailable = MutableStateFlow(false)
-    val isServiceAvailable: StateFlow<Boolean> = _isServiceAvailable.asStateFlow()
-
-    private val _isPermissionGranted = MutableStateFlow(false)
-    val isPermissionGranted: StateFlow<Boolean> = _isPermissionGranted.asStateFlow()
-
-    private val _isSuiBackend = MutableStateFlow(false)
-    val isSuiBackend: StateFlow<Boolean> = _isSuiBackend.asStateFlow()
-
-    private val _currentUid = MutableStateFlow(-1)
-    val currentUid: StateFlow<Int> = _currentUid.asStateFlow()
-
-    private val _lastError = MutableStateFlow<String?>(null)
-    val lastError: StateFlow<String?> = _lastError.asStateFlow()
+        val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+        private val _isShizukuInstalled = MutableStateFlow(false)
+        val isShizukuInstalled: StateFlow<Boolean> = _isShizukuInstalled.asStateFlow()
+        private val _isServiceAvailable = MutableStateFlow(false)
+        val isServiceAvailable: StateFlow<Boolean> = _isServiceAvailable.asStateFlow()
+        private val _isPermissionGranted = MutableStateFlow(false)
+        val isPermissionGranted: StateFlow<Boolean> = _isPermissionGranted.asStateFlow()
+        private val _isSuiBackend = MutableStateFlow(false)
+        val isSuiBackend: StateFlow<Boolean> = _isSuiBackend.asStateFlow()
+        private val _currentUid = MutableStateFlow(-1)
+        val currentUid: StateFlow<Int> = _currentUid.asStateFlow()
+        private val _lastError = MutableStateFlow<String?>(null)
+        val lastError: StateFlow<String?> = _lastError.asStateFlow()
 
     // 监听器标�?
     private var binderReceivedListenerRegistered = false
@@ -78,8 +71,7 @@ object ShizukuManager {
             }
         }
     }
-
-    private fun registerListeners() {
+        private fun registerListeners() {
         if (binderReceivedListenerRegistered) return
 
         try {
@@ -112,8 +104,7 @@ object ShizukuManager {
         scope.launch {
             try {
                 AppLogger.d(TAG, "检�?Shizuku 状�?..")
-
-                val installed = isShizukuOrSuiInstalled()
+        val installed = isShizukuOrSuiInstalled()
                 _isShizukuInstalled.value = installed
 
                 val serviceAvailable = checkServiceAvailable()
@@ -142,8 +133,7 @@ object ShizukuManager {
             }
         }
     }
-
-    private fun isShizukuOrSuiInstalled(context: Context? = null): Boolean {
+        private fun isShizukuOrSuiInstalled(context: Context? = null): Boolean {
         val pm = try {
             context?.packageManager
         } catch (e: Exception) {
@@ -173,27 +163,24 @@ object ShizukuManager {
     fun isShizukuInstalled(context: Context): Boolean {
         return isShizukuOrSuiInstalled(context)
     }
-
-    private fun checkIsSuiBackend(): Boolean {
+        private fun checkIsSuiBackend(): Boolean {
         return try {
             if (Shizuku.pingBinder()) {
                 return true
             }
-            val binder = Shizuku.getBinder()
+        val binder = Shizuku.getBinder()
             binder != null && binder.isBinderAlive
         } catch (e: Exception) {
             false
         }
     }
-
-    private fun checkServiceAvailable(): Boolean {
+        private fun checkServiceAvailable(): Boolean {
         return try {
             val pingResult = Shizuku.pingBinder()
-            if (pingResult) {
+        if (pingResult) {
                 return true
             }
-
-            val binder = Shizuku.getBinder()
+        val binder = Shizuku.getBinder()
             binder != null && binder.isBinderAlive
         } catch (e: Exception) {
             AppLogger.w(TAG, "检�?Shizuku 服务失败", e)
@@ -207,8 +194,7 @@ object ShizukuManager {
     fun isShizukuServiceRunning(): Boolean {
         return _isServiceAvailable.value || checkServiceAvailable()
     }
-
-    private fun checkPermissionGranted(): Boolean {
+        private fun checkPermissionGranted(): Boolean {
         return try {
             when {
                 !checkServiceAvailable() -> {
@@ -217,7 +203,7 @@ object ShizukuManager {
                 }
                 else -> {
                     val result = Shizuku.checkSelfPermission()
-                    val granted = result == PackageManager.PERMISSION_GRANTED
+        val granted = result == PackageManager.PERMISSION_GRANTED
                     if (!granted) {
                         _lastError.value = "Shizuku 权限未授�?
                     }
@@ -245,21 +231,18 @@ object ShizukuManager {
         scope.launch {
             try {
                 AppLogger.d(TAG, "请求 Shizuku 权限...")
-
-                if (!isShizukuServiceRunning()) {
+        if (!isShizukuServiceRunning()) {
                     AppLogger.w(TAG, "Shizuku 服务未运行，无法请求权限")
                     _lastError.value = "Shizuku 服务未运�?
                     onResult(false)
                     return@launch
                 }
-
-                if (hasShizukuPermission()) {
+        if (hasShizukuPermission()) {
                     AppLogger.d(TAG, "已拥�?Shizuku 权限")
                     onResult(true)
                     return@launch
                 }
-
-                val requestCode = 1000
+        val requestCode = 1000
 
                 Shizuku.addRequestPermissionResultListener { code, grantResult ->
                     if (code == requestCode) {
@@ -334,8 +317,7 @@ object ShizukuManager {
     fun removeStateChangeListener(listener: () -> Unit) {
         stateChangeListeners.remove(listener)
     }
-
-    private fun notifyStateChange() {
+        private fun notifyStateChange() {
         mainHandler.post {
             stateChangeListeners.forEach { it() }
         }

@@ -16,27 +16,21 @@ class TaskScheduler(private val context: Context) {
         get() = File(context.filesDir, "scheduler_tasks").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val _tasks = MutableStateFlow<List<ScheduledTask>>(emptyList())
-    val tasks: StateFlow<List<ScheduledTask>> = _tasks.asStateFlow()
-
-    private val _taskQueue = MutableStateFlow<List<ScheduledTask>>(emptyList())
-    val taskQueue: StateFlow<List<ScheduledTask>> = _taskQueue.asStateFlow()
-
-    private val _runningTasks = MutableStateFlow<Set<String>>(emptySet())
-    val runningTasks: StateFlow<Set<String>> = _runningTasks.asStateFlow()
-
-    private val taskExecutors = ConcurrentHashMap<String, TaskExecutor>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
-    private val _taskEvents = MutableSharedFlow<TaskEvent>()
-    val taskEvents: SharedFlow<TaskEvent> = _taskEvents.asSharedFlow()
+        private val _tasks = MutableStateFlow<List<ScheduledTask>>(emptyList())
+        val tasks: StateFlow<List<ScheduledTask>> = _tasks.asStateFlow()
+        private val _taskQueue = MutableStateFlow<List<ScheduledTask>>(emptyList())
+        val taskQueue: StateFlow<List<ScheduledTask>> = _taskQueue.asStateFlow()
+        private val _runningTasks = MutableStateFlow<Set<String>>(emptySet())
+        val runningTasks: StateFlow<Set<String>> = _runningTasks.asStateFlow()
+        private val taskExecutors = ConcurrentHashMap<String, TaskExecutor>()
+        private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        private val _taskEvents = MutableSharedFlow<TaskEvent>()
+        val taskEvents: SharedFlow<TaskEvent> = _taskEvents.asSharedFlow()
 
     init {
         loadTasks()
     }
-
-    private fun loadTasks() {
+        private fun loadTasks() {
         scope.launch {
             val loadedTasks = withContext(Dispatchers.IO) {
                 tasksDir.listFiles { _, name -> name.endsWith(".json") }
@@ -90,8 +84,7 @@ class TaskScheduler(private val context: Context) {
         try {
             val task = _tasks.value.find { it.id == taskId }
                 ?: return@withContext Result.failure(IllegalArgumentException("任务不存�?))
-
-            if (!canExecuteTask(task)) {
+        if (!canExecuteTask(task)) {
                 return@withContext Result.failure(IllegalStateException("依赖任务未完�?))
             }
 
@@ -99,12 +92,11 @@ class TaskScheduler(private val context: Context) {
             updateTaskState(taskId, TaskState.IN_PROGRESS)
 
             _taskEvents.emit(TaskEvent.TaskStarted(taskId))
-
-            val startTime = System.currentTimeMillis()
+        val startTime = System.currentTimeMillis()
 
             try {
                 val result = executeTaskWithTimeout(task)
-                val duration = System.currentTimeMillis() - startTime
+        val duration = System.currentTimeMillis() - startTime
 
                 val completedTask = task.copy(
                     status = TaskState.COMPLETED,
@@ -134,12 +126,10 @@ class TaskScheduler(private val context: Context) {
             Result.failure(e)
         }
     }
-
-    private suspend fun executeTaskWithTimeout(task: ScheduledTask): TaskResult {
+        private suspend fun executeTaskWithTimeout(task: ScheduledTask): TaskResult {
         val executor = taskExecutors.getOrPut(task.id) {
             TaskExecutor(task, scope)
         }
-
         return withTimeoutOrNull(task.timeoutSeconds * 1000L) {
             executor.execute()
         } ?: throw TimeoutException("任务执行超时")
@@ -153,7 +143,7 @@ class TaskScheduler(private val context: Context) {
             _runningTasks.value = _runningTasks.value - taskId
 
             val task = _tasks.value.find { it.id == taskId }
-            if (task != null) {
+        if (task != null) {
                 val cancelledTask = task.copy(status = TaskState.CANCELLED)
                 updateTask(cancelledTask)
             }
@@ -171,8 +161,7 @@ class TaskScheduler(private val context: Context) {
         try {
             val task = _tasks.value.find { it.id == taskId }
                 ?: return@withContext Result.failure(IllegalArgumentException("任务不存�?))
-
-            val updatedTask = task.copy(assignedAgentId = newAgentId)
+        val updatedTask = task.copy(assignedAgentId = newAgentId)
             updateTask(updatedTask)
 
             _taskEvents.emit(TaskEvent.TaskReassigned(taskId, newAgentId))
@@ -186,8 +175,7 @@ class TaskScheduler(private val context: Context) {
         try {
             val task = _tasks.value.find { it.id == taskId }
                 ?: return@withContext Result.failure(IllegalArgumentException("任务不存�?))
-
-            val retriedTask = task.copy(
+        val retriedTask = task.copy(
                 status = TaskState.PENDING,
                 retryCount = task.retryCount + 1,
                 error = null
@@ -202,8 +190,7 @@ class TaskScheduler(private val context: Context) {
             Result.failure(e)
         }
     }
-
-    private fun canExecuteTask(task: ScheduledTask): Boolean {
+        private fun canExecuteTask(task: ScheduledTask): Boolean {
         if (task.dependencies.isEmpty()) return true
 
         return task.dependencies.all { depId ->
@@ -211,35 +198,30 @@ class TaskScheduler(private val context: Context) {
             depTask?.status == TaskState.COMPLETED
         }
     }
-
-    private fun updateTaskQueue() {
+        private fun updateTaskQueue() {
         val pendingTasks = _tasks.value
             .filter { it.status == TaskState.PENDING && canExecuteTask(it) }
             .sortedWith(compareBy({ -it.priority.ordinal }, { it.createdAt }))
 
         _taskQueue.value = pendingTasks
     }
-
-    private suspend fun updateTaskState(taskId: String, state: TaskState) {
+        private suspend fun updateTaskState(taskId: String, state: TaskState) {
         val task = _tasks.value.find { it.id == taskId } ?: return
         val updatedTask = task.copy(status = state)
         updateTask(updatedTask)
     }
-
-    private suspend fun updateTask(task: ScheduledTask) {
+        private suspend fun updateTask(task: ScheduledTask) {
         _tasks.value = _tasks.value.map { 
             if (it.id == task.id) task else it 
         }
         saveTask(task)
     }
-
-    private suspend fun saveTask(task: ScheduledTask) = withContext(Dispatchers.IO) {
+        private suspend fun saveTask(task: ScheduledTask) = withContext(Dispatchers.IO) {
         val taskFile = File(tasksDir, "${task.id}.json")
         val json = createTaskJson(task)
         taskFile.writeText(json.toString(2))
     }
-
-    private fun createTaskJson(task: ScheduledTask): JSONObject {
+        private fun createTaskJson(task: ScheduledTask): JSONObject {
         return JSONObject().apply {
             put("id", task.id)
             put("title", task.title)
@@ -259,8 +241,7 @@ class TaskScheduler(private val context: Context) {
             put("progress", task.progress)
         }
     }
-
-    private fun parseTask(json: JSONObject): ScheduledTask {
+        private fun parseTask(json: JSONObject): ScheduledTask {
         return ScheduledTask(
             id = json.getString("id"),
             title = json.getString("title"),
@@ -281,8 +262,7 @@ class TaskScheduler(private val context: Context) {
             progress = json.optDouble("progress", 0.0).toFloat()
         )
     }
-
-    fun cleanup() {
+        fun cleanup() {
         scope.cancel()
         taskExecutors.values.forEach { it.cancel() }
         taskExecutors.clear()
@@ -332,8 +312,7 @@ class TaskExecutor(
     suspend fun execute(): TaskResult = coroutineScope {
         val result = async {
             delay((1000..3000).random().toLong())
-            
-            if (task.title.contains("模拟失败", ignoreCase = true)) {
+        if (task.title.contains("模拟失败", ignoreCase = true)) {
                 throw Exception("模拟任务失败")
             }
 
@@ -350,8 +329,7 @@ class TaskExecutor(
 
         result
     }
-
-    fun cancel() {
+        fun cancel() {
         job?.cancel()
     }
 }

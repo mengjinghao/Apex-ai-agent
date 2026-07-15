@@ -75,7 +75,7 @@ object DangerousCommandDetector {
                 .replace("~", System.getProperty("user.home") ?: "~")
             try {
                 val regex = Regex(regexStr, RegexOption.IGNORE_CASE)
-                if (regex.containsMatchIn(lower)) {
+        if (regex.containsMatchIn(lower)) {
                     return DetectionResult(true, p.description, p.level)
                 }
             } catch (e: Exception) {

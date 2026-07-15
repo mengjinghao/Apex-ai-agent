@@ -132,33 +132,27 @@ class ReinforcementLearningPlanner(private val context: Context) {
         val success: Boolean,
         val details: String? = null
     )
-
-    private val goalsDir: File
+        private val goalsDir: File
         get() = File(context.filesDir, "rl_goals").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val plansDir: File
+        private val plansDir: File
         get() = File(context.filesDir, "rl_plans").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val statesDir: File
+        private val statesDir: File
         get() = File(context.filesDir, "rl_states").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val experiencesDir: File
+        private val experiencesDir: File
         get() = File(context.filesDir, "rl_experiences").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val activeGoals = mutableMapOf<String, Goal>()
-    private val activePlans = mutableMapOf<String, Plan>()
-    private val stateHistory = mutableListOf<State>()
-    private val experienceBuffer = mutableListOf<Experience>()
-
-    private var epsilon: Float = 0.1f
+        private val activeGoals = mutableMapOf<String, Goal>()
+        private val activePlans = mutableMapOf<String, Plan>()
+        private val stateHistory = mutableListOf<State>()
+        private val experienceBuffer = mutableListOf<Experience>()
+        private var epsilon: Float = 0.1f
     private var learningRate: Float = 0.01f
     private var discountFactor: Float = 0.95f
 
@@ -188,8 +182,7 @@ class ReinforcementLearningPlanner(private val context: Context) {
         activeGoals[goal.id] = goal
         goal
     }
-
-    private suspend fun saveGoal(goal: Goal) = withContext(Dispatchers.IO) {
+        private suspend fun saveGoal(goal: Goal) = withContext(Dispatchers.IO) {
         val goalFile = File(goalsDir, "${goal.id}.json")
         val json = JSONObject().apply {
             put("id", goal.id)
@@ -215,7 +208,7 @@ class ReinforcementLearningPlanner(private val context: Context) {
             ?.forEach { file ->
                 try {
                     val json = JSONObject(file.readText())
-                    val goal = Goal(
+        val goal = Goal(
                         id = json.getString("id"),
                         name = json.getString("name"),
                         description = json.getString("description"),
@@ -237,7 +230,6 @@ class ReinforcementLearningPlanner(private val context: Context) {
                     AppLogger.w(TAG, "解析目标配置失败: ${file.name}", e)
                 }
             }
-
         if (filter != null) {
             goals.filter { it.type == filter }
         } else {
@@ -251,9 +243,7 @@ class ReinforcementLearningPlanner(private val context: Context) {
         priority: Priority = Priority.MEDIUM
     ): Plan = withContext(Dispatchers.IO) {
         val goal = activeGoals[goalId] ?: throw IllegalArgumentException("目标不存�?)
-
         val steps = generatePlanSteps(goal)
-
         val plan = Plan(
             id = UUID.randomUUID().toString(),
             name = name,
@@ -272,10 +262,8 @@ class ReinforcementLearningPlanner(private val context: Context) {
         activePlans[plan.id] = plan
         plan
     }
-
-    private fun generatePlanSteps(goal: Goal): List<PlanStep> {
+        private fun generatePlanSteps(goal: Goal): List<PlanStep> {
         val steps = mutableListOf<PlanStep>()
-
         val stepNames = listOf(
             "问题分析",
             "收集信息",
@@ -296,11 +284,9 @@ class ReinforcementLearningPlanner(private val context: Context) {
                 )
             )
         }
-
         return steps
     }
-
-    private suspend fun savePlan(plan: Plan) = withContext(Dispatchers.IO) {
+        private suspend fun savePlan(plan: Plan) = withContext(Dispatchers.IO) {
         val planFile = File(plansDir, "${plan.id}.json")
         val stepsJson = JSONArray()
         plan.steps.forEach { step ->
@@ -319,7 +305,6 @@ class ReinforcementLearningPlanner(private val context: Context) {
                 }
             )
         }
-
         val json = JSONObject().apply {
             put("id", plan.id)
             put("name", plan.name)
@@ -347,10 +332,9 @@ class ReinforcementLearningPlanner(private val context: Context) {
             ?.forEach { file ->
                 try {
                     val json = JSONObject(file.readText())
-                    val stepsJson = json.getJSONArray("steps")
-                    val steps = mutableListOf<PlanStep>()
-
-                    for (i in 0 until stepsJson.length()) {
+        val stepsJson = json.getJSONArray("steps")
+        val steps = mutableListOf<PlanStep>()
+        for (i in 0 until stepsJson.length()) {
                         val stepJson = stepsJson.getJSONObject(i)
                         steps.add(
                             PlanStep(
@@ -369,8 +353,7 @@ class ReinforcementLearningPlanner(private val context: Context) {
                             )
                         )
                     }
-
-                    val plan = Plan(
+        val plan = Plan(
                         id = json.getString("id"),
                         name = json.getString("name"),
                         goalId = json.getString("goalId"),
@@ -393,7 +376,6 @@ class ReinforcementLearningPlanner(private val context: Context) {
                     AppLogger.w(TAG, "解析计划配置失败: ${file.name}", e)
                 }
             }
-
         if (status != null) {
             plans.filter { it.status == status }
         } else {
@@ -437,8 +419,7 @@ class ReinforcementLearningPlanner(private val context: Context) {
 
         successRate
     }
-
-    private fun calculateReward(plan: Plan): Float {
+        private fun calculateReward(plan: Plan): Float {
         var reward = 0f
 
         if (plan.status == PlanStatus.COMPLETED) {
@@ -446,7 +427,6 @@ class ReinforcementLearningPlanner(private val context: Context) {
         } else {
             reward -= 5f
         }
-
         val targetDuration = plan.estimatedDurationHours
         val actualDuration = plan.actualDurationHours
 
@@ -455,17 +435,13 @@ class ReinforcementLearningPlanner(private val context: Context) {
         } else if (actualDuration > targetDuration * 1.5f) {
             reward -= (actualDuration - targetDuration) / 2f
         }
-
         return reward
     }
-
-    private suspend fun recordExperience(planId: String, reward: Float, success: Boolean) = withContext(Dispatchers.IO) {
+        private suspend fun recordExperience(planId: String, reward: Float, success: Boolean) = withContext(Dispatchers.IO) {
         val currentState = captureCurrentState()
         saveState(currentState)
-
         val nextState = captureCurrentState()
         saveState(nextState)
-
         val experience = Experience(
             id = UUID.randomUUID().toString(),
             stateId = currentState.id,
@@ -478,25 +454,22 @@ class ReinforcementLearningPlanner(private val context: Context) {
 
         experienceBuffer.add(experience)
         saveExperience(experience)
-
         if (experienceBuffer.size > 1000) {
             experienceBuffer.removeAt(0)
         }
     }
-
-    private fun captureCurrentState(): State {
+        private fun captureCurrentState(): State {
         val progressData = mutableMapOf<String, Float>()
 
         activeGoals.values.forEach { goal ->
             val progress = if (goal.targetValue > 0) goal.currentValue / goal.targetValue else 0f
             progressData[goal.id] = progress.coerceAtMost(1f)
         }
-
         val planProgress = if (activePlans.isNotEmpty()) {
             activePlans.values.filter { it.status == PlanStatus.IN_PROGRESS }
                 .map { plan ->
                     val completedSteps = plan.steps.count { it.status == StepStatus.COMPLETED }
-                    if (plan.steps.isNotEmpty()) completedSteps.toFloat() / plan.steps.size.toFloat() else 0f
+        if (plan.steps.isNotEmpty()) completedSteps.toFloat() / plan.steps.size.toFloat() else 0f
                 }.average().toFloat()
         } else 0f
 
@@ -512,19 +485,16 @@ class ReinforcementLearningPlanner(private val context: Context) {
             }
         )
     }
-
-    private suspend fun saveState(state: State) = withContext(Dispatchers.IO) {
+        private suspend fun saveState(state: State) = withContext(Dispatchers.IO) {
         val stateFile = File(statesDir, "${state.id}.json")
         val stateDataJson = JSONObject()
         state.stateData.forEach { (key, value) ->
             stateDataJson.put(key, value.toDouble())
         }
-
         val goalsProgressJson = JSONObject()
         state.goalsProgress.forEach { (key, value) ->
             goalsProgressJson.put(key, value.toDouble())
         }
-
         val json = JSONObject().apply {
             put("id", state.id)
             put("timestamp", state.timestamp)
@@ -536,13 +506,11 @@ class ReinforcementLearningPlanner(private val context: Context) {
 
         stateFile.writeText(json.toString(2))
         stateHistory.add(state)
-
         if (stateHistory.size > 100) {
             stateHistory.removeAt(0)
         }
     }
-
-    private suspend fun saveExperience(experience: Experience) = withContext(Dispatchers.IO) {
+        private suspend fun saveExperience(experience: Experience) = withContext(Dispatchers.IO) {
         val expFile = File(experiencesDir, "${experience.id}.json")
         val json = JSONObject().apply {
             put("id", experience.id)
@@ -575,7 +543,6 @@ class ReinforcementLearningPlanner(private val context: Context) {
 
         val recentExperiences = experienceBuffer.takeLast(50)
         val avgReward = recentExperiences.map { it.reward }.average()
-
         if (avgReward < 0f) {
             epsilon = (epsilon + 0.05f).coerceAtMost(0.3f)
         } else {

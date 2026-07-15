@@ -82,16 +82,16 @@ internal data class WebDownloadEvent(
                 if (!url.isNullOrBlank()) {
                     json.put("url", url)
                 }
-                if (!mimeType.isNullOrBlank()) {
+        if (!mimeType.isNullOrBlank()) {
                     json.put("mime_type", mimeType)
                 }
-                if (!savedPath.isNullOrBlank()) {
+        if (!savedPath.isNullOrBlank()) {
                     json.put("saved_path", savedPath)
                 }
-                if (downloadId != null) {
+        if (downloadId != null) {
                     json.put("download_id", downloadId)
                 }
-                if (!error.isNullOrBlank()) {
+        if (!error.isNullOrBlank()) {
                     json.put("error", error)
                 }
             }
@@ -109,39 +109,39 @@ internal fun buildBrowserResponse(
     error: String? = null
 ): String {
     val sections = mutableListOf<String>()
-    if (!code.isNullOrBlank()) {
+        if (!code.isNullOrBlank()) {
         sections += "### Ran Playwright code\n```js\n${code.trim()}\n```"
     }
-    if (!openTabs.isNullOrBlank()) {
+        if (!openTabs.isNullOrBlank()) {
         sections += "### Open tabs\n${openTabs.trim()}"
     }
-    if (!pageState.isNullOrBlank()) {
+        if (!pageState.isNullOrBlank()) {
         sections += "### Page\n${pageState.trim()}"
     }
-    if (snapshot != null) {
+        if (snapshot != null) {
         sections += "### Snapshot\n${formatSnapshotSection(snapshot)}"
     }
-    if (!consoleMessages.isNullOrBlank()) {
+        if (!consoleMessages.isNullOrBlank()) {
         sections += "### New console messages\n${consoleMessages.trim()}"
     }
-    if (!modalState.isNullOrBlank()) {
+        if (!modalState.isNullOrBlank()) {
         sections += "### Modal state\n${modalState.trim()}"
     }
-    if (!downloads.isNullOrBlank()) {
+        if (!downloads.isNullOrBlank()) {
         sections += "### Downloads\n${downloads.trim()}"
     }
-    if (!result.isNullOrBlank()) {
+        if (!result.isNullOrBlank()) {
         sections += "### Result\n${result.trim()}"
     }
-    if (!error.isNullOrBlank()) {
+        if (!error.isNullOrBlank()) {
         sections += "### Error\n${error.trim()}"
     }
-    return sections.joinToString("\n\n")
+        return sections.joinToString("\n\n")
 }
 
 private fun formatSnapshotSection(snapshot: String): String {
     val trimmed = snapshot.trim()
-    return when {
+        return when {
         trimmed.startsWith("- [Snapshot](") -> trimmed
         trimmed.startsWith("```yaml") -> trimmed
         else -> "```yaml\n${trimmed}\n```"
@@ -185,11 +185,11 @@ internal fun StandardBrowserSessionTools.recordNetworkRequest(
     request: WebResourceRequest
 ) {
     val url = request.url?.toString().orEmpty()
-    if (url.isBlank()) {
+        if (url.isBlank()) {
         return
     }
-    val headers = request.requestHeaders?.mapKeys { it.key ?: "" } ?: emptyMap()
-    val acceptHeader = headers.entries.firstOrNull { it.key.equals("Accept", ignoreCase = true) }?.value
+        val headers = request.requestHeaders?.mapKeys { it.key ?: "" } ?: emptyMap()
+        val acceptHeader = headers.entries.firstOrNull { it.key.equals("Accept", ignoreCase = true) }?.value
     val entry =
         com.apex.agent.core.tools.defaultTool.websession.browser.BrowserNetworkRequestEntry(
             method = request.method.orEmpty().ifBlank { "GET" },
@@ -211,14 +211,14 @@ internal fun StandardBrowserSessionTools.renderAllConsoleMessages(
     level: String
 ): String {
     val threshold = consoleSeverity(level)
-    val messages =
+        val messages =
         synchronized(session.consoleEntries) {
             session.consoleEntries.toList()
         }.filter { consoleSeverity(it.level) <= threshold }
-    if (messages.isEmpty()) {
+        if (messages.isEmpty()) {
         return "No console messages."
     }
-    return messages.joinToString("\n") { entry ->
+        return messages.joinToString("\n") { entry ->
         val source = if (!entry.sourceId.isNullOrBlank()) " (${entry.sourceId}:${entry.lineNumber ?: 0})" else ""
         "- [${normalizeConsoleLevel(entry.level)}] ${entry.message}${source}"
     }
@@ -232,10 +232,10 @@ internal fun StandardBrowserSessionTools.renderNewConsoleMessages(
         synchronized(session.consoleEntries) {
             session.consoleEntries.filter { it.timestamp > marker }
         }
-    if (messages.isEmpty()) {
+        if (messages.isEmpty()) {
         return null
     }
-    return messages.joinToString("\n") { entry ->
+        return messages.joinToString("\n") { entry ->
         val source = if (!entry.sourceId.isNullOrBlank()) " (${entry.sourceId}:${entry.lineNumber ?: 0})" else ""
         "- [${normalizeConsoleLevel(entry.level)}] ${entry.message}${source}"
     }
@@ -249,10 +249,10 @@ internal fun StandardBrowserSessionTools.renderNetworkRequestLog(
         synchronized(session.networkEntries) {
             session.networkEntries.toList()
         }.filter { includeStatic || !it.isStatic }
-    if (entries.isEmpty()) {
+        if (entries.isEmpty()) {
         return "No network requests recorded for the current page."
     }
-    return entries.joinToString("\n") { entry ->
+        return entries.joinToString("\n") { entry ->
         val frameTag = if (entry.isMainFrame) " [main-frame]" else ""
         val staticTag = if (entry.isStatic) " [static]" else ""
         "- ${entry.method} ${entry.url}${frameTag}${staticTag}"
@@ -281,7 +281,7 @@ internal fun StandardBrowserSessionTools.requireSnapshotNode(
     ref: String
 ): BrowserSnapshotNode? {
     val snapshot = session.lastSnapshot ?: latestSnapshot(session)
-    return snapshot.nodesByRef[ref]
+        return snapshot.nodesByRef[ref]
 }
 
 internal fun StandardBrowserSessionTools.captureActionMarkers(
@@ -300,7 +300,7 @@ internal fun StandardBrowserSessionTools.isDocumentReady(session: BrowserToolSes
     if (session.pageLoaded && !session.isLoading) {
         return true
     }
-    val ready =
+        val ready =
         runCatching {
             decodeJsResult(
                 evaluateJavascriptSync(
@@ -310,7 +310,7 @@ internal fun StandardBrowserSessionTools.isDocumentReady(session: BrowserToolSes
                 )
             )
         }.getOrNull()
-    return ready == "complete" || ready == "interactive"
+        return ready == "complete" || ready == "interactive"
 }
 
 internal fun StandardBrowserSessionTools.waitForDocumentReady(
@@ -324,7 +324,7 @@ internal fun StandardBrowserSessionTools.waitForDocumentReady(
         }
         Thread.sleep(120)
     }
-    return false
+        return false
 }
 
 internal fun StandardBrowserSessionTools.matchesTextState(
@@ -342,9 +342,9 @@ internal fun StandardBrowserSessionTools.matchesTextState(
                 )
             )
         }.getOrElse { "" }
-    val containsWanted = text == null || bodyText.contains(text)
-    val goneSatisfied = textGone == null || !bodyText.contains(textGone)
-    return containsWanted && goneSatisfied
+        val containsWanted = text == null || bodyText.contains(text)
+        val goneSatisfied = textGone == null || !bodyText.contains(textGone)
+        return containsWanted && goneSatisfied
 }
 
 internal fun StandardBrowserSessionTools.buildWaitForCode(
@@ -377,7 +377,7 @@ internal fun StandardBrowserSessionTools.waitForTextState(
         }
         Thread.sleep(120L)
     }
-    return matchesTextState(session, text = text, textGone = textGone)
+        return matchesTextState(session, text = text, textGone = textGone)
 }
 
 internal fun StandardBrowserSessionTools.buildClickCode(
@@ -388,15 +388,15 @@ internal fun StandardBrowserSessionTools.buildClickCode(
     modifiers: Set<String>
 ): String {
     val locator = locatorExpressionForRef(session, ref)
-    val method = if (doubleClick) "dblclick" else "click"
-    val options = mutableListOf<String>()
-    if (button != "left") {
+        val method = if (doubleClick) "dblclick" else "click"
+        val options = mutableListOf<String>()
+        if (button != "left") {
         options += "button: ${quoteJsCode(button)}"
     }
-    if (modifiers.isNotEmpty()) {
+        if (modifiers.isNotEmpty()) {
         options += "modifiers: ${renderJsArrayCode(modifiers.toList())}"
     }
-    return if (options.isEmpty()) {
+        return if (options.isEmpty()) {
         "await ${locator}.${method}();"
     } else {
         "await ${locator}.${method}({ ${options.joinToString(", ")} });"
@@ -409,7 +409,7 @@ internal fun StandardBrowserSessionTools.settleBrowserAction(
     policy: BrowserToolActionPolicy = BrowserToolActionPolicy()
 ): BrowserToolActionSettlement {
     val deadline = markers.startedAt + policy.timeoutMs.coerceAtLeast(250L)
-    var candidateSession = sessionById(markers.initialSessionId) ?: initialSession
+        var candidateSession = sessionById(markers.initialSessionId) ?: initialSession
 
     while (System.currentTimeMillis() < deadline) {
         val registry = buildPageRegistry()
@@ -425,9 +425,9 @@ internal fun StandardBrowserSessionTools.settleBrowserAction(
             runOnMainSync<Unit> {
                 ensureSessionAttachedOnMain(activeSession.id)
             }
-            val snapshot = latestSnapshot(activeSession)
-            val finalRegistry = buildPageRegistry()
-            return BrowserToolActionSettlement(
+        val snapshot = latestSnapshot(activeSession)
+        val finalRegistry = buildPageRegistry()
+        return BrowserToolActionSettlement(
                 registry = finalRegistry,
                 session = activeSession,
                 snapshot = snapshot,
@@ -439,9 +439,8 @@ internal fun StandardBrowserSessionTools.settleBrowserAction(
 
         Thread.sleep(120)
     }
-
-    val registry = buildPageRegistry()
-    val activeSession =
+        val registry = buildPageRegistry()
+        val activeSession =
         when {
             policy.allowActivePageSwitch -> registry.activeSessionId?.let(::sessionById)
             else -> sessionById(markers.initialSessionId)
@@ -450,9 +449,9 @@ internal fun StandardBrowserSessionTools.settleBrowserAction(
     runOnMainSync<Unit> {
         ensureSessionAttachedOnMain(activeSession.id)
     }
-    val snapshot = latestSnapshot(activeSession)
-    val finalRegistry = buildPageRegistry()
-    return BrowserToolActionSettlement(
+        val snapshot = latestSnapshot(activeSession)
+        val finalRegistry = buildPageRegistry()
+        return BrowserToolActionSettlement(
         registry = finalRegistry,
         session = activeSession,
         snapshot = snapshot,
@@ -469,7 +468,7 @@ internal fun StandardBrowserSessionTools.latestSnapshot(
     if (!forceRefresh) {
         session.lastSnapshot?.let { return it }
     }
-    val snapshot = captureSnapshotModel(session)
+        val snapshot = captureSnapshotModel(session)
     session.lastSnapshot = snapshot
     return snapshot
 }
@@ -480,46 +479,40 @@ private fun StandardBrowserSessionTools.actionSettled(
     policy: BrowserToolActionPolicy
 ): Boolean {
     val requiredElapsedMs = ((policy.waitForTimeSeconds ?: 0.0) * 1000.0).toLong().coerceAtLeast(0L)
-    if (System.currentTimeMillis() - markers.startedAt < requiredElapsedMs) {
+        if (System.currentTimeMillis() - markers.startedAt < requiredElapsedMs) {
         return false
     }
-
-    val dialogOpened = session.pendingDialog?.timestamp?.let { it >= markers.startedAt } == true
+        val dialogOpened = session.pendingDialog?.timestamp?.let { it >= markers.startedAt } == true
     val fileChooserOpened =
         session.pendingFileChooserCallback != null && session.lastFileChooserRequestAt >= markers.startedAt
     val downloadTriggered = latestBrowserDownloadEventAt() > markers.downloadTimestamp
     if (dialogOpened || fileChooserOpened || downloadTriggered) {
         return true
     }
-
-    if (policy.waitForText != null || policy.waitForTextGone != null) {
+        if (policy.waitForText != null || policy.waitForTextGone != null) {
         return matchesTextState(session, policy.waitForText, policy.waitForTextGone)
     }
-
-    val activeSwitched = policy.allowActivePageSwitch && session.id != markers.initialSessionId
+        val activeSwitched = policy.allowActivePageSwitch && session.id != markers.initialSessionId
     val currentUrl = readCurrentUrl(session.webView, session.currentUrl).ifBlank { session.currentUrl }
-    val urlChanged = currentUrl != markers.initialUrl
+        val urlChanged = currentUrl != markers.initialUrl
 
     if (policy.waitForNavigationChange && !activeSwitched && !urlChanged) {
         return false
     }
-
-    val ready = isDocumentReady(session)
-    if (policy.waitForDocumentReady || policy.waitForNavigationChange || activeSwitched || urlChanged) {
+        val ready = isDocumentReady(session)
+        if (policy.waitForDocumentReady || policy.waitForNavigationChange || activeSwitched || urlChanged) {
         return ready
     }
-
-    if (session.isLoading && !ready) {
+        if (session.isLoading && !ready) {
         return false
     }
-
-    return ready && System.currentTimeMillis() - markers.startedAt >= 150L
+        return ready && System.currentTimeMillis() - markers.startedAt >= 150L
 }
 
 private fun isStaticRequest(url: String, acceptHeader: String): Boolean {
     val lowerUrl = url.lowercase(Locale.ROOT)
-    val lowerAccept = acceptHeader?.lowercase(Locale.ROOT).orEmpty()
-    return lowerAccept.contains("image/") ||
+        val lowerAccept = acceptHeader?.lowercase(Locale.ROOT).orEmpty()
+        return lowerAccept.contains("image/") ||
         lowerAccept.contains("font/") ||
         lowerAccept.contains("text/css") ||
         lowerAccept.contains("javascript") ||
@@ -574,7 +567,7 @@ internal fun StandardBrowserSessionTools.snapshotNode(
     ref: String
 ): BrowserSnapshotNode? {
     val snapshot = session.lastSnapshot ?: latestSnapshot(session)
-    return snapshot.nodesByRef[ref]
+        return snapshot.nodesByRef[ref]
 }
 
 internal fun StandardBrowserSessionTools.captureSnapshotModel(
@@ -583,8 +576,8 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
     depth: Int? = null
 ): BrowserSnapshot {
     val selectorLiteral = selector?.let(JSONObject::quote) ?: "null"
-    val depthLiteral = depth?.toString() ?: "null"
-    val script =
+        val depthLiteral = depth?.toString() ?: "null"
+        val script =
         """
         (function() {
             const selector = ${selectorLiteral};
@@ -593,13 +586,13 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
             const escapeQuoted = (value) => String(value == null ? "" : value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
             const yamlScalar = (value) => {
                 const text = normalize(value);
-                if (!text) {
+        if (!text) {
                     return "";
                 }
-                if (/^[A-Za-z0-9 _.,!?/+-]+$/.test(text) && !text.includes(": ")) {
+        if (/^[A-Za-z0-9 _.,!?/+-]+$/.test(text) && !text.includes(": ")) {
                     return text;
                 }
-                return '"' + escapeQuoted(text) + '"';
+        return '"' + escapeQuoted(text) + '"';
             };
             const quotedName = (value) => '"' + escapeQuoted(normalize(value)) + '"';
             const collectWindows = () => {
@@ -608,7 +601,7 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                 const result = [];
                 while (queue.length) {
                     const currentWindow = queue.shift();
-                    if (!currentWindow || visited.has(currentWindow)) {
+        if (!currentWindow || visited.has(currentWindow)) {
                         continue;
                     }
                     visited.add(currentWindow);
@@ -618,7 +611,7 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                     } catch (_) {
                         continue;
                     }
-                    if (!currentDocument) {
+        if (!currentDocument) {
                         continue;
                     }
                     result.push(currentWindow);
@@ -630,7 +623,7 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                         } catch (_) {}
                     });
                 }
-                return result;
+        return result;
             };
             try {
                 const isVisible = (element) => {
@@ -638,19 +631,19 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                         return false;
                     }
                     const tagName = String(element.tagName || "").toLowerCase();
-                    if (tagName === "body" || tagName === "html") {
+        if (tagName === "body" || tagName === "html") {
                         return true;
                     }
                     const currentWindow = element.ownerDocument && element.ownerDocument.defaultView;
-                    if (!currentWindow) {
+        if (!currentWindow) {
                         return false;
                     }
                     const style = currentWindow.getComputedStyle(element);
-                    if (!style || style.visibility === "hidden" || style.display === "none") {
+        if (!style || style.visibility === "hidden" || style.display === "none") {
                         return false;
                     }
                     const rect = element.getBoundingClientRect();
-                    return rect.width > 0 || rect.height > 0 || element.getClientRects().length > 0;
+        return rect.width > 0 || rect.height > 0 || element.getClientRects().length > 0;
                 };
                 const existingRefElements = [];
                 collectWindows().forEach((currentWindow) => {
@@ -663,27 +656,27 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                 const existingRefNumbers = existingRefElements
                     .map((element) => {
                         const match = /^e(\d+)$/.exec(String(element.getAttribute("aria-ref") || ""));
-                        return match ? parseInt(match[1], 10) : 0;
+        return match ? parseInt(match[1], 10) : 0;
                     })
                     .filter((value) => Number.isFinite(value) && value > 0);
                 let nextRef = existingRefNumbers.length ? Math.max.apply(null, existingRefNumbers) + 1 : 1;
                 const ensureRef = (element) => {
                     let ref = normalize(element.getAttribute("aria-ref"));
-                    if (!ref) {
+        if (!ref) {
                         ref = "e" + nextRef++;
                         element.setAttribute("aria-ref", ref);
                     }
-                    return ref;
+        return ref;
                 };
                 const resolveLabelledBy = (element) => {
                     const ids = normalize(element.getAttribute("aria-labelledby")).split(" ").filter(Boolean);
-                    if (!ids.length) {
+        if (!ids.length) {
                         return "";
                     }
-                    return normalize(
+        return normalize(
                         ids.map((id) => {
                             const labelElement = element.ownerDocument.getElementById(id);
-                            return labelElement ? normalize(labelElement.innerText || labelElement.textContent) : "";
+        return labelElement ? normalize(labelElement.innerText || labelElement.textContent) : "";
                         }).filter(Boolean).join(" ")
                     );
                 };
@@ -697,15 +690,15 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                             );
                         }
                     } catch (_) {}
-                    return "";
+        return "";
                 };
                 const nodes = [];
                 const inlineLeafText = (element) => {
                     const tagName = String(element.tagName || "").toLowerCase();
-                    if (tagName === "input" || tagName === "textarea" || tagName === "select") {
+        if (tagName === "input" || tagName === "textarea" || tagName === "select") {
                         return "";
                     }
-                    return normalize(element.innerText || element.textContent);
+        return normalize(element.innerText || element.textContent);
                 };
                 const hasAccessibleLabelHint = (element) => {
                     return !!(
@@ -716,7 +709,7 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                 };
                 const roleFor = (element) => {
                     const explicitRole = normalize(element.getAttribute("role")).toLowerCase();
-                    if (explicitRole && explicitRole !== "presentation" && explicitRole !== "none") {
+        if (explicitRole && explicitRole !== "presentation" && explicitRole !== "none") {
                         return explicitRole;
                     }
                     const tagName = String(element.tagName || "").toLowerCase();
@@ -812,50 +805,50 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                 };
                 const nameFor = (element, role) => {
                     const labelledBy = resolveLabelledBy(element);
-                    if (labelledBy) {
+        if (labelledBy) {
                         return labelledBy;
                     }
                     const ariaLabel = normalize(element.getAttribute("aria-label"));
-                    if (ariaLabel) {
+        if (ariaLabel) {
                         return ariaLabel;
                     }
                     const title = normalize(element.getAttribute("title"));
                     const placeholder = normalize(element.getAttribute("placeholder"));
                     const alt = normalize(element.getAttribute("alt"));
-                    if (role === "textbox" || role === "checkbox" || role === "radio" || role === "combobox" || role === "listbox" || role === "slider") {
+        if (role === "textbox" || role === "checkbox" || role === "radio" || role === "combobox" || role === "listbox" || role === "slider") {
                         return associatedLabel(element) || placeholder || title || alt;
                     }
-                    if (role === "button") {
+        if (role === "button") {
                         return normalize(element.getAttribute("value")) || inlineLeafText(element) || title;
                     }
-                    if (role === "img") {
+        if (role === "img") {
                         return alt || title;
                     }
-                    if (role === "iframe") {
+        if (role === "iframe") {
                         return normalize(element.getAttribute("name")) || title;
                     }
-                    if (role === "option") {
+        if (role === "option") {
                         return normalize(element.getAttribute("label")) || inlineLeafText(element) || title;
                     }
-                    if (role === "heading" || role === "link") {
+        if (role === "heading" || role === "link") {
                         return inlineLeafText(element) || title;
                     }
-                    if (role === "dialog" || role === "main" || role === "navigation" || role === "banner" || role === "contentinfo" || role === "article" || role === "form" || role === "region" || role === "list" || role === "table" || role === "group") {
+        if (role === "dialog" || role === "main" || role === "navigation" || role === "banner" || role === "contentinfo" || role === "article" || role === "form" || role === "region" || role === "list" || role === "table" || role === "group") {
                         return title;
                     }
-                    return "";
+        return "";
                 };
                 const needsRef = (element, role) => {
                     if (!role) {
                         return false;
                     }
-                    if (role === "iframe") {
+        if (role === "iframe") {
                         return true;
                     }
-                    if (role === "generic") {
+        if (role === "generic") {
                         return element.tabIndex >= 0 || element.isContentEditable;
                     }
-                    return role === "link" ||
+        return role === "link" ||
                         role === "button" ||
                         role === "checkbox" ||
                         role === "radio" ||
@@ -867,7 +860,7 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                 const stateTokens = (element, role) => {
                     const tokens = [];
                     const checked = normalize(element.getAttribute("aria-checked"));
-                    if (role === "checkbox" || role === "radio") {
+        if (role === "checkbox" || role === "radio") {
                         if (checked) {
                             tokens.push(checked === "true" ? "checked" : "checked=" + checked);
                         } else if (typeof element.checked === "boolean") {
@@ -875,34 +868,34 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                         }
                     }
                     const pressed = normalize(element.getAttribute("aria-pressed"));
-                    if (pressed) {
+        if (pressed) {
                         tokens.push("pressed=" + pressed);
                     }
                     const selected = normalize(element.getAttribute("aria-selected"));
-                    if (selected) {
+        if (selected) {
                         tokens.push(selected === "true" ? "selected" : "selected=" + selected);
                     }
                     const expanded = normalize(element.getAttribute("aria-expanded"));
-                    if (expanded) {
+        if (expanded) {
                         tokens.push("expanded=" + expanded);
                     }
-                    if (element.disabled || normalize(element.getAttribute("aria-disabled")) === "true") {
+        if (element.disabled || normalize(element.getAttribute("aria-disabled")) === "true") {
                         tokens.push("disabled");
                     }
                     const level = role === "heading"
                         ? (normalize(element.getAttribute("aria-level")) || ((/^h([1-6])$/.exec(String(element.tagName || "").toLowerCase()) || [])[1] || ""))
                         : "";
-                    if (level) {
+        if (level) {
                         tokens.push("level=" + level);
                     }
-                    return tokens;
+        return tokens;
                 };
                 const directTextEntries = (element) => {
                     const entries = [];
                     let buffer = [];
                     const flush = () => {
                         const text = normalize(buffer.join(" "));
-                        if (text) {
+        if (text) {
                             entries.push({ kind: "text", text: text });
                         }
                         buffer = [];
@@ -912,23 +905,23 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                             buffer.push(node.textContent || "");
                             return;
                         }
-                        if (node.nodeType === Node.ELEMENT_NODE && String(node.tagName || "").toLowerCase() === "br") {
+        if (node.nodeType === Node.ELEMENT_NODE && String(node.tagName || "").toLowerCase() === "br") {
                             buffer.push(" ");
                             return;
                         }
                         flush();
                     });
                     flush();
-                    return entries;
+        return entries;
                 };
                 const shouldEmitElement = (element, role, name) => {
                     if (!role) {
                         return false;
                     }
-                    if (role === "generic") {
+        if (role === "generic") {
                         return needsRef(element, role);
                     }
-                    return (role !== "form" && role !== "region") || !!name;
+        return (role !== "form" && role !== "region") || !!name;
                 };
                 const inlineTextRoles = new Set(["paragraph", "listitem", "group", "cell", "rowheader", "columnheader"]);
                 const namedRoles = new Set(["heading", "link", "button", "checkbox", "radio", "textbox", "combobox", "listbox", "slider", "img", "dialog", "iframe", "list", "main", "navigation", "banner", "contentinfo", "article", "form", "region", "table", "group", "option"]);
@@ -937,7 +930,7 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                     if (!entries.length || entries.some((entry) => entry.kind !== "text")) {
                         return null;
                     }
-                    return normalize(entries.map((entry) => entry.text).join(" "));
+        return normalize(entries.map((entry) => entry.text).join(" "));
                 };
                 const collectEntries = (element, remainingDepth) => {
                     if (!element || element.nodeType !== Node.ELEMENT_NODE || !isVisible(element) || (remainingDepth != null && remainingDepth < 0)) {
@@ -946,22 +939,22 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                     const role = roleFor(element);
                     const name = role ? nameFor(element, role) : "";
                     const includeSelf = shouldEmitElement(element, role, name);
-                    if (role === "iframe") {
+        if (role === "iframe") {
                         const ref = ensureRef(element);
                         const attributes = stateTokens(element, role);
                         attributes.push("ref=" + ref);
                         nodes.push({ ref: ref, role: role, name: name });
                         let children = [];
-                        if (remainingDepth == null || remainingDepth > 0) {
+        if (remainingDepth == null || remainingDepth > 0) {
                             try {
                                 const frameDocument = element.contentDocument;
                                 const frameRoot = frameDocument && (frameDocument.body || frameDocument.documentElement);
-                                if (frameRoot) {
+        if (frameRoot) {
                                     children = collectEntries(frameRoot, remainingDepth == null ? null : remainingDepth - 1);
                                 }
                             } catch (_) {}
                         }
-                        return [{ kind: "element", role: role, name: name, attributes: attributes, inlineText: "", children: children }];
+        return [{ kind: "element", role: role, name: name, attributes: attributes, inlineText: "", children: children }];
                     }
                     const childDepth = includeSelf && remainingDepth != null ? remainingDepth - 1 : remainingDepth;
                     const allowChildTraversal = childDepth == null || childDepth >= 0;
@@ -971,43 +964,43 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                     Array.from(element.childNodes).forEach((childNode) => {
                         if (childNode.nodeType === Node.TEXT_NODE || (childNode.nodeType === Node.ELEMENT_NODE && String(childNode.tagName || "").toLowerCase() === "br")) {
                             const nextText = textEntries[textIndex];
-                            if (nextText) {
+        if (nextText) {
                                 combinedChildren.push(nextText);
                                 textIndex++;
                             }
                             return;
                         }
-                        if (childNode.nodeType === Node.ELEMENT_NODE && allowChildTraversal) {
+        if (childNode.nodeType === Node.ELEMENT_NODE && allowChildTraversal) {
                             collectEntries(childNode, childDepth).forEach((entry) => {
                                 combinedChildren.push(entry);
                             });
                         }
                     });
-                    if (!includeSelf) {
+        if (!includeSelf) {
                         if (combinedChildren.length) {
                             return combinedChildren;
                         }
                         const text = inlineLeafText(element);
-                        return text ? [{ kind: "text", text: text }] : [];
+        return text ? [{ kind: "text", text: text }] : [];
                     }
                     const collapsedText = collapseTextEntries(combinedChildren);
                     const attributes = stateTokens(element, role);
-                    if (needsRef(element, role)) {
+        if (needsRef(element, role)) {
                         const ref = ensureRef(element);
                         attributes.push("ref=" + ref);
                         nodes.push({ ref: ref, role: role, name: name });
                     }
                     let inlineText = "";
                     let children = combinedChildren;
-                    if (role === "textbox") {
+        if (role === "textbox") {
                         const value = normalize(element.value);
-                        if (value && value !== name) {
+        if (value && value !== name) {
                             inlineText = value;
                             children = [];
                         }
                     } else if (inlineTextRoles.has(role)) {
                         const textValue = collapsedText || (!allowChildTraversal ? inlineLeafText(element) : "");
-                        if (textValue) {
+        if (textValue) {
                             inlineText = textValue;
                             children = [];
                         }
@@ -1017,22 +1010,22 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                         inlineText = collapsedText;
                         children = [];
                     }
-                    return [{ kind: "element", role: role, name: name, attributes: attributes, inlineText: inlineText, children: children }];
+        return [{ kind: "element", role: role, name: name, attributes: attributes, inlineText: inlineText, children: children }];
                 };
                 const renderEntry = (entry, indent, lines) => {
                     const prefix = "  ".repeat(indent) + "- ";
-                    if (entry.kind === "text") {
+        if (entry.kind === "text") {
                         lines.push(prefix + "text: " + yamlScalar(entry.text));
                         return;
                     }
                     let line = prefix + entry.role;
-                    if (entry.name && namedRoles.has(entry.role)) {
+        if (entry.name && namedRoles.has(entry.role)) {
                         line += " " + quotedName(entry.name);
                     }
                     entry.attributes.forEach((token) => {
                         line += " [" + token + "]";
                     });
-                    if (entry.inlineText) {
+        if (entry.inlineText) {
                         line += ": " + yamlScalar(entry.inlineText);
                     } else if (entry.children.length) {
                         line += ":";
@@ -1041,13 +1034,13 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                     entry.children.forEach((child) => renderEntry(child, indent + 1, lines));
                 };
                 const root = selector ? document.querySelector(selector) : (document.body || document.documentElement);
-                if (!root) {
+        if (!root) {
                     throw new Error(selector ? '"' + selector + '" does not match any elements.' : "No root element available.");
                 }
                 const entries = collectEntries(root, depthLimit);
                 const lines = [];
                 entries.forEach((entry) => renderEntry(entry, 0, lines));
-                return JSON.stringify({
+        return JSON.stringify({
                     ok: true,
                     yaml: lines.join("\n"),
                     nodes
@@ -1060,13 +1053,13 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
             }
         })();
         """.trimIndent()
-    val json = runJsonScript(session.webView, script, "snapshot_capture_error")
-    if (json?.optBoolean("ok", false) != true) {
+        val json = runJsonScript(session.webView, script, "snapshot_capture_error")
+        if (json?.optBoolean("ok", false) != true) {
         throw RuntimeException(json?.optString("error").orEmpty().ifBlank { "snapshot_capture_error" })
     }
-    val nodes = mutableMapOf<String, BrowserSnapshotNode>()
-    val array = json?.optJSONArray("nodes") ?: JSONArray()
-    for (index in 0 until array.length()) {
+        val nodes = mutableMapOf<String, BrowserSnapshotNode>()
+        val array = json?.optJSONArray("nodes") ?: JSONArray()
+        for (index in 0 until array.length()) {
         val node = array.optJSONObject(index) ?: continue
         val ref = node.optString("ref").trim()
         if (ref.isBlank()) {
@@ -1079,7 +1072,7 @@ internal fun StandardBrowserSessionTools.captureSnapshotModel(
                 name = node.optString("name")
             )
     }
-    return BrowserSnapshot(
+        return BrowserSnapshot(
         sessionId = session.id,
         generation = nextSnapshotGeneration(),
         yaml = json.optString("yaml").trim(),
@@ -1092,12 +1085,12 @@ internal fun StandardBrowserSessionTools.locatorExpressionForRef(
     ref: String
 ): String {
     val node = snapshotNode(session, ref)
-    if (node == null) {
+        if (node == null) {
         return "page.locator('[aria-ref=${ref}]')"
     }
-    val role = node.role.trim()
-    val name = node.name.trim()
-    return when {
+        val role = node.role.trim()
+        val name = node.name.trim()
+        return when {
         role.isBlank() || role == "generic" -> "page.locator('[aria-ref=${ref}]')"
         name.isNotBlank() -> "page.getByRole(${quoteJsCode(role)}, { name: ${quoteJsCode(name)} })"
         else -> "page.getByRole(${quoteJsCode(role)})"
@@ -1115,7 +1108,7 @@ internal fun browserRefResolverScript(functionName: String = "__apex-agentResolv
         const visited = new Set();
         while (queue.length) {
             const currentWindow = queue.shift();
-            if (!currentWindow || visited.has(currentWindow)) {
+        if (!currentWindow || visited.has(currentWindow)) {
                 continue;
             }
             visited.add(currentWindow);
@@ -1125,13 +1118,13 @@ internal fun browserRefResolverScript(functionName: String = "__apex-agentResolv
             } catch (_) {
                 continue;
             }
-            if (!currentDocument) {
+        if (!currentDocument) {
                 continue;
             }
             const target = Array.from(currentDocument.querySelectorAll("[aria-ref]")).find((element) => {
                 return String(element.getAttribute("aria-ref") || "") === wantedRef;
             });
-            if (target) {
+        if (target) {
                 return { element: target, window: currentWindow };
             }
             Array.from(currentDocument.querySelectorAll("iframe, frame")).forEach((frameElement) => {

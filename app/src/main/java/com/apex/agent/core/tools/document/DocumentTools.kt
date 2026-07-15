@@ -17,8 +17,8 @@ class DocumentTools(private val context: Context) {
 
     private val parserFactory = DocumentParserFactory
     private val videoSummarizer = VideoSummarizer(context)
-    private val ocrEnhancer = OcrEnhancer()
-    private val inputSanitizer = InputSanitizer()
+        private val ocrEnhancer = OcrEnhancer()
+        private val inputSanitizer = InputSanitizer()
 
     companion object {
         private const val TAG = "DocumentTools"
@@ -27,7 +27,7 @@ class DocumentTools(private val context: Context) {
     suspend fun parseDocument(tool: AITool): ToolResult = withContext(Dispatchers.IO) {
         try {
             val filePath = tool.parameters.find { it.name == "file_path" }?.value ?: ""
-            val fileName = File(filePath).name
+        val fileName = File(filePath).name
 
             val parser = parserFactory.getParserForFile(fileName)
                 ?: return@withContext ToolResult(
@@ -39,8 +39,7 @@ class DocumentTools(private val context: Context) {
 
             FileInputStream(filePath).use { inputStream ->
                 val result = parser.parse(inputStream, fileName)
-
-                if (result.success) {
+        if (result.success) {
                     // 对提取的文本内容进行安全消毒
     var sanitizedTextContent = result.textContent
                     if (result.textContent.isNotBlank()) {
@@ -64,7 +63,7 @@ class DocumentTools(private val context: Context) {
                                 appendLine("文档类型: ${result.type}")
                                 appendLine("标题: ${result.title}")
                                 appendLine("页数: ${result.pages.size}")
-                                if (sanitizedTextContent.isNotBlank()) {
+        if (sanitizedTextContent.isNotBlank()) {
                                     appendLine("\n文本内容:")
                                     appendLine(sanitizedTextContent.take(2000))
                                 }
@@ -93,7 +92,7 @@ class DocumentTools(private val context: Context) {
     suspend fun extractText(tool: AITool): ToolResult = withContext(Dispatchers.IO) {
         try {
             val filePath = tool.parameters.find { it.name == "file_path" }?.value ?: ""
-            val fileName = File(filePath).name
+        val fileName = File(filePath).name
 
             val parser = parserFactory.getParserForFile(fileName)
                 ?: return@withContext ToolResult(
@@ -109,7 +108,7 @@ class DocumentTools(private val context: Context) {
                 // 对提取的文本进行安全消毒
     val sanitizedText = try {
                     val sanitizeResult = inputSanitizer.sanitize(text)
-                    if (sanitizeResult.findings.isNotEmpty()) {
+        if (sanitizeResult.findings.isNotEmpty()) {
                         AppLogger.d(TAG, "文档提取内容消毒完成: 发现${sanitizeResult.findings.size}个安全问�?)
                     }
                     sanitizeResult.sanitizedText
@@ -138,15 +137,14 @@ class DocumentTools(private val context: Context) {
     suspend fun summarizeVideo(tool: AITool): ToolResult = withContext(Dispatchers.IO) {
         try {
             val videoPath = tool.parameters.find { it.name == "video_path" }?.value ?: ""
-            val includeFrames = tool.parameters.find { it.name == "include_frames" }?.value?.toBoolean() ?: false
+        val includeFrames = tool.parameters.find { it.name == "include_frames" }?.value?.toBoolean() ?: false
 
             val result = videoSummarizer.generateSummary(
                 videoPath = videoPath,
                 includeFrames = includeFrames,
                 includeTranscript = true
             )
-
-            if (result.success) {
+        if (result.success) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -156,7 +154,7 @@ class DocumentTools(private val context: Context) {
                             appendLine("关键帧数�? ${result.keyFrames.size}")
                             appendLine("\n字幕内容:")
                             appendLine(result.transcript.take(3000))
-                            if (result.summary.isNotBlank()) {
+        if (result.summary.isNotBlank()) {
                                 appendLine("\n摘要:")
                                 appendLine(result.summary)
                             }
@@ -184,17 +182,15 @@ class DocumentTools(private val context: Context) {
     suspend fun recognizeTable(tool: AITool): ToolResult = withContext(Dispatchers.IO) {
         try {
             val imagePath = tool.parameters.find { it.name == "image_path" }?.value ?: ""
-
-            val imageBytes = File(imagePath).readBytes()
-            val result = ocrEnhancer.recognizeTable(imageBytes)
-
-            if (result.tables.isNotEmpty()) {
+        val imageBytes = File(imagePath).readBytes()
+        val result = ocrEnhancer.recognizeTable(imageBytes)
+        if (result.tables.isNotEmpty()) {
                 val markdownTables = result.tables.mapIndexed { index, table ->
                     buildString {
                         appendLine("表格 ${index + 1}:")
                         table.forEachIndexed { rowIndex, row ->
                             appendLine(row.joinToString(" | "))
-                            if (rowIndex == 0) {
+        if (rowIndex == 0) {
                                 appendLine(row.map { "---" }.joinToString(" | "))
                             }
                         }
@@ -227,9 +223,8 @@ class DocumentTools(private val context: Context) {
     suspend fun recognizeHandwriting(tool: AITool): ToolResult = withContext(Dispatchers.IO) {
         try {
             val imagePath = tool.parameters.find { it.name == "image_path" }?.value ?: ""
-
-            val imageBytes = File(imagePath).readBytes()
-            val result = ocrEnhancer.recognizeHandwriting(imageBytes)
+        val imageBytes = File(imagePath).readBytes()
+        val result = ocrEnhancer.recognizeHandwriting(imageBytes)
 
             ToolResult(
                 toolName = tool.name,
@@ -239,7 +234,7 @@ class DocumentTools(private val context: Context) {
                         appendLine("识别结果:")
                         appendLine(result.text)
                         appendLine("\n置信�? ${(result.confidence * 100).toInt()}%")
-                        if (result.words.isNotEmpty()) {
+        if (result.words.isNotEmpty()) {
                             appendLine("\n词汇详情:")
                             result.words.take(20).forEach { word ->
                                 appendLine("- ${word.text} (${(word.confidence * 100).toInt()}%)")

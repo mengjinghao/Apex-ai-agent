@@ -14,9 +14,8 @@ class StandardActionListener(private val context: Context) : ActionListener {
     companion object {
         private const val TAG = "StandardActionListener"
     }
-
-    private val isListening = AtomicBoolean(false)
-    private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
+        private val isListening = AtomicBoolean(false)
+        private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
 
     override fun getPermissionLevel(): AndroidPermissionLevel = AndroidPermissionLevel.STANDARD
 

@@ -52,7 +52,7 @@ class StreamMarkdownFencedCodeBlockPlugin(private val includeFences: Boolean = t
                                 greedyStar { notChar('\n') }
                             }
                     )
-    private var endMatcher: StreamKmpGraph? = null
+        private var endMatcher: StreamKmpGraph? = null
     private var isMatchingEndFence = false
     private var hasStartedMatchingFence = false
 
@@ -64,20 +64,18 @@ class StreamMarkdownFencedCodeBlockPlugin(private val includeFences: Boolean = t
                 hasStartedMatchingFence = false
                 endMatcher!!.reset()
             }
-
-            if (isMatchingEndFence) {
+        if (isMatchingEndFence) {
                 if (!hasStartedMatchingFence) {
                     if (c == ' ') {
                         return includeFences
                     }
                     hasStartedMatchingFence = true
                 }
-
-                val matcher = endMatcher!!
+        val matcher = endMatcher!!
                 when (matcher.processChar(c)) {
                     is StreamKmpMatchResult.Match -> {
                         reset()
-                        return includeFences
+        return includeFences
                     }
                     is StreamKmpMatchResult.InProgress -> return includeFences
                     is StreamKmpMatchResult.NoMatch -> {
@@ -102,7 +100,7 @@ class StreamMarkdownFencedCodeBlockPlugin(private val includeFences: Boolean = t
                     } else {
                         reset()
                     }
-                    return includeFences
+        return includeFences
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -113,7 +111,7 @@ class StreamMarkdownFencedCodeBlockPlugin(private val includeFences: Boolean = t
                     }
                 }
             }
-            return includeFences
+        return includeFences
         }
         return true // Should be unreachable
     }
@@ -154,7 +152,7 @@ class StreamMarkdownInlineCodePlugin(private val includeTicks: Boolean = true) :
                                 noneOf('`', '\n')
                             }
                     )
-    private var endMatcher: StreamKmpGraph? = null
+        private var endMatcher: StreamKmpGraph? = null
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
         // As per original logic, inline code cannot span multiple lines.
@@ -162,15 +160,14 @@ class StreamMarkdownInlineCodePlugin(private val includeTicks: Boolean = true) :
     if (state == PluginState.PROCESSING && c == '\n') {
             // This will cause `splitBy` to reprocess the buffered content as default text.
             reset()
-            return true // let the newline be processed by the default stream
+        return true // let the newline be processed by the default stream
         }
-
         if (state == PluginState.PROCESSING) {
             val matcher = endMatcher!!
             when (matcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeTicks
+        return includeTicks
                 }
                 is StreamKmpMatchResult.InProgress -> return includeTicks
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -186,7 +183,7 @@ class StreamMarkdownInlineCodePlugin(private val includeTicks: Boolean = true) :
                     } else {
                         reset()
                     }
-                    return true
+        return true
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -197,7 +194,7 @@ class StreamMarkdownInlineCodePlugin(private val includeTicks: Boolean = true) :
                     }
                 }
             }
-            return includeTicks
+        return includeTicks
         }
         return true // Should be unreachable
     }
@@ -246,7 +243,7 @@ class StreamMarkdownBoldPlugin(private val includeAsterisks: Boolean = true) : S
             when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeAsterisks
+        return includeAsterisks
                 }
                 is StreamKmpMatchResult.InProgress -> return includeAsterisks
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -257,7 +254,7 @@ class StreamMarkdownBoldPlugin(private val includeAsterisks: Boolean = true) : S
                     state = PluginState.PROCESSING
                     endMatcher.reset()
                     startMatcher.reset()
-                    return true
+        return true
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -267,7 +264,7 @@ class StreamMarkdownBoldPlugin(private val includeAsterisks: Boolean = true) : S
                     if (state == PluginState.TRYING) {
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         }
@@ -317,20 +314,19 @@ class StreamMarkdownItalicPlugin(private val includeAsterisks: Boolean = true) :
         if (lastChar == '*' && c == '*') {
             lastChar = null
             reset()
-
-            return true
+        return true
         }
         lastChar = c
 
         if (state == PluginState.PROCESSING) {
             if (c == '\n') {
                 reset()
-                return true
+        return true
             }
-            when (endMatcher.processChar(c)) {
+        when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeAsterisks
+        return includeAsterisks
                 }
                 is StreamKmpMatchResult.InProgress -> return includeAsterisks
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -341,7 +337,7 @@ class StreamMarkdownItalicPlugin(private val includeAsterisks: Boolean = true) :
                     state = PluginState.PROCESSING
                     endMatcher.reset()
                     startMatcher.reset()
-                    return true
+        return true
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -351,11 +347,10 @@ class StreamMarkdownItalicPlugin(private val includeAsterisks: Boolean = true) :
                     if (state == PluginState.TRYING) {
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         }
-
         return true // Should be unreachable
     }
 
@@ -400,13 +395,11 @@ class StreamMarkdownHeaderPlugin(private val includeMarker: Boolean = true) : St
             if (c == '\n') {
                 reset()
             }
-            return true // Return true to emit the character in the header content
+        return true // Return true to emit the character in the header content
         }
-
         if (atStartOfLine) {
             return handleMatch(c)
         }
-
         if (state == PluginState.TRYING) {
             // We are already in the middle of a potential match, continue feeding.
     return handleMatch(c)
@@ -415,8 +408,7 @@ class StreamMarkdownHeaderPlugin(private val includeMarker: Boolean = true) : St
         // Not at start of line and not trying, so just pass through.
     return true
     }
-
-    private fun handleMatch(c: Char): Boolean {
+        private fun handleMatch(c: Char): Boolean {
         return when (val result = headerMatcher.processChar(c)) {
             is StreamKmpMatchResult.Match -> {
                 val hashes = result.groups[GROUP_HEADER_HASHES]
@@ -477,8 +469,7 @@ class StreamMarkdownLinkPlugin : StreamPlugin {
                                 literal("[")
                             }
                     )
-
-    private val linkContentMatcher: StreamKmpGraph =
+        private val linkContentMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder()
                     .build(
                             kmpPattern {
@@ -506,7 +497,7 @@ class StreamMarkdownLinkPlugin : StreamPlugin {
                 when (linkContentMatcher.processChar(c)) {
                     is StreamKmpMatchResult.Match -> {
                         reset()
-                        return true
+        return true
                     }
                     is StreamKmpMatchResult.InProgress -> {
                         state = PluginState.PROCESSING
@@ -514,7 +505,7 @@ class StreamMarkdownLinkPlugin : StreamPlugin {
                     }
                     is StreamKmpMatchResult.NoMatch -> {
                         reset()
-                        return true
+        return true
                     }
                 }
             }
@@ -522,14 +513,14 @@ class StreamMarkdownLinkPlugin : StreamPlugin {
                 when (linkContentMatcher.processChar(c)) {
                     is StreamKmpMatchResult.Match -> {
                         reset()
-                        return true
+        return true
                     }
                     is StreamKmpMatchResult.InProgress -> {
                         return true
                     }
                     is StreamKmpMatchResult.NoMatch -> {
                         reset()
-                        return true
+        return true
                     }
                 }
             }
@@ -561,7 +552,7 @@ class StreamMarkdownImagePlugin(private val includeDelimiters: Boolean = true) :
         private set
 
     // Matcher for the start of an image markdown "!"
-    private val startMatcher: StreamKmpGraph =
+        private val startMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder()
                     .build(
                             kmpPattern {
@@ -570,7 +561,7 @@ class StreamMarkdownImagePlugin(private val includeDelimiters: Boolean = true) :
                     )
     
     // Matcher for the rest of the image markdown, starting from "["
-    private val imageContentMatcher: StreamKmpGraph =
+        private val imageContentMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder()
                     .build(
                             kmpPattern {
@@ -624,7 +615,7 @@ class StreamMarkdownImagePlugin(private val includeDelimiters: Boolean = true) :
                     is StreamKmpMatchResult.Match -> {
                         // Full image matched
                         reset()
-                        return includeDelimiters
+        return includeDelimiters
                     }
                     is StreamKmpMatchResult.InProgress -> {
                         // Continue processing
@@ -633,7 +624,7 @@ class StreamMarkdownImagePlugin(private val includeDelimiters: Boolean = true) :
                     is StreamKmpMatchResult.NoMatch -> {
                         // Pattern broke mid-way
                         reset()
-                        return true
+        return true
                     }
                 }
             }
@@ -682,9 +673,8 @@ class StreamMarkdownBlockQuotePlugin(private val includeMarker: Boolean = true) 
             } else {
                 reset()
             }
-            return true
+        return true
         }
-
         if (state == PluginState.WAITFOR) {
             if (atStartOfLine) {
                 if (c == '>') {
@@ -692,23 +682,19 @@ class StreamMarkdownBlockQuotePlugin(private val includeMarker: Boolean = true) 
                     return true
                 } else {
                     reset()
-                    return true
+        return true
                 }
             }
         }
-
         if (atStartOfLine) {
             return handleMatch(c)
         }
-
         if (state == PluginState.TRYING) {
             return handleMatch(c)
         }
-
         return true
     }
-
-    private fun handleMatch(c: Char): Boolean {
+        private fun handleMatch(c: Char): Boolean {
         return when (val result = blockQuoteMatcher.processChar(c)) {
             is StreamKmpMatchResult.Match -> {
                 state = PluginState.PROCESSING
@@ -735,8 +721,7 @@ class StreamMarkdownBlockQuotePlugin(private val includeMarker: Boolean = true) 
     override fun reset() {
         resetInternal()
     }
-
-    private fun resetInternal() {
+        private fun resetInternal() {
         state = PluginState.IDLE
         blockQuoteMatcher.reset()
     }
@@ -762,10 +747,8 @@ class StreamMarkdownHorizontalRulePlugin(private val includeMarker: Boolean = tr
             val shouldEmit = isMatch && includeMarker
 
             resetInternal()
-
-            return if (isMatch) shouldEmit else true
+        return if (isMatch) shouldEmit else true
         }
-
         if (state == PluginState.IDLE) {
             if (atStartOfLine) {
                 if (c == '-' || c == '*' || c == '_') {
@@ -775,17 +758,16 @@ class StreamMarkdownHorizontalRulePlugin(private val includeMarker: Boolean = tr
                     return includeMarker
                 }
             }
-            return true
+        return true
         }
-
         if (c == currentMarker || c == ' ' || c == '\t') {
             if (c == currentMarker) {
                 markerCount++
             }
-            if (markerCount >= 3) {
+        if (markerCount >= 3) {
                 state = PluginState.PROCESSING
             }
-            return includeMarker
+        return includeMarker
         }
 
         resetInternal()
@@ -802,8 +784,7 @@ class StreamMarkdownHorizontalRulePlugin(private val includeMarker: Boolean = tr
     override fun reset() {
         resetInternal()
     }
-
-    private fun resetInternal() {
+        private fun resetInternal() {
         state = PluginState.IDLE
         currentMarker = null
         markerCount = 0
@@ -841,7 +822,7 @@ class StreamMarkdownStrikethroughPlugin(private val includeDelimiters: Boolean =
             when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 is StreamKmpMatchResult.InProgress -> return includeDelimiters
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -852,7 +833,7 @@ class StreamMarkdownStrikethroughPlugin(private val includeDelimiters: Boolean =
                     state = PluginState.PROCESSING
                     endMatcher.reset()
                     startMatcher.reset()
-                    return true
+        return true
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -862,7 +843,7 @@ class StreamMarkdownStrikethroughPlugin(private val includeDelimiters: Boolean =
                     if (state == PluginState.TRYING) {
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         }
@@ -913,7 +894,7 @@ class StreamMarkdownUnderlinePlugin(private val includeDelimiters: Boolean = tru
             when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 is StreamKmpMatchResult.InProgress -> return includeDelimiters
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -924,7 +905,7 @@ class StreamMarkdownUnderlinePlugin(private val includeDelimiters: Boolean = tru
                     state = PluginState.PROCESSING
                     endMatcher.reset()
                     startMatcher.reset()
-                    return true
+        return true
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -934,7 +915,7 @@ class StreamMarkdownUnderlinePlugin(private val includeDelimiters: Boolean = tru
                     if (state == PluginState.TRYING) {
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         }
@@ -980,19 +961,16 @@ class StreamMarkdownOrderedListPlugin(private val includeMarker: Boolean = true)
             if (c == '\n') {
                 reset()
             }
-            return true
+        return true
         }
-
         if (atStartOfLine) {
             return handleMatch(c)
         } else if (state == PluginState.TRYING) {
             return handleMatch(c)
         }
-
         return true
     }
-
-    private fun handleMatch(c: Char): Boolean {
+        private fun handleMatch(c: Char): Boolean {
         return when (val result = listMatcher.processChar(c)) {
             is StreamKmpMatchResult.Match -> {
                 state = PluginState.PROCESSING
@@ -1019,8 +997,7 @@ class StreamMarkdownOrderedListPlugin(private val includeMarker: Boolean = true)
     override fun reset() {
         resetInternal()
     }
-
-    private fun resetInternal() {
+        private fun resetInternal() {
         state = PluginState.IDLE
         listMatcher.reset()
     }
@@ -1050,19 +1027,16 @@ class StreamMarkdownUnorderedListPlugin(private val includeMarker: Boolean = tru
             if (c == '\n') {
                 reset()
             }
-            return true
+        return true
         }
-
         if (atStartOfLine) {
             return handleMatch(c)
         } else if (state == PluginState.TRYING) {
             return handleMatch(c)
         }
-
         return true
     }
-
-    private fun handleMatch(c: Char): Boolean {
+        private fun handleMatch(c: Char): Boolean {
         return when (val result = listMatcher.processChar(c)) {
             is StreamKmpMatchResult.Match -> {
                 state = PluginState.PROCESSING
@@ -1089,8 +1063,7 @@ class StreamMarkdownUnorderedListPlugin(private val includeMarker: Boolean = tru
     override fun reset() {
         resetInternal()
     }
-
-    private fun resetInternal() {
+        private fun resetInternal() {
         state = PluginState.IDLE
         listMatcher.reset()
     }
@@ -1115,7 +1088,7 @@ class StreamMarkdownInlineLaTeXPlugin(private val includeDelimiters: Boolean = t
                                 noneOf('$', '\n')
                             }
                     )
-    private var endMatcher: StreamKmpGraph =
+        private var endMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder().build(kmpPattern { char('$') })
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
@@ -1124,7 +1097,7 @@ class StreamMarkdownInlineLaTeXPlugin(private val includeDelimiters: Boolean = t
     when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 is StreamKmpMatchResult.InProgress -> return includeDelimiters
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -1136,7 +1109,7 @@ class StreamMarkdownInlineLaTeXPlugin(private val includeDelimiters: Boolean = t
                     state = PluginState.PROCESSING
                     endMatcher.reset()
                     startMatcher.reset()
-                    return true
+        return true
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -1146,7 +1119,7 @@ class StreamMarkdownInlineLaTeXPlugin(private val includeDelimiters: Boolean = t
                     if (state == PluginState.TRYING) {
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         }
@@ -1174,7 +1147,7 @@ class StreamMarkdownInlineParenLaTeXPlugin(private val includeDelimiters: Boolea
         private set
 
     // 模式匹配器用于查，\( ... \)
-    private var startMatcher: StreamKmpGraph =
+        private var startMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder()
                     .build(
                             kmpPattern {
@@ -1182,7 +1155,7 @@ class StreamMarkdownInlineParenLaTeXPlugin(private val includeDelimiters: Boolea
                                 noneOf('\n')
                             }
                     )
-    private var endMatcher: StreamKmpGraph =
+        private var endMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder().build(kmpPattern { literal("\\)") })
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
@@ -1191,7 +1164,7 @@ class StreamMarkdownInlineParenLaTeXPlugin(private val includeDelimiters: Boolea
     when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 is StreamKmpMatchResult.InProgress -> return includeDelimiters
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -1203,7 +1176,7 @@ class StreamMarkdownInlineParenLaTeXPlugin(private val includeDelimiters: Boolea
                     state = PluginState.PROCESSING
                     endMatcher.reset()
                     startMatcher.reset()
-                    return true
+        return true
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -1213,7 +1186,7 @@ class StreamMarkdownInlineParenLaTeXPlugin(private val includeDelimiters: Boolea
                     if (state == PluginState.TRYING) {
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         }
@@ -1244,7 +1217,7 @@ class StreamMarkdownBlockLaTeXPlugin(private val includeDelimiters: Boolean = tr
     // 模式匹配器用于查找双美元符号 $$ ... $$
     private var startMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder().build(kmpPattern { literal("$$") })
-    private var endMatcher: StreamKmpGraph =
+        private var endMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder().build(kmpPattern { literal("$$") })
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
@@ -1253,7 +1226,7 @@ class StreamMarkdownBlockLaTeXPlugin(private val includeDelimiters: Boolean = tr
     when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 is StreamKmpMatchResult.InProgress -> return includeDelimiters
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -1265,7 +1238,7 @@ class StreamMarkdownBlockLaTeXPlugin(private val includeDelimiters: Boolean = tr
                     state = PluginState.PROCESSING
                     endMatcher.reset()
                     startMatcher.reset()
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -1275,7 +1248,7 @@ class StreamMarkdownBlockLaTeXPlugin(private val includeDelimiters: Boolean = tr
                     if (state == PluginState.TRYING) {
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         }
@@ -1305,7 +1278,7 @@ class StreamMarkdownBlockBracketLaTeXPlugin(private val includeDelimiters: Boole
     // 模式匹配器用于查，\\[ ... \\]
     private var startMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder().build(kmpPattern { literal("\\[") })
-    private var endMatcher: StreamKmpGraph =
+        private var endMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder().build(kmpPattern { literal("\\]") })
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
@@ -1314,7 +1287,7 @@ class StreamMarkdownBlockBracketLaTeXPlugin(private val includeDelimiters: Boole
     when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 is StreamKmpMatchResult.InProgress -> return includeDelimiters
                 is StreamKmpMatchResult.NoMatch -> return true
@@ -1326,7 +1299,7 @@ class StreamMarkdownBlockBracketLaTeXPlugin(private val includeDelimiters: Boole
                     state = PluginState.PROCESSING
                     endMatcher.reset()
                     startMatcher.reset()
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 is StreamKmpMatchResult.InProgress -> {
                     state = PluginState.TRYING
@@ -1336,7 +1309,7 @@ class StreamMarkdownBlockBracketLaTeXPlugin(private val includeDelimiters: Boole
                     if (state == PluginState.TRYING) {
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         }
@@ -1365,11 +1338,13 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
     override var state: PluginState = PluginState.IDLE
         private set
     
-    // 用于记录表格状�?   private var tableRowCount = 0
+    // 用于记录表格状�?
+    private var tableRowCount = 0
     private var foundHeaderSeparator = false
     private var emptyLineCount = 0 // 用于检测表格结束的空行计数
     
-    // 用于匹配表格行开�?   private val tableRowMatcher = 
+    // 用于匹配表格行开�?
+    private val tableRowMatcher = 
             StreamKmpGraphBuilder()
                     .build(
                             kmpPattern {
@@ -1386,7 +1361,8 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
                             }
                     )
     
-    // 用于检测其他块元素开始符�?   private val otherBlockStarters = setOf('$', '`', '#', '>', '*', '-', '+')
+    // 用于检测其他块元素开始符�?
+    private val otherBlockStarters = setOf('$', '`', '#', '>', '*', '-', '+')
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
         // 处理换行�?
     if (c == '\n') {
@@ -1394,7 +1370,7 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
                 // 在表格处理模式下遇到换行�?               // 进入WAITFOR状态，等待下一行决定去�?               state = PluginState.WAITFOR
     return true
             }
-            return true
+        return true
         }
         
         // WAITFOR状态下处理字符
@@ -1407,10 +1383,10 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
                     return includeDelimiters
                 } else if (c in otherBlockStarters) {
                     // 遇到其他块元素的起始符号，结束表格处�?                   reset()
-    return true
+        return true
                 } else {
                     // 其他非表格行，结束表格处�?                   reset()
-    return true
+        return true
                 }
             }
         }
@@ -1434,15 +1410,14 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
     if (tableRowCount == 2 && !foundHeaderSeparator) {
                         headerSeparatorMatcher.processChar(c)
                     }
-                    
-                    return includeDelimiters
+        return includeDelimiters
                 }
                 else -> {
                     if (state == PluginState.PROCESSING) {
                         // 在表格处理模式下遇到不是表格行开始的�?                       // 立即结束表格处理
                         reset()
                     }
-                    return true
+        return true
                 }
             }
         } else if (state == PluginState.PROCESSING) {
@@ -1464,7 +1439,6 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
             // 返回字符是否应该包含在输出中
     return includeDelimiters || c != '|'
         }
-        
         return true
     }
     

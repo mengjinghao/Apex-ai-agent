@@ -102,8 +102,7 @@ class StyleAdapter(private val context: Context) {
         val reasoning: String,
         val samplePhrases: List<String>
     )
-
-    private val styleTransitionPhrases = mapOf(
+        private val styleTransitionPhrases = mapOf(
         ConversationStyle.FORMAL to listOf(
             "根据我们的讨�?, "基于上述分析", "就此问题而言", "综上所�?,
             "从专业角度来�?, "根据您提供的信息"
@@ -146,10 +145,9 @@ class StyleAdapter(private val context: Context) {
             "不要放弃", "这是一个好的开�?, "相信你自�?
         )
     )
-
-    private val styleTemplates = mapOf(
+        private val styleTemplates = mapOf(
         ConversationStyle.FORMAL to listOf(
-            "尊敬的先�?女士�?,
+            "尊敬的先�女士�?,
             "敬启者，",
             "特此通知您，",
             "请您知悉�?
@@ -173,8 +171,7 @@ class StyleAdapter(private val context: Context) {
             "好久不见�?
         )
     )
-
-    private val emotionToStyleMapping = mapOf(
+        private val emotionToStyleMapping = mapOf(
         EnhancedEmotionAnalyzer.EmotionCategory.SADNESS to ConversationStyle.EMPATHETIC,
         EnhancedEmotionAnalyzer.EmotionCategory.ANXIETY to ConversationStyle.SUPPORTIVE,
         EnhancedEmotionAnalyzer.EmotionCategory.FEAR to ConversationStyle.SUPPORTIVE,
@@ -184,8 +181,7 @@ class StyleAdapter(private val context: Context) {
         EnhancedEmotionAnalyzer.EmotionCategory.CURIOSITY to ConversationStyle.CREATIVE,
         EnhancedEmotionAnalyzer.EmotionCategory.CONFUSION to ConversationStyle.TECHNICAL
     )
-
-    private val contextToStyleMapping = mapOf(
+        private val contextToStyleMapping = mapOf(
         "编程" to Pair(ConversationStyle.TECHNICAL, 0.9f),
         "代码" to Pair(ConversationStyle.TECHNICAL, 0.9f),
         "开�? to Pair(ConversationStyle.TECHNICAL, 0.8f),
@@ -212,11 +208,9 @@ class StyleAdapter(private val context: Context) {
         context: String
     ): AdaptationResult = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "开始风格适配")
-
         var bestStyle = ConversationStyle.CASUAL
         var confidence = 0.5f
         val reasons = mutableListOf<String>()
-
         val emotionStyle = emotionToStyleMapping[emotionProfile.primaryEmotion]
         if (emotionStyle != null) {
             val emotionWeight = emotionProfile.confidence
@@ -224,7 +218,6 @@ class StyleAdapter(private val context: Context) {
             bestStyle = emotionStyle
             reasons.add("基于当前情绪�?{emotionProfile.primaryEmotion.displayName}�?)
         }
-
         if (userPreferences != null) {
             val preferenceWeight = userPreferences.preferredStyle
             if (preferenceWeight > confidence) {
@@ -233,7 +226,6 @@ class StyleAdapter(private val context: Context) {
                 reasons.add("基于用户偏好")
             }
         }
-
         val contextStyle = findContextStyle(context)
         if (contextStyle != null) {
             val (style, weight) = contextStyle
@@ -243,19 +235,15 @@ class StyleAdapter(private val context: Context) {
                 reasons.add("基于使用场景")
             }
         }
-
         if (emotionProfile.intensityScore > 0.7f &&
             bestStyle !in listOf(ConversationStyle.EMPATHETIC, ConversationStyle.SUPPORTIVE)) {
             bestStyle = ConversationStyle.EMPATHETIC
             reasons.add("情绪强度较高，调整为共情模式")
         }
-
         if (emotionProfile.emotionDynamics == EnhancedEmotionAnalyzer.EmotionDynamics.IMPROVING) {
             reasons.add("情绪趋势向好")
         }
-
         val samplePhrases = styleTransitionPhrases[bestStyle] ?: emptyList()
-
         val reasoning = reasons.joinToString("�?)
 
         AppLogger.d(TAG, "风格适配完成: ${bestStyle} (置信�? ${confidence})")
@@ -267,8 +255,7 @@ class StyleAdapter(private val context: Context) {
             samplePhrases = samplePhrases
         )
     }
-
-    private fun findContextStyle(context: String): Pair<ConversationStyle, Float>? {
+        private fun findContextStyle(context: String): Pair<ConversationStyle, Float>? {
         for ((keyword, stylePair) in contextToStyleMapping) {
             if (context.contains(keyword)) {
                 return stylePair
@@ -284,14 +271,12 @@ class StyleAdapter(private val context: Context) {
     ): String = withContext(Dispatchers.IO) {
         val prefix = styleTemplates[style]?.randomOrNull() ?: ""
         val transition = styleTransitionPhrases[style]?.randomOrNull() ?: ""
-
         var styledContent = content
 
         if (emotionProfile != null && emotionProfile.showEmpathy) {
             val empathyPhrase = styleTransitionPhrases[ConversationStyle.EMPATHETIC]?.randomOrNull() ?: ""
             styledContent = "${empathyPhrase}${styledContent}"
         }
-
         when (style) {
             ConversationStyle.FORMAL -> {
                 styledContent = styledContent
@@ -311,8 +296,7 @@ class StyleAdapter(private val context: Context) {
             append(styledContent)
         }
     }
-
-    fun buildStylePrompt(
+        fun buildStylePrompt(
         style: ConversationStyle,
         includeSystemPrompt: Boolean = true
     ): String {
@@ -328,25 +312,20 @@ class StyleAdapter(private val context: Context) {
             ConversationStyle.CREATIVE to "请使用富有想象力的表达，提供创意性的建议�?,
             ConversationStyle.SUPPORTIVE to "请多给予鼓励和支持，帮助用户建立信心�?
         )
-
         return if (includeSystemPrompt) {
             styleDescriptions[style] ?: ""
         } else {
             "�?{style.displayName}的方式回�?
         }
     }
-
-    fun detectStyleFromContent(content: String): ConversationStyle {
+        fun detectStyleFromContent(content: String): ConversationStyle {
         val lowerContent = content.lowercase()
-
         val formalIndicators = listOf("�?, "�?, "感谢", "尊敬", "特此", "�?)
         val casualIndicators = listOf("�?, "�?, "呀", "�?, "�?, "�?)
         val techIndicators = listOf("代码", "函数", "算法", "api", "接口", "实现")
-
         val formalCount = formalIndicators.count { lowerContent.contains(it) }
         val casualCount = casualIndicators.count { lowerContent.contains(it) }
         val techCount = techIndicators.count { lowerContent.contains(it) }
-
         return when {
             techCount > formalCount && techCount > casualCount -> ConversationStyle.TECHNICAL
             formalCount > casualCount -> ConversationStyle.FORMAL
@@ -364,13 +343,12 @@ class StyleAdapter(private val context: Context) {
     ) {
         fun recordStyleUsage(style: ConversationStyle): UserStylePreferences {
             val newHistory = (styleHistory + style).takeLast(10)
-            val newChangeCount = if (newHistory.size >= 2 && newHistory.last() != newHistory[newHistory.size - 2]) {
+        val newChangeCount = if (newHistory.size >= 2 && newHistory.last() != newHistory[newHistory.size - 2]) {
                 styleChangeCount + 1
             } else {
                 styleChangeCount
             }
-
-            val newFavoriteStyle = newHistory.groupingBy { it }.eachCount().maxByOrNull { it.value }?.key
+        val newFavoriteStyle = newHistory.groupingBy { it }.eachCount().maxByOrNull { it.value }?.key
                 ?: favoriteStyle
 
             return UserStylePreferences(

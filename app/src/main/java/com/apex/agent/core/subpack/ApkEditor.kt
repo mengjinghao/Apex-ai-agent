@@ -25,10 +25,10 @@ private constructor(
         @JvmStatic
         fun fromAsset(context: Context, assetPath: String): ApkEditor {
             val fileName = assetPath.substringAfterLast('/')
-            val outputFile = File(context.cacheDir, "apk_editor_${fileName}")
-            val apkFile = AssetCopyUtils.copyAssetToFile(context, assetPath, outputFile, overwrite = true)
-            val apkReverseEngineer = ApkReverseEngineer(context)
-            return ApkEditor(context, apkFile, apkReverseEngineer)
+        val outputFile = File(context.cacheDir, "apk_editor_${fileName}")
+        val apkFile = AssetCopyUtils.copyAssetToFile(context, assetPath, outputFile, overwrite = true)
+        val apkReverseEngineer = ApkReverseEngineer(context)
+        return ApkEditor(context, apkFile, apkReverseEngineer)
         }
 
         /**
@@ -37,7 +37,7 @@ private constructor(
         @JvmStatic
         fun fromFile(context: Context, apkFile: File): ApkEditor {
             val apkReverseEngineer = ApkReverseEngineer(context)
-            return ApkEditor(context, apkFile, apkReverseEngineer)
+        return ApkEditor(context, apkFile, apkReverseEngineer)
         }
 
         /**
@@ -46,7 +46,7 @@ private constructor(
         @JvmStatic
         fun fromPath(context: Context, apkFilePath: String): ApkEditor {
             val apkFile = File(apkFilePath)
-            return fromFile(context, apkFile)
+        return fromFile(context, apkFile)
         }
 
         /**
@@ -54,8 +54,7 @@ private constructor(
          * @return 缓存文件
          */
     }
-
-    private var newPackageName: String? = null
+        private var newPackageName: String? = null
     private var newAppName: String? = null
     private var newVersionName: String? = null
     private var newVersionCode: String? = null
@@ -168,14 +167,12 @@ private constructor(
         if (!webContentDir.exists() || !webContentDir.isDirectory) {
             throw IllegalArgumentException("webContentDir is missing or not a directory: ${webContentDir.absolutePath}")
         }
-
         val unsignedOutputFile =
                 if (outputFile != null) {
                     outputFile!!
                 } else {
                     File(context.cacheDir, "unsigned_${apkFile.name}")
                 }
-
         if (!apkReverseEngineer.repackageApkWithWebContent(
                         apkFile,
                         unsignedOutputFile,
@@ -189,7 +186,6 @@ private constructor(
         ) {
             throw RuntimeException(context.getString(R.string.apk_editor_repack_failed))
         }
-
         return unsignedOutputFile
     }
 
@@ -202,11 +198,9 @@ private constructor(
         val unsignedApk = repackWithWebContent(webContentDir)
 
         AppLogger.d(TAG, "未签名APK生成成功: ${unsignedApk.absolutePath}, 文件大小: ${unsignedApk.length()}")
-
         if (!unsignedApk.exists() || unsignedApk.length() == 0L) {
             throw RuntimeException(context.getString(R.string.apk_editor_unsigned_apk_not_found, unsignedApk.absolutePath))
         }
-
         if (keyStoreFile == null ||
                         keyStorePassword == null ||
                         keyAlias == null ||
@@ -214,7 +208,6 @@ private constructor(
         ) {
             throw IllegalStateException(context.getString(R.string.apk_editor_signature_incomplete))
         }
-
         val signedOutputFile = if (outputFile != null) {
             File(unsignedApk.parentFile, "to_sign_${System.currentTimeMillis()}_${unsignedApk.name}")
         } else {
@@ -222,7 +215,6 @@ private constructor(
         }
 
         AppLogger.d(TAG, "开始签名APK，输�?${unsignedApk.absolutePath}, 输出�?${signedOutputFile.absolutePath}")
-
         val signResult = apkReverseEngineer.signApk(
                 unsignedApk,
                 keyStoreFile!!,
@@ -231,16 +223,13 @@ private constructor(
                 keyPassword!!,
                 signedOutputFile
         )
-
         if (!signResult.first) {
             val errorMessage = signResult.second ?: context.getString(R.string.apk_editor_unknown_sign_error)
-            throw RuntimeException(context.getString(R.string.apk_editor_sign_failed, errorMessage))
+        throw RuntimeException(context.getString(R.string.apk_editor_sign_failed, errorMessage))
         }
-
         val finalOutputFile = if (outputFile != null && signedOutputFile.exists()) {
             outputFile!!.parentFile?.mkdirs()
-
-            if (outputFile!!.exists()) {
+        if (outputFile!!.exists()) {
                 outputFile!!.delete()
             }
 

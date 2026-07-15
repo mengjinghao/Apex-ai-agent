@@ -46,65 +46,55 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             val lock: Any = Any(),
             @Volatile var lastAccessAtMs: Long = System.currentTimeMillis()
         )
-
         private val querySnapshotsByProfile =
             ConcurrentHashMap<String, ConcurrentHashMap<String, QuerySnapshotState>>()
     }
-
-    private val memoryRepositories = ConcurrentHashMap<String, MemoryRepository>()
-    private val settingsRepositories = ConcurrentHashMap<String, MemorySearchSettingsPreferences>()
-    private val unifiedMemoryManager by lazy {
+        private val memoryRepositories = ConcurrentHashMap<String, MemoryRepository>()
+        private val settingsRepositories = ConcurrentHashMap<String, MemorySearchSettingsPreferences>()
+        private val unifiedMemoryManager by lazy {
         UnifiedMemoryManager.getInstance()
     }
-
-    private val skillEvolutionManager by lazy { 
+        private val skillEvolutionManager by lazy { 
         com.apex.agent.core.skills.SkillEvolutionManager(context)
     }
-    private val evolutionEngine by lazy { 
+        private val evolutionEngine by lazy { 
         com.apex.agent.core.evolution.LogistraAgentEvolutionEngine(
             context,
             memoryRepository,
             skillEvolutionManager
         )
     }
-
-    private fun resolveActiveMode(): AgentMode {
+        private fun resolveActiveMode(): AgentMode {
         return unifiedMemoryManager.currentMode.value
     }
-
-    private fun resolveActiveProfileId(): String {
+        private fun resolveActiveProfileId(): String {
         return runBlocking { preferencesManager.activeProfileIdFlow.first() }
     }
-
-    private val memoryRepository: MemoryRepository
+        private val memoryRepository: MemoryRepository
         get() {
             val profileId = resolveActiveProfileId()
-            return memoryRepositories.computeIfAbsent(profileId) { MemoryRepository(context, it) }
+        return memoryRepositories.computeIfAbsent(profileId) { MemoryRepository(context, it) }
         }
-
-    private val memorySearchSettingsPreferences: MemorySearchSettingsPreferences
+        private val memorySearchSettingsPreferences: MemorySearchSettingsPreferences
         get() {
             val profileId = resolveActiveProfileId()
-            return settingsRepositories.computeIfAbsent(profileId) { MemorySearchSettingsPreferences(context, it) }
+        return settingsRepositories.computeIfAbsent(profileId) { MemorySearchSettingsPreferences(context, it) }
         }
-
-    private fun getQuerySnapshotStore(profileId: String): ConcurrentHashMap<String, QuerySnapshotState> {
+        private fun getQuerySnapshotStore(profileId: String): ConcurrentHashMap<String, QuerySnapshotState> {
         return querySnapshotsByProfile.computeIfAbsent(profileId) { ConcurrentHashMap() }
     }
-
-    private fun getOrCreateQuerySnapshot(profileId: String, requestedSnapshotId: String): Pair<QuerySnapshotState, Boolean> {
+        private fun getOrCreateQuerySnapshot(profileId: String, requestedSnapshotId: String): Pair<QuerySnapshotState, Boolean> {
         val store = getQuerySnapshotStore(profileId)
         val now = System.currentTimeMillis()
-
         if (requestedSnapshotId == null) {
             while (true) {
                 val generatedSnapshot = QuerySnapshotState(
                     id = UUID.randomUUID().toString(),
                     lastAccessAtMs = now
                 )
-                if (store.putIfAbsent(generatedSnapshot.id, generatedSnapshot) == null) {
+        if (store.putIfAbsent(generatedSnapshot.id, generatedSnapshot) == null) {
                     trimOldSnapshots(store)
-                    return generatedSnapshot to true
+        return generatedSnapshot to true
                 }
             }
         }
@@ -113,7 +103,6 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             existingSnapshot.lastAccessAtMs = now
             return existingSnapshot to false
         }
-
         val requestedSnapshot = QuerySnapshotState(
             id = requestedSnapshotId,
             lastAccessAtMs = now
@@ -127,8 +116,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         }
         return resolvedSnapshot to snapshotCreated
     }
-
-    private fun trimOldSnapshots(store: ConcurrentHashMap<String, QuerySnapshotState>) {
+        private fun trimOldSnapshots(store: ConcurrentHashMap<String, QuerySnapshotState>) {
         if (store.size <= MAX_QUERY_SNAPSHOTS_PER_PROFILE) {
             return
         }
@@ -140,19 +128,17 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 store.remove(stale.id, stale)
             }
     }
-
-    private fun parseTimeBoundary(value: String?, isEnd: Boolean): Long? {
+        private fun parseTimeBoundary(value: String?, isEnd: Boolean): Long? {
         val trimmed = value?.trim()?.takeIf { it.isNotEmpty() } ?: return null
         val timezone = TimeZone.getDefault()
-
         fun parseExact(pattern: String): Date? {
             val formatter = SimpleDateFormat(pattern, Locale.US).apply {
                 isLenient = false
                 timeZone = timezone
             }
-            val position = ParsePosition(0)
-            val parsed = formatter.parse(trimmed, position)
-            return if (parsed != null && position.index == trimmed.length) parsed else null
+        val position = ParsePosition(0)
+        val parsed = formatter.parse(trimmed, position)
+        return if (parsed != null && position.index == trimmed.length) parsed else null
         }
 
         parseExact("yyyy-MM-dd HH:mm")?.let { parsed ->
@@ -172,11 +158,9 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 set(Calendar.MILLISECOND, if (isEnd) 999 else 0)
             }.timeInMillis
         }
-
         return null
     }
-
-    private var lastLoggedMode: AgentMode? = null
+        private var lastLoggedMode: AgentMode? = null
 
     override fun invoke(tool: AITool): ToolResult = runBlocking {
         val currentMode = resolveActiveMode()
@@ -239,8 +223,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeQueryMemory(tool: AITool): ToolResult {
+        private suspend fun executeQueryMemory(tool: AITool): ToolResult {
         val mode = resolveActiveMode()
         AppLogger.d(TAG, "query_memory executed in mode: $mode")
         val profileId = resolveActiveProfileId()
@@ -254,25 +237,20 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         val thresholdParam = MemoryQueryUtils.getStringParameter(tool, "threshold")
         val normalizedSnapshotId = snapshotIdParam?.trim()?.takeIf { it.isNotEmpty() }
         val threshold = thresholdParam?.trim()?.takeIf { it.isNotEmpty() }?.toDoubleOrNull()
-
         if (!thresholdParam.isNullOrBlank() && threshold == null) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid threshold. Expected a non-negative number.")
         }
-
         if (threshold != null && threshold < 0.0) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid threshold. Expected a non-negative number.")
         }
-
         val startTimeMs = parseTimeBoundary(startTimeParam, isEnd = false)
         if (!startTimeParam.isNullOrBlank() && startTimeMs == null) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid start_time. Expected format YYYY-MM-DD or YYYY-MM-DD HH:mm.")
         }
-
         val endTimeMs = parseTimeBoundary(endTimeParam, isEnd = true)
         if (!endTimeParam.isNullOrBlank() && endTimeMs == null) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid end_time. Expected format YYYY-MM-DD or YYYY-MM-DD HH:mm.")
         }
-
         if (startTimeMs != null && endTimeMs != null && startTimeMs > endTimeMs) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid time range: start_time must be <= end_time.")
         }
@@ -285,7 +263,6 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             DEFAULT_QUERY_LIMIT
         }
         val finalLimit = (limit ?: defaultLimit).coerceAtMost(MAX_WILDCARD_QUERY_LIMIT)
-
         if (query.isBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Query parameter cannot be empty.")
         }
@@ -298,7 +275,6 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             TAG,
             "Executing memory query: '${query}' in folder: '${folderPath ?: "All"}', snapshot_id=${snapshotState.id}, snapshot_created=${snapshotCreated}, start_time: ${startTimeMs ?: "null"}, end_time: ${endTimeMs ?: "null"}, limit: ${validLimit}, threshold=${threshold ?: DEFAULT_RELEVANCE_THRESHOLD}, mode=${settings.scoreMode}, keywordWeight=${settings.keywordWeight}, tagWeight=${settings.tagWeight}, vectorWeight=${settings.vectorWeight}, edgeWeight=${settings.edgeWeight}"
         )
-
         return try {
             val results = memoryRepository.searchMemories(
                 query = query,
@@ -317,16 +293,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             // Keep de-duplication stable even when multiple calls share the same snapshot in parallel.
     val (excludedBySnapshotCount, returnedMemories) = synchronized(snapshotState.lock) {
                 val excludedCount = results.count { it.id in snapshotState.seenMemoryIds }
-                val unseenResults = results.filterNot { it.id in snapshotState.seenMemoryIds }
-                val selectedResults = unseenResults.take(validLimit)
-                if (selectedResults.isNotEmpty()) {
+        val unseenResults = results.filterNot { it.id in snapshotState.seenMemoryIds }
+        val selectedResults = unseenResults.take(validLimit)
+        if (selectedResults.isNotEmpty()) {
                     snapshotState.seenMemoryIds.addAll(selectedResults.map { it.id })
                 }
                 snapshotState.lastAccessAtMs = System.currentTimeMillis()
                 excludedCount to selectedResults
             }
-
-            val formattedResult = buildResultData(
+        val formattedResult = buildResultData(
                 memories = returnedMemories,
                 query = query,
                 limit = validLimit,
@@ -341,8 +316,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Failed to execute memory query: ${e.message}")
         }
     }
-
-    private suspend fun executeGetMemoryByTitle(tool: AITool): ToolResult {
+        private suspend fun executeGetMemoryByTitle(tool: AITool): ToolResult {
         val title = MemoryQueryUtils.getStringParameter(tool, "title")
         if (title.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "title parameter is required")
@@ -355,10 +329,9 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         val chunkLimitParam = MemoryQueryUtils.getStringParameter(tool, "limit")
 
         AppLogger.d(TAG, "Getting memory by title: ${title}, chunk_index: ${chunkIndexParam}, chunk_range: ${chunkRangeParam}, query: ${queryParam}, limit: ${chunkLimitParam}")
-
         return try {
             val memory = memoryRepository.findMemoryByTitle(title)
-            if (memory == null) {
+        if (memory == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -390,8 +363,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun handleDocumentChunkRetrieval(
+        private suspend fun handleDocumentChunkRetrieval(
         toolName: String,
         memory: Memory,
         chunkIndexParam: String?,
@@ -413,7 +385,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 // 范围查询
                 !chunkRangeParam.isNullOrBlank() -> {
                     val rangeParts = chunkRangeParam.split("-")
-                    if (rangeParts.size != 2) {
+        if (rangeParts.size != 2) {
                         return@withContext ToolResult(
                             toolName = toolName,
                             success = false,
@@ -449,13 +421,12 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                         )
                     }
                     AppLogger.d(TAG, "Retrieving chunk ${chunkIndex + 1} from document '${memory.title}'")
-                    val chunk = memoryRepository.getChunkByIndex(memory.id, chunkIndex)
+        val chunk = memoryRepository.getChunkByIndex(memory.id, chunkIndex)
                     listOfNotNull(chunk)
                 }
                 else -> emptyList()
             }
-
-            if (chunks.isEmpty()) {
+        if (chunks.isEmpty()) {
                 return@withContext ToolResult(
                     toolName = toolName,
                     success = false,
@@ -469,9 +440,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 chunks.joinToString("\n---\n") { chunk ->
                     "Chunk ${chunk.chunkIndex + 1}/${totalChunks}:\n${chunk.content}"
                 }
-
-            val chunkIndices = chunks.map { it.chunkIndex }
-            val chunkInfo = if (chunks.size == 1) {
+        val chunkIndices = chunks.map { it.chunkIndex }
+        val chunkInfo = if (chunks.size == 1) {
                 "Chunk ${chunks[0].chunkIndex + 1}/${totalChunks}"
             } else {
                 "Chunks ${chunks.map { it.chunkIndex + 1 }.joinToString(", ")}/${totalChunks}"
@@ -501,32 +471,27 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeCreateMemory(tool: AITool): ToolResult {
+        private suspend fun executeCreateMemory(tool: AITool): ToolResult {
         val title = MemoryQueryUtils.getStringParameter(tool, "title") ?: ""
         val content = MemoryQueryUtils.getStringParameter(tool, "content") ?: ""
-        
         if (title.isBlank() || content.isBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Both title and content parameters are required")
         }
 
         AppLogger.d(TAG, "Creating memory: ${title}")
-
         return try {
             val contentType = MemoryQueryUtils.getStringParameter(tool, "content_type") ?: "text/plain"
-            val source = MemoryQueryUtils.getStringParameter(tool, "source") ?: "ai_created"
-            val folderPath = MemoryQueryUtils.getStringParameter(tool, "folder_path") ?: ""
-            val tagsParam = MemoryQueryUtils.getStringParameter(tool, "tags")
-            val tags = tagsParam
+        val source = MemoryQueryUtils.getStringParameter(tool, "source") ?: "ai_created"
+        val folderPath = MemoryQueryUtils.getStringParameter(tool, "folder_path") ?: ""
+        val tagsParam = MemoryQueryUtils.getStringParameter(tool, "tags")
+        val tags = tagsParam
                 ?.split(",")
                 ?.map { it.trim() }
                 ?.filter { it.isNotEmpty() }
                 ?.distinct()
-             
-            val mode = resolveActiveMode()
-            val enhancedTags = (tags ?: emptyList()) + "mode_${mode.name}"
-
-            val memory = memoryRepository.createMemory(
+        val mode = resolveActiveMode()
+        val enhancedTags = (tags ?: emptyList()) + "mode_${mode.name}"
+        val memory = memoryRepository.createMemory(
                 title = title,
                 content = content,
                 contentType = contentType,
@@ -534,8 +499,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 folderPath = folderPath,
                 tags = enhancedTags.distinct()
             )
-            
-            if (memory != null) {
+        if (memory != null) {
                 val message = "Successfully created memory: '${title}' (UUID: ${memory.uuid})"
                 AppLogger.d(TAG, message)
                 ToolResult(
@@ -561,19 +525,16 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeUpdateMemory(tool: AITool): ToolResult {
+        private suspend fun executeUpdateMemory(tool: AITool): ToolResult {
         val oldTitle = MemoryQueryUtils.getStringParameter(tool, "old_title")
-        
         if (oldTitle.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "old_title parameter is required to identify the memory")
         }
 
         AppLogger.d(TAG, "Updating memory with title: ${oldTitle}")
-
         return try {
             val memory = memoryRepository.findMemoryByTitle(oldTitle)
-            if (memory == null) {
+        if (memory == null) {
                 return MemoryQueryUtils.createErrorResult(tool.name, "Memory not found with title: ${oldTitle}")
             }
 
@@ -583,12 +544,11 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             val newContentType = MemoryQueryUtils.getStringParameter(tool, "content_type") ?: memory.contentType
             val newSource = MemoryQueryUtils.getStringParameter(tool, "source") ?: memory.source
             val newCredibility = MemoryQueryUtils.getFloatParameter(tool, "credibility", memory.credibility)
-            val newImportance = MemoryQueryUtils.getFloatParameter(tool, "importance", memory.importance)
-            val newFolderPath = MemoryQueryUtils.getStringParameter(tool, "folder_path") ?: memory.folderPath
+        val newImportance = MemoryQueryUtils.getFloatParameter(tool, "importance", memory.importance)
+        val newFolderPath = MemoryQueryUtils.getStringParameter(tool, "folder_path") ?: memory.folderPath
             val tagsParam = MemoryQueryUtils.getStringParameter(tool, "tags")
-            val newTags = tagsParam?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
-            
-            val updatedMemory = memoryRepository.updateMemory(
+        val newTags = tagsParam?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
+        val updatedMemory = memoryRepository.updateMemory(
                 memory = memory,
                 newTitle = newTitle,
                 newContent = newContent,
@@ -599,8 +559,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 newFolderPath = newFolderPath,
                 newTags = newTags
             )
-            
-            if (updatedMemory != null) {
+        if (updatedMemory != null) {
                 val message = "Successfully updated memory from '${oldTitle}' to '${newTitle}'"
                 AppLogger.d(TAG, message)
                 ToolResult(
@@ -626,25 +585,20 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeDeleteMemory(tool: AITool): ToolResult {
+        private suspend fun executeDeleteMemory(tool: AITool): ToolResult {
         val title = MemoryQueryUtils.getStringParameter(tool, "title")
-        
         if (title.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "title parameter is required to identify the memory")
         }
 
         AppLogger.d(TAG, "Deleting memory with title: ${title}")
-
         return try {
             val memory = memoryRepository.findMemoryByTitle(title)
-            if (memory == null) {
+        if (memory == null) {
                 return MemoryQueryUtils.createErrorResult(tool.name, "Memory not found with title: ${title}")
             }
-
-            val deleted = memoryRepository.deleteMemoryById(memory.id)
-            
-            if (deleted) {
+        val deleted = memoryRepository.deleteMemoryById(memory.id)
+        if (deleted) {
                 val message = "Successfully deleted memory: '${title}'"
                 AppLogger.d(TAG, message)
                 ToolResult(
@@ -670,18 +624,16 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeUpdateUserPreferences(tool: AITool): ToolResult {
+        private suspend fun executeUpdateUserPreferences(tool: AITool): ToolResult {
         AppLogger.d(TAG, "Executing update user preferences")
-
         return try {
             // 从参数中提取各项偏好设置
     val birthDate = MemoryQueryUtils.getStringParameter(tool, "birth_date")?.toLongOrNull()
-            val gender = MemoryQueryUtils.getStringParameter(tool, "gender")
-            val personality = MemoryQueryUtils.getStringParameter(tool, "personality")
-            val identity = MemoryQueryUtils.getStringParameter(tool, "identity")
-            val occupation = MemoryQueryUtils.getStringParameter(tool, "occupation")
-            val aiStyle = MemoryQueryUtils.getStringParameter(tool, "ai_style")
+        val gender = MemoryQueryUtils.getStringParameter(tool, "gender")
+        val personality = MemoryQueryUtils.getStringParameter(tool, "personality")
+        val identity = MemoryQueryUtils.getStringParameter(tool, "identity")
+        val occupation = MemoryQueryUtils.getStringParameter(tool, "occupation")
+        val aiStyle = MemoryQueryUtils.getStringParameter(tool, "ai_style")
 
             // 检查是否至少有一个参�?
     if (birthDate == null && gender == null && personality == null && 
@@ -705,16 +657,14 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     aiStyle = aiStyle
                 )
             }
-
-            val updatedFields = mutableListOf<String>()
+        val updatedFields = mutableListOf<String>()
             birthDate?.let { updatedFields.add("birth_date") }
             gender?.let { updatedFields.add("gender") }
             personality?.let { updatedFields.add("personality") }
             identity?.let { updatedFields.add("identity") }
             occupation?.let { updatedFields.add("occupation") }
             aiStyle?.let { updatedFields.add("ai_style") }
-
-            val message = "Successfully updated user preferences: ${updatedFields.joinToString(", ")}"
+        val message = "Successfully updated user preferences: ${updatedFields.joinToString(", ")}"
             AppLogger.d(TAG, message)
             
             ToolResult(
@@ -732,29 +682,26 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeLinkMemories(tool: AITool): ToolResult {
+        private suspend fun executeLinkMemories(tool: AITool): ToolResult {
         val sourceTitle = MemoryQueryUtils.getStringParameter(tool, "source_title")
         val targetTitle = MemoryQueryUtils.getStringParameter(tool, "target_title")
-        
         if (sourceTitle.isNullOrBlank() || targetTitle.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Both source_title and target_title parameters are required")
         }
 
         AppLogger.d(TAG, "Linking memories: '${sourceTitle}' -> '${targetTitle}'")
-
         return try {
             // 提取可选参�?
     val linkType = MemoryQueryUtils.getStringParameter(tool, "link_type") ?: "related"
-            val weight = MemoryQueryUtils.getFloatParameter(tool, "weight", MemoryQueryConfig.DEFAULT_LINK_WEIGHT)
-            val description = MemoryQueryUtils.getStringParameter(tool, "description") ?: ""
+        val weight = MemoryQueryUtils.getFloatParameter(tool, "weight", MemoryQueryConfig.DEFAULT_LINK_WEIGHT)
+        val description = MemoryQueryUtils.getStringParameter(tool, "description") ?: ""
             
             // 限制 weight 在有效范围内
     val validWeight = weight.coerceIn(0.0f, 1.0f)
             
             // 查找源记忆和目标记忆
     val sourceMemory = memoryRepository.findMemoryByTitle(sourceTitle)
-            if (sourceMemory == null) {
+        if (sourceMemory == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -762,9 +709,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     error = "Source memory not found with title: ${sourceTitle}"
                 )
             }
-            
-            val targetMemory = memoryRepository.findMemoryByTitle(targetTitle)
-            if (targetMemory == null) {
+        val targetMemory = memoryRepository.findMemoryByTitle(targetTitle)
+        if (targetMemory == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -781,8 +727,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 weight = validWeight,
                 description = description
             )
-            
-            val resultData = MemoryLinkResultData(
+        val resultData = MemoryLinkResultData(
                 sourceTitle = sourceTitle,
                 targetTitle = targetTitle,
                 linkType = linkType,
@@ -807,41 +752,35 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeQueryMemoryLinks(tool: AITool): ToolResult {
+        private suspend fun executeQueryMemoryLinks(tool: AITool): ToolResult {
         val linkIdRaw = MemoryQueryUtils.getStringParameter(tool, "link_id")
         val linkId = linkIdRaw?.toLongOrNull()
         if (!linkIdRaw.isNullOrBlank() && linkId == null) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid link_id. Expected integer.")
         }
-
         val sourceTitle = MemoryQueryUtils.getStringParameter(tool, "source_title")?.trim()
         val targetTitle = MemoryQueryUtils.getStringParameter(tool, "target_title")?.trim()
         val linkType = MemoryQueryUtils.getStringParameter(tool, "link_type")?.trim()?.takeIf { it.isNotEmpty() }
         val limit = MemoryQueryUtils.getIntParameter(tool, "limit", 20).coerceIn(1, 200)
-
         return try {
             val sourceMemoryId = if (!sourceTitle.isNullOrBlank()) {
                 memoryRepository.findMemoryByTitle(sourceTitle)?.id ?: return MemoryQueryUtils.createErrorResult(tool.name, "Source memory not found with title: ${sourceTitle}")
             } else {
                 null
             }
-
-            val targetMemoryId = if (!targetTitle.isNullOrBlank()) {
+        val targetMemoryId = if (!targetTitle.isNullOrBlank()) {
                 memoryRepository.findMemoryByTitle(targetTitle)?.id ?: return MemoryQueryUtils.createErrorResult(tool.name, "Target memory not found with title: ${targetTitle}")
             } else {
                 null
             }
-
-            val links = memoryRepository.queryMemoryLinks(
+        val links = memoryRepository.queryMemoryLinks(
                 linkId = linkId,
                 sourceMemoryId = sourceMemoryId,
                 targetMemoryId = targetMemoryId,
                 linkType = linkType,
                 limit = limit
             )
-
-            val linkInfos = links.mapNotNull { link ->
+        val linkInfos = links.mapNotNull { link ->
                 val source = link.source.target
                 val target = link.target.target
                 if (source == null || target == null) {
@@ -876,18 +815,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeMoveMemory(tool: AITool): ToolResult {
+        private suspend fun executeMoveMemory(tool: AITool): ToolResult {
         val targetFolderPath = MemoryQueryUtils.getStringParameter(tool, "target_folder_path")
         val sourceFolderPath = MemoryQueryUtils.getStringParameter(tool, "source_folder_path")
         val hasSourceFolderParam = sourceFolderPath != null
         val titlesRaw = MemoryQueryUtils.getStringParameter(tool, "titles")
         val titles = MemoryQueryUtils.parseTitlesParam(titlesRaw)
-
         if (targetFolderPath == null) {
             return MemoryQueryUtils.createErrorResult(tool.name, "target_folder_path parameter is required")
         }
-
         if (titles.isEmpty() && !hasSourceFolderParam) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Provide titles and/or source_folder_path to select memories to move")
         }
@@ -896,20 +832,18 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             TAG,
             "Moving memories. target_folder_path='${targetFolderPath}', source_folder_path='${sourceFolderPath ?: ""}', has_source_folder_param=${hasSourceFolderParam}, titles_count=${titles.size}"
         )
-
         return try {
             val selectedByTitle = if (titles.isNotEmpty()) {
                 titles.flatMap { title -> memoryRepository.findMemoriesByTitle(title) }
             } else {
                 emptyList()
             }
-            val selectedByFolder = if (hasSourceFolderParam) {
+        val selectedByFolder = if (hasSourceFolderParam) {
                 memoryRepository.getMemoriesByFolderPath(sourceFolderPath ?: "")
             } else {
                 emptyList()
             }
-
-            val selected = when {
+        val selected = when {
                 titles.isNotEmpty() && hasSourceFolderParam -> {
                     val folderIds = selectedByFolder.map { it.id }.toHashSet()
                     selectedByTitle.filter { folderIds.contains(it.id) }
@@ -917,12 +851,10 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 titles.isNotEmpty() -> selectedByTitle
                 else -> selectedByFolder
             }
-
-            val uniqueMemories = LinkedHashMap<Long, Memory>()
+        val uniqueMemories = LinkedHashMap<Long, Memory>()
             selected.forEach { uniqueMemories[it.id] = it }
-            val memoryIds = uniqueMemories.keys.toList()
-
-            if (memoryIds.isEmpty()) {
+        val memoryIds = uniqueMemories.keys.toList()
+        if (memoryIds.isEmpty()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -930,9 +862,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     error = "No matching memories found to move"
                 )
             }
-
-            val moved = memoryRepository.moveMemoriesToFolder(memoryIds, targetFolderPath)
-            if (!moved) {
+        val moved = memoryRepository.moveMemoriesToFolder(memoryIds, targetFolderPath)
+        if (!moved) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -940,8 +871,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     error = "Failed to move selected memories"
                 )
             }
-
-            val destination = if (targetFolderPath.isBlank()) "uncategorized" else targetFolderPath
+        val destination = if (targetFolderPath.isBlank()) "uncategorized" else targetFolderPath
             ToolResult(
                 toolName = tool.name,
                 success = true,
@@ -957,23 +887,17 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-
-
-    private suspend fun executeUpdateMemoryLink(tool: AITool): ToolResult {
+        private suspend fun executeUpdateMemoryLink(tool: AITool): ToolResult {
         val linkId = MemoryQueryUtils.getStringParameter(tool, "link_id")?.toLongOrNull()
         val sourceTitle = MemoryQueryUtils.getStringParameter(tool, "source_title")
         val targetTitle = MemoryQueryUtils.getStringParameter(tool, "target_title")
         val locatorLinkType = MemoryQueryUtils.getStringParameter(tool, "link_type")
-
         val newLinkType = MemoryQueryUtils.getStringParameter(tool, "new_link_type")
         val newWeight = MemoryQueryUtils.getFloatParameter(tool, "weight", -1f).takeIf { it >= 0 }
         val newDescription = MemoryQueryUtils.getStringParameter(tool, "description")
-
         if (newLinkType.isNullOrBlank() && newWeight == null && newDescription == null) {
             return MemoryQueryUtils.createErrorResult(tool.name, "At least one of new_link_type, weight, description must be provided")
         }
-
         return try {
             val link = if (linkId != null) {
                 memoryRepository.findLinkById(linkId)
@@ -981,17 +905,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 if (sourceTitle.isNullOrBlank() || targetTitle.isNullOrBlank()) {
                     return MemoryQueryUtils.createErrorResult(tool.name, "Provide link_id, or provide both source_title and target_title")
                 }
-
-                val sourceMemory = memoryRepository.findMemoryByTitle(sourceTitle)
+        val sourceMemory = memoryRepository.findMemoryByTitle(sourceTitle)
                     ?: return MemoryQueryUtils.createErrorResult(tool.name, "Source memory not found with title: ${sourceTitle}")
-                val targetMemory = memoryRepository.findMemoryByTitle(targetTitle)
+        val targetMemory = memoryRepository.findMemoryByTitle(targetTitle)
                     ?: return MemoryQueryUtils.createErrorResult(tool.name, "Target memory not found with title: ${targetTitle}")
-
-                val candidates = sourceMemory.links.filter {
+        val candidates = sourceMemory.links.filter {
                     it.target.target?.id == targetMemory.id &&
                         (locatorLinkType.isNullOrBlank() || it.type == locatorLinkType)
                 }
-                when {
+        when {
                     candidates.isEmpty() -> null
                     candidates.size > 1 -> {
                         return MemoryQueryUtils.createErrorResult(tool.name, "Multiple links matched. Provide link_id or a more specific link_type.")
@@ -999,19 +921,16 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     else -> candidates.first()
                 }
             }
-
-            if (link == null) {
+        if (link == null) {
                 return MemoryQueryUtils.createErrorResult(tool.name, if (linkId != null) "Link not found with id: ${linkId}" else "No matching link found")
             }
-
-            val updated = memoryRepository.updateLink(
+        val updated = memoryRepository.updateLink(
                 linkId = link.id,
                 type = newLinkType ?: link.type,
                 weight = (newWeight ?: link.weight).coerceIn(0.0f, 1.0f),
                 description = newDescription ?: link.description
             )
-
-            if (updated == null) {
+        if (updated == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1019,9 +938,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     error = "Failed to update memory link"
                 )
             }
-
-            val source = updated.source.target?.title ?: sourceTitle ?: ""
-            val target = updated.target.target?.title ?: targetTitle ?: ""
+        val source = updated.source.target?.title ?: sourceTitle ?: ""
+        val target = updated.target.target?.title ?: targetTitle ?: ""
 
             ToolResult(
                 toolName = tool.name,
@@ -1044,13 +962,11 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeDeleteMemoryLink(tool: AITool): ToolResult {
+        private suspend fun executeDeleteMemoryLink(tool: AITool): ToolResult {
         val linkId = MemoryQueryUtils.getStringParameter(tool, "link_id")?.toLongOrNull()
         val sourceTitle = MemoryQueryUtils.getStringParameter(tool, "source_title")
         val targetTitle = MemoryQueryUtils.getStringParameter(tool, "target_title")
         val locatorLinkType = MemoryQueryUtils.getStringParameter(tool, "link_type")
-
         return try {
             val resolvedLinkId = if (linkId != null) {
                 linkId
@@ -1058,18 +974,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 if (sourceTitle.isNullOrBlank() || targetTitle.isNullOrBlank()) {
                     return MemoryQueryUtils.createErrorResult(tool.name, "Provide link_id, or provide both source_title and target_title")
                 }
-
-                val sourceMemory = memoryRepository.findMemoryByTitle(sourceTitle)
+        val sourceMemory = memoryRepository.findMemoryByTitle(sourceTitle)
                     ?: return MemoryQueryUtils.createErrorResult(tool.name, "Source memory not found with title: ${sourceTitle}")
-                val targetMemory = memoryRepository.findMemoryByTitle(targetTitle)
+        val targetMemory = memoryRepository.findMemoryByTitle(targetTitle)
                     ?: return MemoryQueryUtils.createErrorResult(tool.name, "Target memory not found with title: ${targetTitle}")
-
-                val candidates = sourceMemory.links.filter {
+        val candidates = sourceMemory.links.filter {
                     it.target.target?.id == targetMemory.id &&
                         (locatorLinkType.isNullOrBlank() || it.type == locatorLinkType)
                 }
-
-                when {
+        when {
                     candidates.isEmpty() -> {
                         return MemoryQueryUtils.createErrorResult(tool.name, "No matching link found")
                     }
@@ -1079,9 +992,8 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     else -> candidates.first().id
                 }
             }
-
-            val deleted = memoryRepository.deleteLink(resolvedLinkId)
-            if (!deleted) {
+        val deleted = memoryRepository.deleteLink(resolvedLinkId)
+        if (!deleted) {
                 return MemoryQueryUtils.createErrorResult(tool.name, "Failed to delete memory link with id: ${resolvedLinkId}")
             }
 
@@ -1091,8 +1003,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "Failed to delete memory link: ${e.message}")
         }
     }
-
-    private suspend fun buildResultData(
+        private suspend fun buildResultData(
         memories: List<Memory>,
         query: String,
         limit: Int,
@@ -1112,10 +1023,9 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (memory.isDocumentNode) {
                 // 对于文档节点，执？二次探�?，获取匹配的区块内容
                 AppLogger.d(TAG, "Memory result is a document ('${memory.title}'). Fetching specific matching chunks for query: '${query}'")
-                val matchingChunks = memoryRepository.searchChunksInDocument(memory.id, query, limit)
-                val totalChunks = memoryRepository.getTotalChunkCount(memory.id)
-
-                if (matchingChunks.isNotEmpty()) {
+        val matchingChunks = memoryRepository.searchChunksInDocument(memory.id, query, limit)
+        val totalChunks = memoryRepository.getTotalChunkCount(memory.id)
+        if (matchingChunks.isNotEmpty()) {
                     // 收集分块索引（使�?based显示�?
                     chunkIndices = matchingChunks.map { it.chunkIndex }
                     
@@ -1125,8 +1035,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     } else {
                         "Chunks ${matchingChunks.map { it.chunkIndex + 1 }.take(MemoryQueryConfig.MAX_CHUNKS_DISPLAYED).joinToString(", ")}/${totalChunks}"
                     }
-                    
-                    if (isTruncatedMode) {
+        if (isTruncatedMode) {
                         // 截断模式：只显示文档标题和分块信�?
                         content = "Document: ${memory.title} (${totalChunks} chunks)"
                     } else {
@@ -1173,25 +1082,21 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 chunkIndices = chunkIndices
         )
     }
-
-    private suspend fun executeFindDuplicateMemories(tool: AITool): ToolResult {
+        private suspend fun executeFindDuplicateMemories(tool: AITool): ToolResult {
         val threshold = MemoryQueryUtils.getFloatParameter(tool, "similarity_threshold", MemoryQueryConfig.DEFAULT_SIMILARITY_THRESHOLD)
-
         if (threshold < 0.0f || threshold > 1.0f) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid similarity_threshold. Must be between 0.0 and 1.0.")
         }
-
         return try {
             val duplicateGroups = memoryRepository.findDuplicateMemories(threshold)
-            if (duplicateGroups.isEmpty()) {
+        if (duplicateGroups.isEmpty()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = true,
                     result = StringResultData("No duplicate memories found.")
                 )
             }
-
-            val resultContent = buildString {
+        val resultContent = buildString {
                 appendLine("Found ${duplicateGroups.size} duplicate memory groups:")
                 duplicateGroups.forEachIndexed { index, group ->
                     appendLine("\nGroup ${index + 1} (${group.size} memories):")
@@ -1216,20 +1121,16 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeMergeDuplicateMemories(tool: AITool): ToolResult {
+        private suspend fun executeMergeDuplicateMemories(tool: AITool): ToolResult {
         val sourceTitlesParam = MemoryQueryUtils.getStringParameter(tool, "source_titles")
         val targetTitle = MemoryQueryUtils.getStringParameter(tool, "target_title")
         val targetContent = MemoryQueryUtils.getStringParameter(tool, "target_content")
         val keepTags = MemoryQueryUtils.getBooleanParameter(tool, "keep_tags", true)
         val keepLinks = MemoryQueryUtils.getBooleanParameter(tool, "keep_links", true)
-
         if (sourceTitlesParam.isNullOrBlank() || targetTitle.isNullOrBlank() || targetContent.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "source_titles, target_title, target_content are required parameters.")
         }
-
         val sourceTitles = sourceTitlesParam.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-
         return try {
             val mergedMemory = memoryRepository.mergeDuplicateMemories(
                 sourceTitles = sourceTitles,
@@ -1238,8 +1139,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 keepTags = keepTags,
                 keepLinks = keepLinks
             )
-
-            if (mergedMemory == null) {
+        if (mergedMemory == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1247,17 +1147,16 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     error = "Failed to merge memories. Please check if source titles are valid."
                 )
             }
-
-            val message = "Successfully merged ${sourceTitles.size} memories into new memory: '${targetTitle}' (UUID: ${mergedMemory.uuid})"
+        val message = "Successfully merged ${sourceTitles.size} memories into new memory: '${targetTitle}' (UUID: ${mergedMemory.uuid})"
             AppLogger.d(TAG, message)
-            return ToolResult(
+        return ToolResult(
                 toolName = tool.name,
                 success = true,
                 result = StringResultData(message)
             )
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to merge memories", e)
-            return ToolResult(
+        return ToolResult(
                 toolName = tool.name,
                 success = false,
                 result = StringResultData(""),
@@ -1265,20 +1164,16 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeRecoverDeletedMemory(tool: AITool): ToolResult {
+        private suspend fun executeRecoverDeletedMemory(tool: AITool): ToolResult {
         val memoryUuid = MemoryQueryUtils.getStringParameter(tool, "memory_uuid")
-
         if (memoryUuid.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Missing or empty required parameter: memory_uuid")
         }
-
         return try {
             val profileId = resolveActiveProfileId()
-            val repository = MemoryRepository(context, profileId)
-            val recoveredMemory = repository.recoverDeletedMemory(memoryUuid)
-
-            if (recoveredMemory == null) {
+        val repository = MemoryRepository(context, profileId)
+        val recoveredMemory = repository.recoverDeletedMemory(memoryUuid)
+        if (recoveredMemory == null) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1286,8 +1181,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     error = "No deleted memory found with UUID: ${memoryUuid}"
                 )
             }
-
-            val message = "Successfully recovered deleted memory: '${recoveredMemory.title}' (UUID: ${recoveredMemory.uuid})"
+        val message = "Successfully recovered deleted memory: '${recoveredMemory.title}' (UUID: ${recoveredMemory.uuid})"
             AppLogger.d(TAG, message)
             ToolResult(
                 toolName = tool.name,
@@ -1304,23 +1198,18 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeRollbackMemoryToTime(tool: AITool): ToolResult {
+        private suspend fun executeRollbackMemoryToTime(tool: AITool): ToolResult {
         val targetTimeParam = MemoryQueryUtils.getStringParameter(tool, "target_time")
-
         if (targetTimeParam.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Missing or empty required parameter: target_time")
         }
-
         return try {
             val targetTime = parseDateTime(targetTimeParam)
                 ?: return MemoryQueryUtils.createErrorResult(tool.name, "Invalid time format. Expected: YYYY-MM-DD HH:mm")
-
-            val profileId = resolveActiveProfileId()
-            val repository = MemoryRepository(context, profileId)
-            val success = repository.rollbackToTimepoint(targetTime)
-
-            if (!success) {
+        val profileId = resolveActiveProfileId()
+        val repository = MemoryRepository(context, profileId)
+        val success = repository.rollbackToTimepoint(targetTime)
+        if (!success) {
                 return ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -1328,8 +1217,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     error = "Failed to rollback. No WAL logs found before target time."
                 )
             }
-
-            val message = "Successfully rolled back memory library to: ${targetTimeParam}"
+        val message = "Successfully rolled back memory library to: ${targetTimeParam}"
             AppLogger.d(TAG, message)
             ToolResult(
                 toolName = tool.name,
@@ -1346,37 +1234,32 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeQueryOperationLogs(tool: AITool): ToolResult {
+        private suspend fun executeQueryOperationLogs(tool: AITool): ToolResult {
         val operationType = MemoryQueryUtils.getStringParameter(tool, "operation_type")
         val startTimeParam = MemoryQueryUtils.getStringParameter(tool, "start_time")
         val endTimeParam = MemoryQueryUtils.getStringParameter(tool, "end_time")
         val limit = MemoryQueryUtils.getIntParameter(tool, "limit", 100)
-
         return try {
             val startTime = startTimeParam?.let { parseDateTime(it) }
-            val endTime = endTimeParam?.let { parseDateTime(it) }
-
-            val profileId = resolveActiveProfileId()
-            val repository = MemoryRepository(context, profileId)
-            val logs = repository.queryWALLogs(
+        val endTime = endTimeParam?.let { parseDateTime(it) }
+        val profileId = resolveActiveProfileId()
+        val repository = MemoryRepository(context, profileId)
+        val logs = repository.queryWALLogs(
                 operationType = operationType?.takeIf { it.isNotBlank() },
                 startTime = startTime,
                 endTime = endTime,
                 limit = limit
             )
-
-            if (logs.isEmpty()) {
+        if (logs.isEmpty()) {
                 return MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("No operation logs found matching the criteria."))
             }
-
-            val resultContent = buildString {
+        val resultContent = buildString {
                 appendLine("Found ${logs.size} operation logs:")
                 logs.take(20).forEach { wal ->
                     appendLine("\n- ${wal.operationType}: ${wal.memoryUuid} at ${wal.operatedAt}")
                     appendLine("  Remark: ${wal.remark}")
                 }
-                if (logs.size > 20) {
+        if (logs.size > 20) {
                     appendLine("\n... and ${logs.size - 20} more logs")
                 }
             }
@@ -1396,8 +1279,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private fun parseDateTime(dateTimeStr: String): Date? {
+        private fun parseDateTime(dateTimeStr: String): Date? {
         return try {
             val formats = listOf(
                 java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()),
@@ -1416,21 +1298,17 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             null
         }
     }
-
-    private suspend fun executeFindPathBetweenMemories(tool: AITool): ToolResult {
+        private suspend fun executeFindPathBetweenMemories(tool: AITool): ToolResult {
         val sourceTitle = MemoryQueryUtils.getStringParameter(tool, "source_title")
         val targetTitle = MemoryQueryUtils.getStringParameter(tool, "target_title")
         val maxHops = MemoryQueryUtils.getIntParameter(tool, "max_hops", 3)
         val maxPaths = MemoryQueryUtils.getIntParameter(tool, "max_paths", MemoryQueryConfig.MAX_PATHS_FOR_PATH_FINDING)
-
         if (sourceTitle.isNullOrBlank() || targetTitle.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "source_title and target_title are required parameters.")
         }
-
         if (maxHops < 1 || maxHops > MemoryQueryConfig.MAX_HOPS_FOR_PATH_FINDING) {
             return MemoryQueryUtils.createErrorResult(tool.name, "max_hops must be between 1 and ${MemoryQueryConfig.MAX_HOPS_FOR_PATH_FINDING}.")
         }
-
         return try {
             val paths = memoryRepository.findPathsBetweenMemories(
                 sourceTitle = sourceTitle,
@@ -1438,16 +1316,14 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 maxHops = maxHops,
                 maxPaths = maxPaths
             )
-
-            if (paths.isEmpty()) {
+        if (paths.isEmpty()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = true,
                     result = StringResultData("No paths found between '${sourceTitle}' and '${targetTitle}' within ${maxHops} hops.")
                 )
             }
-
-            val resultContent = buildString {
+        val resultContent = buildString {
                 appendLine("Found ${paths.size} path(s) between '${sourceTitle}' and '${targetTitle}':")
                 paths.forEachIndexed { pathIndex, path ->
                     appendLine("\nPath ${pathIndex + 1} (${path.size - 1} hops):")
@@ -1473,39 +1349,33 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeFindGraphRelatedMemories(tool: AITool): ToolResult {
+        private suspend fun executeFindGraphRelatedMemories(tool: AITool): ToolResult {
         val queryTitle = MemoryQueryUtils.getStringParameter(tool, "query_title")
         val maxHops = MemoryQueryUtils.getIntParameter(tool, "max_hops", 2)
         val minWeight = MemoryQueryUtils.getFloatParameter(tool, "min_weight", 0.5f)
-
         if (queryTitle.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "query_title is a required parameter.")
         }
-
         if (maxHops < 1 || maxHops > MemoryQueryConfig.MAX_HOPS_FOR_GRAPH_RELATED) {
             return MemoryQueryUtils.createErrorResult(tool.name, "max_hops must be between 1 and ${MemoryQueryConfig.MAX_HOPS_FOR_GRAPH_RELATED}.")
         }
         if (minWeight < 0.0f || minWeight > 1.0f) {
             return MemoryQueryUtils.createErrorResult(tool.name, "min_weight must be between 0.0 and 1.0.")
         }
-
         return try {
             val relatedMemories = memoryRepository.findGraphRelatedMemories(
                 queryTitle = queryTitle,
                 maxHops = maxHops,
                 minWeight = minWeight
             )
-
-            if (relatedMemories.isEmpty()) {
+        if (relatedMemories.isEmpty()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = true,
                     result = StringResultData("No graph-related memories found for '${queryTitle}'.")
                 )
             }
-
-            val resultContent = buildString {
+        val resultContent = buildString {
                 appendLine("Found ${relatedMemories.size} graph-related memories for '${queryTitle}':")
                 relatedMemories.forEachIndexed { index, memory ->
                     appendLine("${index + 1}. ${memory.title}")
@@ -1527,23 +1397,19 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeExportMemoriesToMarkdown(tool: AITool): ToolResult {
+        private suspend fun executeExportMemoriesToMarkdown(tool: AITool): ToolResult {
         val outputDirPath = MemoryQueryUtils.getStringParameter(tool, "output_directory")
         val includeMetadata = MemoryQueryUtils.getBooleanParameter(tool, "include_metadata", true)
-
         if (outputDirPath.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "output_directory is a required parameter.")
         }
         val outputDir = File(outputDirPath)
-
         return try {
             val exportedCount = memoryRepository.exportMemoriesToMarkdown(
                 outputDir = outputDir,
                 includeMetadata = includeMetadata
             )
-
-            val message = "Successfully exported ${exportedCount} memories to Markdown in: ${outputDir.absolutePath}"
+        val message = "Successfully exported ${exportedCount} memories to Markdown in: ${outputDir.absolutePath}"
             AppLogger.d(TAG, message)
             ToolResult(
                 toolName = tool.name,
@@ -1560,20 +1426,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeExportGraphToOPML(tool: AITool): ToolResult {
+        private suspend fun executeExportGraphToOPML(tool: AITool): ToolResult {
         val outputFilePath = MemoryQueryUtils.getStringParameter(tool, "output_file")
-
         if (outputFilePath.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "output_file is a required parameter.")
         }
-
         val outputFile = File(outputFilePath)
-
         return try {
             val success = memoryRepository.exportMemoriesToOPML(outputFile)
-
-            if (success) {
+        if (success) {
                 val message = "Successfully exported knowledge graph to OPML: ${outputFile.absolutePath}"
                 AppLogger.d(TAG, message)
                 ToolResult(
@@ -1599,34 +1460,28 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeChainOfThoughtSearch(tool: AITool): ToolResult {
+        private suspend fun executeChainOfThoughtSearch(tool: AITool): ToolResult {
         val query = MemoryQueryUtils.getStringParameter(tool, "query")
         val maxSteps = MemoryQueryUtils.getIntParameter(tool, "max_steps", 3)
-
         if (query.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "query is a required parameter.")
         }
-
         if (maxSteps < 1 || maxSteps > MemoryQueryConfig.MAX_STEPS_FOR_CHAIN_OF_THOUGHT) {
             return MemoryQueryUtils.createErrorResult(tool.name, "max_steps must be between 1 and ${MemoryQueryConfig.MAX_STEPS_FOR_CHAIN_OF_THOUGHT}.")
         }
-
         return try {
             val cotResult = memoryRepository.chainOfThoughtSearch(
                 originalQuery = query,
                 maxSteps = maxSteps
             )
-
-            if (cotResult.allRelevantMemories.isEmpty()) {
+        if (cotResult.allRelevantMemories.isEmpty()) {
                 return ToolResult(
                     toolName = tool.name,
                     success = true,
                     result = StringResultData("No relevant memories found via Chain-of-Thought search.")
                 )
             }
-
-            val resultContent = buildString {
+        val resultContent = buildString {
                 appendLine("=== Chain-of-Thought Search Result ===")
                 appendLine("Original Query: '${query}'")
                 appendLine("Total Steps: ${cotResult.steps.size}")
@@ -1637,12 +1492,12 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                     appendLine("--- Step ${step.stepNumber} ---")
                     appendLine("Query: '${step.query}'")
                     appendLine("Reasoning: ${step.reasoning}")
-                    if (step.foundMemories.isNotEmpty()) {
+        if (step.foundMemories.isNotEmpty()) {
                         appendLine("Found Memories:")
                         step.foundMemories.take(3).forEach { memory ->
                             appendLine("- ${memory.title}")
                         }
-                        if (step.foundMemories.size > 3) {
+        if (step.foundMemories.size > 3) {
                             appendLine("  ... and ${step.foundMemories.size - 3} more")
                         }
                     }
@@ -1653,7 +1508,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 cotResult.allRelevantMemories.take(10).forEachIndexed { index, memory ->
                     appendLine("${index + 1}. ${memory.title}")
                 }
-                if (cotResult.allRelevantMemories.size > 10) {
+        if (cotResult.allRelevantMemories.size > 10) {
                     appendLine("... and ${cotResult.allRelevantMemories.size - 10} more")
                 }
             }
@@ -1673,21 +1528,16 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-
-    private suspend fun executeSolidifyHighValueMemories(tool: AITool): ToolResult {
+        private suspend fun executeSolidifyHighValueMemories(tool: AITool): ToolResult {
         val importanceThreshold = MemoryQueryUtils.getFloatParameter(tool, "importance_threshold", MemoryQueryConfig.DEFAULT_IMPORTANCE_THRESHOLD)
-
         if (importanceThreshold < 0.0f || importanceThreshold > 1.0f) {
             return MemoryQueryUtils.createErrorResult(tool.name, "Invalid importance_threshold. Must be between 0.0 and 1.0.")
         }
-
         return try {
             val solidifiedCount = memoryRepository.solidifyHighValueMemories(
                 importanceThreshold = importanceThreshold
             )
-
-            if (solidifiedCount == 0) {
+        if (solidifiedCount == 0) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -1710,19 +1560,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeExportEnvironmentMemoryToMarkdown(tool: AITool): ToolResult {
+        private suspend fun executeExportEnvironmentMemoryToMarkdown(tool: AITool): ToolResult {
         val outputPath = MemoryQueryUtils.getStringParameter(tool, "output_path")
-
         if (outputPath.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "output_path is a required parameter.")
         }
-
         return try {
             val outputFile = java.io.File(outputPath)
-            val success = memoryRepository.exportEnvironmentMemoryToMarkdown(outputFile)
-
-            if (success) {
+        val success = memoryRepository.exportEnvironmentMemoryToMarkdown(outputFile)
+        if (success) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -1746,19 +1592,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeExportUserProfileToMarkdown(tool: AITool): ToolResult {
+        private suspend fun executeExportUserProfileToMarkdown(tool: AITool): ToolResult {
         val outputPath = MemoryQueryUtils.getStringParameter(tool, "output_path")
-
         if (outputPath.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "output_path is a required parameter.")
         }
-
         return try {
             val outputFile = java.io.File(outputPath)
-            val success = memoryRepository.exportUserProfileToMarkdown(outputFile)
-
-            if (success) {
+        val success = memoryRepository.exportUserProfileToMarkdown(outputFile)
+        if (success) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -1782,12 +1624,10 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-
-    private suspend fun executeHonzonUpdateProfile(tool: AITool): ToolResult {
+        private suspend fun executeHonzonUpdateProfile(tool: AITool): ToolResult {
         val userId = MemoryQueryUtils.getStringParameter(tool, "user_id")
         val dimension = MemoryQueryUtils.getStringParameter(tool, "dimension")
         val content = MemoryQueryUtils.getStringParameter(tool, "content")
-        
         if (userId.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "user_id是必需参数")
         }
@@ -1797,10 +1637,9 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         if (content.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "content是必需参数")
         }
-        
         return try {
             val success = memoryRepository.updateHonzonProfile(userId, dimension, content)
-            if (success) {
+        if (success) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -1824,19 +1663,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-    
-    private suspend fun executeHonzonGetProfile(tool: AITool): ToolResult {
+        private suspend fun executeHonzonGetProfile(tool: AITool): ToolResult {
         val userId = MemoryQueryUtils.getStringParameter(tool, "user_id")
-        
         if (userId.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "user_id是必需参数")
         }
-        
         return try {
             val profile = memoryRepository.getHonzonProfile(userId)
-            val nonEmptyDimensions = profile.getNonEmptyDimensions()
-            
-            if (nonEmptyDimensions.isEmpty()) {
+        val nonEmptyDimensions = profile.getNonEmptyDimensions()
+        if (nonEmptyDimensions.isEmpty()) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -1862,11 +1697,10 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-    
-    private suspend fun executeHonzonGetDimensions(tool: AITool): ToolResult {
+        private suspend fun executeHonzonGetDimensions(tool: AITool): ToolResult {
         return try {
             val dimensions = memoryRepository.getHonzonDimensions()
-            val dimensionsStr = dimensions.joinToString("\n") { 
+        val dimensionsStr = dimensions.joinToString("\n") { 
                 "- ${it}"
             }
             MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("Honzon用户画像维度（共${dimensions.size}个）：\n${dimensionsStr}"))
@@ -1875,45 +1709,38 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "获取维度列表失败�?{e.message}")
         }
     }
-    
-    private suspend fun executeHonzonGenerateStrategy(tool: AITool): ToolResult {
+        private suspend fun executeHonzonGenerateStrategy(tool: AITool): ToolResult {
         val userId = MemoryQueryUtils.getStringParameter(tool, "user_id")
         val taskType = MemoryQueryUtils.getStringParameter(tool, "task_type")
-        
         if (userId.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "user_id是必需参数")
         }
         if (taskType.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "task_type是必需参数")
         }
-        
         return try {
             val profile = memoryRepository.getHonzonProfile(userId)
-            val prompt = memoryRepository.generatePersonalizedStrategyPrompt(profile, taskType)
+        val prompt = memoryRepository.generatePersonalizedStrategyPrompt(profile, taskType)
             MemoryQueryUtils.createSuccessResult(tool.name, StringResultData(prompt))
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to generate personalized strategy", e)
             MemoryQueryUtils.createErrorResult(tool.name, "生成个性化策略失败�?{e.message}")
         }
     }
-    
-    private suspend fun executeSkillExtract(tool: AITool): ToolResult {
+        private suspend fun executeSkillExtract(tool: AITool): ToolResult {
         val agentBehavior = MemoryQueryUtils.getStringParameter(tool, "agent_behavior")
         val taskType = MemoryQueryUtils.getStringParameter(tool, "task_type")
         val errorCases = MemoryQueryUtils.getStringParameter(tool, "error_cases")
-        
         if (agentBehavior.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "agent_behavior是必需参数")
         }
         if (taskType.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "task_type是必需参数")
         }
-        
         return try {
             val behaviorList = agentBehavior.split("\n").filter { it.isNotBlank() }
-            val errorCasesList = errorCases?.split("\n")?.filter { it.isNotBlank() } ?: emptyList()
-            
-            val skillPath = skillEvolutionManager.extractSkill(
+        val errorCasesList = errorCases?.split("\n")?.filter { it.isNotBlank() } ?: emptyList()
+        val skillPath = skillEvolutionManager.extractSkill(
                 agentBehavior = behaviorList,
                 taskType = taskType,
                 errorCases = errorCasesList
@@ -1925,12 +1752,10 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "技能萃取失败：${e.message}")
         }
     }
-    
-    private suspend fun executeSkillEvolve(tool: AITool): ToolResult {
+        private suspend fun executeSkillEvolve(tool: AITool): ToolResult {
         val skillId = MemoryQueryUtils.getStringParameter(tool, "skill_id")
         val newBehavior = MemoryQueryUtils.getStringParameter(tool, "new_behavior")
         val newErrorCases = MemoryQueryUtils.getStringParameter(tool, "new_error_cases")
-        
         if (skillId.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "skill_id是必需参数")
         }
@@ -1940,12 +1765,10 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         if (newErrorCases.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "new_error_cases是必需参数")
         }
-        
         return try {
             val behaviorList = newBehavior.split("\n").filter { it.isNotBlank() }
-            val errorCasesList = newErrorCases.split("\n").filter { it.isNotBlank() }
-            
-            val skillPath = skillEvolutionManager.evolveSkill(
+        val errorCasesList = newErrorCases.split("\n").filter { it.isNotBlank() }
+        val skillPath = skillEvolutionManager.evolveSkill(
                 skillId = skillId,
                 newBehavior = behaviorList,
                 newErrorCases = errorCasesList
@@ -1957,16 +1780,13 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "技能迭代失败：${e.message}")
         }
     }
-    
-    private suspend fun executeSkillGetAll(tool: AITool): ToolResult {
+        private suspend fun executeSkillGetAll(tool: AITool): ToolResult {
         return try {
             val skills = skillEvolutionManager.getAllSkills()
-            
-            if (skills.isEmpty()) {
+        if (skills.isEmpty()) {
                 return MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("暂无技能数据）)
             }
-            
-            val skillsStr = skills.joinToString("\n\n") { skill ->
+        val skillsStr = skills.joinToString("\n\n") { skill ->
                 "技能ID??{skill.skillId}\n" +
                 "任务类型�?{skill.taskType}\n" +
                 "版本�?{skill.version}\n" +
@@ -1981,22 +1801,17 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "获取技能列表失败：${e.message}")
         }
     }
-    
-    private suspend fun executeSkillGet(tool: AITool): ToolResult {
+        private suspend fun executeSkillGet(tool: AITool): ToolResult {
         val skillId = MemoryQueryUtils.getStringParameter(tool, "skill_id")
-        
         if (skillId.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "skill_id是必需参数")
         }
-        
         return try {
             val skill = skillEvolutionManager.getSkill(skillId)
-            
-            if (skill == null) {
+        if (skill == null) {
                 return MemoryQueryUtils.createErrorResult(tool.name, "技能不存在")
             }
-            
-            val skillStr = """
+        val skillStr = """
 技能ID??{skill.skillId}
 任务类型�?{skill.taskType}
 版本�?{skill.version}
@@ -2015,18 +1830,14 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "获取技能失败：${e.message}")
         }
     }
-    
-    private suspend fun executeSkillDelete(tool: AITool): ToolResult {
+        private suspend fun executeSkillDelete(tool: AITool): ToolResult {
         val skillId = MemoryQueryUtils.getStringParameter(tool, "skill_id")
-        
         if (skillId.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "skill_id是必需参数")
         }
-        
         return try {
             val success = skillEvolutionManager.deleteSkill(skillId)
-            
-            if (success) {
+        if (success) {
                 MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("技能删除成功）)
             } else {
                 MemoryQueryUtils.createErrorResult(tool.name, "技能不存在")
@@ -2036,14 +1847,12 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "删除技能失败：${e.message}")
         }
     }
-    
-    private suspend fun executeApexAgentEvolutionLoop(tool: AITool): ToolResult {
+        private suspend fun executeApexAgentEvolutionLoop(tool: AITool): ToolResult {
         val agentBehavior = MemoryQueryUtils.getStringParameter(tool, "agent_behavior")
         val taskType = MemoryQueryUtils.getStringParameter(tool, "task_type")
         val taskGoal = MemoryQueryUtils.getStringParameter(tool, "task_goal")
         val userId = MemoryQueryUtils.getStringParameter(tool, "user_id")
         val errorCases = MemoryQueryUtils.getStringParameter(tool, "error_cases")
-        
         if (agentBehavior.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "agent_behavior是必需参数")
         }
@@ -2056,20 +1865,17 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         if (userId.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "user_id是必需参数")
         }
-        
         return try {
             val behaviorList = agentBehavior.split("\n").filter { it.isNotBlank() }
-            val errorCasesList = errorCases?.split("\n")?.filter { it.isNotBlank() } ?: emptyList()
-            
-            val result = evolutionEngine.completeEvolutionLoop(
+        val errorCasesList = errorCases?.split("\n")?.filter { it.isNotBlank() } ?: emptyList()
+        val result = evolutionEngine.completeEvolutionLoop(
                 agentBehavior = behaviorList,
                 taskType = taskType,
                 taskGoal = taskGoal,
                 userId = userId,
                 errorCases = errorCasesList
             )
-            
-            val resultStr = """
+        val resultStr = """
 === logistra 多智能体自优化结�?==
 优化后策略：${result.optimizedStrategy.take(200)}...
 沉淀技能路径：${result.skillPath}
@@ -2084,35 +1890,30 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "执行进化闭环失败�?{e.message}")
         }
     }
-    
-    private suspend fun executeApexAgentEvaluateEffect(tool: AITool): ToolResult {
+        private suspend fun executeApexAgentEvaluateEffect(tool: AITool): ToolResult {
         val agentBehavior = MemoryQueryUtils.getStringParameter(tool, "agent_behavior")
         val taskGoal = MemoryQueryUtils.getStringParameter(tool, "task_goal")
-        
         if (agentBehavior.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "agent_behavior是必需参数")
         }
         if (taskGoal.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "task_goal是必需参数")
         }
-        
         return try {
             val behaviorList = agentBehavior.split("\n").filter { it.isNotBlank() }
-            val score = evolutionEngine.evaluateEffect(behaviorList, taskGoal)
+        val score = evolutionEngine.evaluateEffect(behaviorList, taskGoal)
             
-            MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("执行效果评分？score（满�?分）"))
+            MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("执行效果评分？score（满�分）"))
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to evaluate effect", e)
             MemoryQueryUtils.createErrorResult(tool.name, "评估执行效果失败�?{e.message}")
         }
     }
-    
-    private suspend fun executeApexAgentOptimizeStrategy(tool: AITool): ToolResult {
+        private suspend fun executeApexAgentOptimizeStrategy(tool: AITool): ToolResult {
         val taskType = MemoryQueryUtils.getStringParameter(tool, "task_type")
         val userId = MemoryQueryUtils.getStringParameter(tool, "user_id")
         val currentStrategy = MemoryQueryUtils.getStringParameter(tool, "current_strategy")
         val effectScoreStr = MemoryQueryUtils.getStringParameter(tool, "effect_score")
-        
         if (taskType.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "task_type是必需参数")
         }
@@ -2125,10 +1926,9 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
         if (effectScoreStr.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "effect_score是必需参数")
         }
-        
         return try {
             val effectScore = effectScoreStr.toFloat()
-            val optimizedStrategy = evolutionEngine.optimizeStrategy(
+        val optimizedStrategy = evolutionEngine.optimizeStrategy(
                 taskType = taskType,
                 userId = userId,
                 currentStrategy = currentStrategy,
@@ -2141,8 +1941,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "优化策略失败�?{e.message}")
         }
     }
-    
-    private suspend fun executeApexAgentGetIterationCount(tool: AITool): ToolResult {
+        private suspend fun executeApexAgentGetIterationCount(tool: AITool): ToolResult {
         return try {
             val count = evolutionEngine.getIterationCount()
             MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("当前迭代次数？count"))
@@ -2151,8 +1950,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "获取迭代次数失败�?{e.message}")
         }
     }
-    
-    private suspend fun executeApexAgentResetIterationCount(tool: AITool): ToolResult {
+        private suspend fun executeApexAgentResetIterationCount(tool: AITool): ToolResult {
         return try {
             evolutionEngine.resetIterationCount()
             MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("迭代计数器已重置"))
@@ -2161,21 +1959,18 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "重置迭代计数器失败：${e.message}")
         }
     }
-    
-    private suspend fun executeMemoryCreateNormal(tool: AITool): ToolResult {
+        private suspend fun executeMemoryCreateNormal(tool: AITool): ToolResult {
         val title = MemoryQueryUtils.getStringParameter(tool, "title")
         val content = MemoryQueryUtils.getStringParameter(tool, "content")
         val contentType = MemoryQueryUtils.getStringParameter(tool, "content_type") ?: "text/plain"
         val source = MemoryQueryUtils.getStringParameter(tool, "source") ?: "user_input"
         val folderPath = MemoryQueryUtils.getStringParameter(tool, "folder_path") ?: ""
-        
         if (title.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "title是必需参数")
         }
         if (content.isNullOrBlank()) {
             return MemoryQueryUtils.createErrorResult(tool.name, "content是必需参数")
         }
-        
         return try {
             val memory = memoryRepository.createNormalMemory(
                 title = title,
@@ -2184,8 +1979,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 source = source,
                 folderPath = folderPath
             )
-            
-            if (memory != null) {
+        if (memory != null) {
                 MemoryQueryUtils.createSuccessResult(tool.name, StringResultData("普通对话记忆创建成功，ID??{memory.id}"))
             } else {
                 MemoryQueryUtils.createErrorResult(tool.name, "创建普通对话记忆失败）
@@ -2195,15 +1989,13 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             MemoryQueryUtils.createErrorResult(tool.name, "创建普通对话记忆失败：${e.message}")
         }
     }
-    
-    private suspend fun executeMemoryCreateAgent(tool: AITool): ToolResult {
+        private suspend fun executeMemoryCreateAgent(tool: AITool): ToolResult {
         val agentId = tool.parameters.find { it.name == "agent_id" }?.value
         val title = tool.parameters.find { it.name == "title" }?.value
         val content = tool.parameters.find { it.name == "content" }?.value
         val contentType = tool.parameters.find { it.name == "content_type" }?.value ?: "text/plain"
         val source = tool.parameters.find { it.name == "source" }?.value ?: "agent_input"
         val folderPath = tool.parameters.find { it.name == "folder_path" }?.value ?: ""
-        
         if (agentId.isNullOrBlank()) {
             return ToolResult(
                 toolName = tool.name,
@@ -2228,7 +2020,6 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 error = "content是必需参数"
             )
         }
-        
         return try {
             val memory = memoryRepository.createAgentMemory(
                 agentId = agentId,
@@ -2238,8 +2029,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 source = source,
                 folderPath = folderPath
             )
-            
-            if (memory != null) {
+        if (memory != null) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -2263,14 +2053,12 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-    
-    private suspend fun executeMemoryCreatePublic(tool: AITool): ToolResult {
+        private suspend fun executeMemoryCreatePublic(tool: AITool): ToolResult {
         val title = tool.parameters.find { it.name == "title" }?.value
         val content = tool.parameters.find { it.name == "content" }?.value
         val contentType = tool.parameters.find { it.name == "content_type" }?.value ?: "text/plain"
         val source = tool.parameters.find { it.name == "source" }?.value ?: "system"
         val folderPath = tool.parameters.find { it.name == "folder_path" }?.value ?: ""
-        
         if (title.isNullOrBlank()) {
             return ToolResult(
                 toolName = tool.name,
@@ -2287,7 +2075,6 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 error = "content是必需参数"
             )
         }
-        
         return try {
             val memory = memoryRepository.createPublicMemory(
                 title = title,
@@ -2296,8 +2083,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 source = source,
                 folderPath = folderPath
             )
-            
-            if (memory != null) {
+        if (memory != null) {
                 ToolResult(
                     toolName = tool.name,
                     success = true,
@@ -2321,14 +2107,13 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-    
-    private suspend fun executeMemoryGetNormal(tool: AITool): ToolResult {
+        private suspend fun executeMemoryGetNormal(tool: AITool): ToolResult {
         val limitStr = tool.parameters.find { it.name == "limit" }?.value ?: "20"
         val limit = limitStr.toIntOrNull() ?: 20
         
         return try {
             val memories = memoryRepository.getNormalMemories(limit)
-            val resultStr = buildString {
+        val resultStr = buildString {
                 appendLine("普通对话记忆列表：")
                 memories.forEachIndexed { index, memory ->
                     appendLine("${index + 1}. ${memory.title} (${memory.createdAt})")
@@ -2352,8 +2137,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-    
-    private suspend fun executeMemoryGetAgent(tool: AITool): ToolResult {
+        private suspend fun executeMemoryGetAgent(tool: AITool): ToolResult {
         val agentId = tool.parameters.find { it.name == "agent_id" }?.value
         val limitStr = tool.parameters.find { it.name == "limit" }?.value ?: "20"
         val limit = limitStr.toIntOrNull() ?: 20
@@ -2366,10 +2150,9 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 error = "agent_id是必需参数"
             )
         }
-        
         return try {
             val memories = memoryRepository.getAgentMemories(agentId, limit)
-            val resultStr = buildString {
+        val resultStr = buildString {
                 appendLine("Agent ${agentId} 专属记忆列表�"
                 memories.forEachIndexed { index, memory ->
                     appendLine("${index + 1}. ${memory.title} (${memory.createdAt})")
@@ -2393,14 +2176,13 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-    
-    private suspend fun executeMemoryGetPublic(tool: AITool): ToolResult {
+        private suspend fun executeMemoryGetPublic(tool: AITool): ToolResult {
         val limitStr = tool.parameters.find { it.name == "limit" }?.value ?: "20"
         val limit = limitStr.toIntOrNull() ?: 20
         
         return try {
             val memories = memoryRepository.getPublicMemories(limit)
-            val resultStr = buildString {
+        val resultStr = buildString {
                 appendLine("公共记忆列表�"
                 memories.forEachIndexed { index, memory ->
                     appendLine("${index + 1}. ${memory.title} (${memory.createdAt})")
@@ -2424,8 +2206,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-    
-    private suspend fun executeMemorySearchByType(tool: AITool): ToolResult {
+        private suspend fun executeMemorySearchByType(tool: AITool): ToolResult {
         val query = tool.parameters.find { it.name == "query" }?.value
         val memoryType = tool.parameters.find { it.name == "memory_type" }?.value
         val agentId = tool.parameters.find { it.name == "agent_id" }?.value
@@ -2448,7 +2229,6 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 error = "memory_type是必需参数"
             )
         }
-        
         return try {
             val memories = memoryRepository.searchMemoriesByType(
                 query = query,
@@ -2456,7 +2236,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 agentId = agentId,
                 limit = limit
             )
-            val resultStr = buildString {
+        val resultStr = buildString {
                 appendLine("${memoryType}）：")
                 memories.forEachIndexed { index, memory ->
                     appendLine("${index + 1}. ${memory.title} (${memory.createdAt})")
@@ -2480,8 +2260,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             )
         }
     }
-    
-    private suspend fun executeMemoryDeleteAgent(tool: AITool): ToolResult {
+        private suspend fun executeMemoryDeleteAgent(tool: AITool): ToolResult {
         val agentId = tool.parameters.find { it.name == "agent_id" }?.value
         
         if (agentId.isNullOrBlank()) {
@@ -2492,7 +2271,6 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
                 error = "agent_id是必需参数"
             )
         }
-        
         return try {
             val deletedCount = memoryRepository.deleteAgentMemories(agentId)
             ToolResult(
@@ -2523,11 +2301,11 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (sourceTitles.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: source_titles")
             }
-            val targetTitle = tool.parameters.find { it.name == "target_title" }?.value
+        val targetTitle = tool.parameters.find { it.name == "target_title" }?.value
             if (targetTitle.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: target_title")
             }
-            val targetContent = tool.parameters.find { it.name == "target_content" }?.value
+        val targetContent = tool.parameters.find { it.name == "target_content" }?.value
             if (targetContent.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: target_content")
             }
@@ -2537,11 +2315,11 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (userId.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: user_id")
             }
-            val dimension = tool.parameters.find { it.name == "dimension" }?.value
+        val dimension = tool.parameters.find { it.name == "dimension" }?.value
             if (dimension.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: dimension")
             }
-            val content = tool.parameters.find { it.name == "content" }?.value
+        val content = tool.parameters.find { it.name == "content" }?.value
             if (content.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: content")
             }
@@ -2557,7 +2335,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (userId.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: user_id")
             }
-            val taskType = tool.parameters.find { it.name == "task_type" }?.value
+        val taskType = tool.parameters.find { it.name == "task_type" }?.value
             if (taskType.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: task_type")
             }
@@ -2567,7 +2345,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (agentBehavior.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: agent_behavior")
             }
-            val taskType = tool.parameters.find { it.name == "task_type" }?.value
+        val taskType = tool.parameters.find { it.name == "task_type" }?.value
             if (taskType.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: task_type")
             }
@@ -2577,11 +2355,11 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (skillId.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: skill_id")
             }
-            val newBehavior = tool.parameters.find { it.name == "new_behavior" }?.value
+        val newBehavior = tool.parameters.find { it.name == "new_behavior" }?.value
             if (newBehavior.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: new_behavior")
             }
-            val newErrorCases = tool.parameters.find { it.name == "new_error_cases" }?.value
+        val newErrorCases = tool.parameters.find { it.name == "new_error_cases" }?.value
             if (newErrorCases.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: new_error_cases")
             }
@@ -2603,15 +2381,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (agentBehavior.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: agent_behavior")
             }
-            val taskType = tool.parameters.find { it.name == "task_type" }?.value
+        val taskType = tool.parameters.find { it.name == "task_type" }?.value
             if (taskType.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: task_type")
             }
-            val taskGoal = tool.parameters.find { it.name == "task_goal" }?.value
+        val taskGoal = tool.parameters.find { it.name == "task_goal" }?.value
             if (taskGoal.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: task_goal")
             }
-            val userId = tool.parameters.find { it.name == "user_id" }?.value
+        val userId = tool.parameters.find { it.name == "user_id" }?.value
             if (userId.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: user_id")
             }
@@ -2621,7 +2399,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (agentBehavior.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: agent_behavior")
             }
-            val taskGoal = tool.parameters.find { it.name == "task_goal" }?.value
+        val taskGoal = tool.parameters.find { it.name == "task_goal" }?.value
             if (taskGoal.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: task_goal")
             }
@@ -2631,15 +2409,15 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (taskType.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: task_type")
             }
-            val userId = tool.parameters.find { it.name == "user_id" }?.value
+        val userId = tool.parameters.find { it.name == "user_id" }?.value
             if (userId.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: user_id")
             }
-            val currentStrategy = tool.parameters.find { it.name == "current_strategy" }?.value
+        val currentStrategy = tool.parameters.find { it.name == "current_strategy" }?.value
             if (currentStrategy.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: current_strategy")
             }
-            val effectScore = tool.parameters.find { it.name == "effect_score" }?.value
+        val effectScore = tool.parameters.find { it.name == "effect_score" }?.value
             if (effectScore.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: effect_score")
             }
@@ -2649,7 +2427,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (title.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: title")
             }
-            val content = tool.parameters.find { it.name == "content" }?.value
+        val content = tool.parameters.find { it.name == "content" }?.value
             if (content.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: content")
             }
@@ -2659,11 +2437,11 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (agentId.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: agent_id")
             }
-            val title = tool.parameters.find { it.name == "title" }?.value
+        val title = tool.parameters.find { it.name == "title" }?.value
             if (title.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: title")
             }
-            val content = tool.parameters.find { it.name == "content" }?.value
+        val content = tool.parameters.find { it.name == "content" }?.value
             if (content.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: content")
             }
@@ -2679,7 +2457,7 @@ class MemoryQueryToolExecutor(private val context: Context) : ToolExecutor {
             if (query.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: query")
             }
-            val memoryType = tool.parameters.find { it.name == "memory_type" }?.value
+        val memoryType = tool.parameters.find { it.name == "memory_type" }?.value
             if (memoryType.isNullOrBlank()) {
                 return ToolValidationResult(valid = false, errorMessage = "Missing or empty required parameter: memory_type")
             }

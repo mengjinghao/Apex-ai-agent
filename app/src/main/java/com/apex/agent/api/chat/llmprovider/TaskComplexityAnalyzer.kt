@@ -90,7 +90,6 @@ object TaskComplexityAnalyzer {
         val confidence = calculateConfidence(detectedTypes, wordCount)
 
         AppLogger.i(TAG, "复杂度分析结�? complexity=${complexity}, tier=${suggestedTier}, confidence=${confidence}")
-
         return ComplexityReport(
             complexity = complexity,
             estimatedTokens = estimatedTokens,
@@ -128,16 +127,14 @@ object TaskComplexityAnalyzer {
     private fun detectTaskTypes(input: String): Map<TaskComplexity, List<String>> {
         val lowerInput = input.lowercase()
         val result = mutableMapOf<TaskComplexity, List<String>>()
-
         for ((complexity, keywords) in taskTypeKeywords) {
             val matched = keywords.filter { keyword ->
                 lowerInput.contains(keyword.lowercase())
             }
-            if (matched.isNotEmpty()) {
+        if (matched.isNotEmpty()) {
                 result[complexity] = matched
             }
         }
-
         return result
     }
 
@@ -150,7 +147,6 @@ object TaskComplexityAnalyzer {
         // 基础 token 估算
     val englishWords = text.split(Regex("\\s+")).filter { it.isNotBlank() && it.any { c -> c.isLetter() && c.code < 128 } }.size
         val chineseChars = text.count { it.code in 0x4E00..0x9FFF }
-
         var tokens = (englishWords * 1.3 + chineseChars * 1.5).toInt()
 
         // 代码块检测（简单的 { } 或关键词�?
@@ -193,17 +189,15 @@ object TaskComplexityAnalyzer {
             TaskComplexity.SINGLE_FILE,
             TaskComplexity.SIMPLE
         )
-
         for (complexity in priorityOrder) {
             if (detectedTypes.containsKey(complexity)) {
                 // 如果文本很短但检测到高复杂度关键词，降级处理
     if (wordCount < 10 && complexity.ordinal > TaskComplexity.SIMPLE.ordinal) {
                     continue
                 }
-                return complexity
+        return complexity
             }
         }
-
         return TaskComplexity.SIMPLE
     }
 

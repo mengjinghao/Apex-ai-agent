@@ -61,20 +61,17 @@ class KimiProvider(
                 }
             )
         }
-
         if (!enableThinking) {
             val baseRequestBodyJson =
                 super.createRequestBodyInternal(context, chatHistory, modelParameters, stream, availableTools, preserveThinkInHistory)
-            val jsonObject = JSONObject(baseRequestBodyJson)
+        val jsonObject = JSONObject(baseRequestBodyJson)
             applyThinkingParams(jsonObject)
-            return createJsonRequestBody(jsonObject.toString())
+        return createJsonRequestBody(jsonObject.toString())
         }
-
         val jsonObject = JSONObject()
         jsonObject.put("model", modelName)
         jsonObject.put("stream", stream)
         applyThinkingParams(jsonObject)
-
         for (param in modelParameters) {
             if (param.isEnabled) {
                 when (param.valueType) {
@@ -88,7 +85,7 @@ class KimiProvider(
                         jsonObject.put(param.apiName, param.currentValue as Boolean)
                     com.apex.data.model.ParameterValueType.OBJECT -> {
                         val raw = param.currentValue.toString().trim()
-                        val parsed: Any? = try {
+        val parsed: Any? = try {
                             when {
                                 raw.startsWith("{") -> JSONObject(raw)
                                 raw.startsWith("[") -> JSONArray(raw)
@@ -98,7 +95,7 @@ class KimiProvider(
                             AppLogger.w("KimiProvider", "OBJECT参数解析失败: ${param.apiName}", e)
                             null
                         }
-                        if (parsed != null) {
+        if (parsed != null) {
                             jsonObject.put(param.apiName, parsed)
                         } else {
                             jsonObject.put(param.apiName, raw)
@@ -107,19 +104,16 @@ class KimiProvider(
                 }
             }
         }
-
         val effectiveEnableToolCall = enableToolCall && availableTools != null && availableTools.isNotEmpty()
-
         var toolsJson: String? = null
         if (effectiveEnableToolCall) {
             val tools = buildToolDefinitions(availableTools!!)
-            if (tools.length() > 0) {
+        if (tools.length() > 0) {
                 jsonObject.put("tools", tools)
                 jsonObject.put("tool_choice", "auto")
                 toolsJson = tools.toString()
             }
         }
-
         val messagesArray =
             buildMessagesWithReasoning(
                 context,
@@ -127,7 +121,6 @@ class KimiProvider(
                 effectiveEnableToolCall
             )
         jsonObject.put("messages", messagesArray)
-
         val logJson = JSONObject(jsonObject.toString())
         if (logJson.has("tools")) {
             val toolsArray = logJson.getJSONArray("tools")
@@ -135,24 +128,20 @@ class KimiProvider(
         }
         val sanitizedLogJson = sanitizeImageDataForLogging(logJson)
         logLargeString("KimiProvider", sanitizedLogJson.toString(4), "Final Kimi K2.5 request body: ")
-
         return createJsonRequestBody(jsonObject.toString())
     }
-
-    private fun buildMessagesWithReasoning(
+        private fun buildMessagesWithReasoning(
         context: Context,
         chatHistory: List<PromptTurn>,
         useToolCall: Boolean
     ): JSONArray {
         val messagesArray = JSONArray()
         val effectiveHistory = chatHistory.mergeAdjacentTurns()
-
         var queuedAssistantToolText: String? = null
         var queuedAssistantReasoning: String? = null
         var queuedToolCalls = JSONArray()
         val queuedToolCallIds = mutableListOf<String>()
         val openToolCallIds = mutableListOf<String>()
-
         fun appendQueuedAssistantToolText(text: String) {
             if (text.isBlank()) return
             queuedAssistantToolText =
@@ -162,7 +151,6 @@ class KimiProvider(
                     queuedAssistantToolText + "\n" + text
                 }
         }
-
         fun appendQueuedAssistantReasoning(reasoningContent: String) {
             if (reasoningContent.isBlank()) return
             queuedAssistantReasoning =
@@ -172,20 +160,18 @@ class KimiProvider(
                     queuedAssistantReasoning + "\n" + reasoningContent
                 }
         }
-
         fun queueToolCalls(textContent: String, toolCalls: JSONArray, reasoningContent: String = "") {
             appendQueuedAssistantToolText(textContent)
             appendQueuedAssistantReasoning(reasoningContent)
-            for (i in 0 until toolCalls.length()) {
+        for (i in 0 until toolCalls.length()) {
                 val toolCall = toolCalls.optJSONObject(i) ?: continue
                 queuedToolCalls.put(toolCall)
-                val callId = toolCall.optString("id", "").trim()
-                if (callId.isNotEmpty()) {
+        val callId = toolCall.optString("id", "").trim()
+        if (callId.isNotEmpty()) {
                     queuedToolCallIds.add(callId)
                 }
             }
         }
-
         fun emitQueuedToolCallsIfNeeded() {
             if (queuedToolCalls.length() == 0) return
 
@@ -193,7 +179,7 @@ class KimiProvider(
                 JSONObject().apply {
                     put("role", "assistant")
                     put("reasoning_content", queuedAssistantReasoning.orEmpty())
-                    if (!queuedAssistantToolText.isNullOrBlank()) {
+        if (!queuedAssistantToolText.isNullOrBlank()) {
                         put("content", buildContentField(context, queuedAssistantToolText!!))
                     } else {
                         put("content", null)
@@ -208,16 +194,15 @@ class KimiProvider(
             queuedToolCalls = JSONArray()
             queuedToolCallIds.clear()
         }
-
         fun flushOpenToolCallsAsCancelled(reason: String) {
             emitQueuedToolCallsIfNeeded()
-            if (openToolCallIds.isEmpty()) return
+        if (openToolCallIds.isEmpty()) return
 
             AppLogger.w(
                 "KimiProvider",
                 "发现未完成的tool_calls，按取消处理: count=${openToolCallIds.size}, reason=${reason}"
             )
-            for (toolCallId in openToolCallIds) {
+        for (toolCallId in openToolCallIds) {
                 messagesArray.put(
                     JSONObject().apply {
                         put("role", "tool")
@@ -228,11 +213,10 @@ class KimiProvider(
             }
             openToolCallIds.clear()
         }
-
         if (effectiveHistory.isNotEmpty()) {
             for (turn in effectiveHistory) {
                 val originalContent = comparableContentForTurn(turn, preserveThinkInHistory = true)
-                if (useToolCall) {
+        if (useToolCall) {
                     when (turn.kind) {
                         PromptTurnKind.SYSTEM -> {
                             flushOpenToolCallsAsCancelled("system_boundary")
@@ -257,15 +241,14 @@ class KimiProvider(
 
                         PromptTurnKind.ASSISTANT -> {
                             val (content, reasoningContent) = ChatUtils.extractThinkingContent(originalContent)
-                            val (textContent, parsedToolCalls) = parseXmlToolCalls(content)
-                            val toolCalls =
+        val (textContent, parsedToolCalls) = parseXmlToolCalls(content)
+        val toolCalls =
                                 if (parsedToolCalls != null) {
                                     wrapPackageToolCallsWithProxy(parsedToolCalls)
                                 } else {
                                     null
                                 }
-
-                            if (toolCalls != null && toolCalls.length() > 0) {
+        if (toolCalls != null && toolCalls.length() > 0) {
                                 if (openToolCallIds.isNotEmpty()) {
                                     flushOpenToolCallsAsCancelled("assistant_tool_call_before_result")
                                 }
@@ -284,14 +267,13 @@ class KimiProvider(
 
                         PromptTurnKind.TOOL_CALL -> {
                             val (textContent, parsedToolCalls) = parseXmlToolCalls(originalContent)
-                            val toolCalls =
+        val toolCalls =
                                 if (parsedToolCalls != null) {
                                     wrapPackageToolCallsWithProxy(parsedToolCalls)
                                 } else {
                                     null
                                 }
-
-                            if (toolCalls != null && toolCalls.length() > 0) {
+        if (toolCalls != null && toolCalls.length() > 0) {
                                 if (openToolCallIds.isNotEmpty()) {
                                     flushOpenToolCallsAsCancelled("typed_tool_call_before_result")
                                 }
@@ -310,10 +292,9 @@ class KimiProvider(
 
                         PromptTurnKind.TOOL_RESULT -> {
                             emitQueuedToolCallsIfNeeded()
-                            val (textContent, toolResults) = parseXmlToolResults(originalContent)
-                            val resultsList = toolResults ?: emptyList()
-
-                            if (resultsList.isNotEmpty() && openToolCallIds.isNotEmpty()) {
+        val (textContent, toolResults) = parseXmlToolResults(originalContent)
+        val resultsList = toolResults ?: emptyList()
+        if (resultsList.isNotEmpty() && openToolCallIds.isNotEmpty()) {
                                 val validCount = minOf(resultsList.size, openToolCallIds.size)
                                 repeat(validCount) { index ->
                                     val (_, resultContent) = resultsList[index]
@@ -328,15 +309,13 @@ class KimiProvider(
                                 repeat(validCount) {
                                     openToolCallIds.removeAt(0)
                                 }
-
-                                if (resultsList.size > validCount) {
+        if (resultsList.size > validCount) {
                                     AppLogger.w(
                                         "KimiProvider",
                                         "发现多余的tool_result: ${resultsList.size} results vs ${validCount} pending tool_calls"
                                     )
                                 }
-
-                                if (textContent.isNotEmpty()) {
+        if (textContent.isNotEmpty()) {
                                     messagesArray.put(
                                         JSONObject().apply {
                                             put("role", "user")
@@ -346,7 +325,7 @@ class KimiProvider(
                                 }
                             } else {
                                 flushOpenToolCallsAsCancelled("tool_result_without_structured_match")
-                                val fallbackContent =
+        val fallbackContent =
                                     when {
                                         textContent.isNotEmpty() -> textContent
                                         originalContent.isNotBlank() -> originalContent

@@ -80,14 +80,14 @@ enum class StatusIndicatorStyle {
 
 interface FloatingWindowCallback {
     fun onClose()
-    fun onSendMessage(message: String, promptType: PromptFunctionType = PromptFunctionType.CHAT)
-    fun onCancelMessage()
-    fun onAttachmentRequest(request: String)
-    fun onRemoveAttachment(filePath: String)
-    fun getMessages(): List<ChatMessage>
+        fun onSendMessage(message: String, promptType: PromptFunctionType = PromptFunctionType.CHAT)
+        fun onCancelMessage()
+        fun onAttachmentRequest(request: String)
+        fun onRemoveAttachment(filePath: String)
+        fun getMessages(): List<ChatMessage>
     fun getAttachments(): List<AttachmentInfo>
     fun saveState()
-    fun getColorScheme(): ColorScheme?
+        fun getColorScheme(): ColorScheme?
     fun getTypography(): Typography?
     fun getInputProcessingState(): State<InputProcessingState>
     fun getStatusIndicatorStyle(): StatusIndicatorStyle
@@ -102,7 +102,7 @@ class FloatingWindowManager(
         private val callback: FloatingWindowCallback
 ) {
     private val TAG = "FloatingWindowManager"
-    private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private var composeView: ComposeView? = null
     private var statusIndicatorView: ComposeView? = null
     private var focusDismissView: View? = null
@@ -110,7 +110,7 @@ class FloatingWindowManager(
     private var isIndicatorAdded = false
     private var sizeAnimator: ValueAnimator? = null
     private val mainHandler = Handler(Looper.getMainLooper())
-    private var pendingImeFocusRunnable: Runnable? = null
+        private var pendingImeFocusRunnable: Runnable? = null
     private var focusDismissOverlayRequested: Boolean = false
     private var windowDisplayEnabled: Boolean = true
     private var windowPersistentHidden: Boolean = false
@@ -137,8 +137,7 @@ class FloatingWindowManager(
         focusDismissOverlayRequested = false
         setFocusDismissOverlayEnabled(false)
     }
-
-    fun prepareForExit() {
+        fun prepareForExit() {
         cancelFocusBeforeExit()
     }
 
@@ -150,8 +149,7 @@ class FloatingWindowManager(
         private const val IME_FOCUS_RETRY_DELAY_MS = 50L
         private const val MAX_IME_FOCUS_RETRIES = 4
     }
-
-    private fun resolveSoftInputModeForMode(mode: FloatingMode): Int {
+        private fun resolveSoftInputModeForMode(mode: FloatingMode): Int {
         return when (mode) {
             FloatingMode.FULLSCREEN -> WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
             else -> WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED
@@ -159,10 +157,10 @@ class FloatingWindowManager(
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    fun show(): Boolean {
+        fun show(): Boolean {
         if (isViewAdded) {
             AppLogger.d(TAG, "Floating view already added")
-            return true
+        return true
         }
 
         try {
@@ -220,19 +218,17 @@ class FloatingWindowManager(
                             }
                         }
                     }
-
-            val params = createLayoutParams()
+        val params = createLayoutParams()
             windowManager.addView(composeView, params)
             isViewAdded = true
             AppLogger.d(TAG, "Floating view added at (${params.x}, ${params.y})")
-            return true
+        return true
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error creating floating view", e)
-            return false
+        return false
         }
     }
-
-    fun destroy() {
+        fun destroy() {
         hideStatusIndicator()
         if (isViewAdded) {
             composeView?.let {
@@ -256,8 +252,7 @@ class FloatingWindowManager(
         }
         focusDismissView = null
     }
-
-    private fun ensureFocusDismissView() {
+        private fun ensureFocusDismissView() {
         if (focusDismissView != null) return
 
         val dismissView = View(context).apply {
@@ -275,7 +270,6 @@ class FloatingWindowManager(
                 true
             }
         }
-
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -293,8 +287,7 @@ class FloatingWindowManager(
             AppLogger.e(TAG, "Error creating focus dismiss view", e)
         }
     }
-
-    private fun setFocusDismissOverlayEnabled(enabled: Boolean) {
+        private fun setFocusDismissOverlayEnabled(enabled: Boolean) {
         val view = focusDismissView ?: return
         val canShow =
             enabled &&
@@ -303,34 +296,27 @@ class FloatingWindowManager(
                 windowDisplayEnabled
         view.visibility = if (canShow) View.VISIBLE else View.GONE
     }
-
-
-
-    fun setFloatingWindowVisible(visible: Boolean) {
+        fun setFloatingWindowVisible(visible: Boolean) {
         windowDisplayEnabled = visible
         refreshWindowAndIndicatorVisibility()
         AppLogger.d(TAG, "Floating window visibility set to: ${visible}.")
     }
-
-    fun setFloatingWindowPersistentHidden(hidden: Boolean) {
+        fun setFloatingWindowPersistentHidden(hidden: Boolean) {
         windowPersistentHidden = hidden
         refreshWindowAndIndicatorVisibility()
         AppLogger.d(TAG, "Floating window persistent hidden set to: ${hidden}.")
     }
-
-    fun setStatusIndicatorVisible(visible: Boolean) {
+        fun setStatusIndicatorVisible(visible: Boolean) {
         indicatorDisplayEnabled = visible
         refreshWindowAndIndicatorVisibility()
         AppLogger.d(TAG, "Status indicator visibility set to: ${visible}.")
     }
-
-    fun setStatusIndicatorPersistentVisible(visible: Boolean) {
+        fun setStatusIndicatorPersistentVisible(visible: Boolean) {
         indicatorPersistentEnabled = visible
         refreshWindowAndIndicatorVisibility()
         AppLogger.d(TAG, "Status indicator persistent visibility set to: ${visible}.")
     }
-
-    private fun refreshWindowAndIndicatorVisibility() {
+        private fun refreshWindowAndIndicatorVisibility() {
         val currentMode = state.currentMode.value
         val view = composeView
 
@@ -346,24 +332,19 @@ class FloatingWindowManager(
         }
 
         setFocusDismissOverlayEnabled(focusDismissOverlayRequested)
-
         val indicatorShouldShow = when {
             !indicatorDisplayEnabled && !indicatorPersistentEnabled -> false
             indicatorPersistentEnabled -> true
             else -> !windowVisible &&
                     (currentMode == FloatingMode.FULLSCREEN || currentMode == FloatingMode.WINDOW)
         }
-
         if (indicatorShouldShow) {
             showStatusIndicator()
         } else {
             hideStatusIndicator()
         }
     }
-
-
-
-    private fun showStatusIndicator() {
+        private fun showStatusIndicator() {
         if (isIndicatorAdded) return
         val style = callback.getStatusIndicatorStyle()
         statusIndicatorView = ComposeView(context).apply {
@@ -416,8 +397,7 @@ class FloatingWindowManager(
         isIndicatorAdded = true
         AppLogger.d(TAG, "Status indicator shown.")
     }
-
-    private fun hideStatusIndicator() {
+        private fun hideStatusIndicator() {
         if (isIndicatorAdded) {
             statusIndicatorView?.let {
                 try {
@@ -431,8 +411,7 @@ class FloatingWindowManager(
             AppLogger.d(TAG, "Status indicator hidden.")
         }
     }
-
-    fun setStatusIndicatorAlpha(alpha: Float) {
+        fun setStatusIndicatorAlpha(alpha: Float) {
         val view = statusIndicatorView ?: return
         if (Looper.myLooper() == Looper.getMainLooper()) {
             view.alpha = alpha
@@ -450,10 +429,7 @@ class FloatingWindowManager(
             }
         }
     }
-
-
-
-    private fun createLayoutParams(): WindowManager.LayoutParams {
+        private fun createLayoutParams(): WindowManager.LayoutParams {
         val displayMetrics = context.resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val screenHeight = displayMetrics.heightPixels
@@ -471,7 +447,6 @@ class FloatingWindowManager(
 
         // Disable system move animations to allow custom animations to take full control
         setPrivateFlag(params, PRIVATE_FLAG_NO_MOVE_ANIMATION)
-
         when (state.currentMode.value) {
             FloatingMode.FULLSCREEN, FloatingMode.SCREEN_OCR -> {
                 params.width = WindowManager.LayoutParams.MATCH_PARENT
@@ -491,7 +466,7 @@ class FloatingWindowManager(
                                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 
                 val safeMargin = (16 * density).toInt()
-                val minVisible = ballSizeInPx / 2
+        val minVisible = ballSizeInPx / 2
                 state.x =
                         state.x.coerceIn(
                                 -ballSizeInPx + minVisible + safeMargin,
@@ -510,7 +485,7 @@ class FloatingWindowManager(
                                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 
                 val minVisibleWidth = (params.width * 2 / 3)
-                val safeMargin = (20 * density).toInt()
+        val safeMargin = (20 * density).toInt()
                 state.x =
                         state.x.coerceIn(
                                 -(params.width - minVisibleWidth) + safeMargin,
@@ -531,7 +506,7 @@ class FloatingWindowManager(
                 
                 // 保持位置逻辑与球体类似，确保可见
     val ballSizeInPx = (state.ballSize.value.value * density).toInt()
-                val minVisible = ballSizeInPx / 2
+        val minVisible = ballSizeInPx / 2
                 state.x = state.x.coerceIn(-ballSizeInPx + minVisible, screenWidth - minVisible)
                 state.y = state.y.coerceIn(0, screenHeight - minVisible)
             }
@@ -549,11 +524,9 @@ class FloatingWindowManager(
         applyFullscreenBlur(params, state.currentMode.value == FloatingMode.FULLSCREEN)
 
         state.isAtEdge.value = isAtEdge(params.x, params.width)
-
         return params
     }
-
-    private fun applyFullscreenOverlayWindowPolicy(
+        private fun applyFullscreenOverlayWindowPolicy(
         params: WindowManager.LayoutParams,
         enabled: Boolean
     ) {
@@ -563,8 +536,7 @@ class FloatingWindowManager(
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
     }
-
-    private fun setPrivateFlag(params: WindowManager.LayoutParams, flags: Int) {
+        private fun setPrivateFlag(params: WindowManager.LayoutParams, flags: Int) {
         try {
             val field = params.javaClass.getField("privateFlags")
             field.setInt(params, field.getInt(params) or flags)
@@ -572,8 +544,7 @@ class FloatingWindowManager(
             AppLogger.e(TAG, "Failed to set privateFlags", e)
         }
     }
-
-    private fun applyFullscreenBlur(params: WindowManager.LayoutParams, enabled: Boolean) {
+        private fun applyFullscreenBlur(params: WindowManager.LayoutParams, enabled: Boolean) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             AppLogger.d(TAG, "Fullscreen blur skipped: API < 31")
             state.fullscreenSystemBlurActive.value = false
@@ -599,15 +570,13 @@ class FloatingWindowManager(
         }
         state.fullscreenSystemBlurActive.value = enabled && crossWindowBlurEnabled
     }
-
-    private fun isAtEdge(x: Int, width: Int): Boolean {
+        private fun isAtEdge(x: Int, width: Int): Boolean {
         val screenWidth = context.resources.displayMetrics.widthPixels
         // A small tolerance to account for rounding errors or slight offsets
     val tolerance = 5 
         return x <= tolerance || x >= screenWidth - width - tolerance
     }
-
-    private fun updateWindowSizeInLayoutParams() {
+        private fun updateWindowSizeInLayoutParams() {
         updateViewLayout { params ->
             val density = context.resources.displayMetrics.density
             val scale = state.windowScale.value
@@ -617,16 +586,14 @@ class FloatingWindowManager(
             params.height = (heightDp.value * density * scale).toInt()
         }
     }
-
-    private fun updateViewLayout(configure: (WindowManager.LayoutParams) -> Unit = {}) {
+        private fun updateViewLayout(configure: (WindowManager.LayoutParams) -> Unit = {}) {
         composeView?.let { view ->
             val params = view.layoutParams as WindowManager.LayoutParams
             configure(params)
             windowManager.updateViewLayout(view, params)
         }
     }
-
-    private fun calculateCenteredPosition(
+        private fun calculateCenteredPosition(
             fromX: Int,
             fromY: Int,
             fromWidth: Int,
@@ -640,22 +607,20 @@ class FloatingWindowManager(
         val newY = centerY - toHeight / 2
         return Pair(newX, newY)
     }
-
-    private fun switchMode(newMode: FloatingMode) {
+        private fun switchMode(newMode: FloatingMode) {
         if (state.isTransitioning || state.currentMode.value == newMode) return
         state.isTransitioning = true
 
         if (newMode == FloatingMode.BALL) {
             cancelFocusBeforeExit()
         }
-
         val wasFullscreen =
             state.currentMode.value == FloatingMode.FULLSCREEN ||
                 state.currentMode.value == FloatingMode.SCREEN_OCR
         val willFullscreen = newMode == FloatingMode.FULLSCREEN || newMode == FloatingMode.SCREEN_OCR
 
         // 取消之前的动�?       sizeAnimator?.cancel()
-    val view = composeView ?: return
+        val view = composeView ?: return
         val currentParams = view.layoutParams as WindowManager.LayoutParams
 
         val displayMetrics = context.resources.displayMetrics
@@ -704,7 +669,6 @@ class FloatingWindowManager(
             setFocusDismissOverlayEnabled(false)
         }
         callback.saveState()
-
         if (wasFullscreen != willFullscreen) {
             try {
                 AIForegroundService.setWakeListeningSuspendedForFloatingFullscreen(
@@ -715,7 +679,8 @@ class FloatingWindowManager(
             }
         }
 
-        // 计算目标尺寸和位�?       data class TargetParams(
+        // 计算目标尺寸和位�?
+    data class TargetParams(
     val width: Int,
             val height: Int,
             val x: Int,
@@ -724,7 +689,6 @@ class FloatingWindowManager(
             val gravity: Int = Gravity.TOP or Gravity.START,
             val blurEnabled: Boolean = false
         )
-
         val target = when (newMode) {
                 FloatingMode.BALL -> {
                 val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
@@ -746,7 +710,7 @@ class FloatingWindowManager(
                     } else {
                         startWidth
                     }
-                    val actualStartHeight = if (startHeight == WindowManager.LayoutParams.MATCH_PARENT) {
+        val actualStartHeight = if (startHeight == WindowManager.LayoutParams.MATCH_PARENT) {
                         screenHeight
                     } else {
                         startHeight
@@ -760,9 +724,9 @@ class FloatingWindowManager(
                 
                 com.apex.util.AppLogger.d("FloatingWindowManager", 
                     "Ball target before coerce: newPos=(${newX},${newY}), ballSize=${ballSizeInPx}")
-                    val minVisible = ballSizeInPx / 2
+        val minVisible = ballSizeInPx / 2
                 val finalX = newX.coerceIn(-ballSizeInPx + minVisible, screenWidth - minVisible)
-                val finalY = newY.coerceIn(0, screenHeight - minVisible)
+        val finalY = newY.coerceIn(0, screenHeight - minVisible)
                 com.apex.util.AppLogger.d("FloatingWindowManager", 
                     "Ball target after coerce: finalPos=(${finalX},${finalY})")
                 TargetParams(ballSizeInPx, ballSizeInPx, finalX, finalY, flags)
@@ -771,9 +735,8 @@ class FloatingWindowManager(
                 val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 val width = (state.windowWidth.value.value * density * state.lastWindowScale).toInt()
-                val height = (state.windowHeight.value.value * density * state.lastWindowScale).toInt()
-                
-                val isFromBall = state.previousMode == FloatingMode.BALL
+        val height = (state.windowHeight.value.value * density * state.lastWindowScale).toInt()
+        val isFromBall = state.previousMode == FloatingMode.BALL
 
                 val (tempX, tempY) = if (isFromBall) {
                                 calculateCenteredPosition(
@@ -792,12 +755,12 @@ class FloatingWindowManager(
                 if (isFromBall) {
                     // Limit strictly within screen when expanding from ball
     val maxX = (screenWidth - width).coerceAtLeast(0)
-                    val maxY = (screenHeight - height).coerceAtLeast(0)
+        val maxY = (screenHeight - height).coerceAtLeast(0)
                     finalX = tempX.coerceIn(0, maxX)
                     finalY = tempY.coerceIn(0, maxY)
                 } else {
                     val minVisibleWidth = (width * 2 / 3)
-                    val minVisibleHeight = (height * 2 / 3)
+        val minVisibleHeight = (height * 2 / 3)
                     finalX = tempX.coerceIn(
                         -(width - minVisibleWidth),
                         screenWidth - minVisibleWidth / 2
@@ -825,7 +788,7 @@ class FloatingWindowManager(
                         WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 
                 val ballSizeInPx = (state.ballSize.value.value * density).toInt()
-                val ballCenter = startX + ballSizeInPx / 2
+        val ballCenter = startX + ballSizeInPx / 2
                 
                 val finalGravity: Int
                 val finalX: Int
@@ -853,7 +816,6 @@ class FloatingWindowManager(
         // 判断是否在球模式和其他模式之间切�?
     val isBallTransition = (state.previousMode == FloatingMode.BALL) ||
                                (newMode == FloatingMode.BALL)
-        
         if (isBallTransition) {
             val isToBall = newMode == FloatingMode.BALL
             val isFromBall = state.previousMode == FloatingMode.BALL
@@ -942,8 +904,7 @@ class FloatingWindowManager(
             state.isTransitioning = false
         }
     }
-
-    private fun onMove(dx: Float, dy: Float, scale: Float) {
+        private fun onMove(dx: Float, dy: Float, scale: Float) {
         if (state.currentMode.value == FloatingMode.FULLSCREEN) return // Disable move in fullscreen
 
         updateViewLayout { params ->
@@ -960,17 +921,16 @@ class FloatingWindowManager(
                     else scale
             params.x += (dx * sensitivity).toInt()
             params.y += (dy * sensitivity).toInt()
-
-            if (state.currentMode.value == FloatingMode.BALL) {
+        if (state.currentMode.value == FloatingMode.BALL) {
                 val ballSize = (state.ballSize.value.value * density).toInt()
-                val minVisible = ballSize / 2
+        val minVisible = ballSize / 2
                 params.x = params.x.coerceIn(-ballSize + minVisible, screenWidth - minVisible)
                 params.y = params.y.coerceIn(0, screenHeight - minVisible)
             } else {
                 val windowWidth = (state.windowWidth.value.value * density * scale).toInt()
-                val windowHeight = (state.windowHeight.value.value * density * scale).toInt()
-                val minVisibleWidth = (windowWidth * 2 / 3)
-                val minVisibleHeight = (windowHeight * 2 / 3)
+        val windowHeight = (state.windowHeight.value.value * density * scale).toInt()
+        val minVisibleWidth = (windowWidth * 2 / 3)
+        val minVisibleHeight = (windowHeight * 2 / 3)
                 params.x =
                         params.x.coerceIn(
                                 -(windowWidth - minVisibleWidth),
@@ -982,12 +942,10 @@ class FloatingWindowManager(
             state.y = params.y
         }
     }
-
-    private fun setFocusable(needsFocus: Boolean) {
+        private fun setFocusable(needsFocus: Boolean) {
         val view = composeView ?: return
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         AppLogger.d(TAG, "setFocusable(needsFocus=${needsFocus}, mode=${state.currentMode.value})")
-
         if (needsFocus) {
             pendingImeFocusRunnable?.let { mainHandler.removeCallbacks(it) }
             pendingImeFocusRunnable = null
@@ -1042,15 +1000,14 @@ class FloatingWindowManager(
                 }
                 params.softInputMode = resolveSoftInputModeForMode(state.currentMode.value)
             }
-            val lp = view.layoutParams as? WindowManager.LayoutParams
+        val lp = view.layoutParams as? WindowManager.LayoutParams
             AppLogger.d(
                 TAG,
                 "setFocusable(false) applied: hasFocus=${view.hasFocus()}, findFocus=${view.findFocus() != null}, flags=${lp?.flags}"
             )
         }
     }
-
-    private fun scheduleImeShow(
+        private fun scheduleImeShow(
         rootView: View,
         imm: InputMethodManager,
         retryCount: Int = 0,
@@ -1065,8 +1022,7 @@ class FloatingWindowManager(
                 AppLogger.d(TAG, "Skip IME request: floating view is no longer active.")
                 return@Runnable
             }
-
-            if (!rootView.isAttachedToWindow || rootView.windowToken == null) {
+        if (!rootView.isAttachedToWindow || rootView.windowToken == null) {
                 if (retryCount >= MAX_IME_FOCUS_RETRIES) {
                     pendingImeFocusRunnable = null
                     AppLogger.w(
@@ -1090,13 +1046,11 @@ class FloatingWindowManager(
             }
 
             rootView.requestFocus()
-
-            val imeHost =
+        val imeHost =
                 rootView.findFocus()?.takeIf {
                     it.isAttachedToWindow && it.windowToken != null && it.onCheckIsTextEditor()
                 }
-
-            if (imeHost == null) {
+        if (imeHost == null) {
                 if (retryCount >= MAX_IME_FOCUS_RETRIES) {
                     pendingImeFocusRunnable = null
                     AppLogger.w(

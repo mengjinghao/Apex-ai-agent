@@ -18,36 +18,28 @@ class MmdAvatarController(
 
     private val _state = MutableStateFlow(AvatarState())
     override val state: StateFlow<AvatarState> = _state.asStateFlow()
-
-    private val _scale = MutableStateFlow(1.0f)
-    val scale: StateFlow<Float> = _scale.asStateFlow()
-
-    private val _translateX = MutableStateFlow(0.0f)
-    val translateX: StateFlow<Float> = _translateX.asStateFlow()
-
-    private val _translateY = MutableStateFlow(0.0f)
-    val translateY: StateFlow<Float> = _translateY.asStateFlow()
-
-    private val _initialRotationX = MutableStateFlow(0.0f)
-    val initialRotationX: StateFlow<Float> = _initialRotationX.asStateFlow()
-
-    private val _initialRotationY = MutableStateFlow(0.0f)
-    val initialRotationY: StateFlow<Float> = _initialRotationY.asStateFlow()
-
-    private val _initialRotationZ = MutableStateFlow(0.0f)
-    val initialRotationZ: StateFlow<Float> = _initialRotationZ.asStateFlow()
-
-    private val _cameraDistanceScale = MutableStateFlow(1.0f)
-    val cameraDistanceScale: StateFlow<Float> = _cameraDistanceScale.asStateFlow()
-
-    private val _cameraTargetHeight = MutableStateFlow(0.0f)
-    val cameraTargetHeight: StateFlow<Float> = _cameraTargetHeight.asStateFlow()
+        private val _scale = MutableStateFlow(1.0f)
+        val scale: StateFlow<Float> = _scale.asStateFlow()
+        private val _translateX = MutableStateFlow(0.0f)
+        val translateX: StateFlow<Float> = _translateX.asStateFlow()
+        private val _translateY = MutableStateFlow(0.0f)
+        val translateY: StateFlow<Float> = _translateY.asStateFlow()
+        private val _initialRotationX = MutableStateFlow(0.0f)
+        val initialRotationX: StateFlow<Float> = _initialRotationX.asStateFlow()
+        private val _initialRotationY = MutableStateFlow(0.0f)
+        val initialRotationY: StateFlow<Float> = _initialRotationY.asStateFlow()
+        private val _initialRotationZ = MutableStateFlow(0.0f)
+        val initialRotationZ: StateFlow<Float> = _initialRotationZ.asStateFlow()
+        private val _cameraDistanceScale = MutableStateFlow(1.0f)
+        val cameraDistanceScale: StateFlow<Float> = _cameraDistanceScale.asStateFlow()
+        private val _cameraTargetHeight = MutableStateFlow(0.0f)
+        val cameraTargetHeight: StateFlow<Float> = _cameraTargetHeight.asStateFlow()
 
     override val availableAnimations: List<String>
         get() = model.displayMotionNames
 
     private var emotionAnimationMapping: Map<AvatarEmotion, String> = emptyMap()
-    private var triggerAnimationMapping: Map<String, String> = emptyMap()
+        private var triggerAnimationMapping: Map<String, String> = emptyMap()
 
     override fun setEmotion(newEmotion: AvatarEmotion) {
         playEmotion(newEmotion, loop = 0)
@@ -79,7 +71,6 @@ class MmdAvatarController(
         if (maxFrame <= 0) {
             return null
         }
-
         return ((maxFrame / 30f) * 1000f).roundToLong().coerceAtLeast(1L)
     }
 
@@ -91,7 +82,6 @@ class MmdAvatarController(
         if (maxFrame <= 0) {
             return null
         }
-
         return ((maxFrame / 30f) * 1000f).roundToLong().coerceAtLeast(1L)
     }
 
@@ -156,34 +146,29 @@ class MmdAvatarController(
         triggerAnimationMapping =
             mapping.entries.mapNotNull { (rawKey, rawAnimationName) ->
                 val key = AvatarMoodTypes.normalizeKey(rawKey)
-                val animationName = rawAnimationName.trim()
-                if (key.isBlank() || animationName.isBlank()) {
+        val animationName = rawAnimationName.trim()
+        if (key.isBlank() || animationName.isBlank()) {
                     return@mapNotNull null
                 }
                 key to animationName
             }.toMap()
     }
-
-    private fun resolveAnimationForEmotion(emotion: AvatarEmotion): String? {
+        private fun resolveAnimationForEmotion(emotion: AvatarEmotion): String? {
         val preferred = emotionAnimationMapping[emotion]
         if (!preferred.isNullOrBlank() && availableAnimations.contains(preferred)) {
             return preferred
         }
-
         val idleFallback = emotionAnimationMapping[AvatarEmotion.IDLE]
         if (!idleFallback.isNullOrBlank() && availableAnimations.contains(idleFallback)) {
             return idleFallback
         }
-
         return null
     }
-
-    private fun resolveAnimationForTrigger(triggerName: String): String? {
+        private fun resolveAnimationForTrigger(triggerName: String): String? {
         val preferred = triggerAnimationMapping[triggerName]
         if (!preferred.isNullOrBlank() && availableAnimations.contains(preferred)) {
             return preferred
         }
-
         return availableAnimations.firstOrNull { animationName ->
             animationName.equals(triggerName, ignoreCase = true)
         }

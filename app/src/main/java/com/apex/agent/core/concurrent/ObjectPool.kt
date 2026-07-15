@@ -27,34 +27,30 @@ abstract class ObjectPool<T>(
         val averageAcquireTimeMs: Double,
         val averageReleaseTimeMs: Double
     )
-
-    private val logger = LoggerFactory.getLogger("ObjectPool-$name")
-    private val pool = ConcurrentLinkedQueue<T>()
-    private val active = ConcurrentLinkedQueue<T>()
-    private val lock = ReentrantLock()
-    private val notEmpty = lock.newCondition()
-
-    private val created = AtomicLong(0)
-    private val acquired = AtomicLong(0)
-    private val released = AtomicLong(0)
-    private val destroyed = AtomicLong(0)
-    private val waitCount = AtomicLong(0)
-    private val peakActive = AtomicInteger(0)
-    private val currentSize = AtomicInteger(0)
-    private val totalAcquireTimeNs = AtomicLong(0)
-    private val acquireSamples = AtomicInteger(0)
-    private val totalReleaseTimeNs = AtomicLong(0)
-    private val releaseSamples = AtomicInteger(0)
-
-    private val validator = Runnable {
+        private val logger = LoggerFactory.getLogger("ObjectPool-$name")
+        private val pool = ConcurrentLinkedQueue<T>()
+        private val active = ConcurrentLinkedQueue<T>()
+        private val lock = ReentrantLock()
+        private val notEmpty = lock.newCondition()
+        private val created = AtomicLong(0)
+        private val acquired = AtomicLong(0)
+        private val released = AtomicLong(0)
+        private val destroyed = AtomicLong(0)
+        private val waitCount = AtomicLong(0)
+        private val peakActive = AtomicInteger(0)
+        private val currentSize = AtomicInteger(0)
+        private val totalAcquireTimeNs = AtomicLong(0)
+        private val acquireSamples = AtomicInteger(0)
+        private val totalReleaseTimeNs = AtomicLong(0)
+        private val releaseSamples = AtomicInteger(0)
+        private val validator = Runnable {
         try {
             validateAndCleanup()
         } catch (e: Exception) {
             logger.warn("Validation failed for pool $name", e)
         }
     }
-
-    private val validationThread = Thread(validator, "pool-validator-$name").apply {
+        private val validationThread = Thread(validator, "pool-validator-$name").apply {
         isDaemon = true
         start()
     }
@@ -62,19 +58,18 @@ abstract class ObjectPool<T>(
     protected abstract fun create(): T
     protected open fun validate(obj: T): Boolean = true
     protected open fun destroy(obj: T) {}
-
-    fun acquire(timeoutMs: Long = 10000L): T {
+        fun acquire(timeoutMs: Long = 10000L): T {
         var obj: T? = pool.poll()
         if (obj != null) {
             val start = System.nanoTime()
-            if (validate(obj)) {
+        if (validate(obj)) {
                 active.add(obj)
                 acquired.incrementAndGet()
-                val elapsed = System.nanoTime() - start
+        val elapsed = System.nanoTime() - start
                 totalAcquireTimeNs.addAndGet(elapsed)
                 acquireSamples.incrementAndGet()
                 updatePeakActive()
-                return obj
+        return obj
             }
             destroyInternal(obj)
             obj = null
@@ -82,10 +77,10 @@ abstract class ObjectPool<T>(
 
         lock.withLock {
             var remainingNanos = TimeUnit.MILLISECONDS.toNanos(timeoutMs)
-            val startTime = System.nanoTime()
+        val startTime = System.nanoTime()
             while (obj == null) {
                 val current = currentSize.get()
-                if (current < maxSize) {
+        if (current < maxSize) {
                     currentSize.incrementAndGet()
                     lock.unlock()
                     try {
@@ -97,21 +92,20 @@ abstract class ObjectPool<T>(
                     }
                     break
                 }
-                if (remainingNanos <= 0) {
+        if (remainingNanos <= 0) {
                     waitCount.incrementAndGet()
-                    throw PoolExhaustedException("Pool $name exhausted: maxSize=$maxSize, active=${active.size}, pool=${pool.size}")
+        throw PoolExhaustedException("Pool $name exhausted: maxSize=$maxSize, active=${active.size}, pool=${pool.size}")
                 }
                 waitCount.incrementAndGet()
                 remainingNanos = notEmpty.awaitNanos(remainingNanos)
                 obj = pool.poll()
-                if (obj != null) {
+        if (obj != null) {
                     val elapsed = System.nanoTime() - startTime
                     totalAcquireTimeNs.addAndGet(elapsed)
                     acquireSamples.incrementAndGet()
                 }
             }
         }
-
         if (obj != null) {
             active.add(obj)
             acquired.incrementAndGet()
@@ -119,8 +113,7 @@ abstract class ObjectPool<T>(
         }
         return obj!!
     }
-
-    fun release(obj: T) {
+        fun release(obj: T) {
         val start = System.nanoTime()
         active.remove(obj)
         if (currentSize.get() > minSize && pool.size > minSize) {
@@ -134,8 +127,7 @@ abstract class ObjectPool<T>(
         releaseSamples.incrementAndGet()
         released.incrementAndGet()
     }
-
-    fun warmUp(count: Int) {
+        fun warmUp(count: Int) {
         val toCreate = count.coerceAtMost(maxSize)
         val objects = mutableListOf<T>()
         for (i in 0 until toCreate) {
@@ -152,8 +144,7 @@ abstract class ObjectPool<T>(
         pool.addAll(objects)
         logger.info("Pool $name warmed up with ${objects.size} objects")
     }
-
-    fun getMetrics(): PoolMetrics {
+        fun getMetrics(): PoolMetrics {
         val avgAcquireMs = if (acquireSamples.get() > 0)
             totalAcquireTimeNs.get().toDouble() / acquireSamples.get() / 1_000_000.0 else 0.0
         val avgReleaseMs = if (releaseSamples.get() > 0)
@@ -171,21 +162,18 @@ abstract class ObjectPool<T>(
             averageReleaseTimeMs = avgReleaseMs
         )
     }
-
-    fun drain() {
+        fun drain() {
         lock.withLock {
             pool.clear()
             active.clear()
         }
         currentSize.set(0)
     }
-
-    fun shutdown() {
+        fun shutdown() {
         validationThread.interrupt()
         drain()
     }
-
-    private fun destroyInternal(obj: T) {
+        private fun destroyInternal(obj: T) {
         try {
             destroy(obj)
         } catch (e: Exception) {
@@ -194,25 +182,23 @@ abstract class ObjectPool<T>(
         destroyed.incrementAndGet()
         currentSize.decrementAndGet()
     }
-
-    private fun updatePeakActive() {
+        private fun updatePeakActive() {
         val current = active.size
         var peak = peakActive.get()
         while (current > peak && !peakActive.compareAndSet(peak, current)) {
             peak = peakActive.get()
         }
     }
-
-    private fun validateAndCleanup() {
+        private fun validateAndCleanup() {
         try {
             val now = System.currentTimeMillis()
-            val toRemove = mutableListOf<T>()
-            for (obj in pool) {
+        val toRemove = mutableListOf<T>()
+        for (obj in pool) {
                 if (!validate(obj)) {
                     toRemove.add(obj)
                 }
             }
-            for (obj in toRemove) {
+        for (obj in toRemove) {
                 if (pool.remove(obj)) {
                     destroyInternal(obj)
                 }
@@ -225,8 +211,7 @@ abstract class ObjectPool<T>(
             logger.warn("Validation cycle failed for pool $name", e)
         }
     }
-
-    class PoolExhaustedException(message: String) : RuntimeException(message)
+        class PoolExhaustedException(message: String) : RuntimeException(message)
 }
 
 class StringBuilderPool(
@@ -272,16 +257,11 @@ class MutableListPool<T>(
 
 object PoolRegistry {
     private val pools = ConcurrentLinkedQueue<ObjectPool<*>>()
-
-    fun register(pool: ObjectPool<*>) { pools.add(pool) }
-
-    fun drainAll() { pools.forEach { it.drain() } }
-
-    fun shutdownAll() { pools.forEach { it.shutdown() } }
-
-    fun warmUpAll() { pools.forEach { if (it is StringBuilderPool || it is ByteArrayPool) it.warmUp(8) } }
-
-    fun getAllMetrics(): Map<String, ObjectPool<*>.PoolMetrics> {
+        fun register(pool: ObjectPool<*>) { pools.add(pool) }
+        fun drainAll() { pools.forEach { it.drain() } }
+        fun shutdownAll() { pools.forEach { it.shutdown() } }
+        fun warmUpAll() { pools.forEach { if (it is StringBuilderPool || it is ByteArrayPool) it.warmUp(8) } }
+        fun getAllMetrics(): Map<String, ObjectPool<*>.PoolMetrics> {
         return pools.associate { it.name to it.getMetrics() }
     }
 }

@@ -41,16 +41,14 @@ class WorkflowExecutor(private val context: Context) {
     companion object {
         private const val TAG = "WorkflowExecutor"
     }
-
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val _executions = ConcurrentHashMap<String, WorkflowExecution>()
-    private val _currentExecution = MutableStateFlow<WorkflowExecution?>(null)
-    val currentExecution: StateFlow<WorkflowExecution?> = _currentExecution
+        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        private val _executions = ConcurrentHashMap<String, WorkflowExecution>()
+        private val _currentExecution = MutableStateFlow<WorkflowExecution?>(null)
+        val currentExecution: StateFlow<WorkflowExecution?> = _currentExecution
 
     val executions: List<WorkflowExecution>
         get() = _executions.values.toList()
-
-    fun startExecution(
+        fun startExecution(
         workflow: Workflow,
         inputVariables: Map<String, Any> = emptyMap(),
         onProgress: ((WorkflowExecution) -> Unit)? = null
@@ -73,11 +71,9 @@ class WorkflowExecutor(private val context: Context) {
         scope.launch {
             executeWorkflow(workflow, execution, onProgress)
         }
-
         return execution
     }
-
-    private suspend fun executeWorkflow(
+        private suspend fun executeWorkflow(
         workflow: Workflow,
         execution: WorkflowExecution,
         onProgress: ((WorkflowExecution) -> Unit)?
@@ -85,13 +81,11 @@ class WorkflowExecutor(private val context: Context) {
         try {
             updateExecution(execution.id) { it.copy(status = ExecutionStatus.RUNNING) }
             onProgress?.invoke(execution)
-
-            val inputNodes = workflow.getInputNodes()
-            if (inputNodes.isEmpty()) {
+        val inputNodes = workflow.getInputNodes()
+        if (inputNodes.isEmpty()) {
                 throw Exception("工作流没有输入节�?)
             }
-
-            val resultVariables = executeNodesRecursively(
+        val resultVariables = executeNodesRecursively(
                 workflow, execution.id, inputNodes, execution.outputs, onProgress
             )
 
@@ -104,8 +98,7 @@ class WorkflowExecutor(private val context: Context) {
             }
         }
     }
-
-    private suspend fun executeNodesRecursively(
+        private suspend fun executeNodesRecursively(
         workflow: Workflow,
         executionId: String,
         currentNodes: List<WorkflowNode>,
@@ -138,9 +131,8 @@ class WorkflowExecutor(private val context: Context) {
                     it.copy(status = NodeExecutionStatus.COMPLETED, output = result, completedAt = System.currentTimeMillis())
                 }
                 onProgress?.invoke(_executions[executionId] ?: continue)
-
-                val nextNodes = workflow.getNextNodes(node.id)
-                if (nextNodes.isNotEmpty()) {
+        val nextNodes = workflow.getNextNodes(node.id)
+        if (nextNodes.isNotEmpty()) {
                     updatedVariables = executeNodesRecursively(workflow, executionId, nextNodes, updatedVariables, onProgress)
                 }
             } catch (e: Exception) {
@@ -148,18 +140,16 @@ class WorkflowExecutor(private val context: Context) {
                     it.copy(status = NodeExecutionStatus.FAILED, error = e.message, completedAt = System.currentTimeMillis())
                 }
                 onProgress?.invoke(_executions[executionId] ?: continue)
-                throw e
+        throw e
             }
         }
         return updatedVariables
     }
-
-    private suspend fun executeAgentNode(node: WorkflowNode, variables: Map<String, Any>): Map<String, Any> {
+        private suspend fun executeAgentNode(node: WorkflowNode, variables: Map<String, Any>): Map<String, Any> {
         delay(1000 + (Math.random() * 2000).toLong())
         return variables.toMutableMap().apply { put("agent_output_${node.id}", "Agent ${node.title} 完成了任�?) }
     }
-
-    private fun executeConditionNode(node: WorkflowNode, variables: Map<String, Any>): Map<String, Any> = variables
+        private fun executeConditionNode(node: WorkflowNode, variables: Map<String, Any>): Map<String, Any> = variables
 
     private suspend fun executeParallelNode(
         workflow: Workflow, executionId: String, node: WorkflowNode,
@@ -169,13 +159,11 @@ class WorkflowExecutor(private val context: Context) {
         val results = nextNodes.map { nextNode ->
             async { executeNodesRecursively(workflow, executionId, listOf(nextNode), variables, onProgress) }
         }.awaitAll()
-
         val merged = mutableMapOf<String, Any>()
         results.forEach { merged.putAll(it) }
         return merged
     }
-
-    private suspend fun executeLoopNode(
+        private suspend fun executeLoopNode(
         workflow: Workflow, executionId: String, node: WorkflowNode,
         variables: Map<String, Any>, onProgress: ((WorkflowExecution) -> Unit)?
     ): Map<String, Any> {
@@ -184,7 +172,7 @@ class WorkflowExecutor(private val context: Context) {
 
         repeat(loops) { loopIndex ->
             val nextNodes = workflow.getNextNodes(node.id)
-            if (nextNodes.isNotEmpty()) {
+        if (nextNodes.isNotEmpty()) {
                 currentVars = executeNodesRecursively(workflow, executionId, nextNodes, currentVars.toMutableMap().apply {
                     put("loop_index", loopIndex)
                 }, onProgress)
@@ -192,15 +180,13 @@ class WorkflowExecutor(private val context: Context) {
         }
         return currentVars
     }
-
-    private fun updateExecution(executionId: String, updater: (WorkflowExecution) -> WorkflowExecution) {
+        private fun updateExecution(executionId: String, updater: (WorkflowExecution) -> WorkflowExecution) {
         _executions[executionId]?.let { execution ->
             _executions[executionId] = updater(execution)
             _currentExecution.value = _executions[executionId]
         }
     }
-
-    private fun updateNodeExecution(executionId: String, nodeId: String, updater: (NodeExecution) -> NodeExecution) {
+        private fun updateNodeExecution(executionId: String, nodeId: String, updater: (NodeExecution) -> NodeExecution) {
         _executions[executionId]?.let { execution ->
             val updatedNodeExecutions = execution.nodeExecutions.toMutableMap().apply {
                 this[nodeId]?.let { nodeExec -> this[nodeId] = updater(nodeExec) }
@@ -209,14 +195,12 @@ class WorkflowExecutor(private val context: Context) {
             _currentExecution.value = _executions[executionId]
         }
     }
-
-    fun cancelExecution(executionId: String): Boolean {
+        fun cancelExecution(executionId: String): Boolean {
         val execution = _executions[executionId] ?: return false
         updateExecution(executionId) { it.copy(status = ExecutionStatus.CANCELLED, completedAt = System.currentTimeMillis()) }
         return true
     }
-
-    fun getExecution(executionId: String): WorkflowExecution? = _executions[executionId]
+        fun getExecution(executionId: String): WorkflowExecution? = _executions[executionId]
     fun clearCompletedExecutions() {
         val toRemove = _executions.filter { entry ->
             entry.value.status in listOf(ExecutionStatus.COMPLETED, ExecutionStatus.FAILED, ExecutionStatus.CANCELLED)

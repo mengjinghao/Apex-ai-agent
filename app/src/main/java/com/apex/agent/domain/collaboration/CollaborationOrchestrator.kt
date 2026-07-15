@@ -32,22 +32,18 @@ class CollaborationOrchestrator(
         val task: CollaborationTask,
         val createdAt: Long = System.currentTimeMillis()
     )
-
-    private val taskQueue = PriorityBlockingQueue<PriorityTask>(maxQueueSize) { a, b ->
+        private val taskQueue = PriorityBlockingQueue<PriorityTask>(maxQueueSize) { a, b ->
         b.task.priority.compareTo(a.task.priority)
             .takeIf { it != 0 } ?: a.createdAt.compareTo(b.createdAt)
     }
-
-    private val taskStatusMap = ConcurrentHashMap<String, TaskStatus>()
-    private val agentRegistry = ConcurrentHashMap<String, AgentCapability>()
-    private val agentHeartbeats = ConcurrentHashMap<String, Long>()
-    private val listeners = ConcurrentHashMap<String, WeakReference<CollaborationListener>>()
-    private val listenerCounter = AtomicLong(0)
-
-    private val _processing = MutableStateFlow(false)
-    val isProcessing: StateFlow<Boolean> = _processing.asStateFlow()
-
-    private var processorJob: Job? = null
+        private val taskStatusMap = ConcurrentHashMap<String, TaskStatus>()
+        private val agentRegistry = ConcurrentHashMap<String, AgentCapability>()
+        private val agentHeartbeats = ConcurrentHashMap<String, Long>()
+        private val listeners = ConcurrentHashMap<String, WeakReference<CollaborationListener>>()
+        private val listenerCounter = AtomicLong(0)
+        private val _processing = MutableStateFlow(false)
+        val isProcessing: StateFlow<Boolean> = _processing.asStateFlow()
+        private var processorJob: Job? = null
     private var heartbeatJob: Job? = null
 
     init {
@@ -64,7 +60,7 @@ class CollaborationOrchestrator(
             while (isActive) {
                 try {
                     val priorityTask = taskQueue.poll()
-                    if (priorityTask != null) {
+        if (priorityTask != null) {
                         processTask(priorityTask.task)
                     } else {
                         delay(100)
@@ -84,7 +80,7 @@ class CollaborationOrchestrator(
         heartbeatJob = scope.launch {
             while (isActive) {
                 delay(heartbeatTimeoutMs / 2)
-                val now = System.currentTimeMillis()
+        val now = System.currentTimeMillis()
                 agentRegistry.keys.forEach { agentId ->
                     val lastBeat = agentHeartbeats[agentId] ?: return@forEach
                     if (now - lastBeat > heartbeatTimeoutMs) {
@@ -116,9 +112,8 @@ class CollaborationOrchestrator(
 
         if (!taskQueue.offer(PriorityTask(finalTask))) {
             taskStatusMap.remove(taskId)
-            throw IllegalStateException("Task queue is full (max=$maxQueueSize), task $taskId rejected")
+        throw IllegalStateException("Task queue is full (max=$maxQueueSize), task $taskId rejected")
         }
-
         return taskId
     }
 
@@ -151,7 +146,7 @@ class CollaborationOrchestrator(
         val existing = agentRegistry.putIfAbsent(capability.agentId, capability)
         if (existing == null) {
             agentHeartbeats[capability.agentId] = System.currentTimeMillis()
-            return true
+        return true
         }
         return false
     }
@@ -206,7 +201,6 @@ class CollaborationOrchestrator(
     private suspend fun processTask(task: CollaborationTask) {
         val status = taskStatusMap[task.id] ?: return
         taskStatusMap[task.id] = status.copy(state = TaskState.ASSIGNED)
-
         val agent = selectAgent(task)
         val agentId = agent?.agentId ?: run {
             taskStatusMap[task.id] = status.copy(
@@ -214,7 +208,7 @@ class CollaborationOrchestrator(
                 error = "No available agent",
                 completedAt = System.currentTimeMillis()
             )
-            return
+        return
         }
 
         taskStatusMap[task.id] = status.copy(state = TaskState.RUNNING, assignedAgentId = agentId)
@@ -225,10 +219,9 @@ class CollaborationOrchestrator(
             val updatedCap = agentCap.copy(load = (agentCap.load + 0.2f).coerceAtMost(1f), status = AgentStatus.BUSY)
             agentRegistry[agentId] = updatedCap
             notifyListeners { it.onAgentStatusChanged(agentId, AgentStatus.BUSY) }
-
-            for (i in 1..5) {
+        for (i in 1..5) {
                 delay(200)
-                val progress = i / 5f
+        val progress = i / 5f
                 taskStatusMap[task.id] = status.copy(
                     state = TaskState.RUNNING,
                     assignedAgentId = agentId,
@@ -236,8 +229,7 @@ class CollaborationOrchestrator(
                 )
                 notifyListeners { it.onTaskProgress(task.id, progress, "Processing step $i/5") }
             }
-
-            val result = "Task ${task.id} completed by agent $agentId"
+        val result = "Task ${task.id} completed by agent $agentId"
             taskStatusMap[task.id] = status.copy(
                 state = TaskState.COMPLETED,
                 assignedAgentId = agentId,
@@ -272,23 +264,20 @@ class CollaborationOrchestrator(
     private fun selectAgent(task: CollaborationTask): AgentCapability? {
         val candidates = agentRegistry.values
             .filter { it.status == AgentStatus.IDLE && it.load < 0.8f }
-
         if (task.assignedAgentIds.isNotEmpty()) {
             task.assignedAgentIds.forEach { preferredId ->
                 candidates.find { it.agentId == preferredId }?.let { return it }
             }
         }
-
         val skillRequired = extractRequiredSkills(task)
         if (skillRequired.isNotEmpty()) {
             val matched = candidates.filter { cap ->
                 cap.skills.any { skill -> skillRequired.any { it.contains(skill, ignoreCase = true) || skill.contains(it, ignoreCase = true) } }
             }
-            if (matched.isNotEmpty()) {
+        if (matched.isNotEmpty()) {
                 return matched.minByOrNull { it.load }
             }
         }
-
         return candidates.minByOrNull { it.load }
     }
 
@@ -313,7 +302,7 @@ class CollaborationOrchestrator(
         val deadEntries = mutableListOf<String>()
         listeners.forEach { (id, ref) ->
             val listener = ref.get()
-            if (listener != null) {
+        if (listener != null) {
                 try {
                     action(listener)
                 } catch (_: Exception) {

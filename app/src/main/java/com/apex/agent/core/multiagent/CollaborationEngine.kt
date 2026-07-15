@@ -21,18 +21,15 @@ class CollaborationEngine(
     companion object {
         private const val TAG = "CollaborationEngine"
     }
-
-    private val tasks = ConcurrentHashMap<String, CollaborationTask>()
-    private val taskExecutors = ConcurrentHashMap<String, TaskExecutor>()
-    private val eventChannel = Channel<CollaborationEvent>(Channel.UNLIMITED)
-    private val _isRunning = MutableStateFlow(false)
-    val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
-
-    private val _eventFlow = MutableSharedFlow<CollaborationEvent>(replay = 0, extraBufferCapacity = 64)
-    val eventFlow: SharedFlow<CollaborationEvent> = _eventFlow.asSharedFlow()
-
-    private val listeners = ConcurrentHashMap<String, CollaborationListener>()
-    private var eventJob: Job? = null
+        private val tasks = ConcurrentHashMap<String, CollaborationTask>()
+        private val taskExecutors = ConcurrentHashMap<String, TaskExecutor>()
+        private val eventChannel = Channel<CollaborationEvent>(Channel.UNLIMITED)
+        private val _isRunning = MutableStateFlow(false)
+        val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
+        private val _eventFlow = MutableSharedFlow<CollaborationEvent>(replay = 0, extraBufferCapacity = 64)
+        val eventFlow: SharedFlow<CollaborationEvent> = _eventFlow.asSharedFlow()
+        private val listeners = ConcurrentHashMap<String, CollaborationListener>()
+        private var eventJob: Job? = null
 
     fun start() {
         if (_isRunning.value) return
@@ -44,8 +41,7 @@ class CollaborationEngine(
             }
         }
     }
-
-    fun stop() {
+        fun stop() {
         _isRunning.value = false
         eventJob?.cancel()
         eventJob = null
@@ -54,8 +50,7 @@ class CollaborationEngine(
         taskExecutors.values.forEach { it.stop() }
         taskExecutors.clear()
     }
-
-    fun createTask(task: CollaborationTask): String {
+        fun createTask(task: CollaborationTask): String {
         val taskId = task.id.ifEmpty { generateUniqueId() }
         val newTask = task.copy(id = taskId, status = CollaborationTask.Status.PENDING)
         tasks[taskId] = newTask
@@ -63,13 +58,11 @@ class CollaborationEngine(
         eventChannel.trySend(CollaborationEvent(CollaborationEvent.Type.TASK_CREATED, taskId))
         return taskId
     }
-
-    fun startTask(taskId: String): Boolean {
+        fun startTask(taskId: String): Boolean {
         val task = tasks[taskId]
         if (task == null || task.status != CollaborationTask.Status.PENDING) return false
 
         tasks[taskId] = task.copy(status = CollaborationTask.Status.RUNNING, startTime = System.currentTimeMillis())
-
         val executor = TaskExecutor(taskId, task, this, context, aiService, coroutineScope)
         taskExecutors[taskId] = executor
         executor.start()
@@ -78,8 +71,7 @@ class CollaborationEngine(
         notifyListeners { it.onTaskStarted(taskId) }
         return true
     }
-
-    fun pauseTask(taskId: String): Boolean {
+        fun pauseTask(taskId: String): Boolean {
         val task = tasks[taskId]
         if (task == null || task.status != CollaborationTask.Status.RUNNING) return false
 
@@ -90,8 +82,7 @@ class CollaborationEngine(
         notifyListeners { it.onTaskPaused(taskId) }
         return true
     }
-
-    fun resumeTask(taskId: String): Boolean {
+        fun resumeTask(taskId: String): Boolean {
         val task = tasks[taskId]
         if (task == null || task.status != CollaborationTask.Status.PAUSED) return false
 
@@ -102,8 +93,7 @@ class CollaborationEngine(
         notifyListeners { it.onTaskResumed(taskId) }
         return true
     }
-
-    fun stopTask(taskId: String): Boolean {
+        fun stopTask(taskId: String): Boolean {
         val task = tasks[taskId]
         if (task == null || task.status == CollaborationTask.Status.COMPLETED || task.status == CollaborationTask.Status.FAILED) return false
 
@@ -115,30 +105,24 @@ class CollaborationEngine(
         notifyListeners { it.onTaskStopped(taskId) }
         return true
     }
-
-    fun getTask(taskId: String): CollaborationTask? = tasks[taskId]
+        fun getTask(taskId: String): CollaborationTask? = tasks[taskId]
     fun getAllTasks(): List<CollaborationTask> = tasks.values.toList()
-
-    fun submitMessage(taskId: String, message: AgentMessage) {
+        fun submitMessage(taskId: String, message: AgentMessage) {
         eventChannel.trySend(CollaborationEvent(CollaborationEvent.Type.MESSAGE_SUBMITTED, taskId, message))
     }
-
-    fun addListener(listener: CollaborationListener) {
+        fun addListener(listener: CollaborationListener) {
         val listenerId = "listener_${System.currentTimeMillis()}"
         listeners[listenerId] = listener
     }
-
-    fun removeListener(listenerId: String) {
+        fun removeListener(listenerId: String) {
         listeners.remove(listenerId)
     }
-
-    private fun notifyListeners(action: (CollaborationListener) -> Unit) {
+        private fun notifyListeners(action: (CollaborationListener) -> Unit) {
         listeners.values.forEach { listener ->
             try { action(listener) } catch (e: Exception) { AppLogger.e(TAG, "notifyListeners error", e) }
         }
     }
-
-    private fun handleEvent(event: CollaborationEvent) {
+        private fun handleEvent(event: CollaborationEvent) {
         _eventFlow.tryEmit(event)
         when (event.type) {
             CollaborationEvent.Type.TASK_CREATED -> notifyListeners { it.onTaskCreated(event.taskId) }
@@ -162,21 +146,20 @@ class CollaborationEngine(
             }
         }
     }
-
-    private fun generateUniqueId(): String = "task_${System.currentTimeMillis()}_${(Math.random() * 1000).toInt()}"
+        private fun generateUniqueId(): String = "task_${System.currentTimeMillis()}_${(Math.random() * 1000).toInt()}"
 }
 
 interface CollaborationListener {
     fun onTaskCreated(taskId: String) {}
-    fun onTaskStarted(taskId: String) {}
-    fun onTaskPaused(taskId: String) {}
-    fun onTaskResumed(taskId: String) {}
-    fun onTaskStopped(taskId: String) {}
-    fun onTaskCompleted(taskId: String) {}
-    fun onTaskFailed(taskId: String, error: String) {}
-    fun onAgentMessage(taskId: String, message: AgentMessage) {}
-    fun onAgentStatusChanged(taskId: String, agentId: String, status: AgentInstance.Status) {}
-    fun onProgressChanged(taskId: String, progress: Float) {}
+        fun onTaskStarted(taskId: String) {}
+        fun onTaskPaused(taskId: String) {}
+        fun onTaskResumed(taskId: String) {}
+        fun onTaskStopped(taskId: String) {}
+        fun onTaskCompleted(taskId: String) {}
+        fun onTaskFailed(taskId: String, error: String) {}
+        fun onAgentMessage(taskId: String, message: AgentMessage) {}
+        fun onAgentStatusChanged(taskId: String, agentId: String, status: AgentInstance.Status) {}
+        fun onProgressChanged(taskId: String, progress: Float) {}
 }
 
 class TaskExecutor(
@@ -189,16 +172,15 @@ class TaskExecutor(
 ) {
     private var job: Job? = null
     private val _isRunning = MutableStateFlow(false)
-    val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
-    private val _isPaused = MutableStateFlow(false)
-    private val messageChannel = Channel<AgentMessage>(Channel.UNLIMITED)
-    private val agentStates = ConcurrentHashMap<String, AgentExecutionState>()
-    private val currentStep = AtomicInteger(0)
-    private var currentModeHandler: CollaborationModeHandler? = null
+        val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
+        private val _isPaused = MutableStateFlow(false)
+        private val messageChannel = Channel<AgentMessage>(Channel.UNLIMITED)
+        private val agentStates = ConcurrentHashMap<String, AgentExecutionState>()
+        private val currentStep = AtomicInteger(0)
+        private var currentModeHandler: CollaborationModeHandler? = null
 
     private val scope = CoroutineScope(parentScope.coroutineContext + SupervisorJob())
-
-    fun start() {
+        fun start() {
         if (_isRunning.value) return
         _isRunning.value = true
         _isPaused.value = false
@@ -210,7 +192,7 @@ class TaskExecutor(
             while (_isRunning.value && isActive) {
                 if (!_isPaused.value) {
                     val message = messageChannel.tryReceive().getOrNull()
-                    if (message != null) {
+        if (message != null) {
                         handleMessage(message)
                     } else {
                         executeCollaboration()
@@ -222,8 +204,7 @@ class TaskExecutor(
             }
         }
     }
-
-    private fun initializeAgentStates() {
+        private fun initializeAgentStates() {
         task.agents.forEach { agent ->
             agentStates[agent.id] = AgentExecutionState(
                 agentId = agent.id,
@@ -234,8 +215,7 @@ class TaskExecutor(
             )
         }
     }
-
-    private fun createModeHandler(): CollaborationModeHandler {
+        private fun createModeHandler(): CollaborationModeHandler {
         val swarmEngine = aiService?.let { SwarmIntelligenceEngine(context, it) }
         return when (task.collaborationMode) {
             CollaborationTask.CollaborationMode.SUPERVISOR_EXECUTION ->
@@ -250,8 +230,7 @@ class TaskExecutor(
                 FreeDialogModeHandler(task, this, context, aiService)
         }
     }
-
-    fun stop() {
+        fun stop() {
         _isRunning.value = false
         _isPaused.value = false
         job?.cancel()
@@ -259,31 +238,25 @@ class TaskExecutor(
         currentModeHandler?.cleanup()
         messageChannel.close()
     }
-
-    fun pause() { _isPaused.value = true }
-    fun resume() { _isPaused.value = false }
-
-    fun handleMessage(message: AgentMessage) {
+        fun pause() { _isPaused.value = true }
+        fun resume() { _isPaused.value = false }
+        fun handleMessage(message: AgentMessage) {
         currentModeHandler?.onMessageReceived(message)
     }
-
-    private suspend fun executeCollaboration() {
+        private suspend fun executeCollaboration() {
         currentModeHandler?.executeStep()
     }
-
-    fun updateAgentStatus(agentId: String, status: AgentStatus) {
+        fun updateAgentStatus(agentId: String, status: AgentStatus) {
         agentStates.computeIfPresent(agentId) { _, state ->
             state.copy(status = status, lastUpdateTime = System.currentTimeMillis())
         }
     }
-
-    fun updateAgentProgress(agentId: String, progress: Float) {
+        fun updateAgentProgress(agentId: String, progress: Float) {
         agentStates.computeIfPresent(agentId) { _, state ->
             state.copy(progress = progress, lastUpdateTime = System.currentTimeMillis())
         }
     }
-
-    fun broadcastMessage(message: AgentMessage) {
+        fun broadcastMessage(message: AgentMessage) {
         task.agents.forEach { agent ->
             agentStates.computeIfPresent(agent.id) { _, state ->
                 if (state.status == AgentStatus.IDLE || state.status == AgentStatus.WAITING) {
@@ -292,30 +265,25 @@ class TaskExecutor(
             }
         }
     }
-
-    fun sendToAgent(agentId: String, message: AgentMessage) {
+        fun sendToAgent(agentId: String, message: AgentMessage) {
         agentStates.computeIfPresent(agentId) { _, state ->
             state.copy(status = AgentStatus.RECEIVING, currentTask = message.content, lastUpdateTime = System.currentTimeMillis())
         }
     }
-
-    fun getNextAgent(excludeIds: Set<String> = emptySet()): Agent? =
+        fun getNextAgent(excludeIds: Set<String> = emptySet()): Agent? =
         task.agents.firstOrNull { it.id !in excludeIds && agentStates[it.id]?.status == AgentStatus.IDLE }
-
-    fun getSupervisorAgent(): Agent? {
+        fun getSupervisorAgent(): Agent? {
         val supervisorRole = context.getString(R.string.role_supervisor)
         val coordinatorRole = context.getString(R.string.role_coordinator)
         return task.agents.firstOrNull { it.role.contains(supervisorRole) || it.role.contains(coordinatorRole) }
     }
-
-    fun incrementStep(): Int = currentStep.incrementAndGet()
-    fun getStep(): Int = currentStep.get()
-    fun getAgentState(agentId: String): AgentExecutionState? = agentStates[agentId]
+        fun incrementStep(): Int = currentStep.incrementAndGet()
+        fun getStep(): Int = currentStep.get()
+        fun getAgentState(agentId: String): AgentExecutionState? = agentStates[agentId]
 
     fun areAllAgentsFinished(): Boolean =
         agentStates.values.all { it.status == AgentStatus.IDLE || it.status == AgentStatus.FINISHED }
-
-    fun areAllAgentsWorking(): Boolean =
+        fun areAllAgentsWorking(): Boolean =
         agentStates.values.all { it.status == AgentStatus.WORKING }
 }
 
@@ -350,7 +318,7 @@ class SupervisorModeHandler(
 
     private var phase = SupervisorPhase.TASK_ANALYSIS
     private var assignedTasks = mutableMapOf<String, String>()
-    private var completedTasks = mutableSetOf<String>()
+        private var completedTasks = mutableSetOf<String>()
 
     override suspend fun executeStep() {
         when (phase) {
@@ -362,11 +330,9 @@ class SupervisorModeHandler(
             SupervisorPhase.FINAL_REVIEW -> executeFinalReview()
         }
     }
-
-    private suspend fun executeTaskAnalysis() {
+        private suspend fun executeTaskAnalysis() {
         val supervisor = executor.getSupervisorAgent() ?: run { phase = SupervisorPhase.FINAL_REVIEW; return }
         executor.updateAgentStatus(supervisor.id, AgentStatus.WORKING)
-
         val thinkingSession = aiService?.let { AgentThinkingSession(context, it) }
         val analysis = if (thinkingSession != null) {
             val output = thinkingSession.thinkAndProduce(
@@ -382,7 +348,6 @@ class SupervisorModeHandler(
                 "You are a senior project supervisor. Analyze task requirements and provide a clear breakdown plan."
             )
         } else ""
-
         if (analysis.isNotBlank()) {
             executor.broadcastMessage(AgentMessage(
                 sender = context.getString(R.string.system_sender),
@@ -400,8 +365,7 @@ class SupervisorModeHandler(
         }
         phase = SupervisorPhase.TASK_DECOMPOSITION
     }
-
-    private suspend fun executeTaskDecomposition() {
+        private suspend fun executeTaskDecomposition() {
         val supervisor = executor.getSupervisorAgent() ?: return
         val subTasks = decomposeTask(task.description)
         assignedTasks.clear()
@@ -411,13 +375,12 @@ class SupervisorModeHandler(
         executor.updateAgentProgress(supervisor.id, 0.3f)
         phase = SupervisorPhase.TASK_ASSIGNMENT
     }
-
-    private suspend fun executeTaskAssignment() {
+        private suspend fun executeTaskAssignment() {
         val supervisor = executor.getSupervisorAgent() ?: return
 
         assignedTasks.forEach { (taskId, subTask) ->
             val availableAgent = executor.getNextAgent()
-            if (availableAgent != null) {
+        if (availableAgent != null) {
                 executor.sendToAgent(availableAgent.id, AgentMessage(
                     sender = supervisor.name,
                     content = subTask,
@@ -430,19 +393,16 @@ class SupervisorModeHandler(
         executor.updateAgentProgress(supervisor.id, 0.5f)
         phase = SupervisorPhase.EXECUTION_MONITORING
     }
-
-    private suspend fun executeExecutionMonitoring() {
+        private suspend fun executeExecutionMonitoring() {
         if (executor.areAllAgentsFinished()) {
             phase = SupervisorPhase.RESULT_AGGREGATION
         } else {
             delay(50)
         }
     }
-
-    private suspend fun executeResultAggregation() {
+        private suspend fun executeResultAggregation() {
         val supervisor = executor.getSupervisorAgent() ?: return
         executor.updateAgentProgress(supervisor.id, 0.9f)
-
         val thinkingSession = aiService?.let { AgentThinkingSession(context, it) }
         val summary = if (thinkingSession != null) {
             val output = thinkingSession.thinkAndProduce(
@@ -458,7 +418,6 @@ class SupervisorModeHandler(
                 "You are a project manager reviewing team outputs. Ensure nothing is missed."
             )
         } else ""
-
         if (summary.isNotBlank()) {
             executor.broadcastMessage(AgentMessage(
                 sender = context.getString(R.string.system_sender),
@@ -469,11 +428,9 @@ class SupervisorModeHandler(
         }
         phase = SupervisorPhase.FINAL_REVIEW
     }
-
-    private suspend fun executeFinalReview() {
+        private suspend fun executeFinalReview() {
         val supervisor = executor.getSupervisorAgent() ?: return
         executor.updateAgentProgress(supervisor.id, 1.0f)
-
         val thinkingSession = aiService?.let { AgentThinkingSession(context, it) }
         if (thinkingSession != null && aiService != null) {
             val qualityReport = thinkingSession.validateOutput(
@@ -482,22 +439,21 @@ class SupervisorModeHandler(
                 },
                 "Final quality review for: ${task.description}"
             )
-            val gateResult = com.apex.agent.core.evaluation.QualityGate.evaluate(qualityReport)
-            if (!gateResult.passed) {
+        val gateResult = com.apex.agent.core.evaluation.QualityGate.evaluate(qualityReport)
+        if (!gateResult.passed) {
                 AppLogger.w(TAG, "Final review quality concerns: ${gateResult.suggestions}")
             }
         }
 
         executor.updateAgentStatus(supervisor.id, AgentStatus.FINISHED)
     }
-
-    private suspend fun decomposeTask(taskDescription: String): List<String> {
+        private suspend fun decomposeTask(taskDescription: String): List<String> {
         if (aiService != null) {
             val result = callAI(
                 "Decompose the following task into 3-5 subtasks that can be executed in parallel:\n$taskDescription",
                 "You are a task decomposition expert. Break down complex tasks into manageable subtasks."
             )
-            if (result.isNotBlank()) {
+        if (result.isNotBlank()) {
                 return result.split("\n").filter { it.isNotBlank() }.take(10)
             }
         }
@@ -509,8 +465,7 @@ class SupervisorModeHandler(
             context.getString(R.string.supervisor_decompose_documentation)
         )
     }
-
-    private suspend fun callAI(prompt: String, systemPrompt: String): String {
+        private suspend fun callAI(prompt: String, systemPrompt: String): String {
         return try {
             val turns = listOf(
                 com.apex.core.chat.hooks.PromptTurn(
@@ -520,7 +475,7 @@ class SupervisorModeHandler(
                     kind = com.apex.core.chat.hooks.PromptTurnKind.USER, content = prompt
                 )
             )
-            val result = StringBuilder()
+        val result = StringBuilder()
             aiService?.sendMessage(
                 context = context,
                 chatHistory = turns,
@@ -560,7 +515,7 @@ class SerialPipelineModeHandler(
 
     private var currentAgentIndex = 0
     private var pipelineData: String = ""
-    private val pipelineStages = listOf(
+        private val pipelineStages = listOf(
         "Requirements Analysis",
         "Design",
         "Implementation",
@@ -574,7 +529,6 @@ class SerialPipelineModeHandler(
 
         val currentAgent = agents[currentAgentIndex]
         executor.updateAgentStatus(currentAgent.id, AgentStatus.WORKING)
-
         val stageName = pipelineStages.getOrElse(currentAgentIndex) { "Stage ${currentAgentIndex + 1}" }
         val inputData = if (currentAgentIndex == 0) task.description else pipelineData
 
@@ -583,7 +537,7 @@ class SerialPipelineModeHandler(
                 "You are at stage '$stageName'. Process the following input and pass it to the next stage:\n\n$inputData",
                 "You are a pipeline processing agent. Complete your stage and pass results to the next."
             )
-            if (result.isNotBlank()) result
+        if (result.isNotBlank()) result
             else context.getString(R.string.pipeline_stage_processed_format, stageName, currentAgent.name)
         } else {
             context.getString(R.string.pipeline_stage_processed_format, stageName, currentAgent.name)
@@ -599,8 +553,7 @@ class SerialPipelineModeHandler(
             }
         }
     }
-
-    private suspend fun callAI(prompt: String, systemPrompt: String): String {
+        private suspend fun callAI(prompt: String, systemPrompt: String): String {
         return try {
             val turns = listOf(
                 com.apex.core.chat.hooks.PromptTurn(
@@ -610,7 +563,7 @@ class SerialPipelineModeHandler(
                     kind = com.apex.core.chat.hooks.PromptTurnKind.USER, content = prompt
                 )
             )
-            val result = StringBuilder()
+        val result = StringBuilder()
             aiService?.sendMessage(
                 context = context,
                 chatHistory = turns,
@@ -641,7 +594,7 @@ class ParallelExecutionModeHandler(
     private var executionRound = 0
     private val maxRounds = 3
     private val results = ConcurrentHashMap<String, String>()
-    private var executionStarted = false
+        private var executionStarted = false
 
     override suspend fun executeStep() {
         val agents = task.agents
@@ -652,7 +605,7 @@ class ParallelExecutionModeHandler(
 
         agents.parallelForEach(scope) { agent ->
             executor.updateAgentStatus(agent.id, AgentStatus.WORKING)
-            val result = executeBranch(agent, executionRound)
+        val result = executeBranch(agent, executionRound)
             results[agent.id] = result
             executor.updateAgentProgress(agent.id, (executionRound + 1).toFloat() / maxRounds)
             executor.updateAgentStatus(agent.id, AgentStatus.FINISHED)
@@ -663,8 +616,7 @@ class ParallelExecutionModeHandler(
             aggregateResults()
         }
     }
-
-    private suspend fun executeBranch(agent: Agent, round: Int): String {
+        private suspend fun executeBranch(agent: Agent, round: Int): String {
         val thinkingSession = aiService?.let { AgentThinkingSession(context, it) }
         if (thinkingSession != null) {
             val output = thinkingSession.thinkAndProduce(
@@ -673,27 +625,25 @@ class ParallelExecutionModeHandler(
                 instructions = "Execute this branch independently with thorough analysis.",
                 enableQualityCheck = true
             )
-            if (output.finalAnswer.isNotBlank() && output.passedQualityGate) return output.finalAnswer
+        if (output.finalAnswer.isNotBlank() && output.passedQualityGate) return output.finalAnswer
         }
         if (aiService != null) {
             val result = callAI(
                 "Execute branch $round for task: ${task.description}. Your role: ${agent.role}",
                 "You are ${agent.name}, a ${agent.role}. Execute your assigned branch independently."
             )
-            if (result.isNotBlank()) return result
+        if (result.isNotBlank()) return result
         }
         return context.getString(R.string.parallel_branch_execution_format, agent.name, round + 1)
     }
-
-    private suspend fun aggregateResults() {
+        private suspend fun aggregateResults() {
         val summary = results.entries.joinToString("\n") { "${it.key}: ${it.value}" }
-
         if (aiService != null) {
             val aiSummary = callAI(
                 "Aggregate and summarize the following parallel execution results:\n\n$summary",
                 "You are a results aggregator. Combine parallel execution results into a coherent summary."
             )
-            if (aiSummary.isNotBlank()) {
+        if (aiSummary.isNotBlank()) {
                 executor.broadcastMessage(AgentMessage(
                     sender = context.getString(R.string.system_sender),
                     content = "Parallel Execution Summary:\n$aiSummary",
@@ -704,8 +654,7 @@ class ParallelExecutionModeHandler(
         }
         results.clear()
     }
-
-    private suspend fun callAI(prompt: String, systemPrompt: String): String {
+        private suspend fun callAI(prompt: String, systemPrompt: String): String {
         return try {
             val turns = listOf(
                 com.apex.core.chat.hooks.PromptTurn(
@@ -715,7 +664,7 @@ class ParallelExecutionModeHandler(
                     kind = com.apex.core.chat.hooks.PromptTurnKind.USER, content = prompt
                 )
             )
-            val result = StringBuilder()
+        val result = StringBuilder()
             aiService?.sendMessage(
                 context = context,
                 chatHistory = turns,
@@ -745,7 +694,7 @@ class DebateReviewModeHandler(
     private var round = 0
     private val maxRounds = 3
     private val arguments = mutableListOf<Pair<String, String>>()
-    private val scores = mutableMapOf<String, Float>()
+        private val scores = mutableMapOf<String, Float>()
 
     override suspend fun executeStep() {
         when (phase) {
@@ -756,11 +705,10 @@ class DebateReviewModeHandler(
             DebatePhase.JUDGMENT -> executeJudgment()
         }
     }
-
-    private suspend fun executeOpeningArguments() {
+        private suspend fun executeOpeningArguments() {
         if (swarmEngine != null && aiService != null) {
             val debate = swarmEngine.startDebate(task.description, task.agents.map { it.id })
-            val consensus = swarmEngine.reachConsensus(debate.id)
+        val consensus = swarmEngine.reachConsensus(debate.id)
             task.agents.forEach { agent ->
                 executor.updateAgentStatus(agent.id, AgentStatus.FINISHED)
             }
@@ -770,7 +718,7 @@ class DebateReviewModeHandler(
 
         task.agents.forEach { agent ->
             executor.updateAgentStatus(agent.id, AgentStatus.WORKING)
-            val argument = generateOpeningArgument(agent)
+        val argument = generateOpeningArgument(agent)
             arguments.add(agent.id to argument)
             executor.updateAgentProgress(agent.id, 0.25f)
         }
@@ -778,41 +726,37 @@ class DebateReviewModeHandler(
         round = 1
         phase = DebatePhase.CROSS_EXAMINATION
     }
-
-    private suspend fun executeCrossExamination() {
+        private suspend fun executeCrossExamination() {
         task.agents.forEach { agent ->
             executor.updateAgentStatus(agent.id, AgentStatus.WORKING)
-            val question = generateQuestion(agent, arguments)
+        val question = generateQuestion(agent, arguments)
             arguments.add(agent.id to question)
             executor.updateAgentProgress(agent.id, 0.25f + 0.25f * (round - 1) / maxRounds)
         }
         round++
         if (round > maxRounds) phase = DebatePhase.REBUTTAL
     }
-
-    private suspend fun executeRebuttal() {
+        private suspend fun executeRebuttal() {
         task.agents.forEach { agent ->
             executor.updateAgentStatus(agent.id, AgentStatus.WORKING)
-            val rebuttal = generateRebuttal(agent, arguments)
+        val rebuttal = generateRebuttal(agent, arguments)
             arguments.add(agent.id to rebuttal)
             executor.updateAgentProgress(agent.id, 0.75f)
         }
         task.agents.forEach { executor.updateAgentStatus(it.id, AgentStatus.WAITING) }
         phase = DebatePhase.FINAL_ARGUMENT
     }
-
-    private suspend fun executeFinalArguments() {
+        private suspend fun executeFinalArguments() {
         task.agents.forEach { agent ->
             executor.updateAgentStatus(agent.id, AgentStatus.WORKING)
-            val finalArgument = generateFinalArgument(agent)
+        val finalArgument = generateFinalArgument(agent)
             arguments.add(agent.id to finalArgument)
             executor.updateAgentProgress(agent.id, 0.9f)
         }
         task.agents.forEach { executor.updateAgentStatus(it.id, AgentStatus.FINISHED) }
         phase = DebatePhase.JUDGMENT
     }
-
-    private suspend fun executeJudgment() {
+        private suspend fun executeJudgment() {
         task.agents.forEach { agent ->
             scores[agent.id] = calculateScore(agent, arguments)
         }
@@ -821,57 +765,51 @@ class DebateReviewModeHandler(
         }
         arguments.clear()
     }
-
-    private suspend fun generateOpeningArgument(agent: Agent): String {
+        private suspend fun generateOpeningArgument(agent: Agent): String {
         if (aiService != null) {
             val result = callAI(
                 "Generate an opening argument for the debate topic: ${task.description}. Your role: ${agent.role}",
                 "You are ${agent.name}, a ${agent.role}. Present your opening argument."
             )
-            if (result.isNotBlank()) return result
+        if (result.isNotBlank()) return result
         }
         return context.getString(R.string.debate_opening_argument_format, agent.name, task.description)
     }
-
-    private suspend fun generateQuestion(agent: Agent, prevArgs: List<Pair<String, String>>): String {
+        private suspend fun generateQuestion(agent: Agent, prevArgs: List<Pair<String, String>>): String {
         if (aiService != null) {
             val context = prevArgs.takeLast(3).joinToString("\n") { "${it.first}: ${it.second}" }
-            val result = callAI(
+        val result = callAI(
                 "Based on these arguments:\n$context\n\nAsk a probing question.",
                 "You are ${agent.name}. Question the other participants' arguments."
             )
-            if (result.isNotBlank()) return result
+        if (result.isNotBlank()) return result
         }
         return context.getString(R.string.debate_question_format, agent.name)
     }
-
-    private suspend fun generateRebuttal(agent: Agent, prevArgs: List<Pair<String, String>>): String {
+        private suspend fun generateRebuttal(agent: Agent, prevArgs: List<Pair<String, String>>): String {
         if (aiService != null) {
             val result = callAI(
                 "Provide a rebuttal to the latest arguments. Topic: ${task.description}",
                 "You are ${agent.name}. Rebut the opposing arguments concisely."
             )
-            if (result.isNotBlank()) return result
+        if (result.isNotBlank()) return result
         }
         return context.getString(R.string.debate_rebuttal_format, agent.name)
     }
-
-    private suspend fun generateFinalArgument(agent: Agent): String {
+        private suspend fun generateFinalArgument(agent: Agent): String {
         if (aiService != null) {
             val result = callAI(
                 "Present your final closing argument on: ${task.description}",
                 "You are ${agent.name}. Summarize your position in a compelling final statement."
             )
-            if (result.isNotBlank()) return result
+        if (result.isNotBlank()) return result
         }
         return context.getString(R.string.debate_final_argument_format, agent.name)
     }
-
-    private fun calculateScore(agent: Agent, args: List<Pair<String, String>>): Float {
+        private fun calculateScore(agent: Agent, args: List<Pair<String, String>>): Float {
         return (Math.random() * 0.3 + 0.7).toFloat()
     }
-
-    private suspend fun callAI(prompt: String, systemPrompt: String): String {
+        private suspend fun callAI(prompt: String, systemPrompt: String): String {
         return try {
             val turns = listOf(
                 com.apex.core.chat.hooks.PromptTurn(
@@ -881,7 +819,7 @@ class DebateReviewModeHandler(
                     kind = com.apex.core.chat.hooks.PromptTurnKind.USER, content = prompt
                 )
             )
-            val result = StringBuilder()
+        val result = StringBuilder()
             aiService?.sendMessage(
                 context = context,
                 chatHistory = turns,
@@ -918,28 +856,25 @@ class FreeDialogModeHandler(
     private var messageCount = 0
     private val maxMessages = 10
     private val dialogHistory = mutableListOf<AgentMessage>()
-    private val agentMessageCount = mutableMapOf<String, Int>()
+        private val agentMessageCount = mutableMapOf<String, Int>()
 
     override suspend fun executeStep() {
         if (messageCount >= maxMessages) {
             finishDialog()
-            return
+        return
         }
-
         val activeAgents = task.agents.filter { agent ->
             (agentMessageCount.getOrDefault(agent.id, 0)) < 3
         }
-
         if (activeAgents.isEmpty()) {
             finishDialog()
-            return
+        return
         }
-
         val speaker = selectNextSpeaker(activeAgents)
         if (speaker != null) {
             executor.updateAgentStatus(speaker.id, AgentStatus.WORKING)
-            val response = generateFreeResponse(speaker, dialogHistory)
-            val message = AgentMessage(
+        val response = generateFreeResponse(speaker, dialogHistory)
+        val message = AgentMessage(
                 sender = speaker.name,
                 content = response,
                 timestamp = System.currentTimeMillis(),
@@ -952,15 +887,13 @@ class FreeDialogModeHandler(
             executor.updateAgentStatus(speaker.id, AgentStatus.IDLE)
         }
     }
-
-    private fun selectNextSpeaker(activeAgents: List<Agent>): Agent? =
+        private fun selectNextSpeaker(activeAgents: List<Agent>): Agent? =
         activeAgents.minByOrNull { agentMessageCount.getOrDefault(it.id, 0) }
-
-    private suspend fun generateFreeResponse(agent: Agent, history: List<AgentMessage>): String {
+        private suspend fun generateFreeResponse(agent: Agent, history: List<AgentMessage>): String {
         val thinkingSession = aiService?.let { AgentThinkingSession(context, it) }
         if (thinkingSession != null) {
             val recentContext = history.takeLast(5).joinToString("\n") { "${it.sender}: ${it.content}" }
-            val output = thinkingSession.thinkAndProduce(
+        val output = thinkingSession.thinkAndProduce(
                 agent = agent,
                 task = "Discuss: ${task.description}",
                 background = "Recent dialog:\n$recentContext",
@@ -968,20 +901,19 @@ class FreeDialogModeHandler(
                 enableCoT = false,
                 enableQualityCheck = true
             )
-            if (output.finalAnswer.isNotBlank()) return output.finalAnswer
+        if (output.finalAnswer.isNotBlank()) return output.finalAnswer
         }
         if (aiService != null) {
             val context = history.takeLast(5).joinToString("\n") { "${it.sender}: ${it.content}" }
-            val result = callAI(
+        val result = callAI(
                 "Continue the discussion. Topic: ${task.description}\nRecent dialog:\n$context",
                 "You are ${agent.name}, a ${agent.role}. Contribute a thoughtful perspective."
             )
-            if (result.isNotBlank()) return result
+        if (result.isNotBlank()) return result
         }
         return context.getString(R.string.free_dialog_response_format, agent.name)
     }
-
-    private suspend fun callAI(prompt: String, systemPrompt: String): String {
+        private suspend fun callAI(prompt: String, systemPrompt: String): String {
         return try {
             val turns = listOf(
                 com.apex.core.chat.hooks.PromptTurn(
@@ -991,7 +923,7 @@ class FreeDialogModeHandler(
                     kind = com.apex.core.chat.hooks.PromptTurnKind.USER, content = prompt
                 )
             )
-            val result = StringBuilder()
+        val result = StringBuilder()
             aiService?.sendMessage(
                 context = context,
                 chatHistory = turns,
@@ -1003,8 +935,7 @@ class FreeDialogModeHandler(
             ""
         }
     }
-
-    private fun finishDialog() {
+        private fun finishDialog() {
         task.agents.forEach { executor.updateAgentStatus(it.id, AgentStatus.FINISHED) }
         dialogHistory.clear()
         agentMessageCount.clear()

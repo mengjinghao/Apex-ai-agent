@@ -26,19 +26,16 @@ class WorkflowWorker(
     override suspend fun doWork(): Result {
         val workflowId = inputData.getString(KEY_WORKFLOW_ID)
         val triggerNodeId = inputData.getString(KEY_TRIGGER_NODE_ID)
-        
         if (workflowId.isNullOrBlank()) {
             AppLogger.e(TAG, "Workflow ID is missing from input data")
-            return Result.failure()
+        return Result.failure()
         }
 
         AppLogger.d(TAG, "Executing scheduled workflow: ${workflowId}, trigger: ${triggerNodeId}")
-
         return try {
             val repository = WorkflowRepository(applicationContext)
-            val result = repository.triggerWorkflow(workflowId, triggerNodeId)
-            
-            if (result.isSuccess) {
+        val result = repository.triggerWorkflow(workflowId, triggerNodeId)
+        if (result.isSuccess) {
                 AppLogger.d(TAG, "Workflow execution succeeded: ${result.getOrNull()}")
                 Result.success()
             } else {

@@ -29,13 +29,11 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
                 INSTANCE ?: SkillRepoClient(baseUrl).also { INSTANCE = it }
             }
         }
-
         fun resetInstance() {
             INSTANCE = null
         }
     }
-
-    private val gson = Gson()
+        private val gson = Gson()
 
     data class SkillInfo(
         val id: String,
@@ -119,20 +117,17 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
         withContext(Dispatchers.IO) {
             try {
                 var url = "${baseUrl}/skills?page=${page}&size=${pageSize}"
-                if (!category.isNullOrBlank()) {
+        if (!category.isNullOrBlank()) {
                     url += "&category=${URLEncoder.encode(category, "UTF-8")}"
                 }
-
-                val connection = openConnection(url)
+        val connection = openConnection(url)
                 connection.requestMethod = "GET"
                 connection.connect()
-
-                if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                     return@withContext Result.failure(Exception("HTTP ${connection.responseCode}"))
                 }
-
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                val skills = parseSkillList(response)
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val skills = parseSkillList(response)
                 Result.success(skills)
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Failed to get skill list", e)
@@ -143,16 +138,14 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
     suspend fun getSkillDetail(skillId: String): Result<SkillDetail> = withContext(Dispatchers.IO) {
         try {
             val url = "${baseUrl}/skills/${URLEncoder.encode(skillId, "UTF-8")}"
-            val connection = openConnection(url)
+        val connection = openConnection(url)
             connection.requestMethod = "GET"
             connection.connect()
-
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 return@withContext Result.failure(Exception("HTTP ${connection.responseCode}"))
             }
-
-            val response = connection.inputStream.bufferedReader().use { it.readText() }
-            val detail = parseSkillDetail(response)
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val detail = parseSkillDetail(response)
             Result.success(detail)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to get skill detail for ${skillId}", e)
@@ -168,20 +161,18 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
     ): Result<File> = withContext(Dispatchers.IO) {
         try {
             val url = "${baseUrl}/skills/${URLEncoder.encode(skillId, "UTF-8")}/download?version=${URLEncoder.encode(version, "UTF-8")}"
-            val connection = openConnection(url)
+        val connection = openConnection(url)
             connection.requestMethod = "GET"
             connection.connect()
-
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 return@withContext Result.failure(Exception("HTTP ${connection.responseCode}"))
             }
-
-            val contentLength = connection.contentLength.toLong()
+        val contentLength = connection.contentLength.toLong()
             connection.inputStream.use { input ->
                 BufferedInputStream(input).use { bufferedInput ->
                     FileOutputStream(outputFile).use { output ->
                         val buffer = ByteArray(BUFFER_SIZE)
-                        var totalRead: Long = 0
+        var totalRead: Long = 0
                         var read: Int
 
                         while (bufferedInput.read(buffer).also { read = it } != -1) {
@@ -211,23 +202,20 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
     ): Result<SearchResult> = withContext(Dispatchers.IO) {
         try {
             var url = "${baseUrl}/skills/search?q=${URLEncoder.encode(query, "UTF-8")}&page=${page}&size=${pageSize}"
-            if (!category.isNullOrBlank()) {
+        if (!category.isNullOrBlank()) {
                 url += "&category=${URLEncoder.encode(category, "UTF-8")}"
             }
-            if (!sortBy.isNullOrBlank()) {
+        if (!sortBy.isNullOrBlank()) {
                 url += "&sort=${URLEncoder.encode(sortBy, "UTF-8")}"
             }
-
-            val connection = openConnection(url)
+        val connection = openConnection(url)
             connection.requestMethod = "GET"
             connection.connect()
-
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 return@withContext Result.failure(Exception("HTTP ${connection.responseCode}"))
             }
-
-            val response = connection.inputStream.bufferedReader().use { it.readText() }
-            val result = parseSearchResult(response)
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val result = parseSearchResult(response)
             Result.success(result)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to search skills", e)
@@ -241,16 +229,14 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
     ): Result<UpdateCheckResult> = withContext(Dispatchers.IO) {
         try {
             val url = "${baseUrl}/skills/${URLEncoder.encode(skillId, "UTF-8")}/updates?currentVersion=${URLEncoder.encode(currentVersion, "UTF-8")}"
-            val connection = openConnection(url)
+        val connection = openConnection(url)
             connection.requestMethod = "GET"
             connection.connect()
-
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 return@withContext Result.failure(Exception("HTTP ${connection.responseCode}"))
             }
-
-            val response = connection.inputStream.bufferedReader().use { it.readText() }
-            val result = parseUpdateCheckResult(response, skillId, currentVersion)
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val result = parseUpdateCheckResult(response, skillId, currentVersion)
             Result.success(result)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to check for update for ${skillId}", e)
@@ -267,20 +253,18 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
     ): Result<File> = withContext(Dispatchers.IO) {
         try {
             val url = "${baseUrl}/skills/${URLEncoder.encode(skillId, "UTF-8")}/patch?from=${URLEncoder.encode(fromVersion, "UTF-8")}&to=${URLEncoder.encode(toVersion, "UTF-8")}"
-            val connection = openConnection(url)
+        val connection = openConnection(url)
             connection.requestMethod = "GET"
             connection.connect()
-
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 return@withContext Result.failure(Exception("HTTP ${connection.responseCode}"))
             }
-
-            val contentLength = connection.contentLength.toLong()
+        val contentLength = connection.contentLength.toLong()
             connection.inputStream.use { input ->
                 BufferedInputStream(input).use { bufferedInput ->
                     FileOutputStream(outputFile).use { output ->
                         val buffer = ByteArray(BUFFER_SIZE)
-                        var totalRead: Long = 0
+        var totalRead: Long = 0
                         var read: Int
 
                         while (bufferedInput.read(buffer).also { read = it } != -1) {
@@ -304,16 +288,14 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
     suspend fun getSkillVersions(skillId: String): Result<List<String>> = withContext(Dispatchers.IO) {
         try {
             val url = "${baseUrl}/skills/${URLEncoder.encode(skillId, "UTF-8")}/versions"
-            val connection = openConnection(url)
+        val connection = openConnection(url)
             connection.requestMethod = "GET"
             connection.connect()
-
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 return@withContext Result.failure(Exception("HTTP ${connection.responseCode}"))
             }
-
-            val response = connection.inputStream.bufferedReader().use { it.readText() }
-            val versions = parseVersionList(response)
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val versions = parseVersionList(response)
             Result.success(versions)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to get versions for ${skillId}", e)
@@ -326,21 +308,18 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
             val connection = openConnection("${baseUrl}/categories")
             connection.requestMethod = "GET"
             connection.connect()
-
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 return@withContext Result.failure(Exception("HTTP ${connection.responseCode}"))
             }
-
-            val response = connection.inputStream.bufferedReader().use { it.readText() }
-            val categories = parseCategories(response)
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val categories = parseCategories(response)
             Result.success(categories)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to get categories", e)
             Result.failure(e)
         }
     }
-
-    private fun openConnection(url: String): HttpURLConnection {
+        private fun openConnection(url: String): HttpURLConnection {
         val connection = URL(url).openConnection() as HttpURLConnection
         connection.connectTimeout = CONNECT_TIMEOUT
         connection.readTimeout = READ_TIMEOUT
@@ -349,14 +328,12 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
         connection.setRequestProperty("Accept", "application/json")
         return connection
     }
-
-    private fun parseSkillList(json: String): List<SkillInfo> {
+        private fun parseSkillList(json: String): List<SkillInfo> {
         val skills = mutableListOf<SkillInfo>()
         try {
             val root = gson.fromJson(json, JsonObject::class.java)
-            val items = root.getAsJsonArray("skills") ?: root.getAsJsonArray("data") ?: JsonArray()
-
-            for (i in 0 until items.size()) {
+        val items = root.getAsJsonArray("skills") ?: root.getAsJsonArray("data") ?: JsonArray()
+        for (i in 0 until items.size()) {
                 val item = items[i].asJsonObject
                 skills.add(parseSkillInfo(item))
             }
@@ -365,8 +342,7 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
         }
         return skills
     }
-
-    private fun parseSkillInfo(json: JsonObject): SkillInfo {
+        private fun parseSkillInfo(json: JsonObject): SkillInfo {
         return SkillInfo(
             id = json.get("id")?.asString ?: "",
             name = json.get("name")?.asString ?: "",
@@ -385,8 +361,7 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
             updatedAt = json.get("updatedAt")?.asLong ?: 0L
         )
     }
-
-    private fun parseSkillDetail(json: String): SkillDetail {
+        private fun parseSkillDetail(json: String): SkillDetail {
         val obj = gson.fromJson(json, JsonObject::class.java)
         return SkillDetail(
             id = obj.get("id")?.asString ?: "",
@@ -411,8 +386,7 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
             versions = obj.getAsJsonArray("versions")?.map { it.asString } ?: emptyList()
         )
     }
-
-    private fun parseSearchResult(json: String): SearchResult {
+        private fun parseSearchResult(json: String): SearchResult {
         val root = gson.fromJson(json, JsonObject::class.java)
         val skills = parseSkillList(json)
         return SearchResult(
@@ -423,8 +397,7 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
             hasMore = root.get("hasMore")?.asBoolean ?: false
         )
     }
-
-    private fun parseUpdateCheckResult(json: String, skillId: String, currentVersion: String): UpdateCheckResult {
+        private fun parseUpdateCheckResult(json: String, skillId: String, currentVersion: String): UpdateCheckResult {
         val obj = gson.fromJson(json, JsonObject::class.java)
         return UpdateCheckResult(
             skillId = skillId,
@@ -439,13 +412,11 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
             patchFromVersion = obj.get("patchFromVersion")?.asString
         )
     }
-
-    private fun parseVersionList(json: String): List<String> {
+        private fun parseVersionList(json: String): List<String> {
         val root = gson.fromJson(json, JsonObject::class.java)
         return root.getAsJsonArray("versions")?.map { it.asString } ?: emptyList()
     }
-
-    private fun parseCategories(json: String): List<String> {
+        private fun parseCategories(json: String): List<String> {
         val root = gson.fromJson(json, JsonObject::class.java)
         return root.getAsJsonArray("categories")?.map { it.asString } ?: emptyList()
     }

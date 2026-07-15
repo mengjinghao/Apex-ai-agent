@@ -45,12 +45,11 @@ class ExternalChatHttpServer(
 
     private val appContext = context.applicationContext
     private val executor = ExternalChatRequestExecutor(appContext)
-    private val callbackClient = OkHttpClient.Builder()
+        private val callbackClient = OkHttpClient.Builder()
         .retryOnConnectionFailure(false)
         .build()
-    private val running = AtomicBoolean(false)
-
-    fun startServer() {
+        private val running = AtomicBoolean(false)
+        fun startServer() {
         if (running.get()) {
             return
         }
@@ -58,8 +57,7 @@ class ExternalChatHttpServer(
         running.set(true)
         AppLogger.i(TAG, "External HTTP chat server started on port ${listeningPort}")
     }
-
-    fun stopServer() {
+        fun stopServer() {
         if (!running.get()) {
             return
         }
@@ -82,17 +80,14 @@ class ExternalChatHttpServer(
             ).withCors()
         }
     }
-
-    private fun handleOptions(session: IHTTPSession): Response {
+        private fun handleOptions(session: IHTTPSession): Response {
         return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "").withCors()
     }
-
-    private fun handleHealth(session: IHTTPSession): Response {
+        private fun handleHealth(session: IHTTPSession): Response {
         val unauthorized = requireBearerToken(session)
         if (unauthorized != null) {
             return unauthorized
         }
-
         val config = preferences.getConfigSync()
         return jsonResponse(
             Response.Status.OK,
@@ -104,13 +99,11 @@ class ExternalChatHttpServer(
             )
         ).withCors()
     }
-
-    private fun handleChat(session: IHTTPSession): Response {
+        private fun handleChat(session: IHTTPSession): Response {
         val unauthorized = requireBearerToken(session)
         if (unauthorized != null) {
             return unauthorized
         }
-
         val requestBodyResult = readRequestBody(session)
         if (requestBodyResult.error != null) {
             return jsonResponse(
@@ -121,7 +114,6 @@ class ExternalChatHttpServer(
                 )
             ).withCors()
         }
-
         val rawBody = requestBodyResult.body.orEmpty()
         if (rawBody.isBlank()) {
             return jsonResponse(
@@ -132,7 +124,6 @@ class ExternalChatHttpServer(
                 )
             ).withCors()
         }
-
         val request = try {
             json.decodeFromString<ExternalChatHttpRequest>(rawBody)
         } catch (e: Exception) {
@@ -144,7 +135,6 @@ class ExternalChatHttpServer(
                 )
             ).withCors()
         }
-
         val resolvedRequestId = request.resolvedRequestId()
         val responseMode = request.normalizedResponseMode()
             ?: return jsonResponse(
@@ -155,7 +145,6 @@ class ExternalChatHttpServer(
                     error = "Invalid parameter: response_mode must be sync/async_callback"
                 )
             ).withCors()
-
         if (request.message.isNullOrBlank()) {
             return jsonResponse(
                 Response.Status.BAD_REQUEST,
@@ -166,7 +155,6 @@ class ExternalChatHttpServer(
                 )
             ).withCors()
         }
-
         if (request.stream && responseMode == ExternalChatResponseMode.ASYNC_CALLBACK) {
             return jsonResponse(
                 Response.Status.BAD_REQUEST,
@@ -177,11 +165,9 @@ class ExternalChatHttpServer(
                 )
             ).withCors()
         }
-
         if (request.stream) {
             return sseResponse(request, resolvedRequestId).withCors()
         }
-
         val callbackUrl = request.callbackUrl?.trim()
         if (responseMode == ExternalChatResponseMode.ASYNC_CALLBACK) {
             if (callbackUrl.isNullOrBlank()) {
@@ -194,8 +180,8 @@ class ExternalChatHttpServer(
                     )
                 ).withCors()
             }
-            val callbackUri = kotlin.runCatching { java.net.URI(callbackUrl) }.getOrNull()
-            if (callbackUri == null || (callbackUri.scheme != "http" && callbackUri.scheme != "https")) {
+        val callbackUri = kotlin.runCatching { java.net.URI(callbackUrl) }.getOrNull()
+        if (callbackUri == null || (callbackUri.scheme != "http" && callbackUri.scheme != "https")) {
                 return jsonResponse(
                     Response.Status.BAD_REQUEST,
                     ExternalChatResult(
@@ -205,33 +191,28 @@ class ExternalChatHttpServer(
                     )
                 ).withCors()
             }
-
-            val executionRequest = request.toExecutionRequest(resolvedRequestId)
+        val executionRequest = request.toExecutionRequest(resolvedRequestId)
             serviceScope.launch {
                 val result = executor.execute(executionRequest)
                 postCallback(callbackUrl, result)
             }
-
-            return jsonResponse(
+        return jsonResponse(
                 Response.Status.ACCEPTED,
                 ExternalChatAcceptedResponse(requestId = resolvedRequestId)
             ).withCors()
         }
-
         val result = runBlocking {
             executor.execute(request.toExecutionRequest(resolvedRequestId))
         }
         return jsonResponse(Response.Status.OK, result).withCors()
     }
-
-    private fun sseResponse(request: ExternalChatHttpRequest, resolvedRequestId: String): Response {
+        private fun sseResponse(request: ExternalChatHttpRequest, resolvedRequestId: String): Response {
         val pipeInput = PipedInputStream(SSE_PIPE_BUFFER_SIZE)
         val pipeOutput = PipedOutputStream(pipeInput)
         val streamingSessionRef =
             AtomicReference<com.apex.integrations.externalchat.ExternalChatStreamingSession?>(
                 null
             )
-
         val streamJob: Job =
             serviceScope.launch(Dispatchers.IO) {
                 pipeOutput.bufferedWriter(StandardCharsets.UTF_8).use { writer ->
@@ -261,13 +242,12 @@ class ExternalChatHttpServer(
                                         chatId = streamSession.chatId
                                     )
                                 )
-
-                                val filteredResponseStream =
+        val filteredResponseStream =
                                     ExternalChatResponseSanitizer.sanitizeStream(
                                         streamSession.responseStreamSession.responseStream,
                                         request.returnToolStatus
                                     )
-                                val finalResponse = StringBuilder()
+        val finalResponse = StringBuilder()
                                 filteredResponseStream.collect { chunk ->
                                     if (chunk.isEmpty()) {
                                         return@collect
@@ -283,10 +263,9 @@ class ExternalChatHttpServer(
                                         )
                                     )
                                 }
-
-                                val finalState = streamSession.responseStreamSession.currentState()
-                                val finalResponseText = finalResponse.toString().takeIf { it.isNotBlank() }
-                                if (finalState is InputProcessingState.Error) {
+        val finalState = streamSession.responseStreamSession.currentState()
+        val finalResponseText = finalResponse.toString().takeIf { it.isNotBlank() }
+        if (finalState is InputProcessingState.Error) {
                                     writeSseEvent(
                                         writer,
                                         ExternalChatStreamEnvelope(
@@ -314,13 +293,13 @@ class ExternalChatHttpServer(
                         }
                     } catch (e: CancellationException) {
                         streamingSessionRef.get()?.responseStreamSession?.cancel()
-                        throw e
+        throw e
                     } catch (e: IOException) {
                         AppLogger.i(TAG, "SSE client disconnected: requestId=${resolvedRequestId}")
                         streamingSessionRef.get()?.responseStreamSession?.cancel()
                     } catch (e: Exception) {
                         AppLogger.e(TAG, "SSE stream failed: requestId=${resolvedRequestId}", e)
-                        val streamSession = streamingSessionRef.get()
+        val streamSession = streamingSessionRef.get()
                         runCatching {
                             writeSseEvent(
                                 writer,
@@ -339,7 +318,6 @@ class ExternalChatHttpServer(
                     }
                 }
             }
-
         val responseInput =
             object : FilterInputStream(pipeInput) {
                 override fun close() {
@@ -352,15 +330,13 @@ class ExternalChatHttpServer(
                     }
                 }
             }
-
         return newChunkedResponse(Response.Status.OK, SSE_MIME_TYPE, responseInput).apply {
             addHeader("Cache-Control", "no-cache")
             addHeader("Connection", "keep-alive")
             addHeader("X-Accel-Buffering", "no")
         }
     }
-
-    private fun requireBearerToken(session: IHTTPSession): Response? {
+        private fun requireBearerToken(session: IHTTPSession): Response? {
         val expectedToken = preferences.getBearerToken().trim()
         if (expectedToken.isBlank()) {
             return jsonResponse(
@@ -371,17 +347,14 @@ class ExternalChatHttpServer(
                 )
             ).withCors()
         }
-
         val authorization = session.headers.entries.firstOrNull {
             it.key.equals("authorization", ignoreCase = true)
         }?.value?.trim().orEmpty()
-
         val actualToken = if (authorization.startsWith("Bearer ", ignoreCase = true)) {
             authorization.substringAfter(' ').trim()
         } else {
             ""
         }
-
         return if (actualToken == expectedToken) {
             null
         } else {
@@ -394,11 +367,10 @@ class ExternalChatHttpServer(
             ).withCors()
         }
     }
-
-    private fun postCallback(callbackUrl: String, result: ExternalChatResult) {
+        private fun postCallback(callbackUrl: String, result: ExternalChatResult) {
         try {
             val requestBody = json.encodeToString(result).toRequestBody(JSON_MEDIA_TYPE)
-            val request = Request.Builder()
+        val request = Request.Builder()
                 .url(callbackUrl)
                 .post(requestBody)
                 .build()
@@ -415,32 +387,29 @@ class ExternalChatHttpServer(
             AppLogger.e(TAG, "Async callback failed: url=${callbackUrl}", e)
         }
     }
-
-    private fun readRequestBody(session: IHTTPSession): RequestBodyResult {
+        private fun readRequestBody(session: IHTTPSession): RequestBodyResult {
         return try {
             val contentLength = session.headers.entries.firstOrNull {
                 it.key.equals("content-length", ignoreCase = true)
             }?.value?.trim()?.toLongOrNull()
                 ?: return RequestBodyResult(error = "Missing or invalid Content-Length")
-            if (contentLength < 0L || contentLength > Int.MAX_VALUE.toLong()) {
+        if (contentLength < 0L || contentLength > Int.MAX_VALUE.toLong()) {
                 return RequestBodyResult(error = "Unsupported Content-Length: ${contentLength}")
             }
-            if (contentLength == 0L) {
+        if (contentLength == 0L) {
                 return RequestBodyResult(body = "")
             }
-
-            val bodyBytes = ByteArray(contentLength.toInt())
-            var offset = 0
+        val bodyBytes = ByteArray(contentLength.toInt())
+        var offset = 0
             val inputStream = session.inputStream
             while (offset < bodyBytes.size) {
                 val read = inputStream.read(bodyBytes, offset, bodyBytes.size - offset)
-                if (read < 0) {
+        if (read < 0) {
                     return RequestBodyResult(error = "Unexpected end of stream while reading request body")
                 }
                 offset += read
             }
-
-            val charset = resolveRequestCharset(
+        val charset = resolveRequestCharset(
                 session.headers.entries.firstOrNull {
                     it.key.equals("content-type", ignoreCase = true)
                 }?.value
@@ -451,8 +420,7 @@ class ExternalChatHttpServer(
             RequestBodyResult(error = "Failed to read request body: ${e.message ?: "Unknown error"}")
         }
     }
-
-    private fun resolveRequestCharset(contentTypeHeader: String): Charset {
+        private fun resolveRequestCharset(contentTypeHeader: String): Charset {
         val charsetName = contentTypeHeader
             ?.split(';')
             ?.asSequence()
@@ -462,7 +430,6 @@ class ExternalChatHttpServer(
             ?.trim()
             ?.removeSurrounding("\"")
             ?.takeIf { it.isNotBlank() }
-
         if (charsetName != null) {
             return kotlin.runCatching { Charset.forName(charsetName) }
                 .getOrElse {
@@ -478,20 +445,16 @@ class ExternalChatHttpServer(
         // even when the caller omits `charset=utf-8`.
     return StandardCharsets.UTF_8
     }
-
-    private fun jsonResponse(status: Response.Status, body: ExternalChatResult): Response {
+        private fun jsonResponse(status: Response.Status, body: ExternalChatResult): Response {
         return newFixedLengthResponse(status, JSON_MIME_TYPE, json.encodeToString(body))
     }
-
-    private fun jsonResponse(status: Response.Status, body: ExternalChatAcceptedResponse): Response {
+        private fun jsonResponse(status: Response.Status, body: ExternalChatAcceptedResponse): Response {
         return newFixedLengthResponse(status, JSON_MIME_TYPE, json.encodeToString(body))
     }
-
-    private fun jsonResponse(status: Response.Status, body: ExternalChatHealthResponse): Response {
+        private fun jsonResponse(status: Response.Status, body: ExternalChatHealthResponse): Response {
         return newFixedLengthResponse(status, JSON_MIME_TYPE, json.encodeToString(body))
     }
-
-    private fun writeSseEvent(writer: BufferedWriter, payload: ExternalChatStreamEnvelope) {
+        private fun writeSseEvent(writer: BufferedWriter, payload: ExternalChatStreamEnvelope) {
         val serialized = json.encodeToString(payload)
         writer.write("event: ")
         writer.write(payload.event)
@@ -504,8 +467,7 @@ class ExternalChatHttpServer(
         writer.newLine()
         writer.flush()
     }
-
-    private fun ExternalChatResult.toStreamEnvelope(
+        private fun ExternalChatResult.toStreamEnvelope(
         event: String,
         fallbackRequestId: String
     ): ExternalChatStreamEnvelope {
@@ -518,8 +480,7 @@ class ExternalChatHttpServer(
             error = error
         )
     }
-
-    private fun Response.withCors(): Response {
+        private fun Response.withCors(): Response {
         addHeader("Access-Control-Allow-Origin", "*")
         addHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         addHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept")

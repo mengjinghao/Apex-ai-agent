@@ -86,16 +86,16 @@ data class ToolOptimizerConfig(
 class ToolExecutionOptimizer private constructor() {
 
     private val toolCache = ConcurrentHashMap<String, ToolCacheEntry>()
-    private val executionMetrics = ConcurrentHashMap<String, ToolExecutionMetrics>()
-    private val toolRegistry = ConcurrentHashMap<String, ToolRegistry>()
-    private val durationHistory = ConcurrentHashMap<String, CopyOnWriteArrayList<Long>>()
-    private val strategyCounts = ConcurrentHashMap<String, ConcurrentHashMap<ToolExecutionStrategy, AtomicInteger>>()
-    private val errorCounts = ConcurrentHashMap<String, AtomicInteger>()
-    private val totalInvocations = ConcurrentHashMap<String, AtomicLong>()
-    private val inputSizes = ConcurrentHashMap<String, CopyOnWriteArrayList<Int>>()
-    private val outputSizes = ConcurrentHashMap<String, CopyOnWriteArrayList<Int>>()
-    private val config = ToolOptimizerConfig()
-    private var scope: CoroutineScope? = null
+        private val executionMetrics = ConcurrentHashMap<String, ToolExecutionMetrics>()
+        private val toolRegistry = ConcurrentHashMap<String, ToolRegistry>()
+        private val durationHistory = ConcurrentHashMap<String, CopyOnWriteArrayList<Long>>()
+        private val strategyCounts = ConcurrentHashMap<String, ConcurrentHashMap<ToolExecutionStrategy, AtomicInteger>>()
+        private val errorCounts = ConcurrentHashMap<String, AtomicInteger>()
+        private val totalInvocations = ConcurrentHashMap<String, AtomicLong>()
+        private val inputSizes = ConcurrentHashMap<String, CopyOnWriteArrayList<Int>>()
+        private val outputSizes = ConcurrentHashMap<String, CopyOnWriteArrayList<Int>>()
+        private val config = ToolOptimizerConfig()
+        private var scope: CoroutineScope? = null
 
     companion object {
         @Volatile
@@ -106,11 +106,9 @@ class ToolExecutionOptimizer private constructor() {
                 instance ?: ToolExecutionOptimizer().also { instance = it }
             }
         }
-
         private const val METRICS_HISTORY_SIZE = 200
     }
-
-    fun initialize(coroutineScope: CoroutineScope) {
+        fun initialize(coroutineScope: CoroutineScope) {
         scope = coroutineScope
         registerCommonTools()
         if (config.enableAutoSuggest) {
@@ -130,8 +128,7 @@ class ToolExecutionOptimizer private constructor() {
             }
         }
     }
-
-    private fun registerCommonTools() {
+        private fun registerCommonTools() {
         registerTool(ToolRegistry("file_search", "search", 500L, true, false, true))
         registerTool(ToolRegistry("web_fetch", "network", 2000L, true, false, false))
         registerTool(ToolRegistry("code_analyze", "analysis", 1500L, false, false, true))
@@ -143,8 +140,7 @@ class ToolExecutionOptimizer private constructor() {
         registerTool(ToolRegistry("network_request", "network", 1500L, true, true, false))
         registerTool(ToolRegistry("data_transform", "data", 500L, true, false, true))
     }
-
-    fun registerTool(registry: ToolRegistry) {
+        fun registerTool(registry: ToolRegistry) {
         toolRegistry[registry.name] = registry
         executionMetrics[registry.name] = ToolExecutionMetrics(
             toolName = registry.name, totalInvocations = 0, cacheHits = 0, cacheMisses = 0,
@@ -154,12 +150,10 @@ class ToolExecutionOptimizer private constructor() {
             executionStrategyDistribution = emptyMap()
         )
     }
-
-    fun getTool(name: String): ToolRegistry? = toolRegistry[name]
+        fun getTool(name: String): ToolRegistry? = toolRegistry[name]
 
     fun getAllTools(): List<ToolRegistry> = toolRegistry.values.toList()
-
-    fun determineStrategy(toolName: String, inputSize: Int): ToolExecutionStrategy {
+        fun determineStrategy(toolName: String, inputSize: Int): ToolExecutionStrategy {
         val registry = toolRegistry[toolName] ?: return ToolExecutionStrategy.DIRECT
         if (config.enableCache && registry.isCacheable && isCacheWarm(toolName)) {
             return ToolExecutionStrategy.CACHED
@@ -172,8 +166,7 @@ class ToolExecutionOptimizer private constructor() {
         }
         ToolExecutionStrategy.DIRECT
     }
-
-    fun createExecutionPlan(toolName: String, parameters: Map<String, Any>): ToolExecutionPlan {
+        fun createExecutionPlan(toolName: String, parameters: Map<String, Any>): ToolExecutionPlan {
         val registry = toolRegistry[toolName] ?: return ToolExecutionPlan(
             toolName, parameters, ToolExecutionStrategy.DIRECT, 1.0, 100L)
         val inputSize = parameters.values.sumOf { it.toString().length }
@@ -204,34 +197,30 @@ class ToolExecutionOptimizer private constructor() {
         val startTime = System.nanoTime()
         totalInvocations.computeIfAbsent(toolName) { AtomicLong(0) }.incrementAndGet()
         recordInputSize(toolName, parameters)
-
         val strategy = strategyCounts.computeIfAbsent(toolName) { ConcurrentHashMap() }
         strategy.computeIfAbsent(ToolExecutionStrategy.DIRECT) { AtomicInteger(0) }.incrementAndGet()
-
         val plan = createExecutionPlan(toolName, parameters)
         recordDuration(toolName, registry?.averageDurationMs ?: 100L)
-
         if (plan.cacheKey != null && config.enableCache) {
             val cached = toolCache[plan.cacheKey]
             if (cached != null && (System.currentTimeMillis() - cached.timestampMs) < cached.ttlMs) {
                 cached.hitCount.incrementAndGet()
                 recordCacheHit(toolName)
                 recordOutputSize(toolName, cached.result)
-                return cached.result
+        return cached.result
             }
             recordCacheMiss(toolName)
         }
-
         return try {
             val result = executor(parameters)
             recordOutputSize(toolName, result)
-            if (plan.cacheKey != null && config.enableCache) {
+        if (plan.cacheKey != null && config.enableCache) {
                 cacheResult(toolName, plan.cacheKey, result)
             }
             result
         } catch (e: Exception) {
             recordError(toolName)
-            throw e
+        throw e
         }
     }
 
@@ -246,8 +235,7 @@ class ToolExecutionOptimizer private constructor() {
         val duration = System.currentTimeMillis() - startTime
         Pair(result, plan)
     }
-
-    fun executeBatch(toolName: String, batchParams: List<Map<String, Any>>, executor: (Map<String, Any>) -> Any): List<Any> {
+        fun executeBatch(toolName: String, batchParams: List<Map<String, Any>>, executor: (Map<String, Any>) -> Any): List<Any> {
         batchParams.map { executor(it) }
     }
 
@@ -263,28 +251,23 @@ class ToolExecutionOptimizer private constructor() {
             batchParams.map { executeOptimized(toolName, it, executor) }
         }
     }
-
-    fun getCachedResult(cacheKey: String): Any? {
+        fun getCachedResult(cacheKey: String): Any? {
         val entry = toolCache[cacheKey] ?: return null
         if (System.currentTimeMillis() - entry.timestampMs > entry.ttlMs) {
             toolCache.remove(cacheKey)
-            return null
+        return null
         }
         entry.hitCount.incrementAndGet()
         entry.result
     }
-
-    fun invalidateCache(toolName: String) {
+        fun invalidateCache(toolName: String) {
         val prefix = "$toolName:"
         val keysToRemove = toolCache.keys.filter { it.startsWith(prefix) }
         keysToRemove.forEach { toolCache.remove(it) }
     }
-
-    fun invalidateAllCache() { toolCache.clear() }
-
-    fun invalidateCacheByKey(key: String) { toolCache.remove(key) }
-
-    fun getCachedEntry(key: String): ToolCacheEntry? = toolCache[key]
+        fun invalidateAllCache() { toolCache.clear() }
+        fun invalidateCacheByKey(key: String) { toolCache.remove(key) }
+        fun getCachedEntry(key: String): ToolCacheEntry? = toolCache[key]
 
     fun getCacheSize(): Int = toolCache.size
 
@@ -299,20 +282,17 @@ class ToolExecutionOptimizer private constructor() {
             sizeBytes = size
         )
     }
-
-    private fun getAdaptiveTtl(toolName: String): Long {
+        private fun getAdaptiveTtl(toolName: String): Long {
         val history = durationHistory[toolName]
         if (history == null || history.size < 10) return config.defaultCacheTtlMs
         val avgDuration = history.average().toLong()
         (avgDuration * 100).coerceIn(10000L, 3600000L)
     }
-
-    private fun isCacheWarm(toolName: String): Boolean {
+        private fun isCacheWarm(toolName: String): Boolean {
         val prefix = "$toolName:"
         toolCache.keys.count { it.startsWith(prefix) } >= 3
     }
-
-    fun getMetrics(toolName: String): ToolExecutionMetrics {
+        fun getMetrics(toolName: String): ToolExecutionMetrics {
         val invocations = totalInvocations[toolName]?.get() ?: 0
         val cacheHits = executionMetrics[toolName]?.cacheHits ?: 0
         val cacheMisses = executionMetrics[toolName]?.cacheMisses ?: 0
@@ -342,37 +322,35 @@ class ToolExecutionOptimizer private constructor() {
             executionStrategyDistribution = stratDist
         )
     }
-
-    fun getAllMetrics(): List<ToolExecutionMetrics> {
+        fun getAllMetrics(): List<ToolExecutionMetrics> {
         toolRegistry.keys.map { getMetrics(it) }
     }
-
-    fun generateSuggestions(): List<OptimizationSuggestion> {
+        fun generateSuggestions(): List<OptimizationSuggestion> {
         val suggestions = mutableListOf<OptimizationSuggestion>()
         for (toolName in toolRegistry.keys) {
             val metrics = getMetrics(toolName)
-            val registry = toolRegistry[toolName] ?: continue
+        val registry = toolRegistry[toolName] ?: continue
             if (registry.isCacheable && metrics.cacheHits < 5 && metrics.totalInvocations > 20) {
                 suggestions.add(OptimizationSuggestion(
                     toolName, SuggestionType.ADD_CACHE,
                     "High invocation count but low cache usage for $toolName", 30.0, 3))
             }
-            if (metrics.averageDurationMs > 2000 && registry.supportsBatching) {
+        if (metrics.averageDurationMs > 2000 && registry.supportsBatching) {
                 suggestions.add(OptimizationSuggestion(
                     toolName, SuggestionType.BATCH_INVOCATIONS,
                     "Slow tool $toolName could benefit from batching", 40.0, 2))
             }
-            if (metrics.p95DurationMs > metrics.averageDurationMs * 3) {
+        if (metrics.p95DurationMs > metrics.averageDurationMs * 3) {
                 suggestions.add(OptimizationSuggestion(
                     toolName, SuggestionType.REDUCE_INPUT,
                     "High latency variance in $toolName, consider reducing input", 20.0, 4))
             }
-            if (metrics.errorRate > 0.1) {
+        if (metrics.errorRate > 0.1) {
                 suggestions.add(OptimizationSuggestion(
                     toolName, SuggestionType.SPECULATIVE_EXECUTION,
                     "High error rate in $toolName, speculative execution may help", 50.0, 1))
             }
-            if (metrics.totalInvocations > 100 && metrics.errorRate < 0.05 && registry.isCacheable) {
+        if (metrics.totalInvocations > 100 && metrics.errorRate < 0.05 && registry.isCacheable) {
                 suggestions.add(OptimizationSuggestion(
                     toolName, SuggestionType.PREWARM_CACHE,
                     "Stable tool $toolName is a good candidate for cache prewarming", 25.0, 5))
@@ -380,15 +358,13 @@ class ToolExecutionOptimizer private constructor() {
         }
         suggestions.sortedByDescending { it.priority }
     }
-
-    fun getCacheHitRate(toolName: String): Double {
+        fun getCacheHitRate(toolName: String): Double {
         val metrics = executionMetrics[toolName] ?: return 0.0
         val total = metrics.cacheHits + metrics.cacheMisses
         if (total == 0L) return 0.0
         metrics.cacheHits.toDouble() / total
     }
-
-    fun getOverallCacheHitRate(): Double {
+        fun getOverallCacheHitRate(): Double {
         var totalHits = 0L
         var totalMisses = 0L
         for (metrics in executionMetrics.values) {
@@ -399,66 +375,55 @@ class ToolExecutionOptimizer private constructor() {
         if (total == 0L) return 0.0
         totalHits.toDouble() / total
     }
-
-    fun getHotCacheEntries(limit: Int = 10): List<ToolCacheEntry> {
+        fun getHotCacheEntries(limit: Int = 10): List<ToolCacheEntry> {
         toolCache.values.sortedByDescending { it.hitCount.get() }.take(limit)
     }
-
-    fun getColdCacheEntries(limit: Int = 10): List<ToolCacheEntry> {
+        fun getColdCacheEntries(limit: Int = 10): List<ToolCacheEntry> {
         toolCache.values.sortedBy { it.hitCount.get() }.take(limit)
     }
-
-    private fun hashParameters(params: Map<String, Any>): String {
+        private fun hashParameters(params: Map<String, Any>): String {
         params.entries.sortedBy { it.key }.joinToString("|") { "${it.key}=${it.value}" }
             .hashCode().toLong().let { it.toString(16) }
     }
-
-    private fun recordCacheHit(toolName: String) {
+        private fun recordCacheHit(toolName: String) {
         executionMetrics.compute(toolName) { _, existing ->
             if (existing != null) existing.copy(cacheHits = existing.cacheHits + 1) else null
         }
     }
-
-    private fun recordCacheMiss(toolName: String) {
+        private fun recordCacheMiss(toolName: String) {
         executionMetrics.compute(toolName) { _, existing ->
             if (existing != null) existing.copy(cacheMisses = existing.cacheMisses + 1) else null
         }
     }
-
-    private fun recordError(toolName: String) {
+        private fun recordError(toolName: String) {
         errorCounts.computeIfAbsent(toolName) { AtomicInteger(0) }.incrementAndGet()
     }
-
-    private fun recordDuration(toolName: String, durationMs: Long) {
+        private fun recordDuration(toolName: String, durationMs: Long) {
         durationHistory.computeIfAbsent(toolName) { CopyOnWriteArrayList() }.apply {
             add(durationMs)
-            if (size > METRICS_HISTORY_SIZE) removeAt(0)
+        if (size > METRICS_HISTORY_SIZE) removeAt(0)
         }
     }
-
-    private fun recordInputSize(toolName: String, params: Map<String, Any>) {
+        private fun recordInputSize(toolName: String, params: Map<String, Any>) {
         val size = params.values.sumOf { it.toString().length }
         inputSizes.computeIfAbsent(toolName) { CopyOnWriteArrayList() }.apply {
             add(size)
-            if (size > METRICS_HISTORY_SIZE) removeAt(0)
+        if (size > METRICS_HISTORY_SIZE) removeAt(0)
         }
     }
-
-    private fun recordOutputSize(toolName: String, result: Any) {
+        private fun recordOutputSize(toolName: String, result: Any) {
         val size = result.toString().length
         outputSizes.computeIfAbsent(toolName) { CopyOnWriteArrayList() }.apply {
             add(size)
-            if (size > METRICS_HISTORY_SIZE) removeAt(0)
+        if (size > METRICS_HISTORY_SIZE) removeAt(0)
         }
     }
-
-    private fun evictStaleCacheEntries() {
+        private fun evictStaleCacheEntries() {
         val now = System.currentTimeMillis()
         val toRemove = toolCache.filter { (now - it.value.timestampMs) > it.value.ttlMs }
         toRemove.keys.forEach { toolCache.remove(it) }
     }
-
-    fun resetMetrics(toolName: String) {
+        fun resetMetrics(toolName: String) {
         executionMetrics.remove(toolName)
         durationHistory.remove(toolName)
         errorCounts.remove(toolName)
@@ -467,8 +432,7 @@ class ToolExecutionOptimizer private constructor() {
         outputSizes.remove(toolName)
         strategyCounts.remove(toolName)
     }
-
-    fun resetAll() {
+        fun resetAll() {
         toolCache.clear()
         executionMetrics.clear()
         durationHistory.clear()

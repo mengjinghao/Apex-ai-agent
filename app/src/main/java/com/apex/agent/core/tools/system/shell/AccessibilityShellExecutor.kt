@@ -60,7 +60,7 @@ class AccessibilityShellExecutor(private val context: Context) : ShellExecutor {
     override fun requestPermission(onResult: (Boolean) -> Unit) {
         if (isAvailable()) {
             onResult(true)
-            return
+        return
         }
 
         // 引导用户打开无障碍服务设�?
@@ -99,7 +99,7 @@ class AccessibilityShellExecutor(private val context: Context) : ShellExecutor {
     ): ShellExecutor.CommandResult =
             withContext(Dispatchers.IO) {
                 val permStatus = hasPermission()
-                if (!permStatus.granted) {
+        if (!permStatus.granted) {
                     return@withContext ShellExecutor.CommandResult(false, "", permStatus.reason, -1)
                 }
 

@@ -433,7 +433,7 @@ class SmartSuggestionEngine {
     }
 
     // ============ 数据结构 ============
-        data class UserInputRecord(
+    data class UserInputRecord(
         val input: String,
         val accepted: Boolean,
         val suggestionText: String?,

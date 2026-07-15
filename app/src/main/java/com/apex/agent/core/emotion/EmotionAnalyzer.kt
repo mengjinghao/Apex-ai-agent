@@ -17,7 +17,6 @@ class EmotionAnalyzer(private val context: Context) {
      */
     suspend fun analyzeEmotion(messages: List<ChatMessage>): EmotionProfile = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "开始分析用户情绪，消息数量: ${messages.size}")
-        
         val emotionProfile = EmotionProfile()
         
         // 过滤用户消息
@@ -57,7 +56,6 @@ class EmotionAnalyzer(private val context: Context) {
             "失望" to listOf("失望", "沮丧", "灰心", "失落", "扫兴"),
             "惊讶" to listOf("惊讶", "吃惊", "震惊", "意外", "出乎意料")
         )
-        
         for (message in messages) {
             val content = message.content
             
@@ -70,7 +68,6 @@ class EmotionAnalyzer(private val context: Context) {
                 }
             }
         }
-        
         if (emotionScores.isNotEmpty()) {
             val dominantEmotion = emotionScores.maxByOrNull { it.value }?.key
             if (dominantEmotion != null) {
@@ -90,13 +87,11 @@ class EmotionAnalyzer(private val context: Context) {
         for (message in messages) {
             val content = message.content
             val intensity = calculateEmotionIntensity(content)
-            
-            if (intensity > 0) {
+        if (intensity > 0) {
                 totalIntensity += intensity
                 intensityCount++
             }
         }
-        
         if (intensityCount > 0) {
             profile.avgEmotionIntensity = totalIntensity.toDouble() / intensityCount
             profile.maxEmotionIntensity = messages.maxOfOrNull { calculateEmotionIntensity(it.content) } ?: 0
@@ -137,22 +132,19 @@ class EmotionAnalyzer(private val context: Context) {
         if (messages.size < 3) return
         
         val emotions = mutableListOf<String>()
-        
         for (message in messages) {
             val content = message.content
             val emotion = detectEmotion(content)
-            if (emotion != "中，) {
+        if (emotion != "中，) {
                 emotions.add(emotion)
             }
         }
-        
         if (emotions.size >= 3) {
             val recentEmotions = emotions.takeLast(3)
-            val firstHalf = recentEmotions.take(2)
-            val secondHalf = recentEmotions.takeLast(2)
-            
-            val firstHalfPositive = firstHalf.count { isPositiveEmotion(it) }
-            val secondHalfPositive = secondHalf.count { isPositiveEmotion(it) }
+        val firstHalf = recentEmotions.take(2)
+        val secondHalf = recentEmotions.takeLast(2)
+        val firstHalfPositive = firstHalf.count { isPositiveEmotion(it) }
+        val secondHalfPositive = secondHalf.count { isPositiveEmotion(it) }
             
             profile.emotionTrend = when {
                 secondHalfPositive > firstHalfPositive -> "上升"
@@ -176,7 +168,6 @@ class EmotionAnalyzer(private val context: Context) {
             "失望" to listOf("失望", "沮丧", "灰心"),
             "惊讶" to listOf("惊讶", "吃惊", "震惊")
         )
-        
         for ((emotion, keywords) in emotionKeywords) {
             for (keyword in keywords) {
                 if (content.contains(keyword)) {
@@ -184,7 +175,6 @@ class EmotionAnalyzer(private val context: Context) {
                 }
             }
         }
-        
         return "中，
     }
     
@@ -193,7 +183,6 @@ class EmotionAnalyzer(private val context: Context) {
      */
     private fun analyzeEmotionTriggers(messages: List<ChatMessage>, profile: EmotionProfile) {
         val triggers = mutableMapOf<String, Int>()
-        
         val triggerKeywords = mapOf(
             "工作" to listOf("工作", "职场", "业务", "项目", "任务"),
             "学习" to listOf("学习", "教育", "知识", "课程", "考试"),
@@ -201,12 +190,10 @@ class EmotionAnalyzer(private val context: Context) {
             "技�?to listOf("技�? "编程", "软件", "硬件", "开的）,
             "关系" to listOf("朋友", "家人", "同事", "关系", "感情")
         )
-        
         for (message in messages) {
             val content = message.content
             val emotion = detectEmotion(content)
-            
-            if (emotion != "中，) {
+        if (emotion != "中，) {
                 for ((trigger, keywords) in triggerKeywords) {
                     for (keyword in keywords) {
                         if (content.contains(keyword)) {
@@ -217,7 +204,6 @@ class EmotionAnalyzer(private val context: Context) {
                 }
             }
         }
-        
         if (triggers.isNotEmpty()) {
             val primaryTrigger = triggers.maxByOrNull { it.value }?.key
             if (primaryTrigger != null) {

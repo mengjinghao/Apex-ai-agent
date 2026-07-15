@@ -17,23 +17,20 @@ class WeightConfigManager {
         val weights: Map<String, Double>,
         val lastUpdated: Long
     )
-
-    private val defaultWeights = mapOf(
+        private val defaultWeights = mapOf(
         "capability" to 0.4,
         "performance" to 0.3,
         "resource" to 0.2,
         "skill" to 0.1
     )
-
-    private val predefinedConfigs = ConcurrentHashMap<String, WeightConfig>()
-    private val userConfigs = ConcurrentHashMap<String, UserWeightConfig>()
+        private val predefinedConfigs = ConcurrentHashMap<String, WeightConfig>()
+        private val userConfigs = ConcurrentHashMap<String, UserWeightConfig>()
 
     init {
         // 初始化预定义配置
         initPredefinedConfigs()
     }
-
-    private fun initPredefinedConfigs() {
+        private fun initPredefinedConfigs() {
         predefinedConfigs["balanced"] = WeightConfig(
             name = "balanced",
             description = "平衡配置，综合考虑各因�?
@@ -85,16 +82,13 @@ class WeightConfigManager {
             )
         )
     }
-
-    fun getPredefinedConfigs(): List<WeightConfig> {
+        fun getPredefinedConfigs(): List<WeightConfig> {
         return predefinedConfigs.values.toList()
     }
-
-    fun getPredefinedConfig(name: String): WeightConfig? {
+        fun getPredefinedConfig(name: String): WeightConfig? {
         return predefinedConfigs[name]
     }
-
-    fun createUserConfig(userId: String, configName: String, weights: Map<String, Double>): UserWeightConfig {
+        fun createUserConfig(userId: String, configName: String, weights: Map<String, Double>): UserWeightConfig {
         val config = UserWeightConfig(
             userId = userId,
             configName = configName,
@@ -104,16 +98,13 @@ class WeightConfigManager {
         userConfigs["${userId}:${configName}"] = config
         return config
     }
-
-    fun getUserConfig(userId: String, configName: String): UserWeightConfig? {
+        fun getUserConfig(userId: String, configName: String): UserWeightConfig? {
         return userConfigs["${userId}:${configName}"]
     }
-
-    fun getUserConfigs(userId: String): List<UserWeightConfig> {
+        fun getUserConfigs(userId: String): List<UserWeightConfig> {
         return userConfigs.values.filter { it.userId == userId }
     }
-
-    fun updateUserConfig(userId: String, configName: String, weights: Map<String, Double>): Boolean {
+        fun updateUserConfig(userId: String, configName: String, weights: Map<String, Double>): Boolean {
         val key = "${userId}:${configName}"
         val existingConfig = userConfigs[key]
         if (existingConfig != null) {
@@ -126,19 +117,16 @@ class WeightConfigManager {
         }
         return false
     }
-
-    fun deleteUserConfig(userId: String, configName: String): Boolean {
+        fun deleteUserConfig(userId: String, configName: String): Boolean {
         return userConfigs.remove("${userId}:${configName}") != null
     }
-
-    fun getDefaultWeights(): Map<String, Double> {
+        fun getDefaultWeights(): Map<String, Double> {
         return defaultWeights
     }
-
-    fun getWeightsForUser(userId: String, configName: String? = null): Map<String, Double> {
+        fun getWeightsForUser(userId: String, configName: String? = null): Map<String, Double> {
         if (configName != null) {
             val userConfig = getUserConfig(userId, configName)
-            if (userConfig != null) {
+        if (userConfig != null) {
                 return userConfig.weights
             }
         }
@@ -146,23 +134,20 @@ class WeightConfigManager {
         // 如果用户配置不存在，返回默认配置
     return defaultWeights
     }
-
-    private fun normalizeWeights(weights: Map<String, Double>): Map<String, Double> {
+        private fun normalizeWeights(weights: Map<String, Double>): Map<String, Double> {
         val total = weights.values.sum()
         if (total == 0.0) {
             return defaultWeights
         }
         return weights.mapValues { (_, value) -> value / total }
     }
-
-    fun validateWeights(weights: Map<String, Double>): Boolean {
+        fun validateWeights(weights: Map<String, Double>): Boolean {
         val requiredKeys = setOf("capability", "performance", "resource", "skill")
         val hasAllKeys = requiredKeys.all { weights.containsKey(it) }
         val allPositive = weights.values.all { it >= 0 }
         return hasAllKeys && allPositive
     }
-
-    fun exportConfig(config: WeightConfig): String {
+        fun exportConfig(config: WeightConfig): String {
         val sb = StringBuilder()
         sb.appendLine("配置名称: ${config.name}")
         sb.appendLine("描述: ${config.description}")
@@ -173,12 +158,10 @@ class WeightConfigManager {
         }
         return sb.toString()
     }
-
-    fun importConfig(name: String, description: String, weights: Map<String, Double>): WeightConfig? {
+        fun importConfig(name: String, description: String, weights: Map<String, Double>): WeightConfig? {
         if (!validateWeights(weights)) {
             return null
         }
-        
         val config = WeightConfig(
             name = name,
             description = description,
@@ -187,18 +170,17 @@ class WeightConfigManager {
         predefinedConfigs[name] = config
         return config
     }
-
-    fun resetToDefaults() {
+        fun resetToDefaults() {
         predefinedConfigs.clear()
         userConfigs.clear()
         initPredefinedConfigs()
     }
-
-    fun getConfigCount(): Pair<Int, Int> {
+        fun getConfigCount(): Pair<Int, Int> {
         return Pair(predefinedConfigs.size, userConfigs.size)
     }
 
-    // 为特定任务类型推荐权重配�?   fun recommendConfigForTaskType(taskType: String): String {
+    // 为特定任务类型推荐权重配�?
+    fun recommendConfigForTaskType(taskType: String): String {
     return when (taskType) {
             "coding", "development" -> "capability-focused"
             "writing", "content" -> "skill-matched"

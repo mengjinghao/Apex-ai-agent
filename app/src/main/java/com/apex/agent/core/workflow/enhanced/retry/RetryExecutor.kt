@@ -48,7 +48,6 @@ class DefaultErrorClassifier : ErrorClassifier {
     override fun classify(throwable: Throwable): ErrorCategory {
         val message = throwable.message?.lowercase() ?: ""
         val typeName = throwable::class.simpleName?.lowercase() ?: ""
-
         return when {
             // 权限类
             typeName.contains("security") || typeName.contains("permission") ||
@@ -100,14 +99,12 @@ class CircuitBreaker(
     private val onStateChange: ((State, State) -> Unit)? = null
 ) {
     enum class State { CLOSED, OPEN, HALF_OPEN }
-
-    private val state = AtomicReference(State.CLOSED)
-    private val failureCount = AtomicInteger(0)
-    private val successCount = AtomicInteger(0)
-    private val openedAt = AtomicLong(0)
-    private val halfOpenTrials = AtomicInteger(0)
-
-    val currentState: State get() = state.get()
+        private val state = AtomicReference(State.CLOSED)
+        private val failureCount = AtomicInteger(0)
+        private val successCount = AtomicInteger(0)
+        private val openedAt = AtomicLong(0)
+        private val halfOpenTrials = AtomicInteger(0)
+        val currentState: State get() = state.get()
 
     /**
      * 检查是否允许请求通过
@@ -182,8 +179,7 @@ class CircuitOpenException(message: String) : RuntimeException(message)
  */
 object CircuitBreakerRegistry {
     private val breakers = ConcurrentHashMap<String, CircuitBreaker>()
-
-    fun get(key: String, config: CircuitBreakerConfig = CircuitBreakerConfig()): CircuitBreaker {
+        fun get(key: String, config: CircuitBreakerConfig = CircuitBreakerConfig()): CircuitBreaker {
         return breakers.computeIfAbsent(key) {
             CircuitBreaker(
                 failureThreshold = config.failureThreshold,
@@ -193,10 +189,9 @@ object CircuitBreakerRegistry {
             )
         }
     }
-
-    fun reset(key: String) = breakers.remove(key)
-    fun resetAll() = breakers.clear()
-    fun snapshot(): Map<String, CircuitBreaker.State> = breakers.mapValues { it.value.currentState }
+        fun reset(key: String) = breakers.remove(key)
+        fun resetAll() = breakers.clear()
+        fun snapshot(): Map<String, CircuitBreaker.State> = breakers.mapValues { it.value.currentState }
 }
 
 data class CircuitBreakerConfig(
@@ -227,27 +222,25 @@ class RetryExecutor(
     ): T {
         var lastError: Throwable? = null
         val maxAttempts = policy.maxAttempts.coerceAtLeast(1)
-
         for (attempt in 1..maxAttempts) {
             try {
                 breaker?.tryAcquire()
-                val result = block(attempt)
+        val result = block(attempt)
                 breaker?.recordSuccess()
-                return result
+        return result
             } catch (e: CircuitOpenException) {
                 throw e
             } catch (e: Throwable) {
                 lastError = e
                 breaker?.recordFailure()
-
-                val category = classifier.classify(e)
-                if (category in parseNonRetryable(policy.nonRetryableErrorCategories)) {
+        val category = classifier.classify(e)
+        if (category in parseNonRetryable(policy.nonRetryableErrorCategories)) {
                     throw e
                 }
-                if (category !in parseRetryable(policy.retryableErrorCategories) && category != ErrorCategory.UNKNOWN) {
+        if (category !in parseRetryable(policy.retryableErrorCategories) && category != ErrorCategory.UNKNOWN) {
                     throw e
                 }
-                if (attempt >= maxAttempts) break
+        if (attempt >= maxAttempts) break
 
                 val delayMs = computeBackoff(policy, attempt)
                 delay(delayMs)
@@ -269,10 +262,8 @@ class RetryExecutor(
         val maxJ = (capped + jitter).toLong()
         return if (maxJ <= minJ) capped else Random.nextLong(minJ, maxJ + 1)
     }
-
-    private fun parseRetryable(set: Set<String>): Set<ErrorCategory> =
+        private fun parseRetryable(set: Set<String>): Set<ErrorCategory> =
         set.mapNotNull { runCatching { ErrorCategory.valueOf(it) }.getOrNull() }.toSet()
-
-    private fun parseNonRetryable(set: Set<String>): Set<ErrorCategory> =
+        private fun parseNonRetryable(set: Set<String>): Set<ErrorCategory> =
         set.mapNotNull { runCatching { ErrorCategory.valueOf(it) }.getOrNull() }.toSet()
 }

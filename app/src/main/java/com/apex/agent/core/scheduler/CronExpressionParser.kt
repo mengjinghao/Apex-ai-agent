@@ -62,15 +62,13 @@ class CronExpressionParser {
      */
     fun parse(naturalLanguage: String): ParseResult {
         val input = naturalLanguage.trim().lowercase()
-        
         if (input.isEmpty()) {
             return ParseResult(false, errorMessage = "输入不能为空")
         }
-        
         return try {
             val timeDesc = parseNaturalLanguage(input)
-            val cronExpression = buildCronExpression(timeDesc)
-            val nextTime = calculateNextExecution(cronExpression)
+        val cronExpression = buildCronExpression(timeDesc)
+        val nextTime = calculateNextExecution(cronExpression)
             
             ParseResult(
                 success = true,
@@ -95,7 +93,7 @@ class CronExpressionParser {
     val minutePattern = Regex("�?\\d+)\\s*分钟")
         minutePattern.find(input)?.let {
             val minutes = it.groupValues[1].toInt()
-            return TimeDescription(intervalMinutes = minutes)
+        return TimeDescription(intervalMinutes = minutes)
         }
         
         // 每小�?
@@ -107,14 +105,14 @@ class CronExpressionParser {
     val hourPattern = Regex("�?\\d+)\\s*小时")
         hourPattern.find(input)?.let {
             val hours = it.groupValues[1].toInt()
-            return TimeDescription(intervalHours = hours)
+        return TimeDescription(intervalHours = hours)
         }
         
         // 每周�?
-    val weekdayPattern = Regex("每周([一二三四五六日天])?[早中晚]?上\\s*(\\d+)?[�?]?(\\d+)?")
+    val weekdayPattern = Regex("每周([一二三四五六日天])?[早中晚]上\\s*(\\d+)?[�?]?(\\d+)?")
         weekdayPattern.find(input)?.let { match ->
             val dayOfWeek = mapWeekday(input)
-            val hour = match.groupValues[2].toIntOrNull() ?: 9
+        val hour = match.groupValues[2].toIntOrNull() ?: 9
             val minute = match.groupValues[3].toIntOrNull() ?: 0
             return TimeDescription(
                 hour = hour,
@@ -124,7 +122,7 @@ class CronExpressionParser {
         }
         
         // 每月几号
-    val monthDayPattern = Regex("每月(\\d+)[号日]?[早中晚]?上\\s*(\\d+)?[�?]?(\\d+)?")
+    val monthDayPattern = Regex("每月(\\d+)[号日]?[早中晚]上\\s*(\\d+)?[�?]?(\\d+)?")
         monthDayPattern.find(input)?.let { match ->
             val dayOfMonth = match.groupValues[1]
             val hour = match.groupValues[2].toIntOrNull() ?: 0
@@ -139,7 +137,7 @@ class CronExpressionParser {
         // 工作�?
     if (input.contains("工作�?) || input.contains("平日")) {
             val hourMinute = extractHourMinute(input)
-            return TimeDescription(
+        return TimeDescription(
                 hour = hourMinute.first,
                 minute = hourMinute.second,
                 dayOfWeek = "1-5"
@@ -149,7 +147,7 @@ class CronExpressionParser {
         // 周末
     if (input.contains("周末") || input.contains("周六�?)) {
             val hourMinute = extractHourMinute(input)
-            return TimeDescription(
+        return TimeDescription(
                 hour = hourMinute.first,
                 minute = hourMinute.second,
                 dayOfWeek = "0,6"
@@ -158,12 +156,11 @@ class CronExpressionParser {
         
         // 每天定时 - 多种中文模式
     val dailyPatterns = listOf(
-            Regex("每天[早中晚]?上\\s*(\\d+)[�?](\\d+)"),
+            Regex("每天[早中晚]上\\s*(\\d+)[�?](\\d+)"),
             Regex("每天\\s*(\\d+)[�?](\\d+)"),
-            Regex("每天[早中晚]?上\\s*(\\d+)�?),
+            Regex("每天[早中晚]上\\s*(\\d+)�?),
             Regex("每天\\s*at\\s*(\\d+):(\\d+)")
         )
-        
         for (pattern in dailyPatterns) {
             pattern.find(input)?.let { match ->
                 val hour = match.groupValues[1].toIntOrNull() ?: 9
@@ -182,21 +179,21 @@ class CronExpressionParser {
         timeOfDayPattern.find(input)?.let { match ->
             val timeOfDay = match.groupValues[1]
             val hour = match.groupValues[2].toInt()
-            val minute = match.groupValues[3].toIntOrNull() ?: 0
+        val minute = match.groupValues[3].toIntOrNull() ?: 0
             val adjustedHour = adjustHour(timeOfDay, hour)
-            return TimeDescription(hour = adjustedHour, minute = minute)
+        return TimeDescription(hour = adjustedHour, minute = minute)
         }
         
         // HH:mm 格式
     val timePattern = Regex("(\\d{1,2}):(\\d{2})")
         timePattern.find(input)?.let { match ->
             val hour = match.groupValues[1].toInt()
-            val minute = match.groupValues[2].toInt()
-            return TimeDescription(hour = hour, minute = minute)
+        val minute = match.groupValues[2].toInt()
+        return TimeDescription(hour = hour, minute = minute)
         }
         
         // 默认: 每天 9 �?        AppLogger.w(TAG, "无法完全匹配表达式，使用默认每天 9 �? ${input}")
-    return TimeDescription(hour = 9, minute = 0)
+        return TimeDescription(hour = 9, minute = 0)
     }
     
     /**
@@ -206,12 +203,10 @@ class CronExpressionParser {
         pattern.find(input)?.let { match ->
             return Pair(match.groupValues[1].toInt(), match.groupValues[2].toInt())
         }
-        
         val hourPattern = Regex("(\\d+)�?)
         hourPattern.find(input)?.let { match ->
             return Pair(match.groupValues[1].toInt(), 0)
         }
-        
         return Pair(9, 0) // 默认
     }
     
@@ -234,7 +229,6 @@ class CronExpressionParser {
             "一" to "1", "�? to "2", "�? to "3", "�? to "4",
             "�? to "5", "�? to "6", "�? to "0", "�? to "0"
         )
-        
         for ((key, value) in weekdayMap) {
             if (input.contains(key)) {
                 return value
@@ -247,13 +241,11 @@ class CronExpressionParser {
             "thursday" to "4", "friday" to "5", "saturday" to "6",
             "sunday" to "0"
         )
-        
         for ((key, value) in englishMap) {
             if (input.contains(key)) {
                 return value
             }
         }
-        
         return "*"
     }
     
@@ -279,7 +271,6 @@ class CronExpressionParser {
                 hour = timeDesc.hour?.toString() ?: "*"
             }
         }
-        
         return "${minute} ${hour} ${timeDesc.dayOfMonth} ${timeDesc.month} ${timeDesc.dayOfWeek}"
     }
     
@@ -291,7 +282,6 @@ class CronExpressionParser {
         if (parts.size < 5) {
             throw IllegalArgumentException("无效�?cron 表达�? ${cronExpression}")
         }
-        
         val minuteStr = parts[0]
         val hourStr = parts[1]
         val dayOfMonthStr = parts[2]
@@ -308,14 +298,13 @@ class CronExpressionParser {
     if (minuteStr.startsWith("*/")) {
             val interval = minuteStr.substring(2).toInt()
             calendar.set(Calendar.MINUTE, (calendar.get(Calendar.MINUTE) / interval) * interval)
-            return calendar.timeInMillis
+        return calendar.timeInMillis
         }
-        
         if (hourStr.startsWith("*/")) {
             val interval = hourStr.substring(2).toInt()
             calendar.set(Calendar.HOUR_OF_DAY, (calendar.get(Calendar.HOUR_OF_DAY) / interval) * interval)
             calendar.set(Calendar.MINUTE, minuteStr.toInt())
-            return calendar.timeInMillis
+        return calendar.timeInMillis
         }
         
         // 固定时间执行
@@ -329,7 +318,6 @@ class CronExpressionParser {
     if (calendar.timeInMillis <= System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
-        
         return calendar.timeInMillis
     }
     
@@ -360,24 +348,24 @@ class CronExpressionParser {
         // 间隔�?
     if (value.startsWith("*/")) {
             val interval = value.substring(2).toInt()
-            if (interval < 1) throw IllegalArgumentException("间隔值必须大�?0")
-            return
+        if (interval < 1) throw IllegalArgumentException("间隔值必须大�?0")
+        return
         }
         
         // 列表�?
     if (value.contains(",")) {
             value.split(",").forEach { validateField(it.trim(), min, max) }
-            return
+        return
         }
         
         // 范围�?
     if (value.contains("-")) {
             val range = value.split("-")
-            if (range.size != 2) throw IllegalArgumentException("无效的范�? ${value}")
-            val start = range[0].toInt()
-            val end = range[1].toInt()
-            if (start < min || end > max) throw IllegalArgumentException("值超出范�?[${min}-${max}]: ${value}")
-            return
+        if (range.size != 2) throw IllegalArgumentException("无效的范�? ${value}")
+        val start = range[0].toInt()
+        val end = range[1].toInt()
+        if (start < min || end > max) throw IllegalArgumentException("值超出范�?[${min}-${max}]: ${value}")
+        return
         }
         
         // 单个�?
@@ -392,7 +380,6 @@ class CronExpressionParser {
     fun toHumanReadable(cronExpression: String): String {
         val parts = cronExpression.trim().split("\\s+".toRegex())
         if (parts.size < 5) return "无效的调度表达式"
-        
         val minuteStr = parts[0]
         val hourStr = parts[1]
         val dayOfMonthStr = parts[2]
@@ -402,12 +389,11 @@ class CronExpressionParser {
         // 间隔执行
     if (minuteStr.startsWith("*/")) {
             val interval = minuteStr.substring(2)
-            return "�?${interval} 分钟执行一�?
+        return "�?${interval} 分钟执行一�?
         }
-        
         if (hourStr.startsWith("*/")) {
             val interval = hourStr.substring(2)
-            return "�?${interval} 小时执行一�?
+        return "�?${interval} 小时执行一�?
         }
         
         // 固定时间
@@ -422,7 +408,7 @@ class CronExpressionParser {
                 "3" to "周三", "4" to "周四", "5" to "周五", "6" to "周六",
                 "0,6" to "周末", "1-5" to "工作�?
             )
-            val dayName = dayNames[dayOfWeekStr] ?: "�?${dayOfWeekStr} �?
+        val dayName = dayNames[dayOfWeekStr] ?: "�?${dayOfWeekStr} �?
             return "每周 ${dayName} ${timeStr} 执行"
         }
         

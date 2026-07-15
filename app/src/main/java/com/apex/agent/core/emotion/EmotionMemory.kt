@@ -14,8 +14,7 @@ import java.util.*
 class EmotionMemory(private val context: Context) {
 
     private val TAG = "EmotionMemory"
-
-    private val memoryDir: File
+        private val memoryDir: File
         get() = File(context.filesDir, "emotion_memory").also {
             if (!it.exists()) it.mkdirs()
         }
@@ -54,7 +53,7 @@ class EmotionMemory(private val context: Context) {
     suspend fun saveEmotionEntry(entry: EmotionMemoryEntry): Boolean = withContext(Dispatchers.IO) {
         try {
             val file = File(memoryDir, "${entry.conversationId}_${entry.id}.json")
-            val json = JSONObject().apply {
+        val json = JSONObject().apply {
                 put("id", entry.id)
                 put("timestamp", entry.timestamp)
                 put("context", entry.context)
@@ -106,14 +105,11 @@ class EmotionMemory(private val context: Context) {
                 emptyList()
             }
         }
-
-    private fun parseEntry(file: File): EmotionMemoryEntry? {
+        private fun parseEntry(file: File): EmotionMemoryEntry? {
         return try {
             val json = JSONObject(file.readText())
-
-            val emotionJson = json.getJSONObject("emotionProfile")
-
-            val emotionProfile = EnhancedEmotionAnalyzer.DetailedEmotionProfile().apply {
+        val emotionJson = json.getJSONObject("emotionProfile")
+        val emotionProfile = EnhancedEmotionAnalyzer.DetailedEmotionProfile().apply {
                 primaryEmotion = EnhancedEmotionAnalyzer.EmotionCategory.valueOf(
                     emotionJson.getString("primaryEmotion")
                 )
@@ -163,12 +159,10 @@ class EmotionMemory(private val context: Context) {
         daysBack: Int = 7
     ): EmotionPatternSummary = withContext(Dispatchers.IO) {
         val cutoffTime = System.currentTimeMillis() - (daysBack * 24 * 60 * 60 * 1000L)
-
         val entries = memoryDir.listFiles { file ->
             file.name.startsWith("${conversationId}_") && file.name.endsWith(".json")
         }?.mapNotNull { parseEntry(it) }
             ?.filter { it.timestamp >= cutoffTime } ?: emptyList()
-
         if (entries.isEmpty()) {
             return@withContext EmotionPatternSummary(
                 timeRange = "${daysBack}�?,
@@ -180,32 +174,26 @@ class EmotionMemory(private val context: Context) {
                 notableEvents = emptyList()
             )
         }
-
         val emotionCounts = entries.groupingBy { it.emotionProfile.primaryEmotion }
             .eachCount()
-
         val total = emotionCounts.values.sum().toFloat()
         val emotionDistribution = emotionCounts.mapValues { (_, count) -> count / total }
-
         val dominantEmotion = emotionDistribution.maxByOrNull { it.value }?.key
             ?: EnhancedEmotionAnalyzer.EmotionCategory.NEUTRAL
 
         val averageIntensity = entries.map { it.emotionProfile.intensityScore }.average().toFloat()
-
         val allTriggers = entries.flatMap { it.emotionProfile.emotionalTriggers }
         val triggerCounts = allTriggers.groupingBy { it }.eachCount()
         val keyTriggers = triggerCounts.entries
             .sortedByDescending { it.value }
             .take(3)
             .map { it.key }
-
         val emotionalTrend = if (entries.size >= 3) {
             val recent = entries.takeLast(entries.size / 2)
-            val earlier = entries.take(entries.size / 2)
-            val recentAvg = recent.map { it.emotionProfile.intensityScore }.average()
-            val earlierAvg = earlier.map { it.emotionProfile.intensityScore }.average()
-
-            when {
+        val earlier = entries.take(entries.size / 2)
+        val recentAvg = recent.map { it.emotionProfile.intensityScore }.average()
+        val earlierAvg = earlier.map { it.emotionProfile.intensityScore }.average()
+        when {
                 recentAvg > earlierAvg * 1.2 -> EnhancedEmotionAnalyzer.EmotionDynamics.IMPROVING
                 recentAvg < earlierAvg * 0.8 -> EnhancedEmotionAnalyzer.EmotionDynamics.DETERIORATING
                 else -> EnhancedEmotionAnalyzer.EmotionDynamics.STABLE
@@ -213,15 +201,14 @@ class EmotionMemory(private val context: Context) {
         } else {
             EnhancedEmotionAnalyzer.EmotionDynamics.STABLE
         }
-
         val notableEvents = entries.filter {
             it.emotionProfile.intensityScore > 0.7f ||
             it.emotionProfile.sarcasmDetected ||
             it.emotionProfile.mixedEmotions
         }.map { entry ->
             val dateFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
-            val time = dateFormat.format(Date(entry.timestamp))
-            val emotion = entry.emotionProfile.primaryEmotion.displayName
+        val time = dateFormat.format(Date(entry.timestamp))
+        val emotion = entry.emotionProfile.primaryEmotion.displayName
             "${time}: �?{emotion情绪波动}"
         }
 
@@ -239,14 +226,11 @@ class EmotionMemory(private val context: Context) {
     suspend fun buildLongTermProfile(userId: String, lookbackDays: Int = 30): LongTermEmotionProfile =
         withContext(Dispatchers.IO) {
             val cutoffTime = System.currentTimeMillis() - (lookbackDays * 24 * 60 * 60 * 1000L)
-
-            val allFiles = memoryDir.listFiles { file ->
+        val allFiles = memoryDir.listFiles { file ->
                 file.name.endsWith(".json")
             }?.filter { it.lastModified() >= cutoffTime } ?: emptyList()
-
-            val entries = allFiles.mapNotNull { parseEntry(it) }
-
-            if (entries.isEmpty()) {
+        val entries = allFiles.mapNotNull { parseEntry(it) }
+        if (entries.isEmpty()) {
                 return@withContext LongTermEmotionProfile(
                     userId = userId,
                     baselineEmotion = EnhancedEmotionAnalyzer.EmotionCategory.NEUTRAL,
@@ -258,30 +242,25 @@ class EmotionMemory(private val context: Context) {
                     lastUpdated = System.currentTimeMillis()
                 )
             }
-
-            val emotionCounts = entries.groupingBy { it.emotionProfile.primaryEmotion }
+        val emotionCounts = entries.groupingBy { it.emotionProfile.primaryEmotion }
                 .eachCount()
-            val total = emotionCounts.values.sum().toFloat()
-            val baselineEmotion = emotionCounts.maxByOrNull { it.value }?.key
+        val total = emotionCounts.values.sum().toFloat()
+        val baselineEmotion = emotionCounts.maxByOrNull { it.value }?.key
                 ?: EnhancedEmotionAnalyzer.EmotionCategory.NEUTRAL
 
             val typicalIntensities = entries.groupBy { it.emotionProfile.primaryEmotion }
                 .mapValues { (_, entries) ->
                     entries.map { it.emotionProfile.intensityScore }.average().toFloat()
                 }
-
-            val allTriggers = entries.flatMap { it.emotionProfile.emotionalTriggers }
-            val commonTriggers = allTriggers.groupingBy { it }
+        val allTriggers = entries.flatMap { it.emotionProfile.emotionalTriggers }
+        val commonTriggers = allTriggers.groupingBy { it }
                 .eachCount()
                 .entries.sortedByDescending { it.value }
                 .take(5)
                 .map { it.key }
-
-            val emotionalRhythms = analyzeEmotionalRhythms(entries)
-
-            val responsePatterns = analyzeResponsePatterns(entries)
-
-            val growthIndicators = analyzeGrowthIndicators(entries)
+        val emotionalRhythms = analyzeEmotionalRhythms(entries)
+        val responsePatterns = analyzeResponsePatterns(entries)
+        val growthIndicators = analyzeGrowthIndicators(entries)
 
             LongTermEmotionProfile(
                 userId = userId,
@@ -294,19 +273,17 @@ class EmotionMemory(private val context: Context) {
                 lastUpdated = System.currentTimeMillis()
             )
         }
-
-    private fun analyzeEmotionalRhythms(entries: List<EmotionMemoryEntry>): Map<String, Float> {
+        private fun analyzeEmotionalRhythms(entries: List<EmotionMemoryEntry>): Map<String, Float> {
         val hourEmotions = mutableMapOf<Int, MutableList<Float>>()
 
         entries.forEach { entry ->
             val calendar = Calendar.getInstance().apply {
                 timeInMillis = entry.timestamp
             }
-            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
             hourEmotions.getOrPut(hour) { mutableListOf() }
                 .add(entry.emotionProfile.intensityScore)
         }
-
         return hourEmotions.mapValues { (_, scores) ->
             scores.average().toFloat()
         }.mapKeys { (hour, _) ->
@@ -321,14 +298,11 @@ class EmotionMemory(private val context: Context) {
             scores.values.average().toFloat()
         }
     }
-
-    private fun analyzeResponsePatterns(entries: List<EmotionMemoryEntry>): Map<String, Any> {
+        private fun analyzeResponsePatterns(entries: List<EmotionMemoryEntry>): Map<String, Any> {
         val sarcasmCount = entries.count { it.emotionProfile.sarcasmDetected }
         val mixedEmotionCount = entries.count { it.emotionProfile.mixedEmotions }
-
         val hiddenSentiments = entries.flatMap { it.emotionProfile.hiddenSentiments }
             .groupingBy { it }.eachCount()
-
         return mapOf(
             "sarcasmFrequency" to (sarcasmCount.toFloat() / entries.size.coerceAtLeast(1)),
             "mixedEmotionFrequency" to (mixedEmotionCount.toFloat() / entries.size.coerceAtLeast(1)),
@@ -338,27 +312,21 @@ class EmotionMemory(private val context: Context) {
                 .map { it.key }
         )
     }
-
-    private fun analyzeGrowthIndicators(entries: List<EmotionMemoryEntry>): Map<String, Float> {
+        private fun analyzeGrowthIndicators(entries: List<EmotionMemoryEntry>): Map<String, Float> {
         if (entries.size < 10) return emptyMap()
-
         val sortedEntries = entries.sortedBy { it.timestamp }
         val halfPoint = sortedEntries.size / 2
 
         val earlyEntries = sortedEntries.take(halfPoint)
         val lateEntries = sortedEntries.takeLast(halfPoint)
-
         val earlyPositive = earlyEntries.count {
             it.emotionProfile.primaryEmotion.isPositive == true
         }.toFloat() / earlyEntries.size.coerceAtLeast(1)
-
         val latePositive = lateEntries.count {
             it.emotionProfile.primaryEmotion.isPositive == true
         }.toFloat() / lateEntries.size.coerceAtLeast(1)
-
         val earlyIntensity = earlyEntries.map { it.emotionProfile.intensityScore }.average().toFloat()
         val lateIntensity = lateEntries.map { it.emotionProfile.intensityScore }.average().toFloat()
-
         return mapOf(
             "positiveEmotionGrowth" to (latePositive - earlyPositive),
             "intensityChange" to (lateIntensity - earlyIntensity)
@@ -367,7 +335,6 @@ class EmotionMemory(private val context: Context) {
 
     suspend fun clearOldEntries(daysToKeep: Int = 60): Int = withContext(Dispatchers.IO) {
         val cutoffTime = System.currentTimeMillis() - (daysToKeep * 24 * 60 * 60 * 1000L)
-
         val filesToDelete = memoryDir.listFiles { file ->
             file.lastModified() < cutoffTime
         } ?: emptyArray()
@@ -391,14 +358,12 @@ class EmotionMemory(private val context: Context) {
             appendLine("平均强度: ${String.format("%.1f", summary.averageIntensity * 100)}%")
             appendLine("情绪动�? ${summary.emotionalTrend.name}")
             appendLine()
-
-            if (summary.keyTriggers.isNotEmpty()) {
+        if (summary.keyTriggers.isNotEmpty()) {
                 appendLine("【主要触发因素�?)
                 summary.keyTriggers.forEach { appendLine("  - ${it}") }
                 appendLine()
             }
-
-            if (summary.notableEvents.isNotEmpty()) {
+        if (summary.notableEvents.isNotEmpty()) {
                 appendLine("【重要事件�?)
                 summary.notableEvents.forEach { appendLine("  - ${it}") }
                 appendLine()
@@ -407,7 +372,7 @@ class EmotionMemory(private val context: Context) {
             appendLine("【详细记录�?)
             entries.takeLast(10).forEach { entry ->
                 val dateFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
-                val time = dateFormat.format(Date(entry.timestamp))
+        val time = dateFormat.format(Date(entry.timestamp))
                 appendLine("[${time}] ${entry.emotionProfile.primaryEmotion.displayName} (${String.format("%.0f", entry.emotionProfile.intensityScore * 100)}%)")
                 appendLine("  用户: ${entry.userMessage.take(50)}...")
             }

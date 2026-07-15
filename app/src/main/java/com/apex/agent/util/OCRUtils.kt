@@ -28,7 +28,8 @@ import kotlinx.coroutines.withContext
 object OCRUtils {
     private const val TAG = "OCRUtils"
 
-    // 识别器缓   private var latinRecognizer: TextRecognizer? = null
+    // 识别器缓
+    private var latinRecognizer: TextRecognizer? = null
     private var chineseRecognizer: TextRecognizer? = null
     private var japaneseRecognizer: TextRecognizer? = null
     private var koreanRecognizer: TextRecognizer? = null
@@ -89,7 +90,7 @@ object OCRUtils {
                         newHeight > maxDimension
         ) {
             AppLogger.d(TAG, "Bitmap already large enough, not upscaling for OCR.")
-            return bitmap
+        return bitmap
         }
 
         AppLogger.d(
@@ -126,10 +127,9 @@ object OCRUtils {
                 } else {
                     bitmap
                 }
-
         return try {
             val image = InputImage.fromBitmap(processedBitmap, 0)
-            val result = processImage(image, language)
+        val result = processImage(image, language)
             OCRResult.Success(result)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error recognizing text from bitmap: ${e.message}", e)
@@ -161,7 +161,7 @@ object OCRUtils {
     if (quality == Quality.LOW) {
             return try {
                 val image = InputImage.fromFilePath(context, uri)
-                val result = processImage(image, language)
+        val result = processImage(image, language)
                 OCRResult.Success(result)
             } catch (e: IOException) {
                 AppLogger.e(TAG, "Error reading image: ${e.message}", e)
@@ -177,7 +177,7 @@ object OCRUtils {
             try {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     val originalBitmap = BitmapFactory.decodeStream(inputStream)
-                    if (originalBitmap != null) {
+        if (originalBitmap != null) {
                         val result = recognizeTextFromBitmap(originalBitmap, language, quality)
                         originalBitmap.recycle() // 回收从输入流创建的Bitmap
                         result
@@ -224,7 +224,6 @@ object OCRUtils {
         // 同时进行拉丁文和中文识别
     val latinResult = recognizeTextFromBitmap(bitmap, Language.LATIN, quality)
         val chineseResult = recognizeTextFromBitmap(bitmap, Language.CHINESE, quality)
-
         val latinText = if (latinResult is OCRResult.Success) latinResult.getFullText() else ""
         val chineseText = if (chineseResult is OCRResult.Success) chineseResult.getFullText() else ""
 
@@ -273,7 +272,6 @@ object OCRUtils {
         // 同时进行拉丁文和中文识别
     val latinResult = recognizeTextFromUri(context, uri, Language.LATIN, quality)
         val chineseResult = recognizeTextFromUri(context, uri, Language.CHINESE, quality)
-
         val latinText = if (latinResult is OCRResult.Success) latinResult.getFullText() else ""
         val chineseText = if (chineseResult is OCRResult.Success) chineseResult.getFullText() else ""
 
@@ -299,10 +297,9 @@ object OCRUtils {
             quality: Quality = Quality.LOW
     ): List<String> {
         val textBlocks = mutableListOf<String>()
-
         for (language in languages) {
             val result = recognizeTextFromBitmap(bitmap, language, quality)
-            if (result is OCRResult.Success) {
+        if (result is OCRResult.Success) {
                 result.getTextBlocks().forEach { block -> textBlocks.add(block.text) }
                 // 如果有结果，就不需要继续尝试其他语言
     if (textBlocks.isNotEmpty()) {
@@ -310,7 +307,6 @@ object OCRUtils {
                 }
             }
         }
-
         return textBlocks
     }
 
@@ -365,13 +361,13 @@ object OCRUtils {
             /** 获取结构化文本信/
             fun getStructuredText(): String {
                 val sb = StringBuilder()
-                for (block in text.textBlocks) {
+        for (block in text.textBlocks) {
                     for (line in block.lines) {
                         sb.append(line.text).append("\n")
                     }
                     sb.append("\n")
                 }
-                return sb.toString().trim()
+        return sb.toString().trim()
             }
         }
 

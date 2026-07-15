@@ -71,12 +71,12 @@ data class OptimizationRecommendation(
 class EngineCoreOptimizer private constructor() {
 
     private val config = CoreOptimizationConfig()
-    private val domainOptimizationCount = ConcurrentHashMap<OptimizationDomain, AtomicInteger>()
-    private val taskExecutionTimes = CopyOnWriteArrayList<Long>()
-    private val recommendations = CopyOnWriteArrayList<OptimizationRecommendation>()
-    private val optimizationHistory = CopyOnWriteArrayList<Pair<String, Long>>()
-    private var totalOptimizations = AtomicLong(0)
-    private var scope: CoroutineScope? = null
+        private val domainOptimizationCount = ConcurrentHashMap<OptimizationDomain, AtomicInteger>()
+        private val taskExecutionTimes = CopyOnWriteArrayList<Long>()
+        private val recommendations = CopyOnWriteArrayList<OptimizationRecommendation>()
+        private val optimizationHistory = CopyOnWriteArrayList<Pair<String, Long>>()
+        private var totalOptimizations = AtomicLong(0)
+        private var scope: CoroutineScope? = null
     private var isActive = false
     private val mutex = Mutex()
 
@@ -89,12 +89,10 @@ class EngineCoreOptimizer private constructor() {
                 instance ?: EngineCoreOptimizer().also { instance = it }
             }
         }
-
         private const val TASK_HISTORY_SIZE = 500
         private const val RECOMMENDATION_UPDATE_INTERVAL = 4
     }
-
-    fun initialize(coroutineScope: CoroutineScope) {
+        fun initialize(coroutineScope: CoroutineScope) {
         scope = coroutineScope
         isActive = true
 
@@ -111,8 +109,7 @@ class EngineCoreOptimizer private constructor() {
             }
         }
     }
-
-    fun shutdown() {
+        fun shutdown() {
         isActive = false
     }
 
@@ -121,7 +118,7 @@ class EngineCoreOptimizer private constructor() {
             domainOptimizationCount.computeIfAbsent(domain) { AtomicInteger(0) }.incrementAndGet()
             totalOptimizations.incrementAndGet()
             optimizationHistory.add(Pair("$domain:$action", System.currentTimeMillis()))
-            if (optimizationHistory.size > 1000) optimizationHistory.removeAt(0)
+        if (optimizationHistory.size > 1000) optimizationHistory.removeAt(0)
         }
     }
 
@@ -130,8 +127,7 @@ class EngineCoreOptimizer private constructor() {
             applyOptimization(action.domain, action.action)
         }
     }
-
-    fun getResourceState(): ResourceState {
+        fun getResourceState(): ResourceState {
         val runtime = Runtime.getRuntime()
         ResourceState(
             availableMemoryBytes = runtime.freeMemory(),
@@ -141,8 +137,7 @@ class EngineCoreOptimizer private constructor() {
             timestampMs = System.currentTimeMillis()
         )
     }
-
-    fun shouldOptimize(state: ResourceState): Boolean {
+        fun shouldOptimize(state: ResourceState): Boolean {
         val memUsage = if (state.totalMemoryBytes > 0) {
             (state.totalMemoryBytes - state.availableMemoryBytes).toDouble() / state.totalMemoryBytes * 100
         } else 0.0
@@ -150,8 +145,7 @@ class EngineCoreOptimizer private constructor() {
             state.cpuLoadAverage > 0.8 ||
             (state.batteryLevel != null && state.batteryLevel < config.batteryLowThreshold && !state.isCharging)
     }
-
-    fun recommendOptimizations(state: ResourceState): List<OptimizationRecommendation> {
+        fun recommendOptimizations(state: ResourceState): List<OptimizationRecommendation> {
         val recs = mutableListOf<OptimizationRecommendation>()
         val memUsage = if (state.totalMemoryBytes > 0) {
             (state.totalMemoryBytes - state.availableMemoryBytes).toDouble() / state.totalMemoryBytes * 100
@@ -177,7 +171,7 @@ class EngineCoreOptimizer private constructor() {
         }
         if (taskExecutionTimes.size >= 10) {
             val avg = taskExecutionTimes.average()
-            if (avg > 500) {
+        if (avg > 500) {
                 recs.add(OptimizationRecommendation(
                     "enable_task_batching", OptimizationDomain.SCHEDULING, 2,
                     "Average task duration: ${"%.0f".format(avg)}ms",
@@ -186,12 +180,10 @@ class EngineCoreOptimizer private constructor() {
         }
         recs.sortedByDescending { it.priority }
     }
-
-    fun getDomainOptimizationCount(domain: OptimizationDomain): Int {
+        fun getDomainOptimizationCount(domain: OptimizationDomain): Int {
         domainOptimizationCount[domain]?.get() ?: 0
     }
-
-    fun getMetrics(): CoreMetrics {
+        fun getMetrics(): CoreMetrics {
         val runtime = Runtime.getRuntime()
         val totalMem = runtime.totalMemory()
         val freeMem = runtime.freeMemory()
@@ -210,45 +202,36 @@ class EngineCoreOptimizer private constructor() {
             totalOptimizationsApplied = domainOptimizationCount.values.sumOf { it.get().toLong() }
         )
     }
-
-    fun recordTaskExecution(durationMs: Long) {
+        fun recordTaskExecution(durationMs: Long) {
         taskExecutionTimes.add(durationMs)
         if (taskExecutionTimes.size > TASK_HISTORY_SIZE) taskExecutionTimes.removeAt(0)
     }
-
-    fun getOptimizationHistory(timeRangeMs: Long = 300000L): List<Pair<String, Long>> {
+        fun getOptimizationHistory(timeRangeMs: Long = 300000L): List<Pair<String, Long>> {
         val cutoff = System.currentTimeMillis() - timeRangeMs
         optimizationHistory.filter { it.second >= cutoff }
     }
-
-    fun getRecentOptimizations(limit: Int = 20): List<String> {
+        fun getRecentOptimizations(limit: Int = 20): List<String> {
         optimizationHistory.takeLast(limit).map { it.first }
     }
-
-    fun getRecommendations(): List<OptimizationRecommendation> = recommendations.toList()
-
-    fun updateConfig(newConfig: CoreOptimizationConfig): CoreOptimizationConfig {
+        fun getRecommendations(): List<OptimizationRecommendation> = recommendations.toList()
+        fun updateConfig(newConfig: CoreOptimizationConfig): CoreOptimizationConfig {
         newConfig
     }
-
-    fun resetStatistics() {
+        fun resetStatistics() {
         domainOptimizationCount.clear()
         taskExecutionTimes.clear()
         optimizationHistory.clear()
         totalOptimizations.set(0)
     }
-
-    fun getRecommendedActions(): List<String> {
+        fun getRecommendedActions(): List<String> {
         return recommendations.map { "${it.action} (${it.domain}, priority=${it.priority})" }
     }
-
-    fun getDomainSummary(): String {
+        fun getDomainSummary(): String {
         return domainOptimizationCount.entries
             .sortedByDescending { it.value.get() }
             .joinToString("\n") { "  ${it.key}: ${it.value.get()} optimizations" }
     }
-
-    fun printOptimizationReport(): String {
+        fun printOptimizationReport(): String {
         val metrics = getMetrics()
         val domains = domainOptimizationCount.entries
             .sortedByDescending { it.value.get() }
@@ -262,30 +245,28 @@ class EngineCoreOptimizer private constructor() {
         |  Domain Breakdown: $domains
         """.trimMargin()
     }
-
-    private suspend fun optimizationLoop() {
+        private suspend fun optimizationLoop() {
         while (isActive) {
             delay(config.optimizationIntervalMs)
-            val state = getResourceState()
-            if (shouldOptimize(state)) {
+        val state = getResourceState()
+        if (shouldOptimize(state)) {
                 val recs = recommendOptimizations(state)
                 recommendations.addAll(recs)
-                if (recommendations.size > 100) {
+        if (recommendations.size > 100) {
                     repeat(50) { recommendations.removeFirstOrNull() }
                 }
-                val autoActions = recs.filter { it.autoApplicable }
-                for (rec in autoActions) {
+        val autoActions = recs.filter { it.autoApplicable }
+        for (rec in autoActions) {
                     applyOptimization(rec.domain, rec.action)
                 }
             }
         }
     }
-
-    private suspend fun schedulingOptimizerLoop() {
+        private suspend fun schedulingOptimizerLoop() {
         while (isActive) {
             delay(config.optimizationIntervalMs / 2)
-            val state = getResourceState()
-            if (state.cpuLoadAverage > 0.9) {
+        val state = getResourceState()
+        if (state.cpuLoadAverage > 0.9) {
                 applyOptimization(OptimizationDomain.SCHEDULING, "cooperative_yield")
             }
         }

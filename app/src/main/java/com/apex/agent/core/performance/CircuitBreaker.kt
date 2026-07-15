@@ -33,32 +33,28 @@ class CircuitBreaker private constructor(
         val openCount: Long,
         val halfOpenCount: Long
     )
-
-    private val logger = LoggerFactory.getLogger("CircuitBreaker-$name")
-    private val state = AtomicReference(State.CLOSED)
-    private val failureCount = AtomicInteger(0)
-    private val successCount = AtomicInteger(0)
-    private val totalCalls = AtomicLong(0)
-    private val totalFailures = AtomicLong(0)
-    private val totalSuccesses = AtomicLong(0)
-    private val totalTimeouts = AtomicLong(0)
-    private val totalRejected = AtomicLong(0)
-    private val openCount = AtomicLong(0)
-    private val halfOpenCount = AtomicLong(0)
-    private val lastFailureTime = AtomicLong(0)
-    private val lastSuccessTime = AtomicLong(0)
-    private val lastStateChangeTime = AtomicLong(System.currentTimeMillis())
-
-    private val failureTimestamps = ConcurrentLinkedQueue<Long>()
-    private val listeners = ConcurrentLinkedQueue<(State, State) -> Unit>()
-
-    fun <T> protect(block: () -> T): T {
+        private val logger = LoggerFactory.getLogger("CircuitBreaker-$name")
+        private val state = AtomicReference(State.CLOSED)
+        private val failureCount = AtomicInteger(0)
+        private val successCount = AtomicInteger(0)
+        private val totalCalls = AtomicLong(0)
+        private val totalFailures = AtomicLong(0)
+        private val totalSuccesses = AtomicLong(0)
+        private val totalTimeouts = AtomicLong(0)
+        private val totalRejected = AtomicLong(0)
+        private val openCount = AtomicLong(0)
+        private val halfOpenCount = AtomicLong(0)
+        private val lastFailureTime = AtomicLong(0)
+        private val lastSuccessTime = AtomicLong(0)
+        private val lastStateChangeTime = AtomicLong(System.currentTimeMillis())
+        private val failureTimestamps = ConcurrentLinkedQueue<Long>()
+        private val listeners = ConcurrentLinkedQueue<(State, State) -> Unit>()
+        fun <T> protect(block: () -> T): T {
         totalCalls.incrementAndGet()
-
         when (state.get()) {
             State.OPEN -> {
                 val elapsed = System.currentTimeMillis() - lastStateChangeTime.get()
-                if (elapsed >= openTimeoutMs) {
+        if (elapsed >= openTimeoutMs) {
                     if (state.compareAndSet(State.OPEN, State.HALF_OPEN)) {
                         halfOpenCount.incrementAndGet()
                         lastStateChangeTime.set(System.currentTimeMillis())
@@ -67,18 +63,17 @@ class CircuitBreaker private constructor(
                     }
                 } else {
                     totalRejected.incrementAndGet()
-                    throw CircuitBreakerOpenException("Circuit $name is OPEN (elapsed=${elapsed}ms, timeout=${openTimeoutMs}ms)")
+        throw CircuitBreakerOpenException("Circuit $name is OPEN (elapsed=${elapsed}ms, timeout=${openTimeoutMs}ms)")
                 }
             }
             State.HALF_OPEN -> {
                 if (totalCalls.get() % (halfOpenMaxCalls + 1) != 0L) {
                     totalRejected.incrementAndGet()
-                    throw CircuitBreakerOpenException("Circuit $name is HALF_OPEN, limited calls allowed")
+        throw CircuitBreakerOpenException("Circuit $name is HALF_OPEN, limited calls allowed")
                 }
             }
             State.CLOSED -> {}
         }
-
         return try {
             val result = block()
             onSuccess()
@@ -87,17 +82,16 @@ class CircuitBreaker private constructor(
             if (excludedExceptions.none { it.isInstance(e) }) {
                 onFailure(e)
             }
-            throw e
+        throw e
         }
     }
 
     suspend fun <T> protectSuspend(block: suspend () -> T): T {
         totalCalls.incrementAndGet()
-
         when (state.get()) {
             State.OPEN -> {
                 val elapsed = System.currentTimeMillis() - lastStateChangeTime.get()
-                if (elapsed >= openTimeoutMs) {
+        if (elapsed >= openTimeoutMs) {
                     if (state.compareAndSet(State.OPEN, State.HALF_OPEN)) {
                         halfOpenCount.incrementAndGet()
                         lastStateChangeTime.set(System.currentTimeMillis())
@@ -106,18 +100,17 @@ class CircuitBreaker private constructor(
                     }
                 } else {
                     totalRejected.incrementAndGet()
-                    throw CircuitBreakerOpenException("Circuit $name is OPEN")
+        throw CircuitBreakerOpenException("Circuit $name is OPEN")
                 }
             }
             State.HALF_OPEN -> {
                 if (totalCalls.get() % (halfOpenMaxCalls + 1) != 0L) {
                     totalRejected.incrementAndGet()
-                    throw CircuitBreakerOpenException("Circuit $name is HALF_OPEN")
+        throw CircuitBreakerOpenException("Circuit $name is HALF_OPEN")
                 }
             }
             State.CLOSED -> {}
         }
-
         return try {
             val result = block()
             onSuccess()
@@ -126,11 +119,10 @@ class CircuitBreaker private constructor(
             if (excludedExceptions.none { it.isInstance(e) }) {
                 onFailure(e)
             }
-            throw e
+        throw e
         }
     }
-
-    fun <T> protectWithFallback(block: () -> T, fallback: (Exception) -> T): T {
+        fun <T> protectWithFallback(block: () -> T, fallback: (Exception) -> T): T {
         return try {
             protect(block)
         } catch (e: Exception) {
@@ -156,8 +148,7 @@ class CircuitBreaker private constructor(
             }
         }
     }
-
-    fun getMetrics(): CircuitBreakerMetrics {
+        fun getMetrics(): CircuitBreakerMetrics {
         return CircuitBreakerMetrics(
             state = state.get(),
             failureCount = failureCount.get(),
@@ -173,12 +164,10 @@ class CircuitBreaker private constructor(
             halfOpenCount = halfOpenCount.get()
         )
     }
-
-    fun addListener(listener: (State, State) -> Unit) {
+        fun addListener(listener: (State, State) -> Unit) {
         listeners.add(listener)
     }
-
-    fun reset() {
+        fun reset() {
         state.set(State.CLOSED)
         failureCount.set(0)
         successCount.set(0)
@@ -186,21 +175,18 @@ class CircuitBreaker private constructor(
         lastStateChangeTime.set(System.currentTimeMillis())
         logger.info("Circuit $name manually reset to CLOSED")
     }
-
-    fun forceOpen() {
+        fun forceOpen() {
         state.set(State.OPEN)
         lastStateChangeTime.set(System.currentTimeMillis())
         logger.info("Circuit $name manually forced to OPEN")
     }
-
-    private fun onSuccess() {
+        private fun onSuccess() {
         totalSuccesses.incrementAndGet()
         lastSuccessTime.set(System.currentTimeMillis())
-
         when (state.get()) {
             State.HALF_OPEN -> {
                 val current = successCount.incrementAndGet()
-                if (current >= successThreshold) {
+        if (current >= successThreshold) {
                     if (state.compareAndSet(State.HALF_OPEN, State.CLOSED)) {
                         failureCount.set(0)
                         successCount.set(0)
@@ -217,22 +203,18 @@ class CircuitBreaker private constructor(
             State.OPEN -> {}
         }
     }
-
-    private fun onFailure(e: Exception) {
+        private fun onFailure(e: Exception) {
         totalFailures.incrementAndGet()
         lastFailureTime.set(System.currentTimeMillis())
         failureTimestamps.add(System.currentTimeMillis())
-
         if (e is kotlinx.coroutines.TimeoutCancellationException) {
             totalTimeouts.incrementAndGet()
         }
-
         val now = System.currentTimeMillis()
         val windowStart = now - rollingWindowMs
         while (failureTimestamps.peek() != null && failureTimestamps.peek() < windowStart) {
             failureTimestamps.poll()
         }
-
         when (state.get()) {
             State.CLOSED -> {
                 if (failureTimestamps.size >= failureThreshold) {
@@ -260,12 +242,10 @@ class CircuitBreaker private constructor(
             State.OPEN -> {}
         }
     }
-
-    class CircuitBreakerOpenException(message: String) : RuntimeException(message)
+        class CircuitBreakerOpenException(message: String) : RuntimeException(message)
 
     companion object {
         fun builder(name: String): Builder = Builder(name)
-
         class Builder(val name: String) {
             private var failureThreshold: Int = 5
             private var successThreshold: Int = 3
@@ -274,22 +254,19 @@ class CircuitBreaker private constructor(
             private var halfOpenTimeoutMs: Long = 5000L
             private var rollingWindowMs: Long = 60000L
             private var excludedExceptions: Set<Class<out Throwable>> = emptySet()
-
-            fun failureThreshold(count: Int) = apply { this.failureThreshold = count }
-            fun successThreshold(count: Int) = apply { this.successThreshold = count }
-            fun halfOpenMaxCalls(count: Int) = apply { this.halfOpenMaxCalls = count }
-            fun openTimeout(ms: Long) = apply { this.openTimeoutMs = ms }
-            fun halfOpenTimeout(ms: Long) = apply { this.halfOpenTimeoutMs = ms }
-            fun rollingWindow(ms: Long) = apply { this.rollingWindowMs = ms }
-            fun excludeExceptions(exceptions: Set<Class<out Throwable>>) = apply { this.excludedExceptions = exceptions }
-            fun build(): CircuitBreaker = CircuitBreaker(
+        fun failureThreshold(count: Int) = apply { this.failureThreshold = count }
+        fun successThreshold(count: Int) = apply { this.successThreshold = count }
+        fun halfOpenMaxCalls(count: Int) = apply { this.halfOpenMaxCalls = count }
+        fun openTimeout(ms: Long) = apply { this.openTimeoutMs = ms }
+        fun halfOpenTimeout(ms: Long) = apply { this.halfOpenTimeoutMs = ms }
+        fun rollingWindow(ms: Long) = apply { this.rollingWindowMs = ms }
+        fun excludeExceptions(exceptions: Set<Class<out Throwable>>) = apply { this.excludedExceptions = exceptions }
+        fun build(): CircuitBreaker = CircuitBreaker(
                 name, failureThreshold, successThreshold, halfOpenMaxCalls,
                 openTimeoutMs, halfOpenTimeoutMs, rollingWindowMs, excludedExceptions
             )
         }
-
         private val registry = ConcurrentHashMap<String, CircuitBreaker>()
-
         fun getOrCreate(name: String, config: Builder.() -> Unit = {}): CircuitBreaker {
             return registry.getOrPut(name) {
                 val builder = builder(name)
@@ -297,11 +274,9 @@ class CircuitBreaker private constructor(
                 builder.build()
             }
         }
-
         fun getAllMetrics(): Map<String, CircuitBreakerMetrics> {
             return registry.mapValues { it.value.getMetrics() }
         }
-
         fun resetAll() { registry.values.forEach { it.reset() } }
     }
 }
@@ -320,15 +295,13 @@ class RateLimiter(
         val maxRate: Int,
         val peakRate: Double
     )
-
-    private val logger = LoggerFactory.getLogger("RateLimiter-$name")
-    private val timestamps = ConcurrentLinkedQueue<Long>()
-    private val totalRequests = AtomicLong(0)
-    private val totalAllowed = AtomicLong(0)
-    private val totalRejected = AtomicLong(0)
-    private val peakRate = AtomicLong(0)
-
-    fun tryAcquire(): Boolean {
+        private val logger = LoggerFactory.getLogger("RateLimiter-$name")
+        private val timestamps = ConcurrentLinkedQueue<Long>()
+        private val totalRequests = AtomicLong(0)
+        private val totalAllowed = AtomicLong(0)
+        private val totalRejected = AtomicLong(0)
+        private val peakRate = AtomicLong(0)
+        fun tryAcquire(): Boolean {
         totalRequests.incrementAndGet()
         val now = System.currentTimeMillis()
         val windowStart = now - timeWindowMs
@@ -336,29 +309,26 @@ class RateLimiter(
         while (timestamps.peek() != null && timestamps.peek() < windowStart) {
             timestamps.poll()
         }
-
         if (timestamps.size < maxRate) {
             timestamps.add(now)
             totalAllowed.incrementAndGet()
-            val current = timestamps.size
+        val current = timestamps.size
             var peak = peakRate.get()
             while (current > peak && !peakRate.compareAndSet(peak, current)) {
                 peak = peakRate.get()
             }
-            return true
+        return true
         }
-
         if (timestamps.size < maxBurst) {
             timestamps.add(now)
             totalAllowed.incrementAndGet()
-            return true
+        return true
         }
 
         totalRejected.incrementAndGet()
         return false
     }
-
-    fun acquire() {
+        fun acquire() {
         while (!tryAcquire()) {
             Thread.sleep(timeWindowMs / maxRate)
         }
@@ -369,8 +339,7 @@ class RateLimiter(
             kotlinx.coroutines.delay(timeWindowMs / maxRate)
         }
     }
-
-    fun <T> limit(block: () -> T): T {
+        fun <T> limit(block: () -> T): T {
         if (!tryAcquire()) {
             throw RateLimitExceededException("Rate limit exceeded for $name: $maxRate req/$timeWindowMs ms")
         }
@@ -383,8 +352,7 @@ class RateLimiter(
         }
         return block()
     }
-
-    fun getMetrics(): RateLimiterMetrics {
+        fun getMetrics(): RateLimiterMetrics {
         val now = System.currentTimeMillis()
         val windowStart = now - timeWindowMs
         while (timestamps.peek() != null && timestamps.peek() < windowStart) {
@@ -399,16 +367,13 @@ class RateLimiter(
             peakRate = peakRate.get().toDouble() / (timeWindowMs / 1000.0)
         )
     }
-
-    class RateLimitExceededException(message: String) : RuntimeException(message)
+        class RateLimitExceededException(message: String) : RuntimeException(message)
 
     companion object {
         private val registry = ConcurrentHashMap<String, RateLimiter>()
-
         fun getOrCreate(name: String, maxRate: Int = 100, windowMs: Long = 1000L): RateLimiter {
             return registry.getOrPut(name) { RateLimiter(name, maxRate, windowMs) }
         }
-
         fun getAllMetrics(): Map<String, RateLimiterMetrics> {
             return registry.mapValues { it.value.getMetrics() }
         }
@@ -420,33 +385,31 @@ class ConcurrencyLimiter(
     private val maxConcurrency: Int = 10
 ) {
     private val semaphore = java.util.concurrent.Semaphore(maxConcurrency, true)
-    private val activeCount = AtomicInteger(0)
-    private val peakActive = AtomicInteger(0)
-    private val totalQueued = AtomicLong(0)
-    private val totalProcessed = AtomicLong(0)
-    private val totalRejected = AtomicLong(0)
-    private val waitTimeNs = AtomicLong(0)
-
-    fun <T> call(block: () -> T): T {
+        private val activeCount = AtomicInteger(0)
+        private val peakActive = AtomicInteger(0)
+        private val totalQueued = AtomicLong(0)
+        private val totalProcessed = AtomicLong(0)
+        private val totalRejected = AtomicLong(0)
+        private val waitTimeNs = AtomicLong(0)
+        fun <T> call(block: () -> T): T {
         val start = System.nanoTime()
         if (!semaphore.tryAcquire()) {
             totalRejected.incrementAndGet()
-            throw ConcurrencyLimitExceededException("Concurrency limit exceeded for $name: $maxConcurrency")
+        throw ConcurrencyLimitExceededException("Concurrency limit exceeded for $name: $maxConcurrency")
         }
         try {
             val active = activeCount.incrementAndGet()
             updatePeak(active)
             totalQueued.incrementAndGet()
             waitTimeNs.addAndGet(System.nanoTime() - start)
-            return block()
+        return block()
         } finally {
             activeCount.decrementAndGet()
             semaphore.release()
             totalProcessed.incrementAndGet()
         }
     }
-
-    fun <T> callWithQueue(block: () -> T): T {
+        fun <T> callWithQueue(block: () -> T): T {
         val start = System.nanoTime()
         semaphore.acquireUninterruptibly()
         try {
@@ -454,7 +417,7 @@ class ConcurrencyLimiter(
             updatePeak(active)
             totalQueued.incrementAndGet()
             waitTimeNs.addAndGet(System.nanoTime() - start)
-            return block()
+        return block()
         } finally {
             activeCount.decrementAndGet()
             semaphore.release()
@@ -465,21 +428,20 @@ class ConcurrencyLimiter(
     suspend fun <T> callSuspend(block: suspend () -> T): T {
         if (!semaphore.tryAcquire()) {
             totalRejected.incrementAndGet()
-            throw ConcurrencyLimitExceededException("Concurrency limit exceeded for $name")
+        throw ConcurrencyLimitExceededException("Concurrency limit exceeded for $name")
         }
         try {
             activeCount.incrementAndGet()
             totalQueued.incrementAndGet()
-            return block()
+        return block()
         } finally {
             activeCount.decrementAndGet()
             semaphore.release()
             totalProcessed.incrementAndGet()
         }
     }
-
-    fun getActiveCount(): Int = activeCount.get()
-    fun getMetrics(): Map<String, Any> = mapOf(
+        fun getActiveCount(): Int = activeCount.get()
+        fun getMetrics(): Map<String, Any> = mapOf(
         "name" to name,
         "maxConcurrency" to maxConcurrency,
         "active" to activeCount.get(),
@@ -488,15 +450,13 @@ class ConcurrencyLimiter(
         "totalProcessed" to totalProcessed.get(),
         "totalRejected" to totalRejected.get()
     )
-
-    private fun updatePeak(current: Int) {
+        private fun updatePeak(current: Int) {
         var peak = peakActive.get()
         while (current > peak && !peakActive.compareAndSet(peak, current)) {
             peak = peakActive.get()
         }
     }
-
-    class ConcurrencyLimitExceededException(message: String) : RuntimeException(message)
+        class ConcurrencyLimitExceededException(message: String) : RuntimeException(message)
 }
 
 class TimeoutHandler(
@@ -508,13 +468,12 @@ class TimeoutHandler(
             future.get(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
         } catch (e: java.util.concurrent.TimeoutException) {
             future.cancel(true)
-            throw TimeoutException("Operation timed out after ${timeoutMs}ms")
+        throw TimeoutException("Operation timed out after ${timeoutMs}ms")
         } finally {
             future.cancel(true)
         }
     }
-
-    class TimeoutException(message: String) : RuntimeException(message)
+        class TimeoutException(message: String) : RuntimeException(message)
 }
 
 class RetryHandler(
@@ -526,9 +485,9 @@ class RetryHandler(
     private val retryableExceptions: Set<Class<out Throwable>> = setOf(Exception::class.java)
 ) {
     private val logger = LoggerFactory.getLogger("RetryHandler-$name")
-    private val totalRetries = AtomicLong(0)
-    private val totalSuccesses = AtomicLong(0)
-    private val totalFailures = AtomicLong(0)
+        private val totalRetries = AtomicLong(0)
+        private val totalSuccesses = AtomicLong(0)
+        private val totalFailures = AtomicLong(0)
 
     data class RetryMetrics(
         val totalRetries: Long,
@@ -536,22 +495,21 @@ class RetryHandler(
         val totalFailures: Long,
         val currentRetryCount: Long
     )
-
-    fun <T> execute(block: () -> T): T {
+        fun <T> execute(block: () -> T): T {
         var lastException: Exception? = null
         var delay = baseDelayMs
 
         repeat(maxRetries + 1) { attempt ->
             try {
                 val result = block()
-                if (attempt > 0) totalRetries.incrementAndGet()
+        if (attempt > 0) totalRetries.incrementAndGet()
                 totalSuccesses.incrementAndGet()
-                return result
+        return result
             } catch (e: Exception) {
                 lastException = e
                 if (!retryableExceptions.any { it.isInstance(e) } || attempt == maxRetries) {
                     totalFailures.incrementAndGet()
-                    throw e
+        throw e
                 }
                 logger.debug("Retry {}/{} for $name failed: {}", attempt + 1, maxRetries, e.message)
                 Thread.sleep(delay.coerceAtMost(maxDelayMs))
@@ -561,8 +519,7 @@ class RetryHandler(
         totalFailures.incrementAndGet()
         throw lastException ?: RuntimeException("Retry failed")
     }
-
-    fun getMetrics(): RetryMetrics = RetryMetrics(
+        fun getMetrics(): RetryMetrics = RetryMetrics(
         totalRetries = totalRetries.get(),
         totalSuccesses = totalSuccesses.get(),
         totalFailures = totalFailures.get(),

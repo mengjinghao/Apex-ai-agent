@@ -14,12 +14,11 @@ interface SkillPlugin {
     val apiVersion: String
 
     fun onLoad(context: Context)
-    fun onUnload()
-    fun onEnable()
-    fun onDisable()
-    fun onSkillInvoked(skillName: String, params: Map<String, Any>)
-
-    fun isEnabled(): Boolean
+        fun onUnload()
+        fun onEnable()
+        fun onDisable()
+        fun onSkillInvoked(skillName: String, params: Map<String, Any>)
+        fun isEnabled(): Boolean
     fun setEnabled(enabled: Boolean)
 }
 
@@ -38,7 +37,7 @@ interface SkillPluginContext {
     fun getPluginDataDirectory(pluginId: String): File
     fun getAppContext(): Context
     fun registerService(service: Any)
-    fun <T> getService(serviceClass: Class<T>): T?
+        fun <T> getService(serviceClass: Class<T>): T?
     fun getSkillManager(): com.apex.core.tools.skill.SkillManager
     fun getUsageTracker(): com.apex.core.tools.skill.SkillUsageTracker
 }
@@ -66,10 +65,10 @@ interface SkillPluginLoader {
 
 interface SkillPluginManager {
     fun registerPlugin(plugin: SkillPlugin)
-    fun unregisterPlugin(pluginId: String)
-    fun enablePlugin(pluginId: String)
-    fun disablePlugin(pluginId: String)
-    fun getPlugin(pluginId: String): SkillPlugin?
+        fun unregisterPlugin(pluginId: String)
+        fun enablePlugin(pluginId: String)
+        fun disablePlugin(pluginId: String)
+        fun getPlugin(pluginId: String): SkillPlugin?
     fun getAllPlugins(): List<SkillPlugin>
     fun getEnabledPlugins(): List<SkillPlugin>
     fun getPluginsByCategory(category: SkillPluginCategory): List<SkillPlugin>
@@ -120,11 +119,11 @@ data class PluginValidationResult(
 
 interface PluginEventListener {
     fun onPluginLoaded(plugin: SkillPlugin)
-    fun onPluginUnloaded(pluginId: String)
-    fun onPluginEnabled(pluginId: String)
-    fun onPluginDisabled(pluginId: String)
-    fun onPluginError(pluginId: String, error: Throwable)
-    fun onSkillInvoked(skillName: String, pluginId: String, params: Map<String, Any>)
+        fun onPluginUnloaded(pluginId: String)
+        fun onPluginEnabled(pluginId: String)
+        fun onPluginDisabled(pluginId: String)
+        fun onPluginError(pluginId: String, error: Throwable)
+        fun onSkillInvoked(skillName: String, pluginId: String, params: Map<String, Any>)
 }
 
 abstract class SkillPluginAdapter(

@@ -18,7 +18,6 @@ class CronExpressionParser {
 
     fun parse(naturalLanguage: String): String {
         val lowerInput = naturalLanguage.lowercase()
-        
         return when {
             lowerInput.contains("每天") && lowerInput.contains("早上") -> parseDailyMorning(lowerInput)
             lowerInput.contains("每天") && lowerInput.contains("晚上") -> parseDailyEvening(lowerInput)
@@ -30,18 +29,15 @@ class CronExpressionParser {
             else -> "0 9 * * *"
         }
     }
-
-    private fun parseDailyMorning(input: String): String {
+        private fun parseDailyMorning(input: String): String {
         val hour = extractNumber(input) ?: 9
         return "0 ${hour} * * *"
     }
-
-    private fun parseDailyEvening(input: String): String {
+        private fun parseDailyEvening(input: String): String {
         val hour = extractNumber(input) ?: 21
         return "0 ${hour} * * *"
     }
-
-    private fun parseDaily(input: String): String {
+        private fun parseDaily(input: String): String {
         val timeMatch = Regex("(\\d+):(\\d+)").find(input)
         return if (timeMatch != null) {
             val hour = timeMatch.groupValues[1]
@@ -51,8 +47,7 @@ class CronExpressionParser {
             "0 9 * * *"
         }
     }
-
-    private fun parseWeekly(input: String): String {
+        private fun parseWeekly(input: String): String {
         val dayMap = mapOf(
             "一" to "1", "�? to "2", "�? to "3",
             "�? to "4", "�? to "5", "�? to "6", "�? to "0"
@@ -66,28 +61,23 @@ class CronExpressionParser {
         }
         return "0 9 * * ${day}"
     }
-
-    private fun parseMonthly(input: String): String {
+        private fun parseMonthly(input: String): String {
         val day = extractNumber(input) ?: 1
         return "0 9 ${day} * *"
     }
-
-    private fun parseHourly(input: String): String {
+        private fun parseHourly(input: String): String {
         val minute = extractNumber(input) ?: 0
         return "${minute} * * * *"
     }
-
-    private fun parseMinutely(input: String): String {
+        private fun parseMinutely(input: String): String {
         val interval = extractNumber(input) ?: 5
         return "*/${interval} * * * *"
     }
-
-    private fun extractNumber(input: String): Int? {
+        private fun extractNumber(input: String): Int? {
         val match = Regex("(\\d+)").find(input)
         return match?.groupValues?.get(1)?.toInt()
     }
-
-    fun validate(cronExpression: String): Boolean {
+        fun validate(cronExpression: String): Boolean {
         val parts = cronExpression.split(" ")
         if (parts.size != 5) return false
         
@@ -99,32 +89,26 @@ class CronExpressionParser {
                isValidMonth(month) &&
                isValidDayOfWeek(dayOfWeek)
     }
-
-    private fun isValidMinute(minute: String): Boolean {
+        private fun isValidMinute(minute: String): Boolean {
         return minute == "*" || 
                (minute.startsWith("*/") && minute.substring(2).toIntOrNull() in 1..59) ||
                minute.toIntOrNull() in 0..59
     }
-
-    private fun isValidHour(hour: String): Boolean {
+        private fun isValidHour(hour: String): Boolean {
         return hour == "*" || 
                (hour.startsWith("*/") && hour.substring(2).toIntOrNull() in 1..23) ||
                hour.toIntOrNull() in 0..23
     }
-
-    private fun isValidDayOfMonth(day: String): Boolean {
+        private fun isValidDayOfMonth(day: String): Boolean {
         return day == "*" || day.toIntOrNull() in 1..31
     }
-
-    private fun isValidMonth(month: String): Boolean {
+        private fun isValidMonth(month: String): Boolean {
         return month == "*" || month.toIntOrNull() in 1..12
     }
-
-    private fun isValidDayOfWeek(day: String): Boolean {
+        private fun isValidDayOfWeek(day: String): Boolean {
         return day == "*" || day.toIntOrNull() in 0..7
     }
-
-    fun toIntervalMinutes(cronExpression: String): Long {
+        fun toIntervalMinutes(cronExpression: String): Long {
         val parts = cronExpression.split(" ")
         if (parts.size != 5) return 60L
 
@@ -166,8 +150,8 @@ class ScheduledTask(
 class CronScheduler(private val context: Context) {
 
     private val logger = LoggerFactory.getLogger(CronScheduler::class.java)
-    private val workManager = WorkManager.getInstance(context)
-    private val parser = CronExpressionParser()
+        private val workManager = WorkManager.getInstance(context)
+        private val parser = CronExpressionParser()
 
     companion object {
         @Volatile
@@ -180,7 +164,6 @@ class CronScheduler(private val context: Context) {
                 }
             }
         }
-
         fun getInstance(): CronScheduler {
             return instance ?: throw IllegalStateException("CronScheduler not initialized")
         }
@@ -192,19 +175,16 @@ class CronScheduler(private val context: Context) {
                 cancelTask(task.id)
                 return@withContext
             }
-
-            val intervalMinutes = parser.toIntervalMinutes(task.cronExpression)
-            val constraints = Constraints.Builder()
+        val intervalMinutes = parser.toIntervalMinutes(task.cronExpression)
+        val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
                 .build()
-
-            val workData = Data.Builder()
+        val workData = Data.Builder()
                 .putString("taskId", task.id)
                 .putString("taskType", task.taskType.name)
                 .putString("deliveryPlatforms", task.deliveryPlatforms.joinToString(","))
                 .build()
-
-            val workRequest = PeriodicWorkRequestBuilder<CronWorker>(intervalMinutes, TimeUnit.MINUTES)
+        val workRequest = PeriodicWorkRequestBuilder<CronWorker>(intervalMinutes, TimeUnit.MINUTES)
                 .setConstraints(constraints)
                 .setInputData(workData)
                 .build()
@@ -234,11 +214,11 @@ class CronScheduler(private val context: Context) {
     suspend fun getTaskStatus(taskId: String): TaskStatus {
         return withContext(Dispatchers.IO) {
             val statuses = workManager.getWorkInfosForUniqueWork(taskId).get()
-            if (statuses.isEmpty()) {
+        if (statuses.isEmpty()) {
                 TaskStatus.NOT_SCHEDULED
             } else {
                 val status = statuses.first()
-                when (status.state) {
+        when (status.state) {
                     androidx.work.WorkInfo.State.RUNNING -> TaskStatus.RUNNING
                     androidx.work.WorkInfo.State.ENQUEUED -> TaskStatus.SCHEDULED
                     androidx.work.WorkInfo.State.SUCCEEDED -> TaskStatus.COMPLETED
@@ -270,20 +250,17 @@ class CronWorker(
 
         try {
             executeTask(taskType)
-            
-            val platforms = deliveryPlatforms.mapNotNull { 
+        val platforms = deliveryPlatforms.mapNotNull { 
                 runCatching { ScheduledTask.DeliveryPlatform.valueOf(it) }.getOrNull() 
             }
             MultiPlatformDelivery.deliver(taskType, platforms)
-            
-            return Result.success()
+        return Result.success()
         } catch (e: Exception) {
             logger.error("Cron task failed: ${e.message}", e)
-            return Result.failure()
+        return Result.failure()
         }
     }
-
-    private suspend fun executeTask(taskType: String) {
+        private suspend fun executeTask(taskType: String) {
         when (taskType) {
             "DAILY_REPORT" -> generateDailyReport()
             "BACKUP" -> performBackup()
@@ -293,31 +270,24 @@ class CronWorker(
             "NOTIFICATION" -> sendNotification()
         }
     }
-
-    private suspend fun generateDailyReport() {
+        private suspend fun generateDailyReport() {
     }
-
-    private suspend fun performBackup() {
+        private suspend fun performBackup() {
     }
-
-    private suspend fun performAudit() {
+        private suspend fun performAudit() {
     }
-
-    private suspend fun generateAutoReport() {
+        private suspend fun generateAutoReport() {
     }
-
-    private suspend fun performHealthCheck() {
+        private suspend fun performHealthCheck() {
     }
-
-    private suspend fun sendNotification() {
+        private suspend fun sendNotification() {
     }
 }
 
 object MultiPlatformDelivery {
 
     private val logger = LoggerFactory.getLogger(MultiPlatformDelivery::class.java)
-
-    fun deliver(content: String, platforms: List<ScheduledTask.DeliveryPlatform>) {
+        fun deliver(content: String, platforms: List<ScheduledTask.DeliveryPlatform>) {
         platforms.forEach { platform ->
             try {
                 when (platform) {
@@ -334,32 +304,25 @@ object MultiPlatformDelivery {
             }
         }
     }
-
-    private fun deliverInApp(content: String) {
+        private fun deliverInApp(content: String) {
     }
-
-    private fun deliverTelegram(content: String) {
+        private fun deliverTelegram(content: String) {
     }
-
-    private fun deliverDiscord(content: String) {
+        private fun deliverDiscord(content: String) {
     }
-
-    private fun deliverEmail(content: String) {
+        private fun deliverEmail(content: String) {
     }
-
-    private fun deliverWechat(content: String) {
+        private fun deliverWechat(content: String) {
     }
-
-    private fun deliverSystemNotification(content: String) {
+        private fun deliverSystemNotification(content: String) {
     }
 }
 
 object TaskTypeRegistry {
 
     private val logger = LoggerFactory.getLogger(TaskTypeRegistry::class.java)
-    private val taskTypes = mutableMapOf<String, TaskHandler>()
-
-    fun registerBuiltinTaskTypes() {
+        private val taskTypes = mutableMapOf<String, TaskHandler>()
+        fun registerBuiltinTaskTypes() {
         registerTaskType("DAILY_REPORT", DailyReportHandler())
         registerTaskType("BACKUP", BackupHandler())
         registerTaskType("AUDIT", AuditHandler())
@@ -368,54 +331,45 @@ object TaskTypeRegistry {
         registerTaskType("NOTIFICATION", NotificationHandler())
         logger.info("Registered built-in task types")
     }
-
-    fun registerTaskType(name: String, handler: TaskHandler) {
+        fun registerTaskType(name: String, handler: TaskHandler) {
         taskTypes[name] = handler
     }
-
-    fun getTaskHandler(name: String): TaskHandler? {
+        fun getTaskHandler(name: String): TaskHandler? {
         return taskTypes[name]
     }
-
-    fun getAllTaskTypes(): List<String> {
+        fun getAllTaskTypes(): List<String> {
         return taskTypes.keys.toList()
     }
 
     interface TaskHandler {
         suspend fun execute(params: Map<String, Any>): String
     }
-
-    class DailyReportHandler : TaskHandler {
+        class DailyReportHandler : TaskHandler {
         override suspend fun execute(params: Map<String, Any>): String {
             return "Daily report generated"
         }
     }
-
-    class BackupHandler : TaskHandler {
+        class BackupHandler : TaskHandler {
         override suspend fun execute(params: Map<String, Any>): String {
             return "Backup completed"
         }
     }
-
-    class AuditHandler : TaskHandler {
+        class AuditHandler : TaskHandler {
         override suspend fun execute(params: Map<String, Any>): String {
             return "Audit completed"
         }
     }
-
-    class AutoReportHandler : TaskHandler {
+        class AutoReportHandler : TaskHandler {
         override suspend fun execute(params: Map<String, Any>): String {
             return "Auto report generated"
         }
     }
-
-    class HealthCheckHandler : TaskHandler {
+        class HealthCheckHandler : TaskHandler {
         override suspend fun execute(params: Map<String, Any>): String {
             return "Health check passed"
         }
     }
-
-    class NotificationHandler : TaskHandler {
+        class NotificationHandler : TaskHandler {
         override suspend fun execute(params: Map<String, Any>): String {
             return "Notification sent"
         }

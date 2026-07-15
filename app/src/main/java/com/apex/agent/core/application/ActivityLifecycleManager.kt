@@ -29,11 +29,11 @@ import com.apex.core.tools.javascript.not
 object ActivityLifecycleManager : Application.ActivityLifecycleCallbacks {
 
     private const val TAG = "ActivityLifecycleManager"
-    private var currentActivity: WeakReference<Activity>? = null
+        private var currentActivity: WeakReference<Activity>? = null
     private lateinit var apiPreferences: ApiPreferences
     private lateinit var appContext: android.content.Context
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    private var activityCount = 0
+        private var activityCount = 0
     private var startedActivityCount = 0
     private var isAppInForeground = false
 
@@ -69,13 +69,12 @@ object ActivityLifecycleManager : Application.ActivityLifecycleCallbacks {
         scope.launch {
             try {
                 val keepScreenOnEnabled = apiPreferences.keepScreenOnFlow.first()
-                if (!keepScreenOnEnabled) {
+        if (!keepScreenOnEnabled) {
                     // The feature is disabled by the user, so we do nothing.
                     return@launch
                 }
-
-                val activity = getCurrentActivity()
-                if (activity == null) {
+        val activity = getCurrentActivity()
+        if (activity == null) {
                     AppLogger.w(TAG, "Cannot apply screen on flag: current activity is null.")
                     return@launch
                 }
@@ -144,7 +143,7 @@ object ActivityLifecycleManager : Application.ActivityLifecycleCallbacks {
 
         try {
             val now = System.currentTimeMillis()
-            if (now - lastMicEnsureAtMs >= 2500L) {
+        if (now - lastMicEnsureAtMs >= 2500L) {
                 lastMicEnsureAtMs = now
                 AIForegroundService.ensureMicrophoneForeground(activity.applicationContext)
             }

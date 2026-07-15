@@ -66,14 +66,12 @@ class UserProfileBuilder(
             "程顺�? "工程�? "设计�? "教师", "医生", "学生", "律师",
             "程顺�? "开�? "编程", "设计", "教育", "医疗", "学习", "法律"
         )
-        
         val occupationPatterns = listOf(
             "我是(.*)\s*(程序员|工程师|设计师|教师|医生|学生|律师�?,
             "我在(.*)工作",
             "我的职业�?*)",
             "我从�?*)行业"
         )
-        
         for (message in messages) {
             val content = message.content
             
@@ -81,18 +79,18 @@ class UserProfileBuilder(
     for (keyword in occupationKeywords) {
                 if (content.contains(keyword)) {
                     profile.updateDimension("职业场景", keyword)
-                    return
+        return
                 }
             }
             
             // 检查模�?
     for (pattern in occupationPatterns) {
                 val matcher = Pattern.compile(pattern).matcher(content)
-                if (matcher.find()) {
+        if (matcher.find()) {
                     val occupation = matcher.group(1)?.trim() ?: matcher.group(2)?.trim()
-                    if (occupation != null) {
+        if (occupation != null) {
                         profile.updateDimension("职业场景", occupation)
-                        return
+        return
                     }
                 }
             }
@@ -106,30 +104,26 @@ class UserProfileBuilder(
         val interestKeywords = listOf(
             "喜欢", "爱好", "兴趣", "喜欢�? "爱好�? "感兴�?
         )
-        
         val interestPatterns = listOf(
             "我喜�?*)",
             "我的爱好�?*)",
             "我对(.*)感兴�?
             "我喜欢做(.*)"
         )
-        
         val interests = mutableListOf<String>()
-        
         for (message in messages) {
             val content = message.content
             
             for (pattern in interestPatterns) {
                 val matcher = Pattern.compile(pattern).matcher(content)
-                if (matcher.find()) {
+        if (matcher.find()) {
                     val interest = matcher.group(1)?.trim()
-                    if (interest != null && interest.isNotBlank()) {
+        if (interest != null && interest.isNotBlank()) {
                         interests.add(interest)
                     }
                 }
             }
         }
-        
         if (interests.isNotEmpty()) {
             profile.updateDimension("需求偏�? interests.joinToString("�?)
         }
@@ -163,21 +157,18 @@ class UserProfileBuilder(
                     break
                 }
             }
-            
-            for (keyword in casualKeywords) {
+        for (keyword in casualKeywords) {
                 if (content.contains(keyword)) {
                     casualCount++
                     break
                 }
             }
         }
-        
         val style = when {
             formalCount > casualCount -> "正式"
             casualCount > formalCount -> "随意"
             else -> "中，
         }
-        
         val detailLevel = when {
             detailedCount > conciseCount -> "详细"
             conciseCount > detailedCount -> "简�?
@@ -191,7 +182,6 @@ class UserProfileBuilder(
      * 提取需求偏�?    */
     private fun extractNeeds(messages: List<ChatMessage>, profile: HonzonUserProfile) {
         val needs = mutableMapOf<String, Int>()
-        
         val needKeywords = mapOf(
             "技术支�?to listOf("技�? "问题", "故障", "bug", "修复"),
             "信息查询" to listOf("查询", "搜索", "信息", "数据", "资料"),
@@ -199,7 +189,6 @@ class UserProfileBuilder(
             "学习教育" to listOf("学习", "教育", "知识", "教程", "课程"),
             "生活助手" to listOf("生活", "日常", "助手", "帮助", "建议")
         )
-        
         for (message in messages) {
             val content = message.content
             
@@ -212,7 +201,6 @@ class UserProfileBuilder(
                 }
             }
         }
-        
         if (needs.isNotEmpty()) {
             val topNeeds = needs.entries
                 .sortedByDescending { it.value }
@@ -237,7 +225,6 @@ class UserProfileBuilder(
             messageCount > 20 -> "中频"
             else -> "低频"
         }
-        
         val lengthPattern = when {
             avgLength > 50 -> "长消�?
             avgLength > 20 -> "中等长度"
@@ -258,7 +245,6 @@ class UserProfileBuilder(
             val hour = message.timestamp.substring(11, 13).toIntOrNull() ?: 0
             hourDistribution[hour] = hourDistribution.getOrDefault(hour, 0) + 1
         }
-        
         if (hourDistribution.isNotEmpty()) {
             val peakHour = hourDistribution.maxByOrNull { it.value }?.key
             if (peakHour != null) {
@@ -279,7 +265,6 @@ class UserProfileBuilder(
             "工作" to listOf("工作", "职场", "业务", "项目", "任务"),
             "学习" to listOf("学习", "教育", "知识", "课程", "考试")
         )
-        
         val topicCounts = mutableMapOf<String, Int>()
         for (message in messages) {
             val content = message.content
@@ -292,7 +277,6 @@ class UserProfileBuilder(
                 }
             }
         }
-        
         if (topicCounts.isNotEmpty()) {
             val topTopic = topicCounts.maxByOrNull { it.value }?.key
             if (topTopic != null) {

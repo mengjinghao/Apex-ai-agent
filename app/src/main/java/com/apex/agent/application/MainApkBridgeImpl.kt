@@ -26,8 +26,7 @@ import kotlinx.serialization.json.put
 class MainApkBridgeImpl : IApkBridgeInternal {
 
     private val json = Json { ignoreUnknownKeys = true }
-
-    private fun facade(): DiagnosticsServiceFacade? =
+        private fun facade(): DiagnosticsServiceFacade? =
         TypedServiceRegistry.get<DiagnosticsServiceFacade>()
 
     override fun invoke(method: String, argsJson: String): String {
@@ -35,12 +34,10 @@ class MainApkBridgeImpl : IApkBridgeInternal {
         val args = try {
             json.parseToJsonElement(argsJson) as? JsonObject ?: JsonObject(emptyMap())
         } catch (_: Throwable) { JsonObject(emptyMap()) }
-
         val f = facade() ?: return buildJsonObject {
             put("success", false)
             put("errorMessage", "DiagnosticsServiceFacade not initialized")
         }.toString()
-
         return runCatching {
             runBlocking {
                 when (method) {
@@ -66,7 +63,7 @@ class MainApkBridgeImpl : IApkBridgeInternal {
                     }
                     "diagnostics/readLogFile" -> {
                         val name = args["fileName"]?.jsonPrimitive?.content ?: ""
-                        val max = args["maxLines"]?.jsonPrimitive?.content?.toIntOrNull() ?: 1000
+        val max = args["maxLines"]?.jsonPrimitive?.content?.toIntOrNull() ?: 1000
                         buildResult(f.readLogFile(name, max)) { JsonPrimitive(it) }
                     }
                     "diagnostics/deleteLogFile" -> {
@@ -139,7 +136,7 @@ class MainApkBridgeImpl : IApkBridgeInternal {
                     }
                     "diagnostics/dumpHeap" -> {
                         val name = args["fileName"]?.jsonPrimitive?.content ?: "apex-heap.hprof"
-                        val path = f.dumpHeap(name)
+        val path = f.dumpHeap(name)
                         buildJsonObject { put("success", true); put("path", path) }.toString()
                     }
                     else -> buildJsonObject {
@@ -163,15 +160,13 @@ class MainApkBridgeImpl : IApkBridgeInternal {
 
     override fun openStream(channelName: String): String = channelName
     override fun closeStream(channelName: String) {}
-
-    private inline fun buildOk(block: () -> Unit): String = try {
+        private inline fun buildOk(block: () -> Unit): String = try {
         block()
         buildJsonObject { put("success", true) }.toString()
     } catch (t: Throwable) {
         buildJsonObject { put("success", false); put("errorMessage", t.message ?: "") }.toString()
     }
-
-    private fun <T> buildResult(result: com.apex.sdk.common.BridgeResult<T>, transform: (T) -> JsonObject): String =
+        private fun <T> buildResult(result: com.apex.sdk.common.BridgeResult<T>, transform: (T) -> JsonObject): String =
         when (result) {
             is com.apex.sdk.common.BridgeResult.Success -> buildJsonObject {
                 put("success", true)

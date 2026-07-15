@@ -24,7 +24,7 @@ object EnhancedFeatureIntegrator {
     val dynamicParams = DynamicModelParamsAdapter.getDynamicModelParams(userInput)
         val scenario = DynamicModelParamsAdapter.getScenarioDescription(userInput)
         
-        AppLogger.d(TAG, "应用动态参�?场景=${scenario}, temp=${dynamicParams.temperature}")
+        AppLogger.d(TAG, "应用动态参�场景=${scenario}, temp=${dynamicParams.temperature}")
         
         // 创建可修改的副本
     val mutableParams = existingParams.toMutableList()
@@ -88,7 +88,6 @@ object EnhancedFeatureIntegrator {
             minValue = 0.0,
             maxValue = 2.0
         )
-        
         return mutableParams.toList()
     }
 
@@ -111,13 +110,12 @@ object EnhancedFeatureIntegrator {
     val existingIndex = params.indexOfFirst { 
             it.apiName == apiName || it.id == id
         }
-        
         if (existingIndex >= 0) {
             // 更新现有参数 - 注意：这里我们创建一个新的参数对�?
     val existing = params[existingIndex]
             
             @Suppress("UNCHECKED_CAST")
-            val updatedParam = when (valueType) {
+        val updatedParam = when (valueType) {
                 ParameterValueType.FLOAT -> (existing as ModelParameter<Double>).copy(
                     name = name,
                     description = description,

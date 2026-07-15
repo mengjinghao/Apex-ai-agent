@@ -101,7 +101,7 @@ class InMemoryTracer(
 ) : WorkflowTracer {
 
     private val spansByThread = ConcurrentHashMap<String, ConcurrentLinkedQueue<SpanRecord>>()
-    private val activeSpans = ConcurrentHashMap<String, ActiveSpan>()
+        private val activeSpans = ConcurrentHashMap<String, ActiveSpan>()
 
     override fun startSpan(
         name: String,
@@ -142,8 +142,7 @@ class InMemoryTracer(
         spansByThread.clear()
         activeSpans.clear()
     }
-
-    private fun commitSpan(span: ActiveSpan, status: SpanStatus) {
+        private fun commitSpan(span: ActiveSpan, status: SpanStatus) {
         if (!span.endedRef.compareAndSet(false, true)) return
         val now = System.currentTimeMillis()
         val record = SpanRecord(
@@ -166,8 +165,7 @@ class InMemoryTracer(
         while (queue.size > maxSpansPerThread) queue.poll()
         activeSpans.remove(span.spanId)
     }
-
-    private inner class ActiveSpan(
+        private inner class ActiveSpan(
         override val spanId: String,
         override val parentId: String?,
         override val name: String,
@@ -187,7 +185,7 @@ class InMemoryTracer(
 
         override fun addEvent(name: String, attributes: Map<String, Any>): Span {
             eventsRef.add(SpanEvent(name, System.currentTimeMillis(), attributes))
-            return this
+        return this
         }
 
         override fun recordException(t: Throwable): Span {
@@ -195,7 +193,7 @@ class InMemoryTracer(
             attributesRef["exception.message"] = t.message ?: ""
             attributesRef["exception.type"] = t::class.qualifiedName ?: ""
             statusRef.set(SpanStatus.ERROR)
-            return this
+        return this
         }
 
         override fun end(status: SpanStatus) {
@@ -229,8 +227,7 @@ object NoopTracer : WorkflowTracer {
     override fun activeThreads(): Set<String> = emptySet()
     override fun clear(threadId: String) {}
     override fun clearAll() {}
-
-    private object NoopSpan : Span {
+        private object NoopSpan : Span {
         override val spanId: String = "noop"
         override val parentId: String? = null
         override val name: String = "noop"
@@ -251,8 +248,7 @@ object NoopTracer : WorkflowTracer {
 object TracerHolder {
     @Volatile
     private var instance: WorkflowTracer = InMemoryTracer()
-
-    fun get(): WorkflowTracer = instance
+        fun get(): WorkflowTracer = instance
 
     fun set(tracer: WorkflowTracer) {
         instance = tracer

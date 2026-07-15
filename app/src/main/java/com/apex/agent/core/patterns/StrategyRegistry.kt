@@ -20,35 +20,27 @@ interface Strategy {
 class StrategyRegistry<K, V> {
 
     private val strategies = ConcurrentHashMap<K, V>()
-    private val lock = ReentrantReadWriteLock()
-
-    fun register(key: K, strategy: V) {
+        private val lock = ReentrantReadWriteLock()
+        fun register(key: K, strategy: V) {
         lock.write { strategies[key] = strategy }
     }
-
-    fun unregister(key: K): V? {
+        fun unregister(key: K): V? {
         return lock.write { strategies.remove(key) }
     }
-
-    fun get(key: K): V? {
+        fun get(key: K): V? {
         return lock.read { strategies[key] }
     }
-
-    fun getAll(): Map<K, V> {
+        fun getAll(): Map<K, V> {
         return lock.read { strategies.toMap() }
     }
-
-    fun find(predicate: (Map.Entry<K, V>) -> Boolean): List<Map.Entry<K, V>> {
+        fun find(predicate: (Map.Entry<K, V>) -> Boolean): List<Map.Entry<K, V>> {
         return lock.read { strategies.filter(predicate) }
     }
-
-    val keys: Set<K> get() = lock.read { strategies.keys.toSet() }
-
-    fun clear() {
+        val keys: Set<K> get() = lock.read { strategies.keys.toSet() }
+        fun clear() {
         lock.write { strategies.clear() }
     }
-
-    val size: Int get() = lock.read { strategies.size }
+        val size: Int get() = lock.read { strategies.size }
 }
 
 /** 推理策略 */
@@ -80,28 +72,24 @@ class FallbackReasoningStrategy : ReasoningStrategy {
 /** 推理策略注册表 */
 class ReasoningStrategyRegistry {
     private val registry = StrategyRegistry<String, ReasoningStrategy>()
-    private val fallback = FallbackReasoningStrategy()
+        private val fallback = FallbackReasoningStrategy()
 
     init {
         register(ChainOfThoughtStrategy())
         register(TreeOfThoughtStrategy())
     }
-
-    fun register(strategy: ReasoningStrategy) {
+        fun register(strategy: ReasoningStrategy) {
         if (strategy.priority > Int.MIN_VALUE) {
             registry.register(strategy.name, strategy)
         }
     }
-
-    fun getStrategy(name: String): ReasoningStrategy {
+        fun getStrategy(name: String): ReasoningStrategy {
         return registry.get(name) ?: fallback
     }
-
-    fun getStrategiesSorted(): List<ReasoningStrategy> {
+        fun getStrategiesSorted(): List<ReasoningStrategy> {
         return registry.getAll().values.sortedByDescending { it.priority }
     }
-
-    fun discoverStrategies(): List<ReasoningStrategy> {
+        fun discoverStrategies(): List<ReasoningStrategy> {
         return registry.getAll().values.toList()
     }
 }

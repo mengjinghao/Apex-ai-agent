@@ -28,14 +28,12 @@ class UnifiedMemoryManager private constructor() {
                 instance ?: UnifiedMemoryManager().also { instance = it }
             }
         }
-
         fun resetInstance() {
             instance?.release()
             instance = null
         }
     }
-
-    private var burstMemory: BurstExclusiveMemory? = null
+        private var burstMemory: BurstExclusiveMemory? = null
     private var hierarchicalMemory: HierarchicalMemory? = null
     private var memoryRepository: MemoryRepository? = null
     private var contextMemory: ContextMemory? = null
@@ -44,17 +42,13 @@ class UnifiedMemoryManager private constructor() {
     private var compressor: SmartMemoryCompressor? = null
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
-    private val _currentMode = MutableStateFlow(AgentMode.SINGLE_AGENT)
-    val currentMode: StateFlow<AgentMode> = _currentMode.asStateFlow()
-
-    private val config = ModeAwareMemoryConfig()
-
-    private val _memoryEvents = MutableSharedFlow<MemoryTransferEvent>(replay = 0)
-    val memoryEvents: SharedFlow<MemoryTransferEvent> = _memoryEvents.asSharedFlow()
-
-    private val modeMemory = ConcurrentHashMap<AgentMode, MutableList<UnifiedMemoryItem>>()
-    private var initialized = false
+        private val _currentMode = MutableStateFlow(AgentMode.SINGLE_AGENT)
+        val currentMode: StateFlow<AgentMode> = _currentMode.asStateFlow()
+        private val config = ModeAwareMemoryConfig()
+        private val _memoryEvents = MutableSharedFlow<MemoryTransferEvent>(replay = 0)
+        val memoryEvents: SharedFlow<MemoryTransferEvent> = _memoryEvents.asSharedFlow()
+        private val modeMemory = ConcurrentHashMap<AgentMode, MutableList<UnifiedMemoryItem>>()
+        private var initialized = false
 
     fun initialize(
         burstMem: BurstExclusiveMemory? = null,
@@ -72,15 +66,13 @@ class UnifiedMemoryManager private constructor() {
         compressor = SmartMemoryCompressor()
         initialized = true
     }
-
-    fun release() {
+        fun release() {
         scope.cancel()
         modeMemory.clear()
         sharedMemoryPool?.clear()
         initialized = false
     }
-
-    fun switchMode(newMode: AgentMode) {
+        fun switchMode(newMode: AgentMode) {
         val oldMode = _currentMode.value
         if (oldMode == newMode) return
 
@@ -89,8 +81,7 @@ class UnifiedMemoryManager private constructor() {
         }
         _currentMode.value = newMode
     }
-
-    fun getConfigForMode(mode: AgentMode): MemoryModeConfig {
+        fun getConfigForMode(mode: AgentMode): MemoryModeConfig {
         return when (mode) {
             AgentMode.SINGLE_AGENT -> config.singleAgent
             AgentMode.MULTI_AGENT -> config.multiAgent
@@ -101,13 +92,11 @@ class UnifiedMemoryManager private constructor() {
     suspend fun store(item: UnifiedMemoryItem, mode: AgentMode = _currentMode.value): String {
         val modeItems = modeMemory.getOrPut(mode) { mutableListOf() }
         val modeConfig = getConfigForMode(mode)
-
         if (modeItems.size >= modeConfig.maxMemoryItems) {
             pruneModeMemory(mode, modeConfig)
         }
 
         modeItems.add(item)
-
         when (mode) {
             AgentMode.SINGLE_AGENT -> {
                 contextMemory?.let { ctx ->
@@ -155,7 +144,6 @@ class UnifiedMemoryManager private constructor() {
                 toMode = mode
             )
         )
-
         return item.id
     }
 
@@ -214,7 +202,6 @@ class UnifiedMemoryManager private constructor() {
         limit: Int = 10
     ): List<UnifiedMemoryItem> {
         val results = mutableListOf<UnifiedMemoryItem>()
-
         when (mode) {
             AgentMode.SINGLE_AGENT -> {
                 contextMemory?.let { ctx ->
@@ -233,7 +220,7 @@ class UnifiedMemoryManager private constructor() {
             AgentMode.MULTI_AGENT -> {
                 sharedMemoryPool?.let { pool ->
                     val allModes = AgentMode.values().toList()
-                    for (m in allModes) {
+        for (m in allModes) {
                         val modeItems = modeMemory[m] ?: continue
                         val matched = modeItems
                             .filter { it.content.contains(query, ignoreCase = true) }
@@ -262,7 +249,7 @@ class UnifiedMemoryManager private constructor() {
                 }
                 hierarchicalMemory?.let { hier ->
                     val taskId = query.split("\\s+".toRegex()).firstOrNull() ?: ""
-                    val items = hier.retrieveSync(taskId, query, limit)
+        val items = hier.retrieveSync(taskId, query, limit)
                     results.addAll(items.map { item ->
                         UnifiedMemoryItem(
                             id = item.id,
@@ -274,13 +261,11 @@ class UnifiedMemoryManager private constructor() {
                 }
             }
         }
-
         val modeItems = modeMemory[mode] ?: return results.distinctBy { it.id }.take(limit)
         val localResults = modeItems
             .filter { it.content.contains(query, ignoreCase = true) }
             .take(limit)
         results.addAll(0, localResults)
-
         return results.distinctBy { it.id }.take(limit)
     }
 
@@ -295,7 +280,6 @@ class UnifiedMemoryManager private constructor() {
 
     suspend fun forget(id: String, mode: AgentMode = _currentMode.value): Boolean {
         modeMemory[mode]?.removeAll { it.id == id }
-
         return when (mode) {
             AgentMode.SINGLE_AGENT -> {
                 contextMemory?.let {
@@ -318,7 +302,6 @@ class UnifiedMemoryManager private constructor() {
         val before = items.size
 
         val report = compressor?.compress(this, mode) ?: CompressionReport(mode, before, before)
-
         val avgImpBefore = if (items.isNotEmpty()) items.sumOf { it.importance.toDouble() }.toFloat() / items.size else 0f
         val itemsAfter = modeMemory[mode]?.size ?: before
         val avgImpAfter = if (itemsAfter > 0) {
@@ -334,8 +317,7 @@ class UnifiedMemoryManager private constructor() {
             avgImportanceRetained = avgImpAfter
         )
     }
-
-    fun getStats(mode: AgentMode = _currentMode.value): ModeMemoryStats {
+        fun getStats(mode: AgentMode = _currentMode.value): ModeMemoryStats {
         val items = modeMemory[mode] ?: emptyList()
         val avgImp = if (items.isNotEmpty()) {
             items.sumOf { it.importance.toDouble() }.toFloat() / items.size
@@ -347,12 +329,10 @@ class UnifiedMemoryManager private constructor() {
             avgImportance = avgImp
         )
     }
-
-    fun getAllStats(): List<ModeMemoryStats> {
+        fun getAllStats(): List<ModeMemoryStats> {
         return AgentMode.values().map { getStats(it) }
     }
-
-    fun getSharedMemoryPool(): SharedMemoryPool? = sharedMemoryPool
+        fun getSharedMemoryPool(): SharedMemoryPool? = sharedMemoryPool
 
     fun getCrossModeBridge(): CrossModeMemoryBridge? = crossModeBridge
 
@@ -376,12 +356,10 @@ class UnifiedMemoryManager private constructor() {
         )
         modeMemory[mode] = sorted.take(targetSize).toMutableList()
     }
-
-    fun clearMode(mode: AgentMode) {
+        fun clearMode(mode: AgentMode) {
         modeMemory[mode]?.clear()
     }
-
-    fun clearAll() {
+        fun clearAll() {
         modeMemory.clear()
         sharedMemoryPool?.clear()
     }

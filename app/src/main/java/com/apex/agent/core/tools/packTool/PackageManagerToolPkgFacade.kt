@@ -51,19 +51,16 @@ internal class PackageManagerToolPkgFacade(
                 )
             )
     }
-
-    fun isToolPkgContainer(packageName: String): Boolean {
+        fun isToolPkgContainer(packageName: String): Boolean {
         packageManager.ensureInitialized()
         val normalizedPackageName = packageManager.normalizePackageName(packageName)
         return packageManager.toolPkgContainersInternal.containsKey(normalizedPackageName)
     }
-
-    fun isToolPkgSubpackage(packageName: String): Boolean {
+        fun isToolPkgSubpackage(packageName: String): Boolean {
         packageManager.ensureInitialized()
         return packageManager.resolveToolPkgSubpackageRuntimeInternal(packageName) != null
     }
-
-    fun getToolPkgContainerDetails(
+        fun getToolPkgContainerDetails(
         packageName: String,
         resolveContext: Context? = null
     ): PackageManager.ToolPkgContainerDetails? {
@@ -83,7 +80,6 @@ internal class PackageManagerToolPkgFacade(
             } else {
                 emptyList()
             }
-
         val subpackages =
             container.subpackages.map { subpackage ->
                 PackageManager.ToolPkgSubpackageInfo(
@@ -96,7 +92,6 @@ internal class PackageManagerToolPkgFacade(
                     enabled = containerEnabled && importedSet.contains(subpackage.packageName)
                 )
             }
-
         val result = PackageManager.ToolPkgContainerDetails(
             packageName = container.packageName,
             displayName = container.displayName.resolve(localizationContext),
@@ -109,8 +104,7 @@ internal class PackageManagerToolPkgFacade(
         )
         return result
     }
-
-    fun getToolPkgToolboxUiModules(
+        fun getToolPkgToolboxUiModules(
         runtime: String = TOOLPKG_RUNTIME_COMPOSE_DSL,
         resolveContext: Context? = null
     ): List<PackageManager.ToolPkgToolboxUiModule> {
@@ -136,15 +130,13 @@ internal class PackageManagerToolPkgFacade(
             )
         return result
     }
-
-    fun setToolPkgSubpackageEnabled(subpackagePackageName: String, enabled: Boolean): Boolean {
+        fun setToolPkgSubpackageEnabled(subpackagePackageName: String, enabled: Boolean): Boolean {
         packageManager.ensureInitialized()
         val normalizedPackageName = packageManager.normalizePackageName(subpackagePackageName)
         val subpackageRuntime = packageManager.toolPkgSubpackageByPackageNameInternal[normalizedPackageName]
         if (subpackageRuntime == null) {
             return false
         }
-
         val importedPackages = LinkedHashSet(packageManager.getImportedPackages())
         val subpackageStates = packageManager.getToolPkgSubpackageStatesInternal().toMutableMap()
         val containerEnabled = importedPackages.contains(subpackageRuntime.containerPackageName)
@@ -160,7 +152,6 @@ internal class PackageManagerToolPkgFacade(
 
         packageManager.saveImportedPackages(importedPackages.toList())
         packageManager.saveToolPkgSubpackageStates(subpackageStates)
-
         val stateSaved = packageManager.getToolPkgSubpackageStatesInternal()[normalizedPackageName] == enabled
         val importedMatches =
             if (containerEnabled) {
@@ -170,8 +161,7 @@ internal class PackageManagerToolPkgFacade(
             }
         return stateSaved && importedMatches
     }
-
-    fun findPreferredPackageNameForSubpackageId(
+        fun findPreferredPackageNameForSubpackageId(
         subpackageId: String,
         preferImported: Boolean = true
     ): String? {
@@ -185,29 +175,24 @@ internal class PackageManagerToolPkgFacade(
                     return directRuntime.packageName
                 }
             }
-            return directRuntime.packageName
+        return directRuntime.packageName
         }
-
         val candidates =
             packageManager.toolPkgSubpackageByPackageNameInternal.values.filter {
                 it.subpackageId.equals(subpackageId, ignoreCase = true)
             }
-
         if (candidates.isEmpty()) {
             return null
         }
-
         if (preferImported) {
             val importedCandidate = candidates.firstOrNull { packageManager.isPackageImported(it.packageName) }
-            if (importedCandidate != null) {
+        if (importedCandidate != null) {
                 return importedCandidate.packageName
             }
         }
-
         return candidates.first().packageName
     }
-
-    fun copyToolPkgResourceToFileBySubpackageId(
+        fun copyToolPkgResourceToFileBySubpackageId(
         subpackageId: String,
         resourceKey: String,
         destinationFile: File,
@@ -217,7 +202,6 @@ internal class PackageManagerToolPkgFacade(
         if (subpackageId.isBlank() || resourceKey.isBlank()) {
             return false
         }
-
         val directSubpackage = packageManager.resolveToolPkgSubpackageRuntimeInternal(subpackageId)
         val subpackages =
             if (directSubpackage != null) {
@@ -227,20 +211,18 @@ internal class PackageManagerToolPkgFacade(
                     it.subpackageId.equals(subpackageId, ignoreCase = true)
                 }
             }
-
         if (subpackages.isEmpty()) {
             return false
         }
-
         val candidateContainers =
             if (preferImportedContainer) {
                 val imported = packageManager.getImportedPackageSetInternal()
-                val importedContainers =
+        val importedContainers =
                     subpackages
                         .map { it.containerPackageName }
                         .distinct()
                         .filter { imported.contains(it) }
-                if (importedContainers.isNotEmpty()) {
+        if (importedContainers.isNotEmpty()) {
                     importedContainers
                 } else {
                     subpackages.map { it.containerPackageName }.distinct()
@@ -254,11 +236,9 @@ internal class PackageManagerToolPkgFacade(
                 return true
             }
         }
-
         return false
     }
-
-    fun copyToolPkgResourceToFile(
+        fun copyToolPkgResourceToFile(
         containerPackageName: String,
         resourceKey: String,
         destinationFile: File
@@ -282,8 +262,7 @@ internal class PackageManagerToolPkgFacade(
             false
         }
     }
-
-    fun getToolPkgResourceOutputFileName(
+        fun getToolPkgResourceOutputFileName(
         packageNameOrSubpackageId: String,
         resourceKey: String,
         preferImportedContainer: Boolean = true
@@ -294,20 +273,19 @@ internal class PackageManagerToolPkgFacade(
         if (target.isBlank() || key.isBlank()) {
             return null
         }
-
         fun resolveFromContainer(containerName: String): String? {
             val normalizedContainerName = packageManager.normalizePackageName(containerName)
-            val runtime = packageManager.toolPkgContainersInternal[normalizedContainerName] ?: return null
+        val runtime = packageManager.toolPkgContainersInternal[normalizedContainerName] ?: return null
             val resource =
                 runtime.resources.firstOrNull {
                     it.key.equals(key, ignoreCase = true)
                 } ?: return null
             val baseName =
                 resource.path.substringAfterLast('/').substringAfterLast('\\').trim()
-            if (baseName.isBlank()) {
+        if (baseName.isBlank()) {
                 return null
             }
-            return if (ToolPkgArchiveParser.isDirectoryResourceMime(resource.mime)) {
+        return if (ToolPkgArchiveParser.isDirectoryResourceMime(resource.mime)) {
                 if (baseName.endsWith(".zip", ignoreCase = true)) baseName else "${baseName}.zip"
             } else {
                 baseName
@@ -315,12 +293,10 @@ internal class PackageManagerToolPkgFacade(
         }
 
         resolveFromContainer(target)?.let { return it }
-
         val directSubpackage = packageManager.resolveToolPkgSubpackageRuntimeInternal(target)
         if (directSubpackage != null) {
             resolveFromContainer(directSubpackage.containerPackageName)?.let { return it }
         }
-
         val subpackages =
             packageManager.toolPkgSubpackageByPackageNameInternal.values.filter {
                 it.subpackageId.equals(target, ignoreCase = true)
@@ -328,16 +304,15 @@ internal class PackageManagerToolPkgFacade(
         if (subpackages.isEmpty()) {
             return null
         }
-
         val candidateContainers =
             if (preferImportedContainer) {
                 val imported = packageManager.getImportedPackageSetInternal()
-                val importedContainers =
+        val importedContainers =
                     subpackages
                         .map { it.containerPackageName }
                         .distinct()
                         .filter { imported.contains(it) }
-                if (importedContainers.isNotEmpty()) {
+        if (importedContainers.isNotEmpty()) {
                     importedContainers
                 } else {
                     subpackages.map { it.containerPackageName }.distinct()
@@ -349,11 +324,9 @@ internal class PackageManagerToolPkgFacade(
         candidateContainers.forEach { containerName ->
             resolveFromContainer(containerName)?.let { return it }
         }
-
         return null
     }
-
-    fun getToolPkgComposeDslScriptBySubpackageId(
+        fun getToolPkgComposeDslScriptBySubpackageId(
         subpackageId: String,
         uiModuleId: String? = null,
         preferImportedContainer: Boolean = true
@@ -362,7 +335,6 @@ internal class PackageManagerToolPkgFacade(
         if (subpackageId.isBlank()) {
             return null
         }
-
         val directSubpackage = packageManager.resolveToolPkgSubpackageRuntimeInternal(subpackageId)
         val subpackages =
             if (directSubpackage != null) {
@@ -372,11 +344,9 @@ internal class PackageManagerToolPkgFacade(
                     it.subpackageId.equals(subpackageId, ignoreCase = true)
                 }
             }
-
         if (subpackages.isEmpty()) {
             return null
         }
-
         val candidateContainers =
             if (preferImportedContainer) {
                 val imported = packageManager.getImportedPackageSetInternal()
@@ -390,15 +360,13 @@ internal class PackageManagerToolPkgFacade(
 
         candidateContainers.forEach { containerName ->
             val script = getToolPkgComposeDslScript(containerName, uiModuleId)
-            if (!script.isNullOrBlank()) {
+        if (!script.isNullOrBlank()) {
                 return script
             }
         }
-
         return null
     }
-
-    fun getToolPkgComposeDslScript(
+        fun getToolPkgComposeDslScript(
         containerPackageName: String,
         uiModuleId: String? = null
     ): String? {
@@ -409,7 +377,6 @@ internal class PackageManagerToolPkgFacade(
         if (!importedSet.contains(runtime.packageName)) {
             return null
         }
-
         val uiModule =
             if (!uiModuleId.isNullOrBlank()) {
                 runtime.uiModules.firstOrNull { module ->
@@ -425,7 +392,6 @@ internal class PackageManagerToolPkgFacade(
         if (uiModule.screen.isBlank()) {
             return null
         }
-
         return try {
             val bytes = packageManager.readToolPkgResourceBytes(runtime, uiModule.screen) ?: return null
             bytes.toString(StandardCharsets.UTF_8)
@@ -438,8 +404,7 @@ internal class PackageManagerToolPkgFacade(
             null
         }
     }
-
-    fun getToolPkgComposeDslScreenPath(
+        fun getToolPkgComposeDslScreenPath(
         containerPackageName: String,
         uiModuleId: String? = null
     ): String? {
@@ -450,7 +415,6 @@ internal class PackageManagerToolPkgFacade(
         if (!importedSet.contains(runtime.packageName)) {
             return null
         }
-
         val uiModule =
             if (!uiModuleId.isNullOrBlank()) {
                 runtime.uiModules.firstOrNull { module ->
@@ -465,8 +429,7 @@ internal class PackageManagerToolPkgFacade(
 
         return uiModule.screen.trim().ifBlank { null }
     }
-
-    fun runToolPkgMainHook(
+        fun runToolPkgMainHook(
         containerPackageName: String,
         functionName: String,
         event: String,
@@ -483,34 +446,31 @@ internal class PackageManagerToolPkgFacade(
 
         return runCatching {
             val normalizedContainerPackageName = packageManager.normalizePackageName(containerPackageName)
-            val runtime =
+        val runtime =
                 packageManager.toolPkgContainersInternal[normalizedContainerPackageName]
                     ?: throw IllegalArgumentException("ToolPkg container not found: ${containerPackageName}")
-
-            val getMainScriptStartTime = if (shouldLogTiming) messageTimingNow() else 0L
+        val getMainScriptStartTime = if (shouldLogTiming) messageTimingNow() else 0L
             val script =
                 packageManager.getToolPkgMainScriptInternal(runtime.packageName)
                     ?: throw IllegalStateException("ToolPkg main script is unavailable: ${runtime.packageName}")
-            if (shouldLogTiming) {
+        if (shouldLogTiming) {
                 logMessageTiming(
                     stage = "toolpkg.runMainHook.getMainScript",
                     startTimeMs = getMainScriptStartTime,
                     details = "container=${runtime.packageName}, plugin=${normalizedPluginId ?: "none"}, scriptLength=${script.length}"
                 )
             }
-
-            val resolveFunctionSourceStartTime = if (shouldLogTiming) messageTimingNow() else 0L
+        val resolveFunctionSourceStartTime = if (shouldLogTiming) messageTimingNow() else 0L
             val functionSource = inlineFunctionSource?.trim().orEmpty().ifBlank { null }
-            if (shouldLogTiming) {
+        if (shouldLogTiming) {
                 logMessageTiming(
                     stage = "toolpkg.runMainHook.resolveFunctionSource",
                     startTimeMs = resolveFunctionSourceStartTime,
                     details = "container=${runtime.packageName}, function=${functionName}, hasInline=${!functionSource.isNullOrBlank()}"
                 )
             }
-
-            val timestampMs = System.currentTimeMillis()
-            val params = mutableMapOf<String, Any?>(
+        val timestampMs = System.currentTimeMillis()
+        val params = mutableMapOf<String, Any?>(
                 "event" to resolvedEventName,
                 "eventName" to resolvedEventName,
                 "eventPayload" to eventPayload,
@@ -521,7 +481,7 @@ internal class PackageManagerToolPkgFacade(
                 "__Apex_ui_package_name" to runtime.packageName,
                 "__Apex_script_screen" to runtime.mainEntry
             )
-            if (!normalizedPluginId.isNullOrBlank()) {
+        if (!normalizedPluginId.isNullOrBlank()) {
                 params["pluginId"] = normalizedPluginId
             }
             eventPayload["chatId"]
@@ -531,30 +491,28 @@ internal class PackageManagerToolPkgFacade(
                 ?.let { chatId ->
                     params["__Apex_package_chat_id"] = chatId
                 }
-            if (!functionSource.isNullOrBlank()) {
+        if (!functionSource.isNullOrBlank()) {
                 params["__Apex_inline_function_name"] = functionName
                 params["__Apex_inline_function_source"] = functionSource
             }
-
-            val getExecutionEngineStartTime = if (shouldLogTiming) messageTimingNow() else 0L
+        val getExecutionEngineStartTime = if (shouldLogTiming) messageTimingNow() else 0L
             val executionContextKey = resolveToolPkgExecutionContextKey(runtime.packageName, params)
-            val executionEngine = packageManager.getToolPkgExecutionEngine(executionContextKey)
-            if (shouldLogTiming) {
+        val executionEngine = packageManager.getToolPkgExecutionEngine(executionContextKey)
+        if (shouldLogTiming) {
                 logMessageTiming(
                     stage = "toolpkg.runMainHook.getExecutionEngine",
                     startTimeMs = getExecutionEngineStartTime,
                     details = "container=${runtime.packageName}, plugin=${normalizedPluginId ?: "none"}, contextKey=${executionContextKey}"
                 )
             }
-
-            val executeScriptFunctionStartTime = if (shouldLogTiming) messageTimingNow() else 0L
+        val executeScriptFunctionStartTime = if (shouldLogTiming) messageTimingNow() else 0L
             val executionResult = executionEngine.executeScriptFunction(
                 script = script,
                 functionName = functionName,
                 params = params,
                 onIntermediateResult = onIntermediateResult
             )
-            if (shouldLogTiming) {
+        if (shouldLogTiming) {
                 logMessageTiming(
                     stage = "toolpkg.runMainHook.executeScriptFunction",
                     startTimeMs = executeScriptFunctionStartTime,
@@ -575,7 +533,7 @@ internal class PackageManagerToolPkgFacade(
                     details = "container=${containerPackageName}, plugin=${normalizedPluginId ?: "none"}, function=${functionName}, success=false, reason=${error.message ?: error.javaClass.simpleName}"
                 )
             }
-            val pluginPart = if (normalizedPluginId.isNullOrBlank()) "" else ", plugin=${normalizedPluginId}"
+        val pluginPart = if (normalizedPluginId.isNullOrBlank()) "" else ", plugin=${normalizedPluginId}"
             AppLogger.e(
                 "PackageManagerToolPkgFacade",
                 "runToolPkgMainHook failed: container=${containerPackageName}, function=${functionName}, event=${event}${pluginPart}",
@@ -583,8 +541,7 @@ internal class PackageManagerToolPkgFacade(
             )
         }
     }
-
-    private fun resolveToolPkgExecutionContextKey(
+        private fun resolveToolPkgExecutionContextKey(
         containerPackageName: String,
         params: Map<String, Any?>
     ): String {
@@ -597,8 +554,7 @@ internal class PackageManagerToolPkgFacade(
         }
         return "toolpkg_main:${containerPackageName}"
     }
-
-    fun readToolPkgTextResource(
+        fun readToolPkgTextResource(
         packageNameOrSubpackageId: String,
         resourcePath: String,
         preferImportedContainer: Boolean = true
@@ -610,34 +566,30 @@ internal class PackageManagerToolPkgFacade(
                 .trim()
                 .replace('\\', '/')
                 .trimStart('/')
-
         if (target.isBlank() || normalizedPath.isBlank()) {
             return null
         }
-
         val containerRuntime = packageManager.toolPkgContainersInternal[target]
         if (containerRuntime != null) {
             val importedSet = packageManager.getImportedPackageSetInternal()
-            if (!importedSet.contains(containerRuntime.packageName)) {
+        if (!importedSet.contains(containerRuntime.packageName)) {
                 return null
             }
-            return packageManager.readToolPkgResourceBytes(containerRuntime, normalizedPath)
+        return packageManager.readToolPkgResourceBytes(containerRuntime, normalizedPath)
                 ?.toString(StandardCharsets.UTF_8)
         }
-
         val directSubpackageRuntime = packageManager.resolveToolPkgSubpackageRuntimeInternal(target)
         if (directSubpackageRuntime != null) {
             val directContainer = packageManager.toolPkgContainersInternal[directSubpackageRuntime.containerPackageName]
             if (directContainer != null) {
                 val importedSet = packageManager.getImportedPackageSetInternal()
-                if (!importedSet.contains(directContainer.packageName)) {
+        if (!importedSet.contains(directContainer.packageName)) {
                     return null
                 }
-                return packageManager.readToolPkgResourceBytes(directContainer, normalizedPath)
+        return packageManager.readToolPkgResourceBytes(directContainer, normalizedPath)
                     ?.toString(StandardCharsets.UTF_8)
             }
         }
-
         val subpackages =
             packageManager.toolPkgSubpackageByPackageNameInternal.values.filter {
                 it.subpackageId.equals(target, ignoreCase = true)
@@ -645,7 +597,6 @@ internal class PackageManagerToolPkgFacade(
         if (subpackages.isEmpty()) {
             return null
         }
-
         val candidateContainers =
             if (preferImportedContainer) {
                 val imported = packageManager.getImportedPackageSetInternal()
@@ -662,11 +613,10 @@ internal class PackageManagerToolPkgFacade(
             val text =
                 packageManager.readToolPkgResourceBytes(runtime, normalizedPath)
                     ?.toString(StandardCharsets.UTF_8)
-            if (!text.isNullOrEmpty()) {
+        if (!text.isNullOrEmpty()) {
                 return text
             }
         }
-
         return null
     }
 }

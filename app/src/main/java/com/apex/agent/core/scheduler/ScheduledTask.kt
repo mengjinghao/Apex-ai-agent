@@ -5,7 +5,7 @@ import java.util.UUID
 /**
  * 定时任务模型
  * 
- * 定义定时任务的数据结�?支持多种任务类型和调度配�? */
+ * 定义定时任务的数据结�支持多种任务类型和调度配�? */
 data class ScheduledTask(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
@@ -111,7 +111,6 @@ data class ScheduledTask(
         val lastExec = lastExecutedAt?.let { formatTime(it) } ?: "从未执行"
         val nextExec = nextExecutionTime?.let { formatTime(it) } ?: "未知"
         val errorInfo = lastError?.let { " (错误: ${it})" } ?: ""
-        
         return """
             任务: ${name}
             类型: ${taskType.displayName}

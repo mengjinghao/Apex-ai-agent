@@ -65,7 +65,7 @@ class NotCondition(private val condition: KmpCondition) : KmpCondition {
                         condition is CharRangeCondition
         ) {
             val innerPattern = condition.toRegexPattern()
-            if (innerPattern.startsWith("[") && innerPattern.endsWith("]")) {
+        if (innerPattern.startsWith("[") && innerPattern.endsWith("]")) {
                 return "[^${innerPattern.substring(1, innerPattern.length - 1)}]"
             }
         }
@@ -136,8 +136,7 @@ internal class GroupCondition(val groupId: Int, val conditions: List<KmpConditio
     override fun getDescription(): String = "GROUP(${groupId})"
     override fun toRegexPattern(): String =
             "(${conditions.joinToString("") { it.toRegexPattern() }})"
-
-    fun getAllGroupIds(): List<Int> {
+        fun getAllGroupIds(): List<Int> {
         val ids = mutableListOf(groupId)
         conditions.forEach {
             if (it is GroupCondition) {
@@ -156,7 +155,7 @@ class KmpNode(
     var isFinal: Boolean = false
 ) {
     private val transitions = mutableMapOf<KmpCondition, KmpNode>()
-    var failureNode: KmpNode? = null
+        var failureNode: KmpNode? = null
 
     /** 添加从此节点到另一个节点的转换 */
     fun addTransition(condition: KmpCondition, targetNode: KmpNode) {
@@ -191,12 +190,12 @@ interface KmpNodeChangeListener {
 /** 实现基于图的Knuth-Morris-Pratt算法，支持自定义转换和灵活的模式匹配 */
 class StreamKmpGraph {
     private val TAG = "StreamKmpGraph"
-    private val nodes = mutableListOf<KmpNode>()
-    private var currentNode: KmpNode
+        private val nodes = mutableListOf<KmpNode>()
+        private var currentNode: KmpNode
     private val startNode: KmpNode
     private val nodeChangeListeners = mutableListOf<KmpNodeChangeListener>()
-    private val characterStreamBuffer = StringBuilder()
-    private var currentMatchLength = 0
+        private val characterStreamBuffer = StringBuilder()
+        private var currentMatchLength = 0
     var pattern: KmpPattern? = null
 
     init {
@@ -257,12 +256,12 @@ class StreamKmpGraph {
     var searchNode = currentNode.failureNode
             while (searchNode != null) {
                 nextNode = searchNode.getNextNode(c)
-                if (nextNode != null) {
+        if (nextNode != null) {
                     // Found a fallback transition. Adjust match length.
                     currentMatchLength = searchNode.depth + 1
                     break
                 }
-                if (searchNode == startNode) break
+        if (searchNode == startNode) break
                 searchNode = searchNode.failureNode
             }
 
@@ -279,7 +278,6 @@ class StreamKmpGraph {
     if (currentNode.isFinal) {
             return performRegexMatchingIfNeeded(true)
         }
-
         return if (currentNode == startNode && currentMatchLength == 0) {
             StreamKmpMatchResult.NoMatch
         } else {
@@ -297,24 +295,22 @@ class StreamKmpGraph {
 
         try {
             val regex = Regex(regexPattern)
-            val matchResult = regex.find(text)
-
-            if (matchResult != null) {
+        val matchResult = regex.find(text)
+        if (matchResult != null) {
                 val groups = mutableMapOf<Int, String>()
 
                 // 从正则表达式的捕获组中提取匹�?               patternObj.groupIds.forEachIndexed { index, groupId ->
                     // 跳过组索，（整个匹配�?
     val groupValue = matchResult.groupValues.getOrNull(index + 1)
-                    if (groupValue != null) {
+        if (groupValue != null) {
                         groups[groupId] = groupValue
                     }
                 }
-
-                return StreamKmpMatchResult.Match(groups, isFullMatch)
+        return StreamKmpMatchResult.Match(groups, isFullMatch)
             }
         } catch (e: Exception) {
             // 正则表达式处理错误，返回无组的匹配结�?       }
-    return StreamKmpMatchResult.Match(emptyMap(), isFullMatch)
+        return StreamKmpMatchResult.Match(emptyMap(), isFullMatch)
     }
 
     /** 处理一串字�?/
@@ -324,12 +320,11 @@ class StreamKmpGraph {
 
         text.forEachIndexed { index, c ->
             val result = processChar(c)
-            if (result is StreamKmpMatchResult.Match && result.isFullMatch) {
+        if (result is StreamKmpMatchResult.Match && result.isFullMatch) {
                 matchPositions.add(index + 1)
                 // Do NOT reset here. KMP's failure function handles finding the next match.
             }
         }
-
         return matchPositions
     }
 
@@ -360,8 +355,7 @@ class StreamKmpGraph {
 
         text.forEachIndexed { index, c ->
             var nextNode: KmpNode? = currentNode.getNextNode(c)
-
-            if (nextNode != null) {
+        if (nextNode != null) {
                 if (currentNode == nextNode) { // Self-loop for greedy star
                     currentMatchLength++
                 } else {
@@ -371,17 +365,16 @@ class StreamKmpGraph {
                 var searchNode = currentNode.failureNode
                 while (searchNode != null) {
                     nextNode = searchNode.getNextNode(c)
-                    if (nextNode != null) {
+        if (nextNode != null) {
                         currentMatchLength = searchNode.depth + 1
                         break
                     }
-                    if (searchNode == startNode) break
+        if (searchNode == startNode) break
                     searchNode = searchNode.failureNode
                 }
-
-                if (nextNode == null) {
+        if (nextNode == null) {
                     nextNode = startNode.getNextNode(c)
-                    if (nextNode != null) {
+        if (nextNode != null) {
                         currentMatchLength = 1
                     } else {
                         nextNode = startNode
@@ -413,8 +406,7 @@ class StreamKmpGraphBuilder {
         setupFailureTransitions(graph)
         return graph
     }
-
-    private fun buildRecursive(
+        private fun buildRecursive(
             graph: StreamKmpGraph,
             startNode: KmpNode,
             conditions: List<KmpCondition>,
@@ -440,9 +432,9 @@ class StreamKmpGraphBuilder {
                     currentDepth = finalGroupDepth
                 }
                 is GreedyStarCondition -> {
-                    // 为了使贪心星号真，贪�?但不"占有，，它不应消耗那些能让模式后续部分匹配的字符
+                    // 为了使贪心星号真，贪�但不"占有，，它不应消耗那些能让模式后续部分匹配的字符
     val nextCondition = conditions.getOrNull(index + 1)
-                    val loopCondition =
+        val loopCondition =
                             if (nextCondition != null) {
                                 // 循环条件：匹配星号条件并且不匹配序列中的下一个条�?                               AndCondition(condition.condition, NotCondition(nextCondition))
                             } else {
@@ -481,7 +473,7 @@ class StreamKmpGraphBuilder {
 /** 简化的模式构建DSL，允许以更简洁的方式构建KMP匹配条件 */
 class KmpPattern {
     val conditions = mutableListOf<KmpCondition>()
-    val groupIds = mutableListOf<Int>() // 跟踪模式中所有组的ID，按定义顺序
+        val groupIds = mutableListOf<Int>() // 跟踪模式中所有组的ID，按定义顺序
 
     /** 添加一个匹配条�?/
     private fun add(condition: KmpCondition, isTopLevel: Boolean = false) {
@@ -672,7 +664,7 @@ fun notChars(vararg chars: Char): KmpCondition = NotCondition(CharSetCondition(*
 // DSL构建，fun kmpPattern(init: KmpPattern.() -> Unit): KmpPattern {
     val pattern = KmpPattern()
     pattern.init()
-    return pattern
+        return pattern
 }
 
 // 例如�?'a' or 'A'), 'a'..'z', chars('a', 'e', 'i', 'o', 'u')

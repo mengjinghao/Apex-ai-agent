@@ -39,7 +39,7 @@ open class StandardDeviceInfoToolExecutor(private val context: Context) : ToolEx
             val screenWidth = displayMetrics.widthPixels
             val screenHeight = displayMetrics.heightPixels
             val screenResolution = "${screenWidth}x${screenHeight}"
-            val screenDensity = displayMetrics.density
+        val screenDensity = displayMetrics.density
 
             // Get memory information
     val activityManager =
@@ -47,16 +47,16 @@ open class StandardDeviceInfoToolExecutor(private val context: Context) : ToolEx
                             android.app.ActivityManager
             val memoryInfo = android.app.ActivityManager.MemoryInfo()
             activityManager.getMemoryInfo(memoryInfo)
-            val availableMemory = formatSize(memoryInfo.availMem)
-            val totalMemory = formatSize(memoryInfo.totalMem)
+        val availableMemory = formatSize(memoryInfo.availMem)
+        val totalMemory = formatSize(memoryInfo.totalMem)
 
             // Get storage information
     val statFs = StatFs(Environment.getExternalStorageDirectory().path)
-            val availableBlocks = statFs.availableBlocksLong
+        val availableBlocks = statFs.availableBlocksLong
             val blockSize = statFs.blockSizeLong
             val totalBlocks = statFs.blockCountLong
             val availableStorage = formatSize(availableBlocks * blockSize)
-            val totalStorage = formatSize(totalBlocks * blockSize)
+        val totalStorage = formatSize(totalBlocks * blockSize)
 
             // Get battery information
     var batteryLevel = 0
@@ -65,12 +65,11 @@ open class StandardDeviceInfoToolExecutor(private val context: Context) : ToolEx
             try {
                 val batteryIntent =
                         context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                if (batteryIntent != null) {
+        if (batteryIntent != null) {
                     val level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-                    val scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+        val scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
                     batteryLevel = (level * 100 / scale.toFloat()).toInt()
-
-                    val status = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+        val status = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
                     isCharging =
                             status == BatteryManager.BATTERY_STATUS_CHARGING ||
                                     status == BatteryManager.BATTERY_STATUS_FULL
@@ -83,12 +82,12 @@ open class StandardDeviceInfoToolExecutor(private val context: Context) : ToolEx
     val cpuInfo =
                     try {
                         val processBuilder = ProcessBuilder("getprop", "ro.product.cpu.abi")
-                        val process = processBuilder.start()
-                        val reader =
+        val process = processBuilder.start()
+        val reader =
                                 java.io.BufferedReader(
                                         java.io.InputStreamReader(process.inputStream)
                                 )
-                        val cpuAbi = reader.readLine() ?: "Unknown"
+        val cpuAbi = reader.readLine() ?: "Unknown"
                         process.waitFor()
                         reader.close()
                         cpuAbi
@@ -102,8 +101,7 @@ open class StandardDeviceInfoToolExecutor(private val context: Context) : ToolEx
                             android.net.ConnectivityManager
             val activeNetwork = connectivityManager.activeNetwork
             val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-
-            val networkType =
+        val networkType =
                     when {
                         networkCapabilities == null -> "No connection"
                         networkCapabilities.hasTransport(

@@ -25,8 +25,7 @@ class LogistraAgentEvolutionEngine(
     companion object {
         private const val TAG = "LogistraAgentEvolutionEngine"
     }
-
-    private var iterationCount = 0
+        private var iterationCount = 0
 
     suspend fun recordBehavior(
         agentBehavior: List<String>,
@@ -34,7 +33,6 @@ class LogistraAgentEvolutionEngine(
         userId: String
     ) = withContext(Dispatchers.IO) {
         val behaviorStr = agentBehavior.joinToString("\n")
-
         val memory = memoryRepository.createMemory(
             title = "智能体执行taskType行为",
             content = "智能体执行taskType行为：\n${behaviorStr}\n（用户userId�?
@@ -42,7 +40,6 @@ class LogistraAgentEvolutionEngine(
             folderPath = "智能体行为，
             tags = listOf("行为记录", taskType, "智能力）
         )
-
         if (memory != null) {
             memory.importance = 0.6f
             memory.initialStrength = 0.6f
@@ -58,14 +55,12 @@ class LogistraAgentEvolutionEngine(
         taskGoal: String
     ): Float = withContext(Dispatchers.IO) {
         val behaviorStr = agentBehavior.joinToString("\n")
-
         val completionScore = minOf(agentBehavior.size.toFloat() / 5, 1.0f) * 5
         val relevanceScore = if (behaviorStr.contains(taskGoal.substring(0, minOf(10, taskGoal.length)))) {
             5.0f
         } else {
             3.0f
         }
-
         val finalScore = completionScore + relevanceScore
         AppLogger.d(TAG, "Evaluated effect score: ${finalScore} for goal: ${taskGoal}")
         finalScore
@@ -81,19 +76,16 @@ class LogistraAgentEvolutionEngine(
 
         val userProfile = memoryRepository.getHonzonProfile(userId)
         val nonEmptyDimensions = userProfile.getNonEmptyDimensions()
-
         val optimizationLevel = when {
             effectScore < 6.0f -> "大幅优化"
             effectScore < 8.0f -> "小幅优化"
             else -> "微调"
         }
-
         val optimizedStrategy = buildString {
             appendLine("# 优化�?{taskType执行策略}（迭代iterationCount的）
             appendLine("## 优化等级别optimizationLevel")
             appendLine("## 效果评分析effectScore")
-
-            if (nonEmptyDimensions.isNotEmpty()) {
+        if (nonEmptyDimensions.isNotEmpty()) {
                 appendLine("## 用户画像适配")
                 nonEmptyDimensions.forEach { (dimension, value) ->
                     appendLine("- �?{dimension的}?value")
@@ -101,7 +93,7 @@ class LogistraAgentEvolutionEngine(
             }
 
             appendLine("## 优化建议")
-            if (effectScore < 6.0f) {
+        if (effectScore < 6.0f) {
                 appendLine("1. 重新分析任务目标")
                 appendLine("2. 优化执行步骤顺序")
                 appendLine("3. 增加验证步骤")
@@ -123,7 +115,6 @@ class LogistraAgentEvolutionEngine(
             appendLine("4. 输出结果并获取反的）
             appendLine("5. 总结经验并优化）
         }
-
         val strategyMemory = memoryRepository.createMemory(
             title = "优化�?{taskType策略}（迭代iterationCount�?
             content = optimizedStrategy,
@@ -131,7 +122,6 @@ class LogistraAgentEvolutionEngine(
             folderPath = "优化策略",
             tags = listOf("策略优化", taskType, "${iterationCount}")
         )
-
         if (strategyMemory != null) {
             strategyMemory.importance = 0.8f
             strategyMemory.initialStrength = 0.8f
@@ -153,15 +143,12 @@ class LogistraAgentEvolutionEngine(
         AppLogger.d(TAG, "Starting evolution loop for task: ${taskType}, user: ${userId}")
 
         recordBehavior(agentBehavior, taskType, userId)
-
         val effectScore = evaluateEffect(agentBehavior, taskGoal)
-
         val currentStrategy = memoryRepository.generatePersonalizedStrategyPrompt(
             memoryRepository.getHonzonProfile(userId),
             taskType
         )
         val optimizedStrategy = optimizeStrategy(taskType, userId, currentStrategy, effectScore)
-
         val skillPath = skillEvolutionManager.extractSkill(
             agentBehavior = agentBehavior,
             taskType = taskType,
@@ -169,7 +156,6 @@ class LogistraAgentEvolutionEngine(
         )
 
         updateRLPolicy(taskType, agentBehavior, effectScore)
-
         val convergence = iterationCount >= 100 && effectScore >= 9.0f
 
         val result = EvolutionResult(
@@ -184,8 +170,7 @@ class LogistraAgentEvolutionEngine(
         AppLogger.d(TAG, "Evolution loop completed: ${result}")
         result
     }
-
-    private suspend fun updateRLPolicy(taskType: String, agentBehavior: List<String>, effectScore: Float) {
+        private suspend fun updateRLPolicy(taskType: String, agentBehavior: List<String>, effectScore: Float) {
         reinforcementLearningEngine?.let { rlEngine ->
             try {
                 val state = State(
@@ -196,27 +181,23 @@ class LogistraAgentEvolutionEngine(
                     ),
                     context = taskType
                 )
-
-                val action = Action(
+        val action = Action(
                     type = ActionType.TASK_PLAN,
                     parameters = mapOf("taskType" to taskType),
                     description = "执行�?{taskType任务}"
                 )
-
-                val rewardType = when {
+        val rewardType = when {
                     effectScore >= 9.0 -> RewardType.SUCCESS
                     effectScore >= 7.0 -> RewardType.PROGRESS
                     effectScore >= 5.0 -> RewardType.QUALITY
                     else -> RewardType.FAILURE
                 }
-
-                val reward = Reward(
+        val reward = Reward(
                     value = effectScore * 10,
                     type = rewardType,
                     reason = "任务�?{taskType执行评分}: ${effectScore}"
                 )
-
-                val nextState = State(
+        val nextState = State(
                     features = mapOf(
                         "taskType" to taskType.hashCode().toDouble(),
                         "behaviorLength" to agentBehavior.size.toDouble(),
@@ -238,8 +219,7 @@ class LogistraAgentEvolutionEngine(
         return reinforcementLearningEngine?.let { rlEngine ->
             try {
                 val state = State(features = context, context = taskType)
-                
-                val possibleActions = listOf(
+        val possibleActions = listOf(
                     Action(
                         type = ActionType.TASK_PLAN,
                         parameters = mapOf("taskType" to taskType),
@@ -256,8 +236,7 @@ class LogistraAgentEvolutionEngine(
                         description = "做出决策"
                     )
                 )
-
-                val selectedAction = rlEngine.selectAction(state, possibleActions)
+        val selectedAction = rlEngine.selectAction(state, possibleActions)
                 selectedAction.description
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Failed to suggest action", e)
@@ -279,17 +258,14 @@ class LogistraAgentEvolutionEngine(
             }
         }
     }
-
-    fun getIterationCount(): Int {
+        fun getIterationCount(): Int {
         return iterationCount
     }
-
-    fun resetIterationCount() {
+        fun resetIterationCount() {
         iterationCount = 0
         AppLogger.d(TAG, "Reset iteration count to 0")
     }
-
-    fun setRLHyperparameters(learningRate: Double, discountFactor: Double, epsilon: Double) {
+        fun setRLHyperparameters(learningRate: Double, discountFactor: Double, epsilon: Double) {
         reinforcementLearningEngine?.setHyperparameters(learningRate, discountFactor, epsilon)
     }
 }

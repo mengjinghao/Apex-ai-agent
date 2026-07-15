@@ -40,18 +40,16 @@ import java.util.Locale
 class DiagnosticsServiceFacade(private val context: Context) {
 
     private const val TAG_SUB = "DiagnosticsFacade"
-
-    private val logDir = File(context.filesDir, "apex-logs").apply { mkdirs() }
-    private val crashDir = File(context.filesDir, "apex-crashes").apply { mkdirs() }
-
-    private val _memoryStats = MutableStateFlow(MemoryStats(0, 0, 0))
-    val memoryStats: StateFlow<MemoryStats> = _memoryStats.asStateFlow()
+        private val logDir = File(context.filesDir, "apex-logs").apply { mkdirs() }
+        private val crashDir = File(context.filesDir, "apex-crashes").apply { mkdirs() }
+        private val _memoryStats = MutableStateFlow(MemoryStats(0, 0, 0))
+        val memoryStats: StateFlow<MemoryStats> = _memoryStats.asStateFlow()
 
     /** 当前 logcat 输出文件（按日轮转）。修复了原版的 getter 缺 return BUG。 */
     private val currentLogFile: File
         get() {
             val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-            return File(logDir, "apex-$dateStr.log")
+        return File(logDir, "apex-$dateStr.log")
         }
 
     /**
@@ -262,19 +260,17 @@ class DiagnosticsServiceFacade(private val context: Context) {
         Debug.dumpHprofData(file.absolutePath)
         return file.absolutePath
     }
-
-    private fun parseLogLine(line: String): LogEntry {
+        private fun parseLogLine(line: String): LogEntry {
         val parts = line.split(" ", limit = 4)
         if (parts.size >= 4) {
             val time = "${parts[0]} ${parts[1]}"
-            val tag = parts[2].removeSurrounding("[", "]")
-            val message = parts[3]
+        val tag = parts[2].removeSurrounding("[", "]")
+        val message = parts[3]
             return LogEntry(timestamp = time, tag = tag, message = message, raw = line)
         }
         return LogEntry(timestamp = "", tag = "", message = line, raw = line)
     }
-
-    private fun getCurrentProcessName(): String {
+        private fun getCurrentProcessName(): String {
         val pid = Process.myPid()
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
         return activityManager.runningAppProcesses?.find { it.pid == pid }?.processName ?: "unknown"

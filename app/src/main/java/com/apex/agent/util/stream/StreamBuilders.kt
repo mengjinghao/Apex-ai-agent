@@ -45,7 +45,7 @@ fun <T> streamOf(vararg values: T): Stream<T> = object : AbstractStream<T>() {
         activeCollector = collector
         for (value in values) {
             StreamLogger.v("streamOf", "发射元素: ${value}")
-            if (!tryBuffer(value)) {
+        if (!tryBuffer(value)) {
                 collector.emit(value)
             }
         }
@@ -68,7 +68,7 @@ fun <T> Collection<T>.asStream(): Stream<T> = object : AbstractStream<T>() {
         
         for (item in this@asStream) {
             StreamLogger.v("Collection.asStream", "发射元素: ${item}")
-            if (!tryBuffer(item)) {
+        if (!tryBuffer(item)) {
                 collector.emit(item)
             }
         }
@@ -92,7 +92,7 @@ fun <T> Sequence<T>.asStream(): Stream<T> = object : AbstractStream<T>() {
         for (item in this@asStream) {
             count++
             StreamLogger.v("Sequence.asStream", "发射元素[${count}]: ${item}")
-            if (!tryBuffer(item)) {
+        if (!tryBuffer(item)) {
                 collector.emit(item)
             }
         }
@@ -129,7 +129,7 @@ fun <T> stream(block: suspend StreamCollector<T>.() -> Unit): Stream<T> = object
             }
             StreamLogger.e("stream", "构建器Stream收集出错", e)
             // 其他异常也应该抛出，以便上层可以处理
-            throw e
+    throw e
         } finally {
             // 流收集完成时标记为关�?           markClosed()
             
@@ -170,7 +170,7 @@ fun intervalStream(period: Duration, initialDelay: Duration = Duration.ZERO): St
  */
 fun rangeStream(start: Int, count: Int): Stream<Int> = stream {
     StreamLogger.d("rangeStream", "创建范围Stream, 起始: ${start}, 数量: ${count}")
-    for (i in start until start + count) {
+        for (i in start until start + count) {
         StreamLogger.v("rangeStream", "发射�?${i}")
         emit(i)
     }
@@ -182,5 +182,5 @@ fun rangeStream(start: Int, count: Int): Stream<Int> = stream {
  */
 fun <T> streamError(exception: Throwable): Stream<T> = stream {
     StreamLogger.e("streamError", "创建错误Stream, 异常: ${exception.message}", exception)
-    throw exception
+        throw exception
 } 

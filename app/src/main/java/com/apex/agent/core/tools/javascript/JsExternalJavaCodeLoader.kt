@@ -36,22 +36,21 @@ private class PrefixIsolatedDexClassLoader(
                 if (resolve) {
                     resolveClass(loadedClass)
                 }
-                return loadedClass
+        return loadedClass
             }
 
             try {
                 val localClass = findClass(name)
-                if (resolve) {
+        if (resolve) {
                     resolveClass(localClass)
                 }
-                return localClass
+        return localClass
             } catch (_: ClassNotFoundException) {
                 return super.loadClass(name, resolve)
             }
         }
     }
-
-    private fun shouldLoadChildFirst(className: String): Boolean {
+        private fun shouldLoadChildFirst(className: String): Boolean {
         return normalizedChildFirstPrefixes.any { prefix -> className.startsWith(prefix) }
     }
 }
@@ -61,13 +60,11 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
         DEX("dex"),
         JAR("jar");
     }
-
-    private data class LoadOptions(
+        private data class LoadOptions(
         val nativeLibraryDir: String?,
         val childFirstPrefixes: List<String>
     )
-
-    private data class LoadedArtifact(
+        private data class LoadedArtifact(
         val sourceType: SourceType,
         val sourcePath: String,
         val nativeLibraryDir: String?,
@@ -79,7 +76,7 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
             childFirstPrefixes.forEach { prefix ->
                 childFirstPrefixesJson.put(prefix)
             }
-            return JSONObject()
+        return JSONObject()
                 .put("index", index)
                 .put("type", sourceType.wireName)
                 .put("path", sourcePath)
@@ -92,8 +89,7 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
     companion object {
         private const val TAG = "JsExternalJavaCodeLoader"
     }
-
-    private val loadedArtifacts = LinkedHashMap<String, LoadedArtifact>()
+        private val loadedArtifacts = LinkedHashMap<String, LoadedArtifact>()
 
     @Synchronized
     fun getEffectiveClassLoader(baseClassLoader: ClassLoader): ClassLoader {
@@ -118,8 +114,7 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
         }
         return success(payload)
     }
-
-    private fun load(
+        private fun load(
         sourceType: SourceType,
         path: String,
         optionsJson: String,
@@ -127,19 +122,17 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
     ): String {
         return try {
             val normalizedPath = normalizeSourcePath(path)
-            val options = parseOptions(optionsJson)
-            val sourceFile = File(normalizedPath)
+        val options = parseOptions(optionsJson)
+        val sourceFile = File(normalizedPath)
 
             require(sourceFile.exists()) { "external code file does not exist: ${normalizedPath}" }
             require(sourceFile.isFile) { "external code path is not a file: ${normalizedPath}" }
             require(sourceFile.canRead()) { "external code file is not readable: ${normalizedPath}" }
-
-            val canonicalPath = sourceFile.canonicalPath
+        val canonicalPath = sourceFile.canonicalPath
             validateSourceFile(sourceType = sourceType, sourceFile = sourceFile, canonicalPath = canonicalPath)
             ensureJvmCompatibilitySystemProperties()
-
-            val nativeLibraryDir = resolveNativeLibraryDir(options.nativeLibraryDir)
-            val artifactKey =
+        val nativeLibraryDir = resolveNativeLibraryDir(options.nativeLibraryDir)
+        val artifactKey =
                 buildArtifactKey(
                     sourceType = sourceType,
                     canonicalPath = canonicalPath,
@@ -149,16 +142,15 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
             loadedArtifacts[artifactKey]?.let { existing ->
                 return success(existing.toJson(indexOf(artifactKey), alreadyLoaded = true))
             }
-
-            val preparedSourceFile =
+        val preparedSourceFile =
                 prepareLoadableSourceFile(
                     sourceType = sourceType,
                     sourceFile = sourceFile,
                     canonicalPath = canonicalPath
                 )
-            val optimizedDir = ensureOptimizedDir()
-            val parent = getEffectiveClassLoader(baseClassLoader)
-            val childFirstPrefixes = options.childFirstPrefixes
+        val optimizedDir = ensureOptimizedDir()
+        val parent = getEffectiveClassLoader(baseClassLoader)
+        val childFirstPrefixes = options.childFirstPrefixes
             val classLoader =
                 if (childFirstPrefixes.isEmpty()) {
                     DexClassLoader(
@@ -176,8 +168,7 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
                         childFirstPrefixes
                     )
                 }
-
-            val artifact =
+        val artifact =
                 LoadedArtifact(
                     sourceType = sourceType,
                     sourcePath = preparedSourceFile.absolutePath,
@@ -192,8 +183,7 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
             failure(e.message ?: "failed to load external ${sourceType.wireName}")
         }
     }
-
-    private fun validateSourceFile(sourceType: SourceType, sourceFile: File, canonicalPath: String) {
+        private fun validateSourceFile(sourceType: SourceType, sourceFile: File, canonicalPath: String) {
         when (sourceType) {
             SourceType.DEX -> {
                 val extension = sourceFile.extension.lowercase()
@@ -215,14 +205,12 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
             }
         }
     }
-
-    private fun normalizeSourcePath(path: String): String {
+        private fun normalizeSourcePath(path: String): String {
         val normalized = path.trim()
         require(normalized.isNotEmpty()) { "external code path is required" }
         return normalized
     }
-
-    private fun parseOptions(optionsJson: String): LoadOptions {
+        private fun parseOptions(optionsJson: String): LoadOptions {
         val normalized = optionsJson.trim()
         if (normalized.isEmpty()) {
             return LoadOptions(
@@ -230,16 +218,15 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
                 childFirstPrefixes = emptyList()
             )
         }
-
         val parsed = JSONObject(normalized)
         val nativeLibraryDir = parsed.optString("nativeLibraryDir").trim().ifEmpty { null }
         val childFirstPrefixes =
             parsed.optJSONArray("childFirstPrefixes")
                 ?.let { rawPrefixes ->
                     val normalizedPrefixes = ArrayList<String>(rawPrefixes.length())
-                    for (index in 0 until rawPrefixes.length()) {
+        for (index in 0 until rawPrefixes.length()) {
                         val rawPrefix = rawPrefixes.optString(index).trim()
-                        if (rawPrefix.isNotEmpty()) {
+        if (rawPrefix.isNotEmpty()) {
                             normalizedPrefixes.add(rawPrefix)
                         }
                     }
@@ -251,23 +238,20 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
             childFirstPrefixes = childFirstPrefixes
         )
     }
-
-    private fun resolveNativeLibraryDir(nativeLibraryDir: String): String? {
+        private fun resolveNativeLibraryDir(nativeLibraryDir: String): String? {
         val normalized = nativeLibraryDir?.trim()?.ifEmpty { null } ?: return null
         val dir = File(normalized)
         require(dir.exists()) { "native library dir does not exist: ${normalized}" }
         require(dir.isDirectory) { "native library dir is not a directory: ${normalized}" }
         return dir.canonicalPath
     }
-
-    private fun prepareLoadableSourceFile(
+        private fun prepareLoadableSourceFile(
         sourceType: SourceType,
         sourceFile: File,
         canonicalPath: String
     ): File {
         val targetDir = ensurePreparedSourceDir()
         val targetFile = File(targetDir, buildPreparedSourceFileName(sourceType, canonicalPath))
-
         if (targetFile.exists()) {
             require(targetFile.delete()) {
                 "failed to replace prepared external ${sourceType.wireName}: ${targetFile.absolutePath}"
@@ -293,11 +277,9 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
         require(!targetFile.canWrite()) {
             "prepared external ${sourceType.wireName} must be read-only: ${targetFile.absolutePath}"
         }
-
         return targetFile
     }
-
-    private fun ensureJvmCompatibilitySystemProperties() {
+        private fun ensureJvmCompatibilitySystemProperties() {
         val filesDirPath = context.filesDir.absolutePath
         val cacheDirPath = (context.cacheDir ?: context.codeCacheDir ?: context.filesDir).absolutePath
         val locale = Locale.getDefault()
@@ -316,8 +298,7 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
             ensureSystemProperty("user.country", locale.country)
         }
     }
-
-    private fun ensureSystemProperty(key: String, value: String) {
+        private fun ensureSystemProperty(key: String, value: String) {
         if (value.isBlank()) {
             return
         }
@@ -326,16 +307,13 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
             System.setProperty(key, value)
         }
     }
-
-    private fun ensureOptimizedDir(): File {
+        private fun ensureOptimizedDir(): File {
         return ensureManagedDirectory("js-external-code-optimized")
     }
-
-    private fun ensurePreparedSourceDir(): File {
+        private fun ensurePreparedSourceDir(): File {
         return ensureManagedDirectory("js-external-code-sources")
     }
-
-    private fun ensureManagedDirectory(childName: String): File {
+        private fun ensureManagedDirectory(childName: String): File {
         val parentDir = context.codeCacheDir ?: context.cacheDir
         requireNotNull(parentDir) { "app cache directory is unavailable" }
         val managedDir = File(parentDir, childName)
@@ -347,16 +325,14 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
         }
         return managedDir
     }
-
-    private fun buildPreparedSourceFileName(sourceType: SourceType, canonicalPath: String): String {
+        private fun buildPreparedSourceFileName(sourceType: SourceType, canonicalPath: String): String {
         val digest =
             MessageDigest.getInstance("SHA-256")
                 .digest("${sourceType.wireName}|${canonicalPath}".toByteArray())
                 .joinToString(separator = "") { byte -> "%02x".format(byte) }
         return "${sourceType.wireName}-${digest}.${sourceType.wireName}"
     }
-
-    private fun buildArtifactKey(
+        private fun buildArtifactKey(
         sourceType: SourceType,
         canonicalPath: String,
         nativeLibraryDir: String?,
@@ -369,19 +345,16 @@ internal class JsExternalJavaCodeLoader(private val context: Context) {
             childFirstPrefixes.joinToString(",")
         ).joinToString("|")
     }
-
-    private fun indexOf(artifactKey: String): Int {
+        private fun indexOf(artifactKey: String): Int {
         return loadedArtifacts.keys.indexOf(artifactKey).coerceAtLeast(0)
     }
-
-    private fun success(data: Any): String {
+        private fun success(data: Any): String {
         return JSONObject()
             .put("success", true)
             .put("data", data)
             .toString()
     }
-
-    private fun failure(message: String): String {
+        private fun failure(message: String): String {
         return JSONObject()
             .put("success", false)
             .put("error", message)

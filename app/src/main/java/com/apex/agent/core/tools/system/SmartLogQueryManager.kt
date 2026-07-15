@@ -24,13 +24,13 @@ import java.util.Locale
 class SmartLogQueryManager(private val context: Context) {
 
     private val executionLogger = ExecutionLogger()
-    private val reasoningHistoryLogger = ReasoningHistoryLogger()
+        private val reasoningHistoryLogger = ReasoningHistoryLogger()
     
     companion object {
         private const val TAG = "SmartLogQuery"
         
         // 日志类型枚举
-        enum class LogType {
+    enum class LogType {
             SYSTEM_LOGCAT,          // Android 系统日志
             APP_LOGGER,             // 应用日志 (AppLogger)
             GEPA_LOGS,              // GEPA 系统日志
@@ -43,7 +43,7 @@ class SmartLogQueryManager(private val context: Context) {
         }
         
         // 日志级别
-        enum class LogLevel {
+    enum class LogLevel {
             VERBOSE, DEBUG, INFO, WARNING, ERROR, FATAL
         }
     }
@@ -119,8 +119,7 @@ class SmartLogQueryManager(private val context: Context) {
                 LogType.TERMINAL_AGENT_LOGS -> queryTerminalAgentLogs(filter)
                 LogType.AUTO_DETECT -> querySystemLogcat(filter) // fallback
             }
-            
-            val queryTime = System.currentTimeMillis() - startTime
+        val queryTime = System.currentTimeMillis() - startTime
             
             result.copy(queryTime = queryTime)
             
@@ -145,7 +144,6 @@ class SmartLogQueryManager(private val context: Context) {
         // 日志类型枚举
     val keyword = filter.keyword?.lowercase() ?: ""
         val tag = filter.tag?.lowercase() ?: ""
-        
         return when {
             // GEPA 相关
             keyword.contains("gepa") || keyword.contains("skill") || 
@@ -183,12 +181,10 @@ class SmartLogQueryManager(private val context: Context) {
         return try {
             // 构建 logcat 命令
     val command = buildLogcatCommand(filter)
-            
-            val process = Runtime.getRuntime().exec(command)
-            val output = process.inputStream.bufferedReader().readText()
-            val exitCode = process.waitFor()
-            
-            if (exitCode != 0) {
+        val process = Runtime.getRuntime().exec(command)
+        val output = process.inputStream.bufferedReader().readText()
+        val exitCode = process.waitFor()
+        if (exitCode != 0) {
                 return LogQueryResult(
                     success = false,
                     logType = LogType.SYSTEM_LOGCAT,
@@ -252,11 +248,10 @@ class SmartLogQueryManager(private val context: Context) {
                 LogLevel.ERROR -> "E"
                 LogLevel.FATAL -> "F"
             }
-            if (filter.tag == null) {
+        if (filter.tag == null) {
                 cmd.add("*:${levelStr}")
             }
         }
-        
         return cmd.toTypedArray()
     }
     
@@ -269,18 +264,16 @@ class SmartLogQueryManager(private val context: Context) {
         
         // logcat 格式: MM-DD HH:MM:SS.mmm PID TID LEVEL TAG : Message
     val logPattern = Regex("(\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+(\\d+)\\s+(\\d+)\\s+([VDIWEF])\\s+([^:]+):\\s+(.*)")
-        
         for (line in lines) {
             val match = logPattern.find(line)
-            if (match != null) {
+        if (match != null) {
                 val (timestamp, pid, tid, level, tag, message) = match.destructured
                 
                 // 应用关键词过滤
     if (filter.keyword != null && !message.contains(filter.keyword, ignoreCase = true)) {
                     continue
                 }
-                
-                val logLevel = when (level) {
+        val logLevel = when (level) {
                     "V" -> LogLevel.VERBOSE
                     "D" -> LogLevel.DEBUG
                     "I" -> LogLevel.INFO
@@ -300,7 +293,6 @@ class SmartLogQueryManager(private val context: Context) {
                 ))
             }
         }
-        
         return entries
     }
     
@@ -310,7 +302,7 @@ class SmartLogQueryManager(private val context: Context) {
     private suspend fun queryAppLogger(filter: LogFilter): LogQueryResult {
         return try {
             val logFile = AppLogger.getLogFile()
-            if (logFile == null || !logFile.exists()) {
+        if (logFile == null || !logFile.exists()) {
                 return LogQueryResult(
                     success = false,
                     logType = LogType.APP_LOGGER,
@@ -324,7 +316,7 @@ class SmartLogQueryManager(private val context: Context) {
             
             // 读取日志文件
     val lines = logFile.readLines()
-            val entries = parseAppLoggerLines(lines, filter)
+        val entries = parseAppLoggerLines(lines, filter)
             
             LogQueryResult(
                 success = true,
@@ -358,10 +350,9 @@ class SmartLogQueryManager(private val context: Context) {
         
         // AppLogger 格式: yyyy-MM-dd HH:mm:ss.SSS L/TAG: message
     val logPattern = Regex("(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+([VDIWEAF])/([^:]+):\\s+(.*)")
-        
         for (line in lines) {
             val match = logPattern.find(line)
-            if (match != null) {
+        if (match != null) {
                 val (timestampStr, level, tag, message) = match.destructured
                 
                 // 应用过滤条件
@@ -396,7 +387,6 @@ class SmartLogQueryManager(private val context: Context) {
                 ))
             }
         }
-        
         return entries
     }
     
@@ -412,8 +402,7 @@ class SmartLogQueryManager(private val context: Context) {
             } else {
                 GepaLogger.getLogs(filter.maxResults, null)
             }
-            
-            val entries = gepaLogs.map { log ->
+        val entries = gepaLogs.map { log ->
                 val level = when (log.level) {
                     GepaLogger.LogLevel.VERBOSE -> LogLevel.VERBOSE
                     GepaLogger.LogLevel.DEBUG -> LogLevel.DEBUG
@@ -467,8 +456,7 @@ class SmartLogQueryManager(private val context: Context) {
                 taskId = filter.taskId,
                 limit = filter.maxResults
             )
-
-            val entries = executionLogs.map { log ->
+        val entries = executionLogs.map { log ->
                 LogEntry(
                     timestamp = log.timestamp,
                     level = if (log.status == "error") LogLevel.ERROR else LogLevel.INFO,
@@ -477,8 +465,7 @@ class SmartLogQueryManager(private val context: Context) {
                     source = "ExecutionLogger"
                 )
             }
-
-            val filtered = if (filter.keyword != null) {
+        val filtered = if (filter.keyword != null) {
                 entries.filter { it.message.contains(filter.keyword, ignoreCase = true) }
             } else entries
 
@@ -514,8 +501,7 @@ class SmartLogQueryManager(private val context: Context) {
                 taskId = filter.taskId,
                 limit = filter.maxResults
             )
-
-            val entries = historyLogs.map { entry ->
+        val entries = historyLogs.map { entry ->
                 LogEntry(
                     timestamp = entry.timestamp,
                     level = LogLevel.DEBUG,
@@ -524,8 +510,7 @@ class SmartLogQueryManager(private val context: Context) {
                     source = "ReasoningHistoryLogger"
                 )
             }
-
-            val filtered = if (filter.keyword != null) {
+        val filtered = if (filter.keyword != null) {
                 entries.filter { it.message.contains(filter.keyword, ignoreCase = true) }
             } else entries
 
@@ -565,7 +550,7 @@ class SmartLogQueryManager(private val context: Context) {
         val queryStart = System.currentTimeMillis()
         return try {
             val logsDir = File(context.filesDir, "workflow_logs")
-            if (!logsDir.exists() || !logsDir.isDirectory) {
+        if (!logsDir.exists() || !logsDir.isDirectory) {
                 return LogQueryResult(
                     success = true,
                     logType = LogType.WORKFLOW_LOGS,
@@ -576,15 +561,13 @@ class SmartLogQueryManager(private val context: Context) {
                     message = "Workflow logs directory does not exist yet"
                 )
             }
-
-            val targetFiles = if (!filter.workflowId.isNullOrBlank()) {
+        val targetFiles = if (!filter.workflowId.isNullOrBlank()) {
                 listOf(File(logsDir, "${filter.workflowId}.log")).filter { it.exists() }
             } else {
                 logsDir.listFiles { f -> f.isFile && f.name.endsWith(".log") }
                     ?.toList() ?: emptyList()
             }
-
-            if (targetFiles.isEmpty()) {
+        if (targetFiles.isEmpty()) {
                 return LogQueryResult(
                     success = true,
                     logType = LogType.WORKFLOW_LOGS,
@@ -595,15 +578,13 @@ class SmartLogQueryManager(private val context: Context) {
                     message = "No workflow log files found"
                 )
             }
-
-            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
-            val altFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
-            val lineRegex = Regex(
+        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
+        val altFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+        val lineRegex = Regex(
                 """(\S+)\s+\[(\w+)\]\s+\[([^\]]+)\](?:\s+\[([^\]]+)\])?\s+(.*)"""
             )
-
-            val rawEntries = mutableListOf<LogEntry>()
-            var totalCount = 0
+        val rawEntries = mutableListOf<LogEntry>()
+        var totalCount = 0
 
             targetFiles.forEach { file ->
                 file.useLines { lines ->
@@ -651,7 +632,7 @@ class SmartLogQueryManager(private val context: Context) {
 
             // 排序 + 截断
     val sorted = rawEntries.sortedBy { it.timestamp }
-            val limited = if (filter.maxResults > 0) sorted.takeLast(filter.maxResults) else sorted
+        val limited = if (filter.maxResults > 0) sorted.takeLast(filter.maxResults) else sorted
 
             LogQueryResult(
                 success = true,
@@ -674,8 +655,7 @@ class SmartLogQueryManager(private val context: Context) {
             )
         }
     }
-
-    private fun parseTimestamp(
+        private fun parseTimestamp(
         tsStr: String,
         vararg formats: SimpleDateFormat
     ): Long {
@@ -688,8 +668,7 @@ class SmartLogQueryManager(private val context: Context) {
         }
         return System.currentTimeMillis()
     }
-
-    private fun parseLogLevel(s: String): LogLevel? = when (s.uppercase()) {
+        private fun parseLogLevel(s: String): LogLevel? = when (s.uppercase()) {
         "V", "VERBOSE" -> LogLevel.VERBOSE
         "D", "DEBUG" -> LogLevel.DEBUG
         "I", "INFO" -> LogLevel.INFO
@@ -711,10 +690,8 @@ class SmartLogQueryManager(private val context: Context) {
                 File("ai_terminal_build.log"),
                 File("full_build.log")
             )
-            
-            val allEntries = mutableListOf<LogEntry>()
-            
-            for (logFile in buildLogFiles) {
+        val allEntries = mutableListOf<LogEntry>()
+        for (logFile in buildLogFiles) {
                 if (logFile.exists()) {
                     val lines = logFile.readLines()
                     
@@ -775,8 +752,7 @@ class SmartLogQueryManager(private val context: Context) {
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             val result = queryLogs(filter)
-            
-            if (!result.success) {
+        if (!result.success) {
                 return@withContext false
             }
             
@@ -793,12 +769,11 @@ class SmartLogQueryManager(private val context: Context) {
                 result.entries.forEach { entry ->
                     val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
                         .format(Date(entry.timestamp))
-                    val level = entry.level.name[0]
+        val level = entry.level.name[0]
                     val tag = entry.tag ?: "Unknown"
                     
                     writer.write("[${timestamp}] ${level}/${tag}: ${entry.message}\n")
-                    
-                    if (entry.metadata.isNotEmpty()) {
+        if (entry.metadata.isNotEmpty()) {
                         entry.metadata.forEach { (key, value) ->
                             writer.write("  ${key}: ${value}\n")
                         }
@@ -837,7 +812,6 @@ class SmartLogQueryManager(private val context: Context) {
             File("build_log.txt"),
             File("ai_terminal_build.log")
         )
-        
         val buildStats = buildLogFiles.filter { it.exists() }.map { file ->
             mapOf(
                 "file" to file.name,

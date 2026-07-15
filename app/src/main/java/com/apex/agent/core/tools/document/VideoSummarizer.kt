@@ -16,9 +16,8 @@ class VideoSummarizer {
             val outputDir = File.createTempFile("video_frames_", "")
             outputDir.delete()
             outputDir.mkdirs()
-
-            val framePattern = File(outputDir, "frame_%03d.png")
-            val process = Runtime.getRuntime().exec(
+        val framePattern = File(outputDir, "frame_%03d.png")
+        val process = Runtime.getRuntime().exec(
                 arrayOf(
                     "ffmpeg",
                     "-i", videoPath,
@@ -70,8 +69,7 @@ class VideoSummarizer {
             val tempFile = File.createTempFile("audio_transcribe_", ".wav")
             tempFile.writeBytes(audioData)
             tempFile.deleteOnExit()
-
-            val result = executeWhisperTranscription(tempFile.absolutePath)
+        val result = executeWhisperTranscription(tempFile.absolutePath)
             tempFile.delete()
             result
         } catch (e: Exception) {
@@ -86,15 +84,13 @@ class VideoSummarizer {
     ): VideoSummaryResult = withContext(Dispatchers.IO) {
         try {
             val duration = getVideoDuration(videoPath)
-            val keyFrames = if (includeFrames) extractKeyFrames(videoPath) else emptyList()
-            val audioData = extractAudio(videoPath)
-            val transcript = if (includeTranscript) transcribeAudio(audioData) else ""
-
-            val summary = if (transcript.isNotEmpty()) {
+        val keyFrames = if (includeFrames) extractKeyFrames(videoPath) else emptyList()
+        val audioData = extractAudio(videoPath)
+        val transcript = if (includeTranscript) transcribeAudio(audioData) else ""
+        val summary = if (transcript.isNotEmpty()) {
                 generateTextSummary(transcript, duration)
             } else ""
-
-            val timestamps = generateTimestamps(keyFrames, duration)
+        val timestamps = generateTimestamps(keyFrames, duration)
 
             VideoSummaryResult(
                 videoPath = videoPath,
@@ -114,36 +110,33 @@ class VideoSummarizer {
             )
         }
     }
-
-    private fun getVideoDuration(videoPath: String): Long {
+        private fun getVideoDuration(videoPath: String): Long {
         return try {
             val process = Runtime.getRuntime().exec(
                 arrayOf("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", videoPath)
             )
-            val reader = process.inputStream.bufferedReader()
-            val durationStr = reader.readLine() ?: "0"
+        val reader = process.inputStream.bufferedReader()
+        val durationStr = reader.readLine() ?: "0"
             reader.close()
             (durationStr.toDoubleOrNull()?.toLong() ?: 0L) * 1000
         } catch (e: Exception) {
             0L
         }
     }
-
-    private fun executeWhisperTranscription(audioPath: String): String {
+        private fun executeWhisperTranscription(audioPath: String): String {
         return try {
             val process = Runtime.getRuntime().exec(
                 arrayOf("whisper", "-f", "json", audioPath)
             )
-            val reader = process.inputStream.bufferedReader()
-            val output = reader.readText()
+        val reader = process.inputStream.bufferedReader()
+        val output = reader.readText()
             reader.close()
             parseWhisperOutput(output)
         } catch (e: Exception) {
             ""
         }
     }
-
-    private fun parseWhisperOutput(jsonOutput: String): String {
+        private fun parseWhisperOutput(jsonOutput: String): String {
         val textBuilder = StringBuilder()
         try {
             val textPattern = "\"text\"\\s*:\\s*\"([^\"]+)\"".toRegex()
@@ -154,10 +147,8 @@ class VideoSummarizer {
         }
         return textBuilder.toString().trim()
     }
-
-    private fun generateTextSummary(transcript: String, durationMs: Long): String {
+        private fun generateTextSummary(transcript: String, durationMs: Long): String {
         if (transcript.isEmpty()) return ""
-
         val durationSec = durationMs / 1000
         val minutes = durationSec / 60
         val seconds = durationSec % 60
@@ -168,13 +159,10 @@ class VideoSummarizer {
         } else {
             transcript
         }
-
         return "视频时长: ${minutes}${seconds}秒。主要内�? ${summary}"
     }
-
-    private fun generateTimestamps(frames: List<ByteArray>, durationMs: Long): List<VideoTimestamp> {
+        private fun generateTimestamps(frames: List<ByteArray>, durationMs: Long): List<VideoTimestamp> {
         if (frames.isEmpty()) return emptyList()
-
         val timestamps = mutableListOf<VideoTimestamp>()
         val interval = durationMs / frames.size
 

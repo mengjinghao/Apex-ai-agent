@@ -52,14 +52,11 @@ object AvatarMoodTypes {
                 builtIn = true
             )
         )
-
-    private val reservedKeys: Set<String> =
+        private val reservedKeys: Set<String> =
         builtInDefinitions.map { it.key }.toSet() +
             AvatarEmotion.values().map { it.name.lowercase() }.toSet()
-
-    private val customKeyRegex = Regex("^[a-z][a-z0-9_\\-]{0,31}$")
-
-    fun normalizeKey(raw: String): String {
+        private val customKeyRegex = Regex("^[a-z][a-z0-9_\\-]{0,31}$")
+        fun normalizeKey(raw: String): String {
         return raw
             .trim()
             .lowercase()
@@ -68,32 +65,28 @@ object AvatarMoodTypes {
             .replace(Regex("_+"), "_")
             .trim('_', '-')
     }
-
-    fun isValidCustomKey(key: String): Boolean {
+        fun isValidCustomKey(key: String): Boolean {
         return customKeyRegex.matches(key) && key !in reservedKeys
     }
-
-    fun findBuiltInDefinition(key: String): AvatarMoodTypeDefinition? {
+        fun findBuiltInDefinition(key: String): AvatarMoodTypeDefinition? {
         val normalized = normalizeKey(key)
         return builtInDefinitions.firstOrNull { it.key == normalized }
     }
-
-    fun builtInFallbackEmotion(key: String): AvatarEmotion? {
+        fun builtInFallbackEmotion(key: String): AvatarEmotion? {
         return findBuiltInDefinition(key)?.fallbackEmotion
     }
-
-    fun sanitizeCustomDefinitions(
+        fun sanitizeCustomDefinitions(
         definitions: List<AvatarCustomMoodDefinition>
     ): List<AvatarCustomMoodDefinition> {
         val normalizedKeys = LinkedHashSet<String>()
         val result = mutableListOf<AvatarCustomMoodDefinition>()
         definitions.forEach { definition ->
             val normalizedKey = normalizeKey(definition.key)
-            val normalizedHint = definition.promptHint.trim()
-            if (!isValidCustomKey(normalizedKey) || normalizedHint.isBlank()) {
+        val normalizedHint = definition.promptHint.trim()
+        if (!isValidCustomKey(normalizedKey) || normalizedHint.isBlank()) {
                 return@forEach
             }
-            if (!normalizedKeys.add(normalizedKey)) {
+        if (!normalizedKeys.add(normalizedKey)) {
                 return@forEach
             }
             result += AvatarCustomMoodDefinition(

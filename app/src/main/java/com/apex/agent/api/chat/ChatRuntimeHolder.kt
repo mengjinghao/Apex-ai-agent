@@ -18,11 +18,11 @@ import kotlinx.coroutines.launch
 class ChatRuntimeHolder private constructor(context: Context) {
     private val appContext = context.applicationContext
     private val runtimeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val cores = ConcurrentHashMap<ChatRuntimeSlot, ChatServiceCore>()
-    private val _activeConversationCount = MutableStateFlow(0)
-    val activeConversationCount: StateFlow<Int> = _activeConversationCount.asStateFlow()
-    private val _currentSessionToolCount = MutableStateFlow(0)
-    val currentSessionToolCount: StateFlow<Int> = _currentSessionToolCount.asStateFlow()
+        private val cores = ConcurrentHashMap<ChatRuntimeSlot, ChatServiceCore>()
+        private val _activeConversationCount = MutableStateFlow(0)
+        val activeConversationCount: StateFlow<Int> = _activeConversationCount.asStateFlow()
+        private val _currentSessionToolCount = MutableStateFlow(0)
+        val currentSessionToolCount: StateFlow<Int> = _currentSessionToolCount.asStateFlow()
 
     init {
         ChatRuntimeSlot.values().forEach { slot ->
@@ -31,8 +31,7 @@ class ChatRuntimeHolder private constructor(context: Context) {
         setupCrossSessionSync()
         observeStats()
     }
-
-    fun getCore(slot: ChatRuntimeSlot): ChatServiceCore {
+        fun getCore(slot: ChatRuntimeSlot): ChatServiceCore {
         return cores.getOrPut(slot) {
             ChatServiceCore(
                 context = appContext,
@@ -44,8 +43,7 @@ class ChatRuntimeHolder private constructor(context: Context) {
             )
         }
     }
-
-    private fun observeStats() {
+        private fun observeStats() {
         val mainCore = getCore(ChatRuntimeSlot.MAIN)
         val floatingCore = getCore(ChatRuntimeSlot.FLOATING)
 
@@ -74,15 +72,13 @@ class ChatRuntimeHolder private constructor(context: Context) {
             }
         }
     }
-
-    private fun countCurrentTurnToolsForActiveChats(
+        private fun countCurrentTurnToolsForActiveChats(
         activeChatIds: Set<String>,
         countMap: Map<String, Int>
     ): Int {
         return activeChatIds.sumOf { chatId -> countMap[chatId] ?: 0 }
     }
-
-    private fun setupCrossSessionSync() {
+        private fun setupCrossSessionSync() {
         registerChatSelectionSync(
             sourceSlot = ChatRuntimeSlot.MAIN,
             targetSlot = ChatRuntimeSlot.FLOATING
@@ -96,8 +92,7 @@ class ChatRuntimeHolder private constructor(context: Context) {
             targetSlot = ChatRuntimeSlot.MAIN
         )
     }
-
-    private fun registerTurnSync(
+        private fun registerTurnSync(
         sourceSlot: ChatRuntimeSlot,
         targetSlot: ChatRuntimeSlot
     ) {
@@ -108,7 +103,7 @@ class ChatRuntimeHolder private constructor(context: Context) {
             if (chatId.isNullOrBlank()) {
                 return@setAdditionalOnTurnComplete
             }
-            if (targetCore.currentChatId.value != chatId) {
+        if (targetCore.currentChatId.value != chatId) {
                 return@setAdditionalOnTurnComplete
             }
 
@@ -131,8 +126,7 @@ class ChatRuntimeHolder private constructor(context: Context) {
             }
         }
     }
-
-    fun syncMainChatSelectionToFloating(chatId: String) {
+        fun syncMainChatSelectionToFloating(chatId: String) {
         if (chatId.isBlank()) return
         syncChatSelection(
             sourceSlot = ChatRuntimeSlot.MAIN,
@@ -140,8 +134,7 @@ class ChatRuntimeHolder private constructor(context: Context) {
             chatId = chatId
         )
     }
-
-    private fun registerChatSelectionSync(
+        private fun registerChatSelectionSync(
         sourceSlot: ChatRuntimeSlot,
         targetSlot: ChatRuntimeSlot
     ) {
@@ -157,8 +150,7 @@ class ChatRuntimeHolder private constructor(context: Context) {
                 }
         }
     }
-
-    private fun syncChatSelection(
+        private fun syncChatSelection(
         sourceSlot: ChatRuntimeSlot,
         targetSlot: ChatRuntimeSlot,
         chatId: String

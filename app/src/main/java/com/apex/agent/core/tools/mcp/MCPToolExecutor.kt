@@ -56,14 +56,13 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
         val contentText =
                 if (contentArray != null && contentArray.length() > 0) {
                     val extractedText = StringBuilder()
-                    for (i in 0 until contentArray.length()) {
+        for (i in 0 until contentArray.length()) {
                         val contentItem = contentArray.optJSONObject(i) ?: continue
                         val contentType = contentItem.optString("type", "text")
-
-                        when (contentType) {
+        when (contentType) {
                             "text" -> {
                                 val text = contentItem.optString("text", "")
-                                val processedText =
+        val processedText =
                                         if (isJsonString(text)) {
                                             try {
                                                 formatJson(text)
@@ -77,10 +76,10 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
                             }
                             "image" -> {
                                 val mimeType = contentItem.optString("mimeType", "image/png")
-                                val data = contentItem.optString("data", "")
-                                if (data.isNotEmpty()) {
+        val data = contentItem.optString("data", "")
+        if (data.isNotEmpty()) {
                                     val imageId = ImagePoolManager.addImageFromBase64(data, mimeType)
-                                    if (imageId != "error") {
+        if (imageId != "error") {
                                         extractedText.append("<link type=\"image\" id=\"${imageId}\"></link>")
                                     } else {
                                         val dataSize = data.length
@@ -92,17 +91,17 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
                             }
                             "resource" -> {
                                 val resource = contentItem.optJSONObject("resource")
-                                if (resource != null) {
+        if (resource != null) {
                                     val uri = resource.optString("uri", "")
-                                    val text = resource.optString("text")
-                                    val mimeType = resource.optString("mimeType", "")
-                                    val blob = resource.optString("blob", "")
-                                    val data = if (blob.isNotEmpty()) blob else resource.optString("data", "")
-                                    val isImage = mimeType.startsWith("image/") && data.isNotEmpty()
-                                    if (isImage) {
+        val text = resource.optString("text")
+        val mimeType = resource.optString("mimeType", "")
+        val blob = resource.optString("blob", "")
+        val data = if (blob.isNotEmpty()) blob else resource.optString("data", "")
+        val isImage = mimeType.startsWith("image/") && data.isNotEmpty()
+        if (isImage) {
                                         val finalMimeType = if (mimeType.isNotEmpty()) mimeType else "image/png"
-                                        val imageId = ImagePoolManager.addImageFromBase64(data, finalMimeType)
-                                        if (imageId != "error") {
+        val imageId = ImagePoolManager.addImageFromBase64(data, finalMimeType)
+        if (imageId != "error") {
                                             extractedText.append("<link type=\"image\" id=\"${imageId}\"></link>")
                                         } else if (text != null && text.isNotEmpty()) {
                                             extractedText.append(text)
@@ -120,8 +119,7 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
                                 extractedText.append("[Unknown content type '${contentType}': ${contentItem}]")
                             }
                         }
-
-                        if (i < contentArray.length() - 1) {
+        if (i < contentArray.length() - 1) {
                             extractedText.append("\n")
                         }
                     }
@@ -135,11 +133,10 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
         val keys = resultData.keys()
         while (keys.hasNext()) {
             val key = keys.next()
-            if (key != "content") {
+        if (key != "content") {
                 metadata.put(key, resultData.get(key))
             }
         }
-
         val metadataText = if (metadata.length() > 0) metadata.toString() else ""
 
         // 组合元数据和内容
@@ -165,7 +162,6 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
         // 检查是否以 JSON 对象或数组的标志开头和结尾
     val isJsonObject = trimmed.startsWith("{") && trimmed.endsWith("}")
         val isJsonArray = trimmed.startsWith("[") && trimmed.endsWith("]")
-        
         if (!isJsonObject && !isJsonArray) return false
         
         // 尝试解析以确�?
@@ -187,7 +183,6 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
      * @param jsonString JSON 字符�?    * @return 紧凑格式，JSON 字符�?    */
     private fun formatJson(jsonString: String): String {
         val trimmed = jsonString.trim()
-        
         return try {
             if (trimmed.startsWith("{")) {
                 // JSON 对象
@@ -218,7 +213,6 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
                     error = "Invalid MCP tool name format, should be 'server_name:tool_name'"
             )
         }
-
         val serverName = toolNameParts[0]
         val actualToolName = toolNameParts.subList(1, toolNameParts.size).joinToString(":")
 
@@ -226,7 +220,7 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
     val mcpClient = mcpManager.getOrCreateClient(serverName)
         if (mcpClient == null) {
             val detailedReason = mcpManager.getLastConnectionFailureReason(serverName)
-            return ToolResult(
+        return ToolResult(
                     toolName = tool.name,
                     success = false,
                     result = StringResultData(""),
@@ -266,8 +260,7 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
                 try {
                     // 直接调用工具，返回完整的响应（包含success, result, error�?
     val response = mcpClient.callToolSync(actualToolName, convertedParameters)
-
-                    if (response == null) {
+        if (response == null) {
                         // 如果响应为空（不应该发生成但做个保护�?                       AppLogger.e(TAG, "MCP工具调用返回空响�?${serverName}:${actualToolName}")
                         ToolResult(
                                 toolName = tool.name,
@@ -277,12 +270,11 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
                         )
                     } else {
                         val success = response.optBoolean("success", false)
-                        
-                        if (success) {
+        if (success) {
                             // 成功：提示result 字段并解析content 数组
     val resultData = response.optJSONObject("result")
-                            val extractedContent = extractContentFromResult(resultData)
-                            val truncatedResult = kotlinx.coroutines.runBlocking { truncateResult(extractedContent) }
+        val extractedContent = extractContentFromResult(resultData)
+        val truncatedResult = kotlinx.coroutines.runBlocking { truncateResult(extractedContent) }
                             AppLogger.d(TAG, "MCP工具调用成功: ${serverName}:${actualToolName}")
                             ToolResult(
                                     toolName = tool.name,
@@ -293,9 +285,9 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
                         } else {
                             // 失败：提示error 字段
     val errorObj = response.optJSONObject("error")
-                            val errorMessage = if (errorObj != null) {
+        val errorMessage = if (errorObj != null) {
                                 val code = errorObj.optInt("code", -1)
-                                val message = errorObj.optString("message", "Unknown error")
+        val message = errorObj.optString("message", "Unknown error")
                                 "[${code}] ${message}"
                             } else {
                                 "Tool call failed but no error message returned"
@@ -320,7 +312,6 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
                             error = errorMessage
                     )
                 }
-
         return result
     }
 
@@ -329,11 +320,10 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
         try {
             val client = mcpManager.getOrCreateClient(serverName) ?: return null
             val tools = kotlinx.coroutines.runBlocking { client.getTools() }
-
-            return tools.find { it.optString("name") == toolName }
+        return tools.find { it.optString("name") == toolName }
         } catch (e: Exception) {
             AppLogger.w(TAG, "获取工具信息失败: ${e.message}")
-            return null
+        return null
         }
     }
 
@@ -359,8 +349,7 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
 
             // 使用 MCPToolParameter.smartConvert 进行智能类型转换
     val convertedValue = MCPToolParameter.smartConvert(value, expectedType)
-
-            if (convertedValue != value) {
+        if (convertedValue != value) {
                 AppLogger.d(
                         TAG,
                         "参数 ${name} �?{value::class.java.simpleName} 转换�?{convertedValue::class.java.simpleName}: ${value} -> ${convertedValue}"
@@ -369,7 +358,6 @@ class MCPToolExecutor(private val context: Context, private val mcpManager: MCPM
 
             result[name] = convertedValue
         }
-
         return result
     }
 
@@ -410,8 +398,9 @@ class MCPManager(private val context: Context) {
     private val clientCache =
             ConcurrentHashMap<String, com.apex.data.mcp.plugins.MCPBridgeClient>()
 
-    // 缓存服务器配�?   private val serverConfigCache = ConcurrentHashMap<String, MCPServerConfig>()
-    private val connectionFailureReasons = ConcurrentHashMap<String, String>()
+    // 缓存服务器配�?
+    private val serverConfigCache = ConcurrentHashMap<String, MCPServerConfig>()
+        private val connectionFailureReasons = ConcurrentHashMap<String, String>()
 
     /**
      * 检查服务器是否已注�?    *
@@ -429,8 +418,7 @@ class MCPManager(private val context: Context) {
     fun getRegisteredServers(): Map<String, MCPServerConfig> {
         return serverConfigCache.toMap()
     }
-
-    fun getLastConnectionFailureReason(serverName: String): String? {
+        fun getLastConnectionFailureReason(serverName: String): String? {
         return connectionFailureReasons[serverName]
     }
 
@@ -447,14 +435,14 @@ class MCPManager(private val context: Context) {
             // 检查客户端连接状�? 只做轻量检查，不要过早断开
     if (cachedClient.isConnected()) {
                 AppLogger.d(TAG, "使用已缓存的客户�?${serverName}")
-                return cachedClient
+        return cachedClient
             } else {
                 // 尝试重新连接现有客户�?               AppLogger.d(TAG, "尝试重新连接缓存的客户端: ${serverName}")
-    val reconnected = kotlinx.coroutines.runBlocking { cachedClient.connect() }
-                if (reconnected) {
+        val reconnected = kotlinx.coroutines.runBlocking { cachedClient.connect() }
+        if (reconnected) {
                     AppLogger.d(TAG, "成功重新连接到服�?${serverName}")
                     connectionFailureReasons.remove(serverName)
-                    return cachedClient
+        return cachedClient
                 }
                 // 客户端不再可用，从缓存移�?               connectionFailureReasons[serverName] =
                         cachedClient.getLastConnectionFailureDetail()
@@ -470,7 +458,7 @@ class MCPManager(private val context: Context) {
                         ?: run {
                             connectionFailureReasons[serverName] =
                                     "Server is not registered in MCPManager. This usually means the runtime registration never happened, was cleared, or the requested server name does not match the registered service name."
-                            return null
+        return null
                         }
 
         try {
@@ -479,13 +467,12 @@ class MCPManager(private val context: Context) {
                     com.apex.data.mcp.plugins.MCPBridgeClient(context, serverName)
 
             // 尝试连接 - 带详细日�?           AppLogger.d(TAG, "正在创建新的连接到服�?${serverName}")
-    val connectResult = kotlinx.coroutines.runBlocking { client.connect() }
-
-            if (connectResult) {
+        val connectResult = kotlinx.coroutines.runBlocking { client.connect() }
+        if (connectResult) {
                 // 连接成功，在会话期间保持此连�?               AppLogger.d(TAG, "成功连接到服�?${serverName}，将在会话期间保持连�?
                 clientCache[serverName] = client
                 connectionFailureReasons.remove(serverName)
-                return client
+        return client
             } else {
                 connectionFailureReasons[serverName] =
                         client.getLastConnectionFailureDetail()
@@ -497,7 +484,6 @@ class MCPManager(private val context: Context) {
                     "Exception while creating bridge client: ${e.message ?: e.javaClass.simpleName}"
             AppLogger.e(TAG, "创建桥接客户端时出错: ${e.message}", e)
         }
-
         return null
     }
 

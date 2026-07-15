@@ -27,24 +27,20 @@ class SecurityManager(private val context: Context) {
         private const val AES_GCM_TAG_LENGTH = 128
         private const val IV_SIZE = 12
     }
-
-    private val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
+        private val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
         load(null)
     }
-
-    private val securePrefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
-    private val auditLog = mutableListOf<AuditEntry>()
+        private val securePrefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        private val auditLog = mutableListOf<AuditEntry>()
 
     init {
         ensureKeyExists()
         loadAuditLog()
     }
-
-    private fun ensureKeyExists() {
+        private fun ensureKeyExists() {
         if (!keyStore.containsAlias(KEYSTORE_ALIAS)) {
             val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
-            val keyGenSpec = KeyGenParameterSpec.Builder(
+        val keyGenSpec = KeyGenParameterSpec.Builder(
                 KEYSTORE_ALIAS,
                 KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
             )
@@ -58,16 +54,13 @@ class SecurityManager(private val context: Context) {
             keyGenerator.generateKey()
         }
     }
-
-    private fun getSecretKey(): SecretKey {
+        private fun getSecretKey(): SecretKey {
         return (keyStore.getEntry(KEYSTORE_ALIAS, null) as KeyStore.SecretKeyEntry).secretKey
     }
-
-    fun encryptAndStoreApiKey(agentId: String, apiKey: String): Boolean {
+        fun encryptAndStoreApiKey(agentId: String, apiKey: String): Boolean {
         return try {
             val encryptedData = encrypt(apiKey)
-
-            val encryptedKeysJson = JSONObject(securePrefs.getString(ENCRYPTED_API_KEYS_KEY, "{}"))
+        val encryptedKeysJson = JSONObject(securePrefs.getString(ENCRYPTED_API_KEYS_KEY, "{}"))
             encryptedKeysJson.put(agentId, encryptedData)
 
             securePrefs.edit()
@@ -83,11 +76,10 @@ class SecurityManager(private val context: Context) {
             false
         }
     }
-
-    fun retrieveApiKey(agentId: String): String? {
+        fun retrieveApiKey(agentId: String): String? {
         return try {
             val encryptedKeysJson = JSONObject(securePrefs.getString(ENCRYPTED_API_KEYS_KEY, "{}"))
-            val encryptedData = encryptedKeysJson.optString(agentId, null) ?: return null
+        val encryptedData = encryptedKeysJson.optString(agentId, null) ?: return null
 
             val decrypted = decrypt(encryptedData)
 
@@ -100,11 +92,10 @@ class SecurityManager(private val context: Context) {
             null
         }
     }
-
-    fun deleteApiKey(agentId: String): Boolean {
+        fun deleteApiKey(agentId: String): Boolean {
         return try {
             val encryptedKeysJson = JSONObject(securePrefs.getString(ENCRYPTED_API_KEYS_KEY, "{}"))
-            if (!encryptedKeysJson.has(agentId)) {
+        if (!encryptedKeysJson.has(agentId)) {
                 return false
             }
 
@@ -123,47 +114,34 @@ class SecurityManager(private val context: Context) {
             false
         }
     }
-
-    fun hasApiKey(agentId: String): Boolean {
+        fun hasApiKey(agentId: String): Boolean {
         val encryptedKeysJson = JSONObject(securePrefs.getString(ENCRYPTED_API_KEYS_KEY, "{}"))
         return encryptedKeysJson.has(agentId)
     }
-
-    private fun encrypt(plainText: String): String {
+        private fun encrypt(plainText: String): String {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
-
         val iv = ByteArray(IV_SIZE)
         SecureRandom().nextBytes(iv)
-
         val encryptedBytes = cipher.doFinal(plainText.toByteArray(StandardCharsets.UTF_8))
-
         val combined = ByteArray(iv.size + encryptedBytes.size)
         System.arraycopy(iv, 0, combined, 0, iv.size)
         System.arraycopy(encryptedBytes, 0, combined, iv.size, encryptedBytes.size)
-
         return Base64.encodeToString(combined, Base64.NO_WRAP)
     }
-
-    private fun decrypt(encryptedData: String): String {
+        private fun decrypt(encryptedData: String): String {
         val combined = Base64.decode(encryptedData, Base64.NO_WRAP)
-
         val iv = ByteArray(IV_SIZE)
         System.arraycopy(combined, 0, iv, 0, IV_SIZE)
-
         val encryptedBytes = ByteArray(combined.size - IV_SIZE)
         System.arraycopy(combined, IV_SIZE, encryptedBytes, 0, encryptedBytes.size)
-
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val spec = GCMParameterSpec(AES_GCM_TAG_LENGTH, iv)
         cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), spec)
-
         val decryptedBytes = cipher.doFinal(encryptedBytes)
-
         return String(decryptedBytes, StandardCharsets.UTF_8)
     }
-
-    fun logAuditEvent(action: AuditAction, targetId: String, details: String) {
+        fun logAuditEvent(action: AuditAction, targetId: String, details: String) {
         val entry = AuditEntry(
             id = "audit_${System.currentTimeMillis()}",
             action = action,
@@ -177,8 +155,7 @@ class SecurityManager(private val context: Context) {
 
         persistAuditLog()
     }
-
-    fun getAuditLog(filter: AuditLogFilter? = null): List<AuditEntry> {
+        fun getAuditLog(filter: AuditLogFilter? = null): List<AuditEntry> {
         var filteredLog = auditLog
 
         filter?.let { f ->
@@ -191,24 +168,21 @@ class SecurityManager(private val context: Context) {
                 matchesAction && matchesTarget && matchesStartTime && matchesEndTime
             }
         }
-
         return filteredLog.sortedByDescending { it.timestamp }
     }
-
-    fun exportAuditLog(): String {
+        fun exportAuditLog(): String {
         val jsonArray = org.json.JSONArray()
         auditLog.forEach { entry ->
             jsonArray.put(entry.toJson())
         }
         return jsonArray.toString(2)
     }
-
-    private fun loadAuditLog() {
+        private fun loadAuditLog() {
         try {
             val auditLogJson = securePrefs.getString(AUDIT_LOG_KEY, null)
-            if (auditLogJson != null) {
+        if (auditLogJson != null) {
                 val jsonArray = org.json.JSONArray(auditLogJson)
-                for (i in 0 until jsonArray.length()) {
+        for (i in 0 until jsonArray.length()) {
                     val entryJson = jsonArray.getJSONObject(i)
                     auditLog.add(AuditEntry.fromJson(entryJson))
                 }
@@ -217,8 +191,7 @@ class SecurityManager(private val context: Context) {
             Log.e(TAG, "Failed to load audit log", e)
         }
     }
-
-    private fun persistAuditLog() {
+        private fun persistAuditLog() {
         try {
             val jsonArray = org.json.JSONArray()
             auditLog.takeLast(1000).forEach { entry ->
@@ -232,8 +205,7 @@ class SecurityManager(private val context: Context) {
             Log.e(TAG, "Failed to persist audit log", e)
         }
     }
-
-    fun clearAuditLog() {
+        fun clearAuditLog() {
         auditLog.clear()
         persistAuditLog()
         logAuditEvent(AuditAction.AUDIT_LOG_CLEARED, "system", "Audit log cleared")

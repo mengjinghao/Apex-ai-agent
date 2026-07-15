@@ -132,7 +132,6 @@ class EnhancedWorkflowTest {
         val exec = EnhancedNode(name = "E", type = EnhancedNodeType.EXECUTE,
             config = EnhancedNodeConfig(actionType = "log"))
         val end = EnhancedNode(name = "End", type = EnhancedNodeType.END)
-
         val wf = EnhancedWorkflow(
             name = "test", nodes = listOf(trigger, exec, end),
             connections = listOf(
@@ -140,7 +139,6 @@ class EnhancedWorkflowTest {
                 EnhancedConnection(exec.id, end.id)
             )
         )
-
         val result = WorkflowValidator().validate(wf)
         assertTrue("有效工作流应该通过校验", result.isValid)
         assertEquals(3, result.topologicalOrder.size)
@@ -161,7 +159,6 @@ class EnhancedWorkflowTest {
                 EnhancedConnection(n3.id, n1.id)
             )
         )
-
         val result = WorkflowValidator().validate(wf)
         assertFalse("环工作流不应通过校验", result.isValid)
         assertTrue("应检测到环错误", result.errors.any { it.toString().contains("环") })
@@ -179,12 +176,10 @@ class EnhancedWorkflowTest {
     fun testWorkflowValidator_danglingEdge() {
         val trigger = EnhancedNode(name = "T", type = EnhancedNodeType.TRIGGER,
             config = EnhancedNodeConfig(triggerConfig = TriggerConfigDef(triggerType = TriggerTypeDef.MANUAL)))
-
         val wf = EnhancedWorkflow(
             name = "dangling", nodes = listOf(trigger),
             connections = listOf(EnhancedConnection(trigger.id, "non_existent_node"))
         )
-
         val result = WorkflowValidator().validate(wf)
         assertFalse("悬空边应导致校验失败", result.isValid)
     }
@@ -206,7 +201,6 @@ class EnhancedWorkflowTest {
             ]
         }
         """.trimIndent()
-
         val result = WorkflowMigrationAdapter().migrateFromJson(oldJson)
         assertTrue("迁移应成功", result.isSuccess)
         val wf = result.workflow!!
@@ -233,7 +227,6 @@ class EnhancedWorkflowTest {
             ]
         }
         """.trimIndent()
-
         val result = WorkflowMigrationAdapter().migrateFromJson(oldJson)
         assertTrue(result.isSuccess)
         val wf = result.workflow!!
@@ -251,13 +244,11 @@ class EnhancedWorkflowTest {
             config = EnhancedNodeConfig(triggerConfig = TriggerConfigDef(triggerType = TriggerTypeDef.MANUAL)))
         val exec = EnhancedNode(name = "E", type = EnhancedNodeType.EXECUTE,
             config = EnhancedNodeConfig(actionType = "log"))
-
         val wf = EnhancedWorkflow(
             name = "round-trip-test",
             nodes = listOf(trigger, exec),
             connections = listOf(EnhancedConnection(trigger.id, exec.id))
         )
-
         val serializer = WorkflowSerializer.getInstance()
         val json = serializer.toJson(wf)
         val result = serializer.fromJson(json)
@@ -274,13 +265,11 @@ class EnhancedWorkflowTest {
             config = EnhancedNodeConfig(triggerConfig = TriggerConfigDef(triggerType = TriggerTypeDef.MANUAL)))
         val exec = EnhancedNode(name = "E", type = EnhancedNodeType.EXECUTE,
             config = EnhancedNodeConfig(actionType = "log"))
-
         val wf = EnhancedWorkflow(
             name = "compact-test",
             nodes = listOf(trigger, exec),
             connections = listOf(EnhancedConnection(trigger.id, exec.id))
         )
-
         val serializer = WorkflowSerializer.getInstance()
         val compact = serializer.toCompact(wf)
         val result = serializer.fromCompact(compact)
@@ -313,7 +302,6 @@ class EnhancedWorkflowTest {
         monitor.onExecutionStarted("t1", "wf1", "测试工作流")
         monitor.onNodeCompleted("t1", "n1", "EXECUTE", "log", true, 100)
         monitor.onExecutionCompleted("t1", "wf1", "测试工作流", true, 500, 1, null)
-
         val snapshot = monitor.currentSnapshot()!!
         assertEquals(1, snapshot.totals.totalExecutions)
         assertEquals(1, snapshot.totals.successCount)
@@ -328,7 +316,6 @@ class EnhancedWorkflowTest {
 
         monitor.onExecutionStarted("t1", "wf1", "测试")
         monitor.onExecutionCompleted("t1", "wf1", "测试", false, 100, 0, "connection timeout")
-
         val snapshot = monitor.currentSnapshot()!!
         assertEquals(1, snapshot.totals.failureCount)
         assertTrue("应记录超时错误", snapshot.errorDistribution.containsKey("TIMEOUT"))
@@ -341,7 +328,6 @@ class EnhancedWorkflowTest {
 
         monitor.onExecutionStarted("t1", "wf1", "测试")
         monitor.onExecutionCompleted("t1", "wf1", "测试", true, 100, 1, null)
-
         val metrics = monitor.exportPrometheusMetrics()
         assertTrue(metrics.contains("workflow_executions_total"))
         assertTrue(metrics.contains("workflow_active_executions"))

@@ -143,7 +143,7 @@ class AchievementSystem {
         private val badges = ConcurrentHashMap<String, Badge>()
         private val challenges = ConcurrentHashMap<String, Challenge>()
         private val metrics = ConcurrentHashMap<String, ConcurrentHashMap<String, Long>>()  // userId -> (metric -> value)
-        init {
+    init {
         registerBuiltinBadges()
         registerBuiltinChallenges()
     }

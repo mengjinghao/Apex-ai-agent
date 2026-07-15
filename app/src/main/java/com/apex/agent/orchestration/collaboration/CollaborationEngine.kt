@@ -37,7 +37,6 @@ class CollaborationEngine @Inject constructor(
             status = TaskState.PENDING.name,
             updatedAt = System.currentTimeMillis()
         )
-
         return when (val result = taskRepository.save(newTask)) {
             is Result.Success -> {
                 eventBus.publish(CollaborationEvent.TaskCreated(taskId))
@@ -53,10 +52,8 @@ class CollaborationEngine @Inject constructor(
             is Result.Success -> taskResult.data
             is Result.Failure -> return Result.Failure(taskResult.error)
         }
-
         val executor = resolveExecutor(task.collaborationMode)
             ?: return Result.Failure(IllegalArgumentException("Unknown collaboration mode: ${task.collaborationMode}"))
-
         return lifecycleManager.start(taskId, executor)
     }
 
@@ -86,12 +83,10 @@ class CollaborationEngine @Inject constructor(
         executor?.onMessageReceived(taskId, message)
         return Result.Success(Unit)
     }
-
-    fun observeEvents(): Flow<CollaborationEvent> {
+        fun observeEvents(): Flow<CollaborationEvent> {
         return eventBus.subscribe(CollaborationEvent::class.java).filterIsInstance<CollaborationEvent>()
     }
-
-    private fun resolveExecutor(mode: String): TaskExecutor? {
+        private fun resolveExecutor(mode: String): TaskExecutor? {
         return when (mode.lowercase()) {
             "supervisor", "supervisor_execution" -> supervisorExecutor
             "serial", "serial_pipeline" -> serialExecutor
@@ -101,8 +96,7 @@ class CollaborationEngine @Inject constructor(
             else -> null
         }
     }
-
-    private suspend fun resolveExecutorForTask(taskId: String): TaskExecutor? {
+        private suspend fun resolveExecutorForTask(taskId: String): TaskExecutor? {
         val taskResult = taskRepository.getById(taskId)
         val task = taskResult as? Result.Success<Task> ?: return null
         return resolveExecutor(task.data.collaborationMode)
@@ -142,8 +136,7 @@ class CollaborationEngine @Inject constructor(
         }
         return taskResult
     }
-
-    private fun generateUniqueId(): String {
+        private fun generateUniqueId(): String {
         return "task_" + System.currentTimeMillis() + "_" + (Math.random() * 1000).toInt()
     }
 }

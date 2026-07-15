@@ -36,9 +36,9 @@ import kotlinx.coroutines.withContext
 fun SettingsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val themeManager = remember { ThemeManager }
-    var dynamicColor by remember { mutableStateOf(themeManager.getCurrentTheme() == ThemeManager.ThemeType.MATERIAL_YOU) }
-    var darkMode by remember { mutableStateOf(themeManager.getCurrentDarkMode() == ThemeManager.DarkMode.DARK) }
+        val themeManager = remember { ThemeManager }
+        var dynamicColor by remember { mutableStateOf(themeManager.getCurrentTheme() == ThemeManager.ThemeType.MATERIAL_YOU) }
+        var darkMode by remember { mutableStateOf(themeManager.getCurrentDarkMode() == ThemeManager.DarkMode.DARK) }
 
     // 权限状态
     val storageGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
@@ -49,18 +49,18 @@ fun SettingsScreen(modifier: Modifier = Modifier, onMenuClick: () -> Unit = {}) 
 
     // Shizuku 状态
     var shizukuAvailable by remember { mutableStateOf(false) }
-    var shizukuVersion by remember { mutableStateOf(0) }
-    var shizukuGranted by remember { mutableStateOf(false) }
+        var shizukuVersion by remember { mutableStateOf(0) }
+        var shizukuGranted by remember { mutableStateOf(false) }
 
     // 套件安装状态
     var suiteInstalled by remember { mutableStateOf(0) }
-    var suiteTotal by remember { mutableStateOf(0) }
+        var suiteTotal by remember { mutableStateOf(0) }
 
     // 热更新
     val hotUpdateManager = remember { HotUpdateManager.getInstance(context) }
-    val updateState by hotUpdateManager.state.collectAsState()
-    var showUpdateDialog by remember { mutableStateOf(false) }
-    var showUpdateSettings by remember { mutableStateOf(false) }
+        val updateState by hotUpdateManager.state.collectAsState()
+        var showUpdateDialog by remember { mutableStateOf(false) }
+        var showUpdateSettings by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {

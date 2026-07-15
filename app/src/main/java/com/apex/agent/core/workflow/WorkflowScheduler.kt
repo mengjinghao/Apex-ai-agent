@@ -42,8 +42,7 @@ class WorkflowScheduler(private val context: Context) {
         // WorkManager data keys
         const val KEY_TRIGGER_NODE_ID = "trigger_node_id"
     }
-
-    private val workManager: WorkManager by lazy { 
+        private val workManager: WorkManager by lazy { 
         WorkManager.getInstance(context.applicationContext)
     }
 
@@ -54,21 +53,18 @@ class WorkflowScheduler(private val context: Context) {
         // Find the trigger node
     val triggerNode = workflow.nodes.filterIsInstance<TriggerNode>()
             .firstOrNull { it.triggerType == "schedule" }
-
         if (triggerNode == null) {
             AppLogger.d(TAG, "No schedule trigger found for workflow: ${workflow.id}")
-            return false
+        return false
         }
-
         val config = triggerNode.triggerConfig
         val scheduleType = config[CONFIG_SCHEDULE_TYPE] ?: return false
         val enabled = config[CONFIG_ENABLED]?.toBoolean() ?: true
 
         if (!enabled) {
             AppLogger.d(TAG, "Schedule is disabled for workflow: ${workflow.id}")
-            return false
+        return false
         }
-
         return when (scheduleType) {
             SCHEDULE_TYPE_INTERVAL -> scheduleIntervalWorkflow(workflow.id, triggerNode.id, config)
             SCHEDULE_TYPE_SPECIFIC_TIME -> scheduleOneTimeWorkflow(workflow.id, triggerNode.id, config)
@@ -89,16 +85,14 @@ class WorkflowScheduler(private val context: Context) {
 
         if (!repeat) {
             AppLogger.w(TAG, "Interval scheduling requires repeat=true")
-            return false
+        return false
         }
 
         // Minimum interval is 15 minutes per WorkManager restrictions
     val intervalMinutes = (intervalMs / 60000).coerceAtLeast(15)
-
         val constraints = Constraints.Builder()
             .setRequiresBatteryNotLow(false)
             .build()
-
         val workRequest = PeriodicWorkRequestBuilder<WorkflowWorker>(
             intervalMinutes, TimeUnit.MINUTES
         )
@@ -133,21 +127,18 @@ class WorkflowScheduler(private val context: Context) {
             parseDateTime(specificTimeStr)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to parse specific_time: ${specificTimeStr}", e)
-            return false
+        return false
         }
-
         val currentTime = System.currentTimeMillis()
         val delay = targetTime - currentTime
 
         if (delay < 0) {
             AppLogger.w(TAG, "Specific time is in the past: ${specificTimeStr}")
-            return false
+        return false
         }
-
         val constraints = Constraints.Builder()
             .setRequiresBatteryNotLow(false)
             .build()
-
         val workRequest = OneTimeWorkRequestBuilder<WorkflowWorker>()
             .setConstraints(constraints)
             .setInputData(
@@ -182,26 +173,23 @@ class WorkflowScheduler(private val context: Context) {
         val nextExecutionTime = calculateNextCronTime(cronExpression)
         if (nextExecutionTime == null) {
             AppLogger.e(TAG, "Failed to calculate next cron time for: ${cronExpression}")
-            return false
+        return false
         }
-
         val currentTime = System.currentTimeMillis()
         val delay = nextExecutionTime - currentTime
 
         if (delay < 0) {
             AppLogger.w(TAG, "Calculated cron time is in the past")
-            return false
+        return false
         }
-
         val constraints = Constraints.Builder()
             .setRequiresBatteryNotLow(false)
             .build()
-
         if (repeat) {
             // For repeated cron, we use the interval between executions
             // This is a simplified approach - ideally we'd reschedule after each execution
     val intervalMs = calculateCronInterval(cronExpression)
-            if (intervalMs != null && intervalMs >= 15 * 60 * 1000) {
+        if (intervalMs != null && intervalMs >= 15 * 60 * 1000) {
                 val intervalMinutes = intervalMs / 60000
                 val workRequest = PeriodicWorkRequestBuilder<WorkflowWorker>(
                     intervalMinutes, TimeUnit.MINUTES
@@ -232,7 +220,6 @@ class WorkflowScheduler(private val context: Context) {
             scheduleOneTimeWorkflowWithDelay(workflowId, triggerNodeId, delay)
             AppLogger.d(TAG, "Scheduled cron workflow (one-time): ${workflowId}, trigger: ${triggerNodeId}, expression: ${cronExpression}")
         }
-
         return true
     }
 
@@ -243,7 +230,6 @@ class WorkflowScheduler(private val context: Context) {
         val constraints = Constraints.Builder()
             .setRequiresBatteryNotLow(false)
             .build()
-
         val workRequest = OneTimeWorkRequestBuilder<WorkflowWorker>()
             .setConstraints(constraints)
             .setInputData(
@@ -301,19 +287,17 @@ class WorkflowScheduler(private val context: Context) {
             "yyyy-MM-dd HH:mm",
             "yyyy-MM-dd"
         )
-
         for (format in formats) {
             try {
                 val sdf = SimpleDateFormat(format, Locale.getDefault())
-                val date = sdf.parse(dateTimeStr)
-                if (date != null) {
+        val date = sdf.parse(dateTimeStr)
+        if (date != null) {
                     return date.time
                 }
             } catch (e: Exception) {
                 // Try next format
             }
         }
-
         throw IllegalArgumentException("Unsupported datetime format: ${dateTimeStr}")
     }
 
@@ -329,9 +313,8 @@ class WorkflowScheduler(private val context: Context) {
         val parts = cronExpression.trim().split("\\s+".toRegex())
         if (parts.size < 5) {
             AppLogger.e(TAG, "Invalid cron expression: ${cronExpression}")
-            return null
+        return null
         }
-
         val minute = parts[0]
         val hour = parts[1]
         val dayOfMonth = parts[2]
@@ -388,7 +371,6 @@ class WorkflowScheduler(private val context: Context) {
     if (calendar.timeInMillis <= System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
-
         return calendar.timeInMillis
     }
 

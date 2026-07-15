@@ -69,7 +69,7 @@ class TriviaFunFactsSystem {
         private val questions = mutableListOf<TriviaQuestion>()
         private val userStats = ConcurrentHashMap<String, UserTriviaStats>()
         private val dailyFact = ConcurrentHashMap<String, FunFact>()  // 日期 -> 每日冷知识
-        init {
+    init {
         loadBuiltinFacts()
         loadBuiltinQuestions()
     }

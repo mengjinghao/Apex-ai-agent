@@ -159,7 +159,7 @@ object PathUtils {
     fun isSubPath(base: String, child: String): Boolean {
         return try {
             val basePath = Paths.get(base).normalize()
-            val childPath = Paths.get(child).normalize()
+        val childPath = Paths.get(child).normalize()
             childPath.startsWith(basePath)
         } catch (_: Exception) {
             false

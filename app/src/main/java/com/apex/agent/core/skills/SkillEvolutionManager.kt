@@ -18,12 +18,11 @@ class SkillEvolutionManager(private val context: Context) {
     companion object {
         private const val TAG = "SkillEvolutionManager"
     }
-    
-    private val skillDir: File
+        private val skillDir: File
     
     init {
         // 初始化技能存储目�?      skillDir = File(ApexAgentPaths.getSkillsDir(context))
-    if (!skillDir.exists()) {
+        if (!skillDir.exists()) {
             skillDir.mkdirs()
             AppLogger.d(TAG, "Created skills directory: ${skillDir.absolutePath}")
         }
@@ -87,7 +86,6 @@ class SkillEvolutionManager(private val context: Context) {
         if (!skillFile.exists()) {
             throw java.io.FileNotFoundException("Skill ${skillId} not found")
         }
-        
         val skillJson = skillFile.readText(Charsets.UTF_8)
         val skill = ApexAgentSkillSpec.fromJson(skillJson) ?: 
             throw java.lang.IllegalArgumentException("Invalid skill file format")
@@ -99,7 +97,6 @@ class SkillEvolutionManager(private val context: Context) {
                 optimizedSteps.add("${optimizedSteps.size + 1}. ${behavior}")
             }
         }
-        
         val optimizedScenarios = skill.applicableScenarios.toMutableList()
         optimizedScenarios.add("优化后的${skill}.taskType场景")
         
@@ -123,8 +120,8 @@ class SkillEvolutionManager(private val context: Context) {
             if (file.name.endsWith(".json")) {
                 try {
                     val json = file.readText(Charsets.UTF_8)
-                    val skill = ApexAgentSkillSpec.fromJson(json)
-                    if (skill != null) {
+        val skill = ApexAgentSkillSpec.fromJson(json)
+        if (skill != null) {
                         skills.add(skill)
                     }
                 } catch (e: Exception) {

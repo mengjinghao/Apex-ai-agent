@@ -38,7 +38,7 @@ class KeyStoreHelper {
                 return position > 0
             } catch (e: Exception) {
                 AppLogger.e(TAG, "注册BouncyCastle提供程序失败: ${e.message}", e)
-                return false
+        return false
             }
         }
 
@@ -61,7 +61,7 @@ class KeyStoreHelper {
                 }
             } catch (e: Exception) {
                 AppLogger.e(TAG, "获取${keyStoreType}密钥库实例失�?${e.message}", e)
-                return null
+        return null
             }
         }
 
@@ -87,7 +87,7 @@ class KeyStoreHelper {
                 }
             } catch (e: Exception) {
                 AppLogger.e(TAG, "${type} 密钥库验证失�?${e.message}")
-                return false
+        return false
             }
         }
 
@@ -116,10 +116,9 @@ class KeyStoreHelper {
 
                 // 从assets复制密钥库文�?               context.assets.open(assetName).use { input ->
     val bytes = input.readBytes()
-
-                    if (bytes.size < 1000) {
+        if (bytes.size < 1000) {
                         AppLogger.e(TAG, "密钥库文件大小异�?${bytes.size}字节")
-                        return null
+        return null
                     }
 
                     keystoreFile.outputStream().use { output ->
@@ -127,15 +126,14 @@ class KeyStoreHelper {
                         output.flush()
                     }
                 }
-
-                return if (keystoreFile.exists() && keystoreFile.length() > 1000) {
+        return if (keystoreFile.exists() && keystoreFile.length() > 1000) {
                     keystoreFile
                 } else {
                     null
                 }
             } catch (e: Exception) {
                 AppLogger.e(TAG, "加载内置密钥库失�?${e.message}", e)
-                return null
+        return null
             }
         }
 
@@ -149,7 +147,7 @@ class KeyStoreHelper {
 
             // 先尝试PKCS12格式
     val pkcs12KeyStoreFile = File(context.filesDir, "pkcs12.keystore")
-            if (pkcs12KeyStoreFile.exists() && pkcs12KeyStoreFile.length() > 1000) {
+        if (pkcs12KeyStoreFile.exists() && pkcs12KeyStoreFile.length() > 1000) {
                 if (validateKeystore(pkcs12KeyStoreFile, "PKCS12", "android")) {
                     return pkcs12KeyStoreFile
                 }
@@ -157,7 +155,7 @@ class KeyStoreHelper {
 
             // 再尝试JKS格式
     val jksKeyStoreFile = File(context.filesDir, "jks.jks")
-            if (jksKeyStoreFile.exists() && jksKeyStoreFile.length() > 1000) {
+        if (jksKeyStoreFile.exists() && jksKeyStoreFile.length() > 1000) {
                 if (validateKeystore(jksKeyStoreFile, "JKS", "android")) {
                     return jksKeyStoreFile
                 }
@@ -165,11 +163,10 @@ class KeyStoreHelper {
 
             // 尝试从assets加载
     val keystoreFiles = listOf(Pair("pkcs12.keystore", "PKCS12"), Pair("jks.jks", "JKS"))
-
-            for ((assetName, type) in keystoreFiles) {
+        for ((assetName, type) in keystoreFiles) {
                 try {
                     val keyStoreFile = loadKeystoreFromAsset(context, assetName, assetName)
-                    if (keyStoreFile != null && validateKeystore(keyStoreFile, type, "android")) {
+        if (keyStoreFile != null && validateKeystore(keyStoreFile, type, "android")) {
                         return keyStoreFile
                     }
                 } catch (e: Exception) {

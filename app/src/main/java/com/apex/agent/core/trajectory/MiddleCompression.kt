@@ -29,7 +29,6 @@ class MiddleCompression(
                 summaryTurn = null
             )
         }
-
         val currentTokens = middleTurns.sumOf { it.tokenCount }
         if (currentTokens <= targetTokens) {
             return CompressionResult(
@@ -58,11 +57,10 @@ class MiddleCompression(
     val finalTurns = buildList {
             addAll(preservedPairs.flatMap { listOf(it.toolCall, it.toolResult).filterNotNull() })
             addAll(compressedNonPairs)
-            if (summaryTurn != null) {
+        if (summaryTurn != null) {
                 add(summaryTurn)
             }
         }
-
         return CompressionResult(
             compressedTurns = finalTurns,
             savedTokens = removedTokens + (summaryTurn?.tokenCount ?: 0),
@@ -79,7 +77,6 @@ class MiddleCompression(
         if (turns.isEmpty() || targetTokensToRemove <= 0) {
             return turns to 0
         }
-
         val totalTokens = turns.sumOf { it.tokenCount }
         if (totalTokens <= targetTokensToRemove) {
             return emptyList() to totalTokens
@@ -93,7 +90,6 @@ class MiddleCompression(
                 else -> 1
             }
         }
-
         var remainingToRemove = targetTokensToRemove
         val keptTurns = mutableListOf<TrajectoryTurn>()
         var removedTokens = 0
@@ -103,15 +99,13 @@ class MiddleCompression(
                 keptTurns.add(turn)
                 continue
             }
-
-            if (turn.tokenCount <= remainingToRemove) {
+        if (turn.tokenCount <= remainingToRemove) {
                 remainingToRemove -= turn.tokenCount
                 removedTokens += turn.tokenCount
             } else {
                 keptTurns.add(turn)
             }
         }
-
         return keptTurns to removedTokens
     }
 
@@ -154,18 +148,16 @@ class DefaultMiddleSummarizer : MiddleSummarizer {
         val turnCount = removedTurns.size
         val toolCallCount = removedTurns.count { it.isToolCall }
         val humanCount = removedTurns.count { it.isHuman }
-
         val summaryContent = buildString {
             append("[中间过程压缩摘要] ")
             append("�?${turnCount} 轮，")
             append("${totalTokens} tokens�?)
             append("${toolCallCount} 次工具调�?)
-            if (humanCount > 0) {
+        if (humanCount > 0) {
                 append("${humanCount} 次用户交�?)
             }
             append("�?)
         }
-
         return TrajectoryTurn(
             index = removedTurns.firstOrNull()?.index ?: 0,
             kind = PromptTurnKind.USER,
@@ -173,8 +165,7 @@ class DefaultMiddleSummarizer : MiddleSummarizer {
             tokenCount = estimateTokenCount(summaryContent)
         )
     }
-
-    private fun estimateTokenCount(text: String): Int {
+        private fun estimateTokenCount(text: String): Int {
         // 粗略估算：中文约 2 字符/token，英文约 4 字符/token
     val chineseChars = text.count { it.codePointRangeContainsPoint(0x4E00.toInt(), it.codePoint) }
         val otherChars = text.length - chineseChars
@@ -216,7 +207,6 @@ class LLMSummarizer(
                 toolName = turn.toolName
             )
         }
-
         val summary = llmSummarize(promptTurns)
         return TrajectoryTurn(
             index = removedTurns.firstOrNull()?.index ?: 0,
@@ -225,8 +215,7 @@ class LLMSummarizer(
             tokenCount = estimateTokenCount(summary)
         )
     }
-
-    private fun estimateTokenCount(text: String): Int {
+        private fun estimateTokenCount(text: String): Int {
         val chineseChars = text.count { it.codePointRangeContainsPoint(0x4E00.toInt(), it.codePoint) }
         val otherChars = text.length - chineseChars
         return (chineseChars / 2 + otherChars / 4).coerceAtLeast(10)

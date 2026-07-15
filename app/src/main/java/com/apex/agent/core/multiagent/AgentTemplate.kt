@@ -26,7 +26,6 @@ data class AgentTemplate(
 
     companion object {
         fun fromJson(json: String): AgentTemplate? = try { Gson().fromJson(json, AgentTemplate::class.java) } catch (e: Exception) { null }
-
         fun getDefaultTemplates(): List<AgentTemplate> {
             return listOf(
                 AgentTemplate(name = "万能助手", description = "通用全能助手，适合各种任务", category = "通用", examplePrompt = "我需要你的帮助来完成一项任�?..", tags = setOf("通用", "助手", "日常"), isDefault = true, icon = "??"),

@@ -65,12 +65,10 @@ abstract class AbstractCollaborationMode<State : AbstractCollaborationMode.Execu
             is Result.Failure -> emptyList()
         }
         val agents = task.agentIds.mapNotNull { id -> allAgents.find { it.id == id } }
-
         if (agents.isEmpty()) {
             emit(Result.Failure(IllegalStateException("No agents available for task ${task.id}")))
             return@flow
         }
-
         val state = createState(task, agents)
         initializeAgentStates(state)
         executions[task.id] = state
@@ -188,7 +186,6 @@ abstract class AbstractCollaborationMode<State : AbstractCollaborationMode.Execu
                 )
             }
         }
-
         val entry = SharedMemoryEntry(
             entryId = UUID.randomUUID().toString(),
             taskId = state.task.id,
@@ -208,7 +205,6 @@ abstract class AbstractCollaborationMode<State : AbstractCollaborationMode.Execu
             lastUpdateTime = System.currentTimeMillis(),
             messages = current.messages + createAgentMessage(senderId, agentId, content)
         )
-
         val entry = SharedMemoryEntry(
             entryId = UUID.randomUUID().toString(),
             taskId = state.task.id,
@@ -280,8 +276,7 @@ abstract class AbstractCollaborationMode<State : AbstractCollaborationMode.Execu
             timestamp = System.currentTimeMillis()
         )
     }
-
-    private suspend fun pullSharedMemories(state: State) {
+        private suspend fun pullSharedMemories(state: State) {
         val taskMemories = sharedMemoryPool.getUnreadMemoriesForAgent(
             state.task.id, "collaboration_mode"
         )
@@ -290,7 +285,7 @@ abstract class AbstractCollaborationMode<State : AbstractCollaborationMode.Execu
                 it.role.equals(entry.agentRole, ignoreCase = true) ||
                 state.agentStates[it.id]?.status == AgentStatus.IDLE
             }
-            if (targetAgent != null) {
+        if (targetAgent != null) {
                 val current = state.agentStates[targetAgent.id] ?: continue
                 state.agentStates[targetAgent.id] = current.copy(
                     messages = current.messages + createAgentMessage(

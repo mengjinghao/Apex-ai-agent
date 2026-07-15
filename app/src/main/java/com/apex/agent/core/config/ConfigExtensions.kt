@@ -19,7 +19,7 @@ fun ConfigManager.getWithDefault(key: ConfigKey, default: String): String {
  */
 fun ConfigManager.watch(key: ConfigKey): Flow<String?> = callbackFlow {
     trySend(getString(key))
-    val listener = ConfigChangeListener { changedKey, _, newValue, _ ->
+        val listener = ConfigChangeListener { changedKey, _, newValue, _ ->
         if (changedKey.path == key.path) {
             trySend(newValue)
         }
@@ -34,7 +34,7 @@ fun ConfigManager.watch(key: ConfigKey): Flow<String?> = callbackFlow {
 inline fun <reified T> ConfigManager.watchTyped(key: ConfigKey): Flow<T?> = callbackFlow {
     val currentValue = convertValue(getString(key), key.type)
     trySend(currentValue as? T)
-    val listener = ConfigChangeListener { changedKey, _, newValue, _ ->
+        val listener = ConfigChangeListener { changedKey, _, newValue, _ ->
         if (changedKey.path == key.path) {
             val converted = convertValue(newValue, key.type)
             trySend(converted as? T)
@@ -49,13 +49,13 @@ inline fun <reified T> ConfigManager.watchTyped(key: ConfigKey): Flow<T?> = call
  */
 fun ConfigManager.toProperties(): Properties {
     val props = Properties()
-    val snapshot = snapshot()
-    for ((key, value) in snapshot) {
+        val snapshot = snapshot()
+        for ((key, value) in snapshot) {
         if (value != null) {
             props.setProperty(key, value)
         }
     }
-    return props
+        return props
 }
 
 /**
@@ -63,7 +63,7 @@ fun ConfigManager.toProperties(): Properties {
  */
 fun ConfigManager.toMap(): Map<String, String> {
     val snapshot = snapshot()
-    return snapshot.filterValues { it != null }.mapValues { it.value!! }
+        return snapshot.filterValues { it != null }.mapValues { it.value!! }
 }
 
 /**
@@ -71,7 +71,7 @@ fun ConfigManager.toMap(): Map<String, String> {
  */
 fun ConfigManager.maskSecrets(): Map<String, String?> {
     val snapshot = snapshot()
-    val knownKeys = ConfigConstants.allKeysByPath
+        val knownKeys = ConfigConstants.allKeysByPath
     return snapshot.mapValues { (path, value) ->
         val configKey = knownKeys[path]
         if (configKey?.secret == true && value != null) {
@@ -88,10 +88,10 @@ fun ConfigManager.maskSecrets(): Map<String, String?> {
 fun ConfigManager.logSummary(): String {
     val sb = StringBuilder()
     sb.appendLine("========== 配置摘要 ==========")
-    val snapshot = snapshot()
-    val knownKeys = ConfigConstants.allKeysByPath
+        val snapshot = snapshot()
+        val knownKeys = ConfigConstants.allKeysByPath
     val sortedPaths = snapshot.keys.sorted()
-    for (path in sortedPaths) {
+        for (path in sortedPaths) {
         val rawValue = snapshot[path]
         val configKey = knownKeys[path]
         val displayValue = if (configKey?.secret == true && rawValue != null) {
@@ -102,7 +102,7 @@ fun ConfigManager.logSummary(): String {
         sb.appendLine("  $path = $displayValue")
     }
     sb.appendLine("==============================")
-    return sb.toString()
+        return sb.toString()
 }
 
 /**
@@ -117,15 +117,15 @@ fun ConfigKey.resolve(context: Map<String, String> = emptyMap()): String {
     resolved = envVarPattern.replace(resolved) { match ->
         System.getenv(match.groupValues[1]) ?: context[match.groupValues[1]] ?: match.value
     }
-    val sysPropPattern = Regex("\\$\\{system\\.([^}]+)}")
+        val sysPropPattern = Regex("\\$\\{system\\.([^}]+)}")
     resolved = sysPropPattern.replace(resolved) { match ->
         System.getProperty(match.groupValues[1]) ?: match.value
     }
-    val ctxPattern = Regex("\\$\\{([^}]+)}")
+        val ctxPattern = Regex("\\$\\{([^}]+)}")
     resolved = ctxPattern.replace(resolved) { match ->
         context[match.groupValues[1]] ?: match.value
     }
-    return resolved
+        return resolved
 }
 
 /**
@@ -167,7 +167,7 @@ fun String.toConfigKey(
         this.endsWith("items", ignoreCase = true) -> ConfigType.LIST
         else -> ConfigType.STRING
     }
-    return ConfigKey(
+        return ConfigKey(
         path = this,
         defaultValue = defaultValue,
         description = description,
@@ -201,9 +201,9 @@ internal fun convertValue(value: String?, type: ConfigType): Any? {
 
 private fun parseDuration(value: String): Long {
     val regex = Regex("^(\\d+)(ns|us|ms|s|m|h|d)$")
-    val match = regex.find(value.trim()) ?: throw IllegalArgumentException("无效的持续时间格式: $value")
-    val amount = match.groupValues[1].toLong()
-    return when (match.groupValues[2]) {
+        val match = regex.find(value.trim()) ?: throw IllegalArgumentException("无效的持续时间格式: $value")
+        val amount = match.groupValues[1].toLong()
+        return when (match.groupValues[2]) {
         "ns" -> amount
         "us" -> amount * 1000
         "ms" -> amount * 1_000_000
@@ -217,9 +217,9 @@ private fun parseDuration(value: String): Long {
 
 private fun parseBytes(value: String): Long {
     val regex = Regex("^(\\d+)(B|KB|MB|GB|TB)$", RegexOption.IGNORE_CASE)
-    val match = regex.find(value.trim()) ?: throw IllegalArgumentException("无效的字节大小格式: $value")
-    val amount = match.groupValues[1].toLong()
-    return when (match.groupValues[2].uppercase()) {
+        val match = regex.find(value.trim()) ?: throw IllegalArgumentException("无效的字节大小格式: $value")
+        val amount = match.groupValues[1].toLong()
+        return when (match.groupValues[2].uppercase()) {
         "B" -> amount
         "KB" -> amount * 1024
         "MB" -> amount * 1024 * 1024
@@ -231,12 +231,12 @@ private fun parseBytes(value: String): Long {
 
 private fun parseMap(value: String): Map<String, String> {
     val result = mutableMapOf<String, String>()
-    val pairs = value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-    for (pair in pairs) {
+        val pairs = value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        for (pair in pairs) {
         val eqIdx = pair.indexOf('=')
         if (eqIdx > 0) {
             result[pair.substring(0, eqIdx).trim()] = pair.substring(eqIdx + 1).trim()
         }
     }
-    return result
+        return result
 }

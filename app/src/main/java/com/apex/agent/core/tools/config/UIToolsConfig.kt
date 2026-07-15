@@ -141,7 +141,6 @@ object UIToolsConfig {
         if (!appsScanned) {
             scanInstalledApps(context)
         }
-        
         return BUILTIN_APP_PACKAGES + dynamicAppPackages
     }
     
@@ -163,13 +162,11 @@ object UIToolsConfig {
                 val installedApps = packageManager.getInstalledApplications(
                     android.content.pm.PackageManager.GET_META_DATA
                 )
-                
-                val newPackages = mutableMapOf<String, String>()
-                
-                for (app in installedApps) {
+        val newPackages = mutableMapOf<String, String>()
+        for (app in installedApps) {
                     try {
                         val appName = packageManager.getApplicationLabel(app).toString()
-                        val packageName = app.packageName
+        val packageName = app.packageName
                         
                         if (appName.isNotBlank() && packageName.isNotBlank()) {
                             // 只添加不在内置列表中的应�?
@@ -181,8 +178,7 @@ object UIToolsConfig {
                         AppLogger.w(TAG, "获取应用信息失败: ${app.packageName}", e)
                     }
                 }
-                
-                if (newPackages.isNotEmpty()) {
+        if (newPackages.isNotEmpty()) {
                     dynamicAppPackages.putAll(newPackages)
                     AppLogger.d(TAG, "扫描完成，新�?${newPackages.size} 个应�?)
                 }
@@ -205,11 +201,10 @@ object UIToolsConfig {
     fun loadAppPackagesFromJson(context: Context, fileName: String = "app_packages.json"): Map<String, String> {
         return try {
             val inputStream = context.assets.open(fileName)
-            val reader = InputStreamReader(inputStream, "UTF-8")
-            val json = reader.use { it.readText() }
-            
-            val gson = Gson()
-            val type = object : TypeToken<Map<String, String>>() {}.type
+        val reader = InputStreamReader(inputStream, "UTF-8")
+        val json = reader.use { it.readText() }
+        val gson = Gson()
+        val type = object : TypeToken<Map<String, String>>() {}.type
             val loadedPackages: Map<String, String> = gson.fromJson(json, type)
             
             AppLogger.d(TAG, "�?${fileName} 加载�?${loadedPackages.size} 个应用包�?)

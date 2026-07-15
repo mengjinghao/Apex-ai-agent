@@ -57,17 +57,17 @@ enum class ExportFormat {
 class TelemetryReporter private constructor() {
 
     private val exportHistory = CopyOnWriteArrayList<ExportResult>()
-    private val pendingExports = mutableListOf<TelemetryReport>()
-    private val config = ExportConfig()
-    private val exportCount = AtomicLong(0)
-    private val successCount = AtomicLong(0)
-    private val failCount = AtomicLong(0)
-    private val totalBytesSent = AtomicLong(0)
-    private val totalEventsExported = AtomicLong(0)
-    private var scope: CoroutineScope? = null
+        private val pendingExports = mutableListOf<TelemetryReport>()
+        private val config = ExportConfig()
+        private val exportCount = AtomicLong(0)
+        private val successCount = AtomicLong(0)
+        private val failCount = AtomicLong(0)
+        private val totalBytesSent = AtomicLong(0)
+        private val totalEventsExported = AtomicLong(0)
+        private var scope: CoroutineScope? = null
     private var exportJob: Job? = null
     private val mutex = Mutex()
-    private val collector: TelemetryCollector = TelemetryCollector.getInstance()
+        private val collector: TelemetryCollector = TelemetryCollector.getInstance()
 
     companion object {
         @Volatile
@@ -78,13 +78,11 @@ class TelemetryReporter private constructor() {
                 instance ?: TelemetryReporter().also { instance = it }
             }
         }
-
         private const val CONNECT_TIMEOUT = 10000
         private const val READ_TIMEOUT = 15000
         private const val MAX_PENDING = 50
     }
-
-    fun initialize(coroutineScope: CoroutineScope) {
+        fun initialize(coroutineScope: CoroutineScope) {
         scope = coroutineScope
         if (config.autoExport && config.endpointUrl.isNotBlank()) {
             exportJob = coroutineScope.launch(Dispatchers.IO) {
@@ -95,8 +93,7 @@ class TelemetryReporter private constructor() {
             }
         }
     }
-
-    fun shutdown() {
+        fun shutdown() {
         exportJob?.cancel()
         flushPending()
     }
@@ -104,29 +101,26 @@ class TelemetryReporter private constructor() {
     suspend fun exportToEndpoint(reports: List<TelemetryReport>): ExportResult {
         val startTime = System.currentTimeMillis()
         val exportId = UUID.randomUUID().toString()
-
         return try {
             val payload = buildPayload(reports)
-            val bytes = payload.toByteArray(Charsets.UTF_8)
-
-            if (bytes.size.toLong() > config.maxExportSizeBytes) {
+        val bytes = payload.toByteArray(Charsets.UTF_8)
+        if (bytes.size.toLong() > config.maxExportSizeBytes) {
                 return ExportResult(exportId, 0, 0, 0, false, "Payload too large: ${bytes.size} > ${config.maxExportSizeBytes}", 413)
             }
-
-            var lastError: String? = null
+        var lastError: String? = null
             var statusCode = 0
 
             for (attempt in 0 until config.retryCount) {
                 try {
                     val url = URL(config.endpointUrl)
-                    val conn = url.openConnection() as HttpURLConnection
+        val conn = url.openConnection() as HttpURLConnection
                     conn.requestMethod = "POST"
                     conn.doOutput = true
                     conn.connectTimeout = CONNECT_TIMEOUT
                     conn.readTimeout = READ_TIMEOUT
                     conn.setRequestProperty("Content-Type", "application/json")
                     conn.setRequestProperty("Content-Length", bytes.size.toString())
-                    if (config.apiKey.isNotBlank()) {
+        if (config.apiKey.isNotBlank()) {
                         conn.setRequestProperty("Authorization", "Bearer ${config.apiKey}")
                     }
                     config.headers.forEach { (k, v) -> conn.setRequestProperty(k, v) }
@@ -134,10 +128,9 @@ class TelemetryReporter private constructor() {
                     conn.outputStream.use { it.write(bytes) }
                     statusCode = conn.responseCode
                     conn.disconnect()
-
-                    if (statusCode in 200..299) {
+        if (statusCode in 200..299) {
                         val eventCount = reports.sumOf { it.events.size }
-                        val result = ExportResult(
+        val result = ExportResult(
                             exportId = exportId,
                             eventsExported = eventCount,
                             bytesSent = bytes.size.toLong(),
@@ -147,10 +140,10 @@ class TelemetryReporter private constructor() {
                             reportsIncluded = reports.size
                         )
                         recordResult(result)
-                        return result
+        return result
                     } else {
                         lastError = "HTTP $statusCode"
-                        if (attempt < config.retryCount - 1) {
+        if (attempt < config.retryCount - 1) {
                             delay(config.retryDelayMs * (attempt + 1))
                         }
                     }
@@ -161,8 +154,7 @@ class TelemetryReporter private constructor() {
                     }
                 }
             }
-
-            val result = ExportResult(exportId, 0, 0, System.currentTimeMillis() - startTime, false, lastError, statusCode)
+        val result = ExportResult(exportId, 0, 0, System.currentTimeMillis() - startTime, false, lastError, statusCode)
             recordResult(result)
             result
         } catch (e: Exception) {
@@ -177,15 +169,14 @@ class TelemetryReporter private constructor() {
         val exportId = UUID.randomUUID().toString()
         val payload = buildPayload(reports)
         val bytes = payload.toByteArray(Charsets.UTF_8)
-
         return try {
             if (destinationPath != null) {
                 val file = File(destinationPath, "telemetry_export_${System.currentTimeMillis()}.json")
                 file.parentFile?.mkdirs()
                 file.writeText(payload)
             }
-            val eventCount = reports.sumOf { it.events.size }
-            val result = ExportResult(
+        val eventCount = reports.sumOf { it.events.size }
+        val result = ExportResult(
                 exportId = exportId,
                 eventsExported = eventCount,
                 bytesSent = bytes.size.toLong(),
@@ -214,23 +205,20 @@ class TelemetryReporter private constructor() {
             exportReports(reports)
         }
     }
-
-    fun queueForExport(report: TelemetryReport) {
+        fun queueForExport(report: TelemetryReport) {
         pendingExports.add(report)
         if (pendingExports.size >= MAX_PENDING) {
             scope?.launch { flushPending() }
         }
     }
-
-    fun flushPending(): ExportResult? {
+        fun flushPending(): ExportResult? {
         if (pendingExports.isEmpty()) return null
         val batch = pendingExports.toList()
         pendingExports.clear()
         val result = runBlocking { exportReports(batch) }
         result
     }
-
-    fun getMetrics(): ExportMetrics {
+        fun getMetrics(): ExportMetrics {
         ExportMetrics(
             totalExports = exportCount.get(),
             successfulExports = successCount.get(),
@@ -242,14 +230,11 @@ class TelemetryReporter private constructor() {
             pendingExports = pendingExports.size
         )
     }
-
-    fun getHistory(limit: Int = 20): List<ExportResult> = exportHistory.takeLast(limit)
-
-    fun updateConfig(newConfig: ExportConfig) {
+        fun getHistory(limit: Int = 20): List<ExportResult> = exportHistory.takeLast(limit)
+        fun updateConfig(newConfig: ExportConfig) {
         newConfig
     }
-
-    fun resetMetrics() {
+        fun resetMetrics() {
         exportCount.set(0)
         successCount.set(0)
         failCount.set(0)
@@ -257,13 +242,11 @@ class TelemetryReporter private constructor() {
         totalEventsExported.set(0)
         exportHistory.clear()
     }
-
-    fun buildPayload(reports: List<TelemetryReport>): String {
+        fun buildPayload(reports: List<TelemetryReport>): String {
         val root = JSONObject()
         root.put("export_id", UUID.randomUUID().toString())
         root.put("exported_at", System.currentTimeMillis())
         root.put("format_version", 1)
-
         val allEvents = JSONArray()
         var totalEvents = 0
         for (report in reports) {
@@ -277,7 +260,7 @@ class TelemetryReporter private constructor() {
                 event.durationMs?.let { obj.put("duration_ms", it) }
                 event.success?.let { obj.put("success", it) }
                 event.errorCode?.let { obj.put("error_code", it) }
-                if (event.metadata.isNotEmpty()) {
+        if (event.metadata.isNotEmpty()) {
                     obj.put("metadata", JSONObject(event.metadata))
                 }
                 event.deviceInfo?.let { di ->
@@ -296,8 +279,7 @@ class TelemetryReporter private constructor() {
         root.put("events", allEvents)
         root.toString(2)
     }
-
-    private fun recordResult(result: ExportResult) {
+        private fun recordResult(result: ExportResult) {
         exportHistory.add(result)
         exportCount.incrementAndGet()
         totalEventsExported.addAndGet(result.eventsExported.toLong())
@@ -305,8 +287,7 @@ class TelemetryReporter private constructor() {
         if (result.success) successCount.incrementAndGet() else failCount.incrementAndGet()
         if (exportHistory.size > 100) exportHistory.removeAt(0)
     }
-
-    private suspend fun autoExportCycle() {
+        private suspend fun autoExportCycle() {
         val reports = collector.getStoredReports()
         if (reports.isEmpty()) return
         if (config.endpointUrl.isNotBlank()) {

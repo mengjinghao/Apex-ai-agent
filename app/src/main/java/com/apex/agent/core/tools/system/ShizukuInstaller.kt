@@ -38,17 +38,17 @@ class ShizukuInstaller {
                 context.assets.open(SHIZUKU_APK_FILENAME).use { inputStream ->
                     FileOutputStream(apkFile).use { outputStream ->
                         val buffer = ByteArray(4 * 1024)
-                        var read: Int
+        var read: Int
                         while (inputStream.read(buffer).also { read = it } != -1) {
                             outputStream.write(buffer, 0, read)
                         }
                         outputStream.flush()
                     }
                 }
-                return apkFile
+        return apkFile
             } catch (e: IOException) {
                 AppLogger.e(TAG, "Failed to extract Shizuku APK from assets", e)
-                return null
+        return null
             }
         }
         
@@ -58,7 +58,7 @@ class ShizukuInstaller {
          */
         fun isApkExtracted(context: Context): Boolean {
             val apkFile = File(context.cacheDir, SHIZUKU_APK_FILENAME)
-            return apkFile.exists() && apkFile.length() > 0
+        return apkFile.exists() && apkFile.length() > 0
         }
         
         /**
@@ -69,15 +69,15 @@ class ShizukuInstaller {
             try {
                 // 记录是安装还是更�?
     val isUpdate = ShizukuAuthorizer.isShizukuInstalled(context)
-                val action = if (isUpdate) context.getString(R.string.shizuku_install_update) else context.getString(R.string.shizuku_install_install)
+        val action = if (isUpdate) context.getString(R.string.shizuku_install_update) else context.getString(R.string.shizuku_install_install)
 
                 AppLogger.d(TAG, "开，{action}内置Shizuku")
 
                 // 从assets目录提取APK
     val apkFile = extractApkFromAssets(context)
-                if (apkFile == null) {
+        if (apkFile == null) {
                     AppLogger.e(TAG, "提取APK失败")
-                    return false
+        return false
                 }
 
                 AppLogger.d(TAG, "APK提取成功: ${apkFile.absolutePath}, 大小: ${apkFile.length()} 字节")
@@ -110,10 +110,10 @@ class ShizukuInstaller {
                 context.startActivity(installIntent)
 
                 // 清除缓存，强制下次检测重新计�?               clearCache()
-    return true
+        return true
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Failed to install bundled Shizuku", e)
-                return false
+        return false
             }
         }
         
@@ -125,7 +125,7 @@ class ShizukuInstaller {
             // 优先使用缓存
     if (cachedBundledVersion != null && !isCacheExpired()) {
                 AppLogger.i(TAG, "从缓存获取内置Shizuku版本: ${cachedBundledVersion}")
-                return cachedBundledVersion!!
+        return cachedBundledVersion!!
             }
 
             try {
@@ -138,7 +138,7 @@ class ShizukuInstaller {
                 return versionInfo
             } catch (e: Exception) {
                 AppLogger.e(TAG, "获取内置Shizuku版本失败", e)
-                val unknown = context.getString(R.string.shizuku_install_unknown)
+        val unknown = context.getString(R.string.shizuku_install_unknown)
                 cachedBundledVersion = unknown
                 return unknown
             }
@@ -152,7 +152,7 @@ class ShizukuInstaller {
             // 优先使用缓存
     if (cachedInstalledVersion != null && !isCacheExpired()) {
                 AppLogger.i(TAG, "从缓存获取已安装Shizuku版本: ${cachedInstalledVersion}")
-                return cachedInstalledVersion
+        return cachedInstalledVersion
             }
             
             try {
@@ -163,7 +163,7 @@ class ShizukuInstaller {
                     @Suppress("DEPRECATION")
                     packageManager.getPackageInfo(SHIZUKU_PACKAGE_NAME, 0)
                 }
-                val versionName = packageInfo.versionName
+        val versionName = packageInfo.versionName
                 AppLogger.i(TAG, "获取已安装Shizuku版本: ${versionName}")
                 cachedInstalledVersion = versionName
                 return versionName
@@ -187,49 +187,47 @@ class ShizukuInstaller {
             // 优先使用缓存
     if (cachedUpdateNeeded != null && !isCacheExpired()) {
                 AppLogger.d(TAG, "从缓存获取Shizuku更新状�?${cachedUpdateNeeded}")
-                return cachedUpdateNeeded!!
+        return cachedUpdateNeeded!!
             }
 
             AppLogger.d(TAG, "开始检查Shizuku是否需要更�?.")
-
-            val installedVersion = getInstalledShizukuVersion(context)
-            if (installedVersion == null) {
+        val installedVersion = getInstalledShizukuVersion(context)
+        if (installedVersion == null) {
                 AppLogger.d(TAG, "未安装Shizuku，不需要更新）
                 cachedUpdateNeeded = false
                 updateCacheTimestamp()
-                return false
+        return false
             }
-
-            val bundledVersion = getBundledShizukuVersion(context)
-            val unknown = context.getString(R.string.shizuku_install_unknown)
-            if (bundledVersion == unknown) {
+        val bundledVersion = getBundledShizukuVersion(context)
+        val unknown = context.getString(R.string.shizuku_install_unknown)
+        if (bundledVersion == unknown) {
                 AppLogger.d(TAG, "无法获取内置版本信息，不建议更新")
                 cachedUpdateNeeded = false
                 updateCacheTimestamp()
-                return false
+        return false
             }
 
             try {
                 // 提取主版本号部分 (例如 "13.5.0.r1234" -> "13.5.0")
-    val installedMainVersion = extractMainVersion(installedVersion)
-                val bundledMainVersion = extractMainVersion(bundledVersion)
+        val installedMainVersion = extractMainVersion(installedVersion)
+        val bundledMainVersion = extractMainVersion(bundledVersion)
                 // 将版本号分割为数字数�?
     val installed = installedMainVersion.split(".").map { it.toIntOrNull() ?: 0 }
-                val bundled = bundledMainVersion.split(".").map { it.toIntOrNull() ?: 0 }
+        val bundled = bundledMainVersion.split(".").map { it.toIntOrNull() ?: 0 }
 
                 // 比较主要版本�?
     for (i in 0 until minOf(installed.size, bundled.size)) {
                     if (bundled[i] > installed[i]) {
-                        AppLogger.d(TAG, "需要更�?内置版本 ${bundled[i]} > 已安装版�?{installed[i]} (位置: ${i})")
+                        AppLogger.d(TAG, "需要更�内置版本 ${bundled[i]} > 已安装版�?{installed[i]} (位置: ${i})")
                         cachedUpdateNeeded = true
                         updateCacheTimestamp()
-                        return true
+        return true
                     }
-                    if (bundled[i] < installed[i]) {
-                        AppLogger.d(TAG, "不需要更�?内置版本 ${bundled[i]} < 已安装版�?{installed[i]} (位置: ${i})")
+        if (bundled[i] < installed[i]) {
+                        AppLogger.d(TAG, "不需要更�内置版本 ${bundled[i]} < 已安装版�?{installed[i]} (位置: ${i})")
                         cachedUpdateNeeded = false
                         updateCacheTimestamp()
-                        return false
+        return false
                     }
                 }
 
@@ -237,12 +235,12 @@ class ShizukuInstaller {
     val updateNeeded = bundled.size > installed.size
                 cachedUpdateNeeded = updateNeeded
                 updateCacheTimestamp()
-                return updateNeeded
+        return updateNeeded
             } catch (e: Exception) {
                 AppLogger.e(TAG, "比较Shizuku版本时出�? e)
                 cachedUpdateNeeded = false
                 updateCacheTimestamp()
-                return false
+        return false
             }
         }
         
@@ -251,11 +249,10 @@ class ShizukuInstaller {
          */
         private fun extractMainVersion(version: String): String {
             // 正则表达式匹配主版本号部�?x.y.z)
-    val mainVersionRegex = """^(\d+)\.(\d+)\.(\d+)""".toRegex()
-            val matchResult = mainVersionRegex.find(version)
-            
-            val result = matchResult?.value ?: version.split("-", ".", "+", " ").take(3).joinToString(".")
-            return result
+        val mainVersionRegex = """^(\d+)\.(\d+)\.(\d+)""".toRegex()
+        val matchResult = mainVersionRegex.find(version)
+        val result = matchResult?.value ?: version.split("-", ".", "+", " ").take(3).joinToString(".")
+        return result
         }
         
         /**

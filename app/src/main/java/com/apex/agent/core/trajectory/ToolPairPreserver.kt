@@ -18,7 +18,6 @@ class ToolPairPreserver(
      */
     fun analyzePairs(turns: List<TrajectoryTurn>): List<ToolCallPair> {
         if (turns.isEmpty()) return emptyList()
-
         val pairs = mutableListOf<ToolCallPair>()
         var i = 0
 
@@ -38,7 +37,6 @@ class ToolPairPreserver(
                 i++
             }
         }
-
         return pairs
     }
 
@@ -49,14 +47,11 @@ class ToolPairPreserver(
         val pairs = analyzePairs(turns)
         val preservedPairs = pairs.take(maxPairsToPreserve)
         val preservedIndices = mutableSetOf<Int>()
-
         for (pair in preservedPairs) {
             preservedIndices.add(pair.toolCall.index)
             pair.toolResult?.let { preservedIndices.add(it.index) }
         }
-
         val nonPairTurns = turns.filter { it.index !in preservedIndices }
-
         return preservedPairs to nonPairTurns
     }
 
@@ -69,7 +64,6 @@ class ToolPairPreserver(
         val pairs = analyzePairs(turns)
         val incompletePairs = pairs.filter { !it.isComplete }
         val orphanedToolResults = findOrphanedToolResults(turns, pairs)
-
         return PairValidationResult(
             totalPairs = pairs.size,
             completePairs = pairs.count { it.isComplete },
@@ -119,7 +113,6 @@ class ToolPairPreserver(
         val pairs = analyzePairs(turns)
         val toolCallTokens = pairs.sumOf { it.toolCall.tokenCount }
         val toolResultTokens = pairs.sumOf { it.toolResult?.tokenCount ?: 0 }
-
         return PairStats(
             totalPairs = pairs.size,
             completePairs = pairs.count { it.isComplete },

@@ -111,25 +111,21 @@ class WorkflowMonitor {
 
     // ============ 内部状态 ============
     private val totalExecutions = AtomicLong(0)
-    private val totalSuccess = AtomicLong(0)
-    private val totalFailure = AtomicLong(0)
-    private val totalCancelled = AtomicLong(0)
-    private val activeCount = AtomicLong(0)
-    private val maxConcurrency = AtomicLong(0)
-
-    private val workflowStats = ConcurrentHashMap<String, WorkflowStatsInternal>()
-    private val nodeTypeStats = ConcurrentHashMap<String, NodeTypeStatsInternal>()
-    private val actionTypeStats = ConcurrentHashMap<String, ActionTypeStatsInternal>()
-    private val errorDistribution = ConcurrentHashMap<String, AtomicLong>()
-    private val recentExecutions = java.util.Collections.synchronizedList(mutableListOf<ExecutionSummary>())
-    private val activeExecutions = ConcurrentHashMap<String, ActiveExecutionInternal>()
-
-    private val latencyHistory = java.util.Collections.synchronizedList(mutableListOf<Long>())
-
-    private val _snapshot = MutableStateFlow<MonitorSnapshot?>(null)
-    val snapshot: StateFlow<MonitorSnapshot?> = _snapshot.asStateFlow()
-
-    private val maxRecentExecutions = 100
+        private val totalSuccess = AtomicLong(0)
+        private val totalFailure = AtomicLong(0)
+        private val totalCancelled = AtomicLong(0)
+        private val activeCount = AtomicLong(0)
+        private val maxConcurrency = AtomicLong(0)
+        private val workflowStats = ConcurrentHashMap<String, WorkflowStatsInternal>()
+        private val nodeTypeStats = ConcurrentHashMap<String, NodeTypeStatsInternal>()
+        private val actionTypeStats = ConcurrentHashMap<String, ActionTypeStatsInternal>()
+        private val errorDistribution = ConcurrentHashMap<String, AtomicLong>()
+        private val recentExecutions = java.util.Collections.synchronizedList(mutableListOf<ExecutionSummary>())
+        private val activeExecutions = ConcurrentHashMap<String, ActiveExecutionInternal>()
+        private val latencyHistory = java.util.Collections.synchronizedList(mutableListOf<Long>())
+        private val _snapshot = MutableStateFlow<MonitorSnapshot?>(null)
+        val snapshot: StateFlow<MonitorSnapshot?> = _snapshot.asStateFlow()
+        private val maxRecentExecutions = 100
     private val maxLatencyHistory = 10_000
 
     // ============ 内部数据结构 ============
@@ -144,8 +140,7 @@ class WorkflowMonitor {
         var minDurationMs: Long = Long.MAX_VALUE,
         var lastExecutionAt: Long? = null
     )
-
-    private data class NodeTypeStatsInternal(
+        private data class NodeTypeStatsInternal(
         val nodeType: String,
         var executionCount: Long = 0,
         var successCount: Long = 0,
@@ -153,15 +148,13 @@ class WorkflowMonitor {
         var totalDurationMs: Long = 0,
         var retryCount: Long = 0
     )
-
-    private data class ActionTypeStatsInternal(
+        private data class ActionTypeStatsInternal(
         val actionType: String,
         var executionCount: Long = 0,
         var successCount: Long = 0,
         var totalDurationMs: Long = 0
     )
-
-    private data class ActiveExecutionInternal(
+        private data class ActiveExecutionInternal(
         val threadId: String,
         val workflowId: String,
         val workflowName: String,
@@ -281,7 +274,6 @@ class WorkflowMonitor {
                 retryCount += retries
             }
         }
-
         if (actionType != null && nodeType == "EXECUTE") {
             actionTypeStats.compute(actionType) { _, v ->
                 (v ?: ActionTypeStatsInternal(actionType)).apply {
@@ -374,7 +366,6 @@ class WorkflowMonitor {
             successRate = if (totalExecutions.get() > 0) totalSuccess.get().toFloat() / totalExecutions.get() else 0f,
             failureRate = if (totalExecutions.get() > 0) totalFailure.get().toFloat() / totalExecutions.get() else 0f
         )
-
         val byWorkflow = workflowStats.mapValues { (_, v) ->
             WorkflowStats(
                 workflowId = v.workflowId,
@@ -388,7 +379,6 @@ class WorkflowMonitor {
                 lastExecutionAt = v.lastExecutionAt
             )
         }
-
         val byNodeType = nodeTypeStats.mapValues { (_, v) ->
             NodeTypeStats(
                 nodeType = v.nodeType,
@@ -399,7 +389,6 @@ class WorkflowMonitor {
                 retryCount = v.retryCount
             )
         }
-
         val byActionType = actionTypeStats.mapValues { (_, v) ->
             ActionTypeStats(
                 actionType = v.actionType,
@@ -409,11 +398,8 @@ class WorkflowMonitor {
                 errorRate = if (v.executionCount > 0) (v.executionCount - v.successCount).toFloat() / v.executionCount else 0f
             )
         }
-
         val errors = errorDistribution.mapValues { it.value.get() }
-
         val recent = recentExecutions.toList().reversed()
-
         val active = activeExecutions.values.map {
             ActiveExecution(
                 threadId = it.threadId,
@@ -424,7 +410,6 @@ class WorkflowMonitor {
                 progress = it.progress
             )
         }
-
         val sortedLatencies = latencyHistory.sorted()
         val performance = PerformanceMetrics(
             throughputPerMinute = computeThroughput(),
@@ -447,22 +432,19 @@ class WorkflowMonitor {
             performance = performance
         )
     }
-
-    private fun computeThroughput(): Float {
+        private fun computeThroughput(): Float {
         if (recentExecutions.isEmpty()) return 0f
         val now = System.currentTimeMillis()
         val oneMinuteAgo = now - 60_000L
         val count = recentExecutions.count { it.completedAt >= oneMinuteAgo }
         return count.toFloat()
     }
-
-    private fun percentile(sorted: List<Long>, p: Int): Long {
+        private fun percentile(sorted: List<Long>, p: Int): Long {
         if (sorted.isEmpty()) return 0
         val idx = (sorted.size * p / 100).coerceIn(0, sorted.size - 1)
         return sorted[idx]
     }
-
-    private fun classifyError(error: String): String {
+        private fun classifyError(error: String): String {
         val e = error.lowercase()
         return when {
             e.contains("timeout") -> "TIMEOUT"

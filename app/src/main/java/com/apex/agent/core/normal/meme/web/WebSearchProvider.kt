@@ -253,7 +253,7 @@ object MemeJsonUtil {
     private fun cleanJsonp(json: String): String {
         val trimmed = json.trim()
         // 如果是 JSONP 格式 callback(...)
-    if (trimmed.contains("(") && trimmed.endsWith(")")) {
+        if (trimmed.contains("(") && trimmed.endsWith(")")) {
             val start = trimmed.indexOf("(")
         val end = trimmed.lastIndexOf(")")
         if (start in 0..end) {

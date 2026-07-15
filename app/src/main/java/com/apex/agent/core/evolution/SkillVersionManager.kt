@@ -8,7 +8,7 @@ import java.io.File
 
 class SkillVersionManager(private val context: Context) {
     private val skillDir = File(context.filesDir, "skills_v2")
-    private val gson = Gson()
+        private val gson = Gson()
 
     init {
         if (!skillDir.exists()) skillDir.mkdirs()
@@ -39,7 +39,6 @@ class SkillVersionManager(private val context: Context) {
         val stable = versions.filter { it.status == LogistraSkillSpecV2.SkillStatus.STABLE }
         val candidates = versions.filter { it.status == LogistraSkillSpecV2.SkillStatus.CANDIDATE }
         val exploration = versions.filter { it.status == LogistraSkillSpecV2.SkillStatus.EXPLORATION }
-
         val rand = Math.random()
         return when {
             rand < 0.7 && stable.isNotEmpty() -> stable.random()
@@ -62,12 +61,10 @@ class SkillVersionManager(private val context: Context) {
         val bestCandidate = allVersions
             .filter { it.status == LogistraSkillSpecV2.SkillStatus.CANDIDATE }
             .maxByOrNull { it.metadata.fitnessHistory.map { h -> h.score }.average() }
-
         if (stable != null && bestCandidate != null) {
             val stableScore = stable.metadata.fitnessHistory.map { it.score }.average()
-            val candidateScore = bestCandidate.metadata.fitnessHistory.map { it.score }.average()
-
-            if (candidateScore > stableScore * 1.1) {
+        val candidateScore = bestCandidate.metadata.fitnessHistory.map { it.score }.average()
+        if (candidateScore > stableScore * 1.1) {
                 AppLogger.d("SkillVersionManager", "Promoting candidate ${bestCandidate.metadata.version} to STABLE for ${skillId}")
                 saveSkillVersion(stable.copy(status = LogistraSkillSpecV2.SkillStatus.DEPRECATED))
                 saveSkillVersion(bestCandidate.copy(status = LogistraSkillSpecV2.SkillStatus.STABLE))

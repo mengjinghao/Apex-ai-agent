@@ -35,7 +35,7 @@ object WaifuMessageProcessor {
         if (content.isBlank()) return emptyList()
 
         // 正则表达式，用于匹配Markdown的图�?[]() 和链接[]()
-    val markdownEntityRegex = Regex("""!?\[[^\]]*?\]\([^)]*?\)""")
+        val markdownEntityRegex = Regex("""!?\[[^\]]*?\]\([^)]*?\)""")
         val entities = mutableListOf<String>()
         val placeholderPrefix = "{MDENTITY:"
         val placeholderSuffix = "}"
@@ -50,24 +50,20 @@ object WaifuMessageProcessor {
         
         // 2. 首先分离表情包和文本内容（在处理占位符版本的内容上）
     val segments = splitIntoSegments(contentWithPlaceholders)
-
         val resultWithPlaceholders = mutableListOf<String>()
-
         for (segment in segments) {
             if (segment.isProtected) {
                 val block = segment.content.trim('\n', '\r')
-                if (block.isNotBlank()) {
+        if (block.isNotBlank()) {
                     resultWithPlaceholders.add(block)
                 }
                 continue
             }
-
-            val contentWithoutThinking = ChatUtils.removeThinkingContent(segment.content)
-            if (contentWithoutThinking.isBlank()) continue
+        val contentWithoutThinking = ChatUtils.removeThinkingContent(segment.content)
+        if (contentWithoutThinking.isBlank()) continue
 
             val separatedContent = separateEmotionAndText(contentWithoutThinking)
-
-            for (item in separatedContent) {
+        for (item in separatedContent) {
                 // 如果这个item是表情包（包含[开头的），直接添加
     if (item.startsWith("![")) {
                     resultWithPlaceholders.add(item)
@@ -76,8 +72,7 @@ object WaifuMessageProcessor {
 
                 // 对于文本内容，进行正常的清理和分句处�?
     val cleanedContent = cleanContentForWaifu(item)
-
-                if (cleanedContent.isBlank()) continue
+        if (cleanedContent.isBlank()) continue
 
                 val splitRegex =
                     Regex("(?<=[。！？~～])|(?<=[.!?]{1}(?![.]))|(?<=\\.{3})|(?<=[…](?![…]))")
@@ -90,8 +85,7 @@ object WaifuMessageProcessor {
                     "WaifuMessageProcessor",
                     "待分割内�?'${cleanedContent}'"
                 )
-
-                var sentences =
+        var sentences =
                     cleanedContent.split(splitRegex)
                         .filter { it.isNotBlank() }
                         .map { it.trim() }
@@ -102,7 +96,7 @@ object WaifuMessageProcessor {
                         sentences
                             .map { sentence ->
                                 // 移除句末标点，但保留省略�?.."
-    if (sentence.endsWith("...")) {
+        if (sentence.endsWith("...")) {
                                     sentence.trim()
                                 } else {
                                     sentence.replace(Regex("[。！�??]+$"), "").trim()
@@ -119,7 +113,7 @@ object WaifuMessageProcessor {
     val mergedResultWithPlaceholders = mutableListOf<String>()
         if (resultWithPlaceholders.isNotEmpty()) {
             mergedResultWithPlaceholders.add(resultWithPlaceholders[0])
-            for (i in 1 until resultWithPlaceholders.size) {
+        for (i in 1 until resultWithPlaceholders.size) {
                 val currentSentence = resultWithPlaceholders[i]
                 val trimmedSentence = currentSentence.trim()
                 // 正则表达式匹配一个或多个结尾标点符号
@@ -149,8 +143,7 @@ object WaifuMessageProcessor {
             while (placeholderRegex.containsMatchIn(currentSentence)) {
                 currentSentence = placeholderRegex.replace(currentSentence) { matchResult ->
                     val index = matchResult.groupValues[1].toInt()
-                    
-                    if (index < entities.size) {
+        if (index < entities.size) {
                         entities[index]
                     } else {
                         matchResult.value // 理论上不会发生成作为安全回退
@@ -172,7 +165,6 @@ object WaifuMessageProcessor {
             ChatUtils.removeThinkingContent(
                 ChatUtils.stripGeminiThoughtSignatureMeta(content)
             )
-
         return sanitizedContent
             // 移除状态标�?           .replace(ChatMarkupRegex.statusTag, "")
             .replace(ChatMarkupRegex.statusSelfClosingTag, "")
@@ -234,15 +226,11 @@ object WaifuMessageProcessor {
         // 添加±20%的随机变�?
     val variance = (adjustedDelay * 0.2).toLong()
         val randomAdjustment = (-variance..variance).random()
-        
         return (adjustedDelay + randomAdjustment).coerceAtLeast(minDelay)
     }
-    
-    private data class Segment(val content: String, val isProtected: Boolean)
-
-    private fun splitIntoSegments(content: String): List<Segment> {
+        private data class Segment(val content: String, val isProtected: Boolean)
+        private fun splitIntoSegments(content: String): List<Segment> {
         if (content.isEmpty()) return listOf(Segment(content = "", isProtected = false))
-
         val segments = mutableListOf<Segment>()
 
         runBlocking {
@@ -252,8 +240,8 @@ object WaifuMessageProcessor {
                     val blockType = blockGroup.tag ?: MarkdownProcessorType.PLAIN_TEXT
                     val sb = StringBuilder()
                     blockGroup.stream.collect { sb.append(it) }
-                    val block = sb.toString()
-                    if (block.isEmpty()) return@collect
+        val block = sb.toString()
+        if (block.isEmpty()) return@collect
 
                     val isProtected =
                         when (blockType) {
@@ -265,7 +253,6 @@ object WaifuMessageProcessor {
                     segments.add(Segment(content = block, isProtected = isProtected))
                 }
         }
-
         return segments
     }
     
@@ -281,7 +268,7 @@ object WaifuMessageProcessor {
         val protectedCount = segments.count { it.isProtected && it.content.isNotBlank() }
         if (protectedCount > 0) {
             val hasUnprotected = segments.any { !it.isProtected && it.content.isNotBlank() }
-            if (protectedCount > 1 || hasUnprotected) return true
+        if (protectedCount > 1 || hasUnprotected) return true
             return false
         }
         
@@ -298,7 +285,7 @@ object WaifuMessageProcessor {
         // 检查内容长度是否足够长（至�?0个字符）
     val isLongEnough = cleanedContent.length >= 10
         
-        // 检查是否包含多个句�?这里不考虑标点符号移除，因为是判断是否需要分�?
+        // 检查是否包含多个句�这里不考虑标点符号移除，因为是判断是否需要分�?
     val sentences = splitMessageBySentences(content, removePunctuation = false) // 这里传入原始内容，因为splitMessageBySentences内部会清�?
     val hasMultipleSentences = sentences.size > 1
         
@@ -308,7 +295,6 @@ object WaifuMessageProcessor {
         // 添加调试日志
         com.apex.util.AppLogger.d("WaifuMessageProcessor", 
             "shouldSplitMessage - 包含表情�?${hasEmotionTags}, 句子�?${sentences.size}, 结果: ${shouldSplit}")
-        
         return shouldSplit
     }
     
@@ -321,12 +307,10 @@ object WaifuMessageProcessor {
         
         // 匹配<emotion>标签的正则表达式
     val emotionRegex = Regex("<emotion>([^<]+)</emotion>")
-        
         return emotionRegex.replace(content) { matchResult ->
             val emotion = matchResult.groupValues[1].trim()
-            val emojiPath = getRandomEmojiPath(emotion)
-            
-            if (emojiPath != null) {
+        val emojiPath = getRandomEmojiPath(emotion)
+        if (emojiPath != null) {
                 // 判断是自定义表情（绝对路径）还是assets表情（相对路径）
     val imageUrl = if (emojiPath.startsWith("/")) {
                     // 自定义表情：使用绝对路径
@@ -349,7 +333,6 @@ object WaifuMessageProcessor {
      * @param content 包含emotion标签的内�?    * @return 包含文本内容和表情包内容的列表，表情包会单独作为一个元�?    */
     fun separateEmotionAndText(content: String): List<String> {
         if (content.isBlank()) return listOf(content)
-        
         val result = mutableListOf<String>()
         val emotionRegex = Regex("<emotion>([^<]+)</emotion>")
         
@@ -360,15 +343,14 @@ object WaifuMessageProcessor {
         for (match in matches) {
             // 添加emotion标签之前的文本（如果有的话）
     val beforeText = content.substring(lastEnd, match.range.first).trim()
-            if (beforeText.isNotEmpty()) {
+        if (beforeText.isNotEmpty()) {
                 result.add(beforeText)
             }
             
             // 处理emotion标签
     val emotion = match.groupValues[1].trim()
-            val emojiPath = getRandomEmojiPath(emotion)
-            
-            if (emojiPath != null) {
+        val emojiPath = getRandomEmojiPath(emotion)
+        if (emojiPath != null) {
                 // 判断是自定义表情（绝对路径）还是assets表情（相对路径）
     val imageUrl = if (emojiPath.startsWith("/")) {
                     // 自定义表情：使用绝对路径
@@ -412,11 +394,11 @@ object WaifuMessageProcessor {
                     runBlocking {
                         val activePrompt = activePromptManager?.getActivePrompt() ?: return@runBlocking null
                         repo.initializeBuiltinEmojis(activePrompt)
-                        val emojis = repo.getEmojisForCategory(activePrompt, emotion).first()
-                        if (emojis.isNotEmpty()) {
+        val emojis = repo.getEmojisForCategory(activePrompt, emotion).first()
+        if (emojis.isNotEmpty()) {
                             val randomEmoji = emojis.random()
-                            val file = repo.getEmojiFile(activePrompt, randomEmoji)
-                            if (file.exists()) {
+        val file = repo.getEmojiFile(activePrompt, randomEmoji)
+        if (file.exists()) {
                                 com.apex.util.AppLogger.d("WaifuMessageProcessor", "使用自定义表�?${file.absolutePath}")
                                 return@runBlocking file.absolutePath
                             }
@@ -440,7 +422,7 @@ object WaifuMessageProcessor {
             
         } catch (e: Exception) {
             com.apex.util.AppLogger.e("WaifuMessageProcessor", "获取表情图片失败: ${emotion}", e)
-            return null
+        return null
         }
     }
 } 

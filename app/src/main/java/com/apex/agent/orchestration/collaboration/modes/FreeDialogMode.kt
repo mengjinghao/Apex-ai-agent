@@ -31,25 +31,21 @@ class FreeDialogMode @Inject constructor(
     override suspend fun runStep(state: DialogState) {
         if (state.messageCount >= state.maxMessages) {
             finishDialog(state)
-            return
+        return
         }
-
         val activeAgents = state.agents.filter { agent ->
             val count = state.agentMessageCount.getOrDefault(agent.id, 0)
             count < 3
         }
-
         if (activeAgents.isEmpty()) {
             finishDialog(state)
-            return
+        return
         }
-
         val speaker = selectNextSpeaker(state, activeAgents)
         if (speaker != null) {
             updateAgentStatus(state, speaker.id, AgentStatus.WORKING)
-
-            val response = generateFreeResponse(speaker)
-            val message = createAgentMessage(speaker.id, "", response)
+        val response = generateFreeResponse(speaker)
+        val message = createAgentMessage(speaker.id, "", response)
 
             state.dialogHistory.add(message)
             state.agentMessageCount[speaker.id] = state.agentMessageCount.getOrDefault(speaker.id, 0) + 1
@@ -59,16 +55,13 @@ class FreeDialogMode @Inject constructor(
             updateAgentStatus(state, speaker.id, AgentStatus.IDLE)
         }
     }
-
-    private fun selectNextSpeaker(state: DialogState, activeAgents: List<Agent>): Agent? {
+        private fun selectNextSpeaker(state: DialogState, activeAgents: List<Agent>): Agent? {
         return activeAgents.minByOrNull { state.agentMessageCount.getOrDefault(it.id, 0) }
     }
-
-    private fun generateFreeResponse(agent: Agent): String {
+        private fun generateFreeResponse(agent: Agent): String {
         return context.getString(R.string.free_dialog_response_format, agent.name)
     }
-
-    private fun finishDialog(state: DialogState) {
+        private fun finishDialog(state: DialogState) {
         state.agents.forEach { agent ->
             updateAgentStatus(state, agent.id, AgentStatus.FINISHED)
         }

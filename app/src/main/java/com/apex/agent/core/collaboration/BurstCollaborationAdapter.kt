@@ -62,8 +62,7 @@ class BurstCollaborationAdapter(
         val frameworkTaskIds: MutableList<String> = mutableListOf(),
         val createdAt: Long = System.currentTimeMillis()
     )
-
-    private val sessions = ConcurrentHashMap<String, SwarmSessionState>()
+        private val sessions = ConcurrentHashMap<String, SwarmSessionState>()
 
     override suspend fun registerSwarmAgents(
         sessionId: String,
@@ -79,7 +78,6 @@ class BurstCollaborationAdapter(
                 agents = emptyList()  // agents 在 registerAgent 后通过 activeAgents 关联
             )
         }.getOrNull()
-
         if (session == null) {
             Log.w(TAG, "registerSwarmAgents: createSession failed, using local-only mode")
             // 降级：仍然返回本地虚拟 agentId，dispatchToAgent 走纯本地路径
@@ -95,7 +93,7 @@ class BurstCollaborationAdapter(
         // 2) 在 framework 侧注册 N 个虚拟 agent
     val agentIds = (1..agentCount.coerceAtLeast(1)).map { idx ->
             val agentId = "swarm-$sessionId-$idx"
-            val agent = AgentCollaborationFramework.Agent(
+        val agent = AgentCollaborationFramework.Agent(
                 id = agentId,
                 name = "Burst Swarm Agent #$idx",
                 role = AgentCollaborationFramework.AgentRole.SPECIALIST,

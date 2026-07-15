@@ -41,22 +41,20 @@ class MultiApiKeyProvider(
             // 筛选出启用的key
     val enabledKeys = config.apiKeyPool.filter { it.isEnabled }
             AppLogger.d("ApiKeyProvider", "Config ${config.name}: Found ${enabledKeys.size} enabled keys out of ${config.apiKeyPool.size} total keys")
-
-            val hasAnyAvailabilityMark = enabledKeys.any { it.availabilityStatus != ApiKeyAvailabilityStatus.UNTESTED }
-            val candidateKeys =
+        val hasAnyAvailabilityMark = enabledKeys.any { it.availabilityStatus != ApiKeyAvailabilityStatus.UNTESTED }
+        val candidateKeys =
                 if (hasAnyAvailabilityMark) {
                     enabledKeys.filter { it.availabilityStatus == ApiKeyAvailabilityStatus.AVAILABLE }
                 } else {
                     enabledKeys
                 }
-            
-            if (candidateKeys.isEmpty()) {
+        if (candidateKeys.isEmpty()) {
                 if (hasAnyAvailabilityMark) {
                     AppLogger.e(
                         "ApiKeyProvider",
                         "Config ${config.name}: No AVAILABLE keys found in pool. Please test keys or clear availability marks."
                     )
-                    throw IllegalStateException(
+        throw IllegalStateException(
                         "No AVAILABLE API keys in pool for ${config.name}. Please test keys or clear availability marks."
                     )
                 }
@@ -66,7 +64,7 @@ class MultiApiKeyProvider(
                     return@withLock config.apiKey
                 }
                 AppLogger.e("ApiKeyProvider", "Config ${config.name}: API key pool is empty or all keys are disabled, and no fallback API key is available")
-                throw IllegalStateException("API key pool for ${config.name} is empty or all keys are disabled, and no fallback API key is available.")
+        throw IllegalStateException("API key pool for ${config.name} is empty or all keys are disabled, and no fallback API key is available.")
             }
 
             // 从当前索引开始寻找下一个有效的key

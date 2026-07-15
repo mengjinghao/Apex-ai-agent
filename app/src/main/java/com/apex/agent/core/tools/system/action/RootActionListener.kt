@@ -23,9 +23,8 @@ class RootActionListener(private val context: Context) : ActionListener {
         private const val TAG = "RootActionListener"
         private var rootAvailable: Boolean? = null
     }
-
-    private val isListening = AtomicBoolean(false)
-    private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
+        private val isListening = AtomicBoolean(false)
+        private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
     private var monitoringJob: Job? = null
     private var process: ShellProcess? = null
     private val shellExecutor by lazy { 
@@ -43,7 +42,7 @@ class RootActionListener(private val context: Context) : ActionListener {
             rootAvailable = hasRoot
             
             AppLogger.d(TAG, "Root权限检�?${hasRoot}")
-            return hasRoot
+        return hasRoot
         } catch (e: Exception) {
             AppLogger.e(TAG, "检查Root权限时出�? e)
             rootAvailable = false
@@ -54,14 +53,14 @@ class RootActionListener(private val context: Context) : ActionListener {
     override suspend fun hasPermission(): ActionListener.PermissionStatus {
         try {
             val available = isAvailable()
-            return if (available) {
+        return if (available) {
                 ActionListener.PermissionStatus.granted()
             } else {
                 ActionListener.PermissionStatus.denied(context.getString(R.string.root_no_root_permission))
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "检查Root权限状态时出错", e)
-            return ActionListener.PermissionStatus.denied(context.getString(R.string.root_check_permission_error, e.message ?: ""))
+        return ActionListener.PermissionStatus.denied(context.getString(R.string.root_check_permission_error, e.message ?: ""))
         }
     }
 
@@ -70,8 +69,7 @@ class RootActionListener(private val context: Context) : ActionListener {
             // Root权限无法通过代码请求，只能提示用�?
     val hasRoot = isAvailable()
             onResult(hasRoot)
-
-            if (!hasRoot) {
+        if (!hasRoot) {
                 AppLogger.d(TAG, "无法以编程方式请求Root权限")
             }
         } catch (e: Exception) {
@@ -90,11 +88,10 @@ class RootActionListener(private val context: Context) : ActionListener {
         withContext(Dispatchers.IO) {
             try {
                 val permStatus = hasPermission()
-                if (!permStatus.granted) {
+        if (!permStatus.granted) {
                     return@withContext ActionListener.ListeningResult.failure(permStatus.reason)
                 }
-
-                if (isListening.get()) {
+        if (isListening.get()) {
                     return@withContext ActionListener.ListeningResult.failure(context.getString(R.string.admin_already_listening))
                 }
 
@@ -154,8 +151,7 @@ class RootActionListener(private val context: Context) : ActionListener {
                 process?.stderr?.onEach { line ->
                     AppLogger.w(TAG, "getevent stderr: ${line}")
                 }?.launchIn(this)
-                
-                val exitCode = process?.waitFor()
+        val exitCode = process?.waitFor()
                 AppLogger.d(TAG, "getevent process exited with code ${exitCode}")
 
             } catch (e: Exception) {
@@ -177,11 +173,10 @@ class RootActionListener(private val context: Context) : ActionListener {
         process?.destroy()
         process = null
     }
-
-    private fun parseTouchEvent(line: String) {
+        private fun parseTouchEvent(line: String) {
         // A simple parser for `getevent -l` output.
         // This is a placeholder and needs to be implemented properly.AppLogger.v(TAG, "Input event: ${line}")
-    if (line.contains("ABS_MT_POSITION_X")) {
+        if (line.contains("ABS_MT_POSITION_X")) {
             // Handle X coordinate
         } else if (line.contains("ABS_MT_POSITION_Y")) {
             // Handle Y coordinate
@@ -207,7 +202,7 @@ class RootActionListener(private val context: Context) : ActionListener {
         try {
             // 使用Root权限直接读取输入设备
     val result = shellExecutor.executeCommand("cat /proc/bus/input/devices | grep -E 'Name|Handlers'")
-            if (result.success) {
+        if (result.success) {
                 parseInputDeviceInfo(result.stdout)
             }
             
@@ -229,7 +224,7 @@ class RootActionListener(private val context: Context) : ActionListener {
         try {
             // 读取最新的内核消息
     val result = shellExecutor.executeCommand("dmesg -T | tail -5")
-            if (result.success && result.stdout.isNotEmpty()) {
+        if (result.success && result.stdout.isNotEmpty()) {
                 parseKernelEvents(result.stdout)
             }
         } catch (e: Exception) {
@@ -243,7 +238,7 @@ class RootActionListener(private val context: Context) : ActionListener {
         try {
             // 获取当前运行的应用进�?
     val result = shellExecutor.executeCommand("ps -A | grep -v '\\[' | tail -10")
-            if (result.success) {
+        if (result.success) {
                 parseProcessEvents(result.stdout)
             }
         } catch (e: Exception) {

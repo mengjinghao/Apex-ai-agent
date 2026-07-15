@@ -26,11 +26,9 @@ class PerformanceMonitor private constructor(
     private val context: Context
 ) {
     private val _metrics = MutableStateFlow(PerformanceMetrics())
-    val metrics: StateFlow<PerformanceMetrics> = _metrics.asStateFlow()
-
-    private val memoryBean: MemoryMXBean = ManagementFactory.getMemoryMXBean()
-
-    private var sttStartTime: Long = 0L
+        val metrics: StateFlow<PerformanceMetrics> = _metrics.asStateFlow()
+        private val memoryBean: MemoryMXBean = ManagementFactory.getMemoryMXBean()
+        private var sttStartTime: Long = 0L
     private var ttsStartTime: Long = 0L
     private var totalStartTime: Long = 0L
 
@@ -46,12 +44,10 @@ class PerformanceMonitor private constructor(
             }
         }
     }
-
-    fun startSttTimer() {
+        fun startSttTimer() {
         sttStartTime = System.currentTimeMillis()
     }
-
-    fun endSttTimer() {
+        fun endSttTimer() {
         if (sttStartTime > 0) {
             val elapsed = System.currentTimeMillis() - sttStartTime
             _metrics.value = _metrics.value.copy(
@@ -61,12 +57,10 @@ class PerformanceMonitor private constructor(
             sttStartTime = 0L
         }
     }
-
-    fun startTtsTimer() {
+        fun startTtsTimer() {
         ttsStartTime = System.currentTimeMillis()
     }
-
-    fun endTtsTimer() {
+        fun endTtsTimer() {
         if (ttsStartTime > 0) {
             val elapsed = System.currentTimeMillis() - ttsStartTime
             _metrics.value = _metrics.value.copy(
@@ -76,12 +70,10 @@ class PerformanceMonitor private constructor(
             ttsStartTime = 0L
         }
     }
-
-    fun startTotalTimer() {
+        fun startTotalTimer() {
         totalStartTime = System.currentTimeMillis()
     }
-
-    fun endTotalTimer() {
+        fun endTotalTimer() {
         if (totalStartTime > 0) {
             val elapsed = System.currentTimeMillis() - totalStartTime
             _metrics.value = _metrics.value.copy(
@@ -91,13 +83,12 @@ class PerformanceMonitor private constructor(
             totalStartTime = 0L
         }
     }
-
-    fun updateMetrics() {
+        fun updateMetrics() {
         try {
             val memoryUsage = memoryBean.heapMemoryUsage
             val usedMemoryMb = memoryUsage.used / (1024 * 1024).toFloat()
-            val maxMemoryMb = memoryUsage.max / (1024 * 1024).toFloat()
-            val memoryPercent = if (maxMemoryMb > 0) usedMemoryMb / maxMemoryMb else 0f
+        val maxMemoryMb = memoryUsage.max / (1024 * 1024).toFloat()
+        val memoryPercent = if (maxMemoryMb > 0) usedMemoryMb / maxMemoryMb else 0f
 
             val threadCount = Thread.activeCount()
 
@@ -111,12 +102,10 @@ class PerformanceMonitor private constructor(
             AppLogger.e(TAG, "Failed to update metrics", e)
         }
     }
-
-    fun getMemoryInfo(): MemoryInfo {
+        fun getMemoryInfo(): MemoryInfo {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
-
         val totalMemMb = memoryInfo.totalMem / (1024 * 1024).toFloat()
         val availMemMb = memoryInfo.availMem / (1024 * 1024).toFloat()
         val usedMemMb = totalMemMb - availMemMb
@@ -130,15 +119,12 @@ class PerformanceMonitor private constructor(
             isLowMemory = memoryInfo.lowMemory
         )
     }
-
-    fun isPerformanceModeEnabled(): Boolean {
+        fun isPerformanceModeEnabled(): Boolean {
         return _metrics.value.sttLatencyMs < 500f && _metrics.value.ttsLatencyMs < 300f
     }
-
-    fun getHealthStatus(): HealthStatus {
+        fun getHealthStatus(): HealthStatus {
         val metrics = _metrics.value
         val memoryInfo = getMemoryInfo()
-
         return when {
             metrics.sttLatencyMs > 1000f || metrics.ttsLatencyMs > 800f -> HealthStatus.CRITICAL
             metrics.sttLatencyMs > 500f || metrics.ttsLatencyMs > 300f -> HealthStatus.DEGRADED
@@ -146,8 +132,7 @@ class PerformanceMonitor private constructor(
             else -> HealthStatus.HEALTHY
         }
     }
-
-    fun resetMetrics() {
+        fun resetMetrics() {
         _metrics.value = PerformanceMetrics()
     }
 }
@@ -177,8 +162,7 @@ object PerformanceUtils {
             else -> "很慢"
         }
     }
-
-    fun formatMemory(mb: Float): String {
+        fun formatMemory(mb: Float): String {
         return when {
             mb < 50 -> "极低"
             mb < 100 -> "较低"
@@ -187,30 +171,24 @@ object PerformanceUtils {
             else -> "很高"
         }
     }
-
-    fun getDeviceMemoryClass(context: Context): Int {
+        fun getDeviceMemoryClass(context: Context): Int {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         return activityManager.memoryClass
     }
-
-    fun isLowMemoryDevice(context: Context): Boolean {
+        fun isLowMemoryDevice(context: Context): Boolean {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         return activityManager.isLowRamDevice
     }
-
-    fun getAvailableProcessors(): Int {
+        fun getAvailableProcessors(): Int {
         return Runtime.getRuntime().availableProcessors()
     }
-
-    fun getMaxMemoryMb(): Float {
+        fun getMaxMemoryMb(): Float {
         return Runtime.getRuntime().maxMemory() / (1024 * 1024).toFloat()
     }
-
-    fun getTotalMemoryMb(): Float {
+        fun getTotalMemoryMb(): Float {
         return Runtime.getRuntime().totalMemory() / (1024 * 1024).toFloat()
     }
-
-    fun getFreeMemoryMb(): Float {
+        fun getFreeMemoryMb(): Float {
         return Runtime.getRuntime().freeMemory() / (1024 * 1024).toFloat()
     }
 }

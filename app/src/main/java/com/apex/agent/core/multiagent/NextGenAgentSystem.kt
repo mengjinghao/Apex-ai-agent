@@ -23,20 +23,17 @@ class NextGenAgentSystem private constructor(private val context: Context) {
             }
         }
     }
-
-    val superAgentManager: SuperAgentSystemManager = SuperAgentSystemManager.getInstance(context)
-    val pluginSystem: PluginSystem = PluginSystem(context)
-    val multiChannel: MultiChannelSystem = MultiChannelSystem(context)
-    val modelOrchestrator: MultiModelOrchestrator = MultiModelOrchestrator(context)
-    val reasoningFramework: ReasoningFramework = ReasoningFramework(context)
-    val intentClassifier: IntentClassifier = IntentClassifier(context)
-    val reflectionSystem: ReflectionSystem = ReflectionSystem(context)
-    val fileToolSystem: FileToolSystem = FileToolSystem(context)
-    val taskPlanner: TaskPlanner = TaskPlanner(context)
-
-    private val scope = CoroutineScope(Dispatchers.IO)
-
-    fun initialize() {
+        val superAgentManager: SuperAgentSystemManager = SuperAgentSystemManager.getInstance(context)
+        val pluginSystem: PluginSystem = PluginSystem(context)
+        val multiChannel: MultiChannelSystem = MultiChannelSystem(context)
+        val modelOrchestrator: MultiModelOrchestrator = MultiModelOrchestrator(context)
+        val reasoningFramework: ReasoningFramework = ReasoningFramework(context)
+        val intentClassifier: IntentClassifier = IntentClassifier(context)
+        val reflectionSystem: ReflectionSystem = ReflectionSystem(context)
+        val fileToolSystem: FileToolSystem = FileToolSystem(context)
+        val taskPlanner: TaskPlanner = TaskPlanner(context)
+        private val scope = CoroutineScope(Dispatchers.IO)
+        fun initialize() {
         pluginSystem.registerPlugin(WebSearchPlugin())
         pluginSystem.registerPlugin(CodeGeneratorPlugin())
 
@@ -57,8 +54,7 @@ class NextGenAgentSystem private constructor(private val context: Context) {
             superAgentManager.initialize()
         }
     }
-
-    fun processIntelligentRequest(
+        fun processIntelligentRequest(
         userInput: String,
         reasoningType: ReasoningType? = null,
         onProgress: (String) -> Unit,
@@ -66,8 +62,7 @@ class NextGenAgentSystem private constructor(private val context: Context) {
     ) {
         scope.launch {
             onProgress("?? 分析请求...")
-
-            val reasoningResult = if (reasoningType != null) {
+        val reasoningResult = if (reasoningType != null) {
                 when (reasoningType) {
                     ReasoningType.CHAIN_OF_THOUGHT -> reasoningFramework.chainOfThoughtReasoning(userInput)
                     ReasoningType.TREE_OF_THOUGHT -> reasoningFramework.treeOfThoughtReasoning(userInput)
@@ -79,36 +74,31 @@ class NextGenAgentSystem private constructor(private val context: Context) {
             }
 
             onProgress("?? 完成推理...")
-
-            val skills = pluginSystem.getAvailableSkills()
-            val relevantSkill = skills.firstOrNull { skill ->
+        val skills = pluginSystem.getAvailableSkills()
+        val relevantSkill = skills.firstOrNull { skill ->
                 userInput.contains(skill.name, ignoreCase = true)
             }
-
-            if (relevantSkill != null) {
+        if (relevantSkill != null) {
                 onProgress("?? 调用 ${relevantSkill.name}...")
-                val input = PluginInput(userInput)
+        val input = PluginInput(userInput)
                 pluginSystem.executeSkill(relevantSkill.id, input)
             }
-
-            val request = ModelRequest(
+        val request = ModelRequest(
                 query = userInput,
                 context = reasoningResult.steps.map { it.thought }
             )
-            val bestProvider = modelOrchestrator.selectOptimalProvider(request)
+        val bestProvider = modelOrchestrator.selectOptimalProvider(request)
             modelOrchestrator.switchProvider(bestProvider)
 
             onProgress("? 使用 ${bestProvider.displayName} 处理...")
-
-            val response = "? 处理完成！\n\n" + reasoningFramework.formatReasoning(reasoningResult)
+        val response = "? 处理完成！\n\n" + reasoningFramework.formatReasoning(reasoningResult)
 
             multiChannel.sendMessage(response)
 
             onComplete(response)
         }
     }
-
-    fun getCapabilities(): Map<String, Any> {
+        fun getCapabilities(): Map<String, Any> {
         return mapOf(
             "plugins" to pluginSystem.getAllPlugins().map { it.name },
             "skills" to pluginSystem.getAvailableSkills().map { it.name },

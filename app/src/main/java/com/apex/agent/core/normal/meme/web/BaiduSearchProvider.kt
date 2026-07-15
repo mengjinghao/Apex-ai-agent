@@ -18,7 +18,7 @@ class BaiduSearchProvider : WebSearchProvider {
         override val supported = true
 
     private val suggestUrl = "https://suggestion.baidu.com/su"
-    private val searchUrl = "https://www.baidu.com/s"
+        private val searchUrl = "https://www.baidu.com/s"
     override suspend fun searchMeme(query: String, num: Int): MemeSearchResult {
         val start = System.currentTimeMillis()
         val enhancedQuery = enhanceQuery(query)
@@ -43,7 +43,7 @@ class BaiduSearchProvider : WebSearchProvider {
         override suspend fun suggest(query: String): List<String> {
         return withContext(Dispatchers.IO) {
             // 百度建议 API 返回 JSONP: window.baidu.sug({...})
-    val url = "$suggestUrl?wd=${MemeHttpUtil.encode(query)}&action=opensearch&ie=UTF-8"
+        val url = "$suggestUrl?wd=${MemeHttpUtil.encode(query)}&action=opensearch&ie=UTF-8"
         val result = MemeHttpUtil.get(url)
         if (!result.success) return@withContext emptyList()
 

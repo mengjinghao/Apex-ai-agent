@@ -73,8 +73,8 @@ data class RedactedText(
 class SensitiveDataRedactor {
 
     private val patterns = mutableListOf<SensitivePattern>()
-    private val sessionMappings = ConcurrentHashMap<String, MutableMap<String, String>>()
-    private val counter = java.util.concurrent.atomic.AtomicInteger(0)
+        private val sessionMappings = ConcurrentHashMap<String, MutableMap<String, String>>()
+        private val counter = java.util.concurrent.atomic.AtomicInteger(0)
 
     init {
         registerBuiltinPatterns()
@@ -100,7 +100,7 @@ class SensitiveDataRedactor {
 
         for (pattern in patterns) {
             val matches = pattern.regex.findAll(result).toList()
-            if (matches.isEmpty()) continue
+        if (matches.isEmpty()) continue
 
             detectedTypes.add(pattern.type)
 
@@ -117,7 +117,6 @@ class SensitiveDataRedactor {
     if (sessionId != null && mappings.isNotEmpty()) {
             sessionMappings.computeIfAbsent(sessionId) { mutableMapOf() }.putAll(mappings)
         }
-
         return RedactedText(
             original = text,
             redacted = result,
@@ -198,7 +197,7 @@ class SensitiveDataRedactor {
             SensitiveType.EMAIL -> {
                 // 邮箱部分脱敏：保留首字符和域名
     val parts = original.split("@")
-                if (parts.size == 2) {
+        if (parts.size == 2) {
                     val masked = parts[0].firstOrNull() + "***@" + parts[1]
                     return masked
                 }
@@ -212,7 +211,7 @@ class SensitiveDataRedactor {
             SensitiveType.IP_ADDRESS -> {
                 // IP 部分脱敏：保留前两段
     val parts = original.split(".")
-                if (parts.size == 4) "${parts[0]}.${parts[1]}.***.***"
+        if (parts.size == 4) "${parts[0]}.${parts[1]}.***.***"
                 else "[IP_$seq]"
             }
             SensitiveType.CREDIT_CARD -> {
@@ -222,8 +221,7 @@ class SensitiveDataRedactor {
             }
         }
     }
-
-    private fun registerBuiltinPatterns() {
+        private fun registerBuiltinPatterns() {
         // API Key 模式（通用）
         patterns.add(SensitivePattern(
             type = SensitiveType.API_KEY,

@@ -57,8 +57,7 @@ class VectorIndexManager<T : Item<Id, FloatArray>, Id : Any>(
     fun findNearest(query: FloatArray, k: Int): List<T> {
         return index?.findNearest(query, k)?.map { it.item() } ?: emptyList()
     }
-
-    fun size(): Int = index?.size() ?: 0
+        fun size(): Int = index?.size() ?: 0
 
     fun maxItemCount(): Int = index?.maxItemCount ?: maxElements
 

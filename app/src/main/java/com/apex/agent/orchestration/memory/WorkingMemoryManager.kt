@@ -19,15 +19,13 @@ import kotlin.concurrent.withLock
 class WorkingMemoryManager {
 
     private val sessions = ConcurrentHashMap<String, CollaborationSessionMemory>()
-    private val sessionLocks = ConcurrentHashMap<String, ReentrantLock>()
-    private val sharedPool: SharedMemoryPool = SharedMemoryPool.getInstance()
-    private val artifactCounter = ConcurrentHashMap<String, Int>()
-
-    private fun getLock(sessionId: String): ReentrantLock {
+        private val sessionLocks = ConcurrentHashMap<String, ReentrantLock>()
+        private val sharedPool: SharedMemoryPool = SharedMemoryPool.getInstance()
+        private val artifactCounter = ConcurrentHashMap<String, Int>()
+        private fun getLock(sessionId: String): ReentrantLock {
         return sessionLocks.computeIfAbsent(sessionId) { ReentrantLock() }
     }
-
-    fun createSession(sessionId: String, taskId: String, taskDescription: String): CollaborationSessionMemory {
+        fun createSession(sessionId: String, taskId: String, taskDescription: String): CollaborationSessionMemory {
         val session = CollaborationSessionMemory(
             sessionId = sessionId,
             taskId = taskId,
@@ -36,15 +34,13 @@ class WorkingMemoryManager {
         sessions[sessionId] = session
         return session
     }
-
-    fun getSession(sessionId: String): CollaborationSessionMemory? = sessions[sessionId]
+        fun getSession(sessionId: String): CollaborationSessionMemory? = sessions[sessionId]
 
     fun removeSession(sessionId: String) {
         sessions.remove(sessionId)
         sessionLocks.remove(sessionId)
     }
-
-    fun registerAgent(sessionId: String, agentId: String, agentName: String, role: String) {
+        fun registerAgent(sessionId: String, agentId: String, agentName: String, role: String) {
         val session = sessions[sessionId] ?: return
         getLock(sessionId).withLock {
             if (session.agents.none { it.agentId == agentId }) {
@@ -53,8 +49,7 @@ class WorkingMemoryManager {
             session.lastUpdated = System.currentTimeMillis()
         }
     }
-
-    fun updateAgentStatus(sessionId: String, agentId: String, status: String) {
+        fun updateAgentStatus(sessionId: String, agentId: String, status: String) {
         val session = sessions[sessionId] ?: return
         getLock(sessionId).withLock {
             val agent = session.agents.find { it.agentId == agentId } ?: return@withLock
@@ -63,15 +58,14 @@ class WorkingMemoryManager {
             session.lastUpdated = System.currentTimeMillis()
         }
     }
-
-    fun recordMessage(sessionId: String, fromAgent: String, toAgent: String?) {
+        fun recordMessage(sessionId: String, fromAgent: String, toAgent: String?) {
         val session = sessions[sessionId] ?: return
         getLock(sessionId).withLock {
             session.agents.find { it.agentId == fromAgent }?.let {
                 it.messagesSent++
                 it.lastActive = System.currentTimeMillis()
             }
-            if (toAgent != null) {
+        if (toAgent != null) {
                 session.agents.find { it.agentId == toAgent }?.let {
                     it.messagesReceived++
                 }
@@ -79,8 +73,7 @@ class WorkingMemoryManager {
             session.lastUpdated = System.currentTimeMillis()
         }
     }
-
-    fun addDecision(
+        fun addDecision(
         sessionId: String,
         description: String,
         proposedBy: String,
@@ -102,8 +95,7 @@ class WorkingMemoryManager {
             decision
         }
     }
-
-    fun voteOnDecision(sessionId: String, decisionId: String, agentId: String, agree: Boolean) {
+        fun voteOnDecision(sessionId: String, decisionId: String, agentId: String, agree: Boolean) {
         val session = sessions[sessionId] ?: return
         getLock(sessionId).withLock {
             val decision = session.decisions.find { it.id == decisionId } ?: return@withLock
@@ -116,22 +108,19 @@ class WorkingMemoryManager {
             session.lastUpdated = System.currentTimeMillis()
         }
     }
-
-    fun resolveDecision(sessionId: String, decisionId: String, accepted: Boolean) {
+        fun resolveDecision(sessionId: String, decisionId: String, accepted: Boolean) {
         val session = sessions[sessionId] ?: return
         getLock(sessionId).withLock {
             val decision = session.decisions.find { it.id == decisionId } ?: return@withLock
             decision.status = if (accepted) DecisionStatus.AGREED else DecisionStatus.REJECTED
             decision.resolvedAt = System.currentTimeMillis()
             session.lastUpdated = System.currentTimeMillis()
-
-            if (accepted) {
+        if (accepted) {
                 addContextInternal(session, "decision_$decisionId", decision.description, decision.proposedBy, ContextCategory.FACT)
             }
         }
     }
-
-    fun addContext(
+        fun addContext(
         sessionId: String,
         key: String,
         value: String,
@@ -144,8 +133,7 @@ class WorkingMemoryManager {
             addContextInternal(session, key, value, source, category, confidence)
         }
     }
-
-    private fun addContextInternal(
+        private fun addContextInternal(
         session: CollaborationSessionMemory,
         key: String,
         value: String,
@@ -165,8 +153,7 @@ class WorkingMemoryManager {
         }
         session.lastUpdated = System.currentTimeMillis()
     }
-
-    fun getContext(sessionId: String, category: ContextCategory? = null): List<ContextItem> {
+        fun getContext(sessionId: String, category: ContextCategory? = null): List<ContextItem> {
         val session = sessions[sessionId] ?: return emptyList()
         return if (category != null) {
             session.sharedContext.filter { it.category == category && it.isActive }
@@ -174,12 +161,10 @@ class WorkingMemoryManager {
             session.sharedContext.filter { it.isActive }
         }
     }
-
-    fun getContextByKey(sessionId: String, key: String): ContextItem? {
+        fun getContextByKey(sessionId: String, key: String): ContextItem? {
         return sessions[sessionId]?.sharedContext?.find { it.key == key && it.isActive }
     }
-
-    fun recordProgress(sessionId: String, agentId: String, taskRef: String, status: String, progress: Float, note: String = "") {
+        fun recordProgress(sessionId: String, agentId: String, taskRef: String, status: String, progress: Float, note: String = "") {
         val session = sessions[sessionId] ?: return
         getLock(sessionId).withLock {
             session.taskProgress.add(ProgressUpdate(agentId = agentId, taskRef = taskRef, status = status, progress = progress, note = note))
@@ -187,12 +172,10 @@ class WorkingMemoryManager {
             session.lastUpdated = System.currentTimeMillis()
         }
     }
-
-    fun getProgress(sessionId: String): List<ProgressUpdate> {
+        fun getProgress(sessionId: String): List<ProgressUpdate> {
         return sessions[sessionId]?.taskProgress?.toList() ?: emptyList()
     }
-
-    fun addArtifact(
+        fun addArtifact(
         sessionId: String,
         name: String,
         type: ArtifactType,
@@ -216,18 +199,15 @@ class WorkingMemoryManager {
             artifact
         }
     }
-
-    fun getArtifactsByType(sessionId: String, type: ArtifactType): List<Artifact> {
+        fun getArtifactsByType(sessionId: String, type: ArtifactType): List<Artifact> {
         return sessions[sessionId]?.artifacts?.filter { it.type == type } ?: emptyList()
     }
-
-    fun generateSummary(sessionId: String): String {
+        fun generateSummary(sessionId: String): String {
         val session = sessions[sessionId] ?: return ""
         val sb = StringBuilder()
         sb.appendLine("Session: ${session.sessionId}")
         sb.appendLine("Task: ${session.taskDescription}")
         sb.appendLine()
-
         val snapshot = getLock(sessionId).withLock {
             session.copy(
                 agents = session.agents.toList(),
@@ -268,23 +248,19 @@ class WorkingMemoryManager {
         }
         return sb.toString()
     }
-
-    fun getActiveSessions(): List<CollaborationSessionMemory> = sessions.values.toList()
-
-    fun clearSession(sessionId: String) {
+        fun getActiveSessions(): List<CollaborationSessionMemory> = sessions.values.toList()
+        fun clearSession(sessionId: String) {
         sessions.remove(sessionId)
         sessionLocks.remove(sessionId)
         artifactCounter.remove(sessionId)
         sharedPool.clearTaskMemory(sessionId)
     }
-
-    fun clearAll() {
+        fun clearAll() {
         sessions.clear()
         sessionLocks.clear()
         artifactCounter.clear()
     }
-
-    private fun writeSharedMemoryEntry(session: CollaborationSessionMemory, content: String, agentRole: String, priority: Int) {
+        private fun writeSharedMemoryEntry(session: CollaborationSessionMemory, content: String, agentRole: String, priority: Int) {
         sharedPool.writeSharedMemory(
             SharedMemoryEntry(
                 entryId = "mem_${System.currentTimeMillis()}_${session.sharedContext.size}",

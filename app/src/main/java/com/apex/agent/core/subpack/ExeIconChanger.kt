@@ -19,7 +19,7 @@ class ExeIconChanger(private val context: Context) {
         
         // PE文件头部常量
     private const val PE_SIGNATURE = 0x4550 // "PE"
-    private const val PE_OPTIONAL_HEADER_OFFSET = 24
+        private const val PE_OPTIONAL_HEADER_OFFSET = 24
         private const val RESOURCE_TABLE_ENTRY = 2 // 资源表在数据目录中的索引
     private const val DOS_SIGNATURE = 0x5A4D // "MZ"
     }
@@ -142,7 +142,7 @@ class ExeIconChanger(private val context: Context) {
                 // 检查PE签名
         raf.seek(peOffset.toLong())
         if (raf.readInt() != 0x00004550) { // "PE\0\0"
-    return false
+        return false
                 }
         return true
             }

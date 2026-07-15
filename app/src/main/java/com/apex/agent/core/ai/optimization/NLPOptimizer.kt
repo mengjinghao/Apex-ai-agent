@@ -99,16 +99,16 @@ enum class TokenizerType { WHITESPACE, CHARACTER, REGEX, SMART }
 class NLPOptimizer private constructor() {
 
     private val intentCache = ConcurrentHashMap<String, IntentCacheEntry>()
-    private val languageProfiles = loadLanguageProfiles()
-    private val parseTimeHistory = CopyOnWriteArrayList<Long>()
-    private val intentCounts = ConcurrentHashMap<String, AtomicInteger>()
-    private val totalParsed = AtomicLong(0)
-    private val totalTokens = AtomicLong(0)
-    private val cacheHits = AtomicLong(0)
-    private val cacheMisses = AtomicLong(0)
-    private val config = NLPTuningConfig()
-    private val mutex = Mutex()
-    private var scope: CoroutineScope? = null
+        private val languageProfiles = loadLanguageProfiles()
+        private val parseTimeHistory = CopyOnWriteArrayList<Long>()
+        private val intentCounts = ConcurrentHashMap<String, AtomicInteger>()
+        private val totalParsed = AtomicLong(0)
+        private val totalTokens = AtomicLong(0)
+        private val cacheHits = AtomicLong(0)
+        private val cacheMisses = AtomicLong(0)
+        private val config = NLPTuningConfig()
+        private val mutex = Mutex()
+        private var scope: CoroutineScope? = null
 
     companion object {
         @Volatile
@@ -119,7 +119,6 @@ class NLPOptimizer private constructor() {
                 instance ?: NLPOptimizer().also { instance = it }
             }
         }
-
         private val COMMON_ENGLISH_WORDS = setOf(
             "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
             "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
@@ -127,7 +126,6 @@ class NLPOptimizer private constructor() {
             "or", "an", "will", "my", "one", "all", "would", "there", "their", "what",
             "so", "up", "out", "if", "about", "who", "get", "which", "go", "me"
         )
-
         private val COMMAND_PATTERNS = listOf(
             Regex("^(?:open|launch|start|run)\\s+(.+)$", RegexOption.IGNORE_CASE),
             Regex("^(?:close|stop|exit|quit)\\s+(.+)$", RegexOption.IGNORE_CASE),
@@ -146,14 +144,12 @@ class NLPOptimizer private constructor() {
             Regex("^(?:connect|disconnect|link|pair)\\s+(.+)$", RegexOption.IGNORE_CASE),
             Regex("^(?:schedule|remind|notify|alert)\\s+(.+)$", RegexOption.IGNORE_CASE)
         )
-
         private val PARAMETER_PATTERN = Regex("--?(\\w+)[=:]?[\"']?([^\"'\\s]+)?[\"']?", RegexOption.IGNORE_CASE)
         private val FILE_PATH_PATTERN = Regex("(?:/[\\w.\\-]+)+|(?:[A-Za-z]:\\[\\w.\\-]+(?:\\[\\w.\\-]+)*)", RegexOption.IGNORE_CASE)
         private val URL_PATTERN = Regex("https?://[\\w.-]+(:\\d+)?(/[\\w./%-]*)?", RegexOption.IGNORE_CASE)
-    private val EMAIL_PATTERN = Regex("[\\w.-]+@[\\w.-]+\\.\\w{2,}", RegexOption.IGNORE_CASE)
+        private val EMAIL_PATTERN = Regex("[\\w.-]+@[\\w.-]+\\.\\w{2,}", RegexOption.IGNORE_CASE)
     }
-
-    private fun loadLanguageProfiles(): List<LanguageProfile> = listOf(
+        private fun loadLanguageProfiles(): List<LanguageProfile> = listOf(
         LanguageProfile("en", 0.95, COMMON_ENGLISH_WORDS,
             setOf("a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of", "by", "with", "from", "is", "are", "was", "were", "be", "been", "have", "has", "had", "do", "does", "did", "will", "would", "can", "could", "shall", "should", "may", "might", "i", "you", "he", "she", "it", "we", "they", "this", "that", "these", "those", "my", "your", "his", "her", "its", "our", "their"),
             Regex("[a-zA-Z]+")),
@@ -164,8 +160,7 @@ class NLPOptimizer private constructor() {
             setOf("der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einer", "eines", "und", "oder", "aber", "mit", "von", "zu", "auf", "an"),
             Regex("[a-zA-Zäöüß]+"))
     )
-
-    fun initialize(coroutineScope: CoroutineScope) {
+        fun initialize(coroutineScope: CoroutineScope) {
         scope = coroutineScope
         if (config.enableCache) {
             coroutineScope.launch(Dispatchers.Default) {
@@ -176,22 +171,19 @@ class NLPOptimizer private constructor() {
             }
         }
     }
-
-    fun parseIntent(text: String): ParsedIntent {
+        fun parseIntent(text: String): ParsedIntent {
         val startTime = System.nanoTime()
         totalParsed.incrementAndGet()
-
         if (config.enableCache) {
             val normalized = normalizeText(text)
-            val cached = intentCache[normalized]
+        val cached = intentCache[normalized]
             if (cached != null && (System.currentTimeMillis() - cached.timestampMs) < config.cacheTtlMs) {
                 cacheHits.incrementAndGet()
                 intentCounts.computeIfAbsent(cached.intent.action) { AtomicInteger(0) }.incrementAndGet()
-                return cached.intent
+        return cached.intent
             }
             cacheMisses.incrementAndGet()
         }
-
         val tokens = tokenize(text)
         totalTokens.addAndGet(tokens.size.toLong())
         val language = detectLanguage(text, tokens)
@@ -202,14 +194,13 @@ class NLPOptimizer private constructor() {
         var bestTarget: String? = null
         var bestConfidence = 0.0
         val alternatives = mutableListOf<String>()
-
         for (pattern in COMMAND_PATTERNS) {
             val match = pattern.find(text.trim())
-            if (match != null) {
+        if (match != null) {
                 val action = match.groupValues[0].lowercase().substringBefore(" ")
-                val target = match.groupValues[1]
+        val target = match.groupValues[1]
                 val confidence = calculateConfidence(action, target, tokens)
-                if (confidence > bestConfidence) {
+        if (confidence > bestConfidence) {
                     if (bestConfidence > 0) alternatives.add(bestAction)
                     bestAction = action
                     bestTarget = target
@@ -219,7 +210,6 @@ class NLPOptimizer private constructor() {
                 }
             }
         }
-
         val parameters = parseParameters(text)
         val intent = ParsedIntent(
             action = bestAction,
@@ -232,7 +222,6 @@ class NLPOptimizer private constructor() {
             entities = entities,
             alternativeActions = alternatives
         )
-
         if (config.enableCache) {
             val normalized = normalizeText(text)
             intentCache[normalized] = IntentCacheEntry(
@@ -240,11 +229,10 @@ class NLPOptimizer private constructor() {
                 intent = intent,
                 timestampMs = System.currentTimeMillis()
             )
-            if (intentCache.size > config.cacheMaxSize) {
+        if (intentCache.size > config.cacheMaxSize) {
                 evictStaleCacheEntries()
             }
         }
-
         val elapsed = (System.nanoTime() - startTime) / 1_000_000
         parseTimeHistory.add(elapsed)
         if (parseTimeHistory.size > 1000) parseTimeHistory.removeAt(0)
@@ -252,12 +240,10 @@ class NLPOptimizer private constructor() {
         intentCounts.computeIfAbsent(bestAction) { AtomicInteger(0) }.incrementAndGet()
         intent
     }
-
-    fun parseIntentBatch(texts: List<String>): List<ParsedIntent> {
+        fun parseIntentBatch(texts: List<String>): List<ParsedIntent> {
         texts.map { parseIntent(it) }
     }
-
-    fun tokenize(text: String): List<String> {
+        fun tokenize(text: String): List<String> {
         return when (config.tokenizerType) {
             TokenizerType.WHITESPACE -> text.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
             TokenizerType.CHARACTER -> text.toList().map { it.toString() }.filter { it.isNotBlank() }
@@ -265,8 +251,7 @@ class NLPOptimizer private constructor() {
             TokenizerType.SMART -> smartTokenize(text)
         }
     }
-
-    private fun smartTokenize(text: String): List<String> {
+        private fun smartTokenize(text: String): List<String> {
         val tokens = mutableListOf<String>()
         val regex = Regex("""([a-zA-Z]+(?:'[a-zA-Z]+)?)|(\d+(?:\.\d+)?)|(\p{Punct})|([\p{Lo}]+)|(\s+)""")
         for (match in regex.findAll(text)) {
@@ -280,16 +265,15 @@ class NLPOptimizer private constructor() {
         }
         tokens
     }
-
-    fun detectLanguage(text: String, tokens: List<String> = tokenize(text)): String {
+        fun detectLanguage(text: String, tokens: List<String> = tokenize(text)): String {
         if (!config.enableLanguageDetection) return "en"
         var bestLang = "en"
         var bestScore = 0.0
         for (profile in languageProfiles) {
             val matches = tokens.count { profile.wordPattern.matches(it) }
-            val stopWords = tokens.count { profile.stopWords.contains(it.lowercase()) }
-            val commonWords = tokens.count { profile.commonWords.contains(it.lowercase()) }
-            val score = (matches.toDouble() / max(tokens.size, 1)) * 0.5 +
+        val stopWords = tokens.count { profile.stopWords.contains(it.lowercase()) }
+        val commonWords = tokens.count { profile.commonWords.contains(it.lowercase()) }
+        val score = (matches.toDouble() / max(tokens.size, 1)) * 0.5 +
                     (stopWords.toDouble() / max(tokens.size, 1)) * 0.3 +
                     (commonWords.toDouble() / max(tokens.size, 1)) * 0.2
             if (score > bestScore) {
@@ -299,11 +283,9 @@ class NLPOptimizer private constructor() {
         }
         bestLang
     }
-
-    fun extractEntities(text: String): List<Entity> {
+        fun extractEntities(text: String): List<Entity> {
         if (!config.enableEntityExtraction) return emptyList()
         val entities = mutableListOf<Entity>()
-
         for (match in URL_PATTERN.findAll(text)) {
             entities.add(Entity("url", match.value, EntityType.URL, match.range.first, match.range.last + 1, 0.95))
         }
@@ -319,18 +301,16 @@ class NLPOptimizer private constructor() {
         }
         entities
     }
-
-    private fun parseParameters(text: String): Map<String, String> {
+        private fun parseParameters(text: String): Map<String, String> {
         val params = mutableMapOf<String, String>()
         for (match in PARAMETER_PATTERN.findAll(text)) {
             val key = match.groupValues[1].lowercase()
-            val value = match.groupValues[2].ifEmpty { "true" }
+        val value = match.groupValues[2].ifEmpty { "true" }
             params[key] = value
         }
         params
     }
-
-    fun analyzeSentiment(text: String): SentimentScore {
+        fun analyzeSentiment(text: String): SentimentScore {
         val positiveWords = setOf(
             "good", "great", "excellent", "amazing", "wonderful", "fantastic", "awesome",
             "happy", "love", "like", "best", "perfect", "beautiful", "nice", "cool",
@@ -360,8 +340,7 @@ class NLPOptimizer private constructor() {
         }
         SentimentScore(score.coerceIn(-1.0, 1.0), magnitude.coerceIn(0.0, 1.0), label, magnitude)
     }
-
-    fun calculateConfidence(action: String, target: String?, tokens: List<String>): Double {
+        fun calculateConfidence(action: String, target: String?, tokens: List<String>): Double {
         var confidence = 0.5
         if (target != null && target.isNotBlank()) confidence += 0.1
         if (action.length >= 3) confidence += 0.1
@@ -371,12 +350,10 @@ class NLPOptimizer private constructor() {
         if (tokens.size <= 10) confidence += 0.1
         confidence.coerceIn(0.0, 1.0)
     }
-
-    fun normalizeText(text: String): String {
+        fun normalizeText(text: String): String {
         text.trim().lowercase().replace(Regex("\\s+"), " ")
     }
-
-    fun getTokenizedResult(text: String): TokenizedResult {
+        fun getTokenizedResult(text: String): TokenizedResult {
         val tokens = tokenize(text)
         val unique = tokens.distinct()
         val avgLen = if (tokens.isNotEmpty()) tokens.sumOf { it.length }.toDouble() / tokens.size else 0.0
@@ -392,22 +369,18 @@ class NLPOptimizer private constructor() {
             compressionRatio = if (text.isNotEmpty()) text.length.toDouble() / max(tokens.size, 1) else 1.0
         )
     }
-
-    fun estimateTokens(text: String): Int {
+        fun estimateTokens(text: String): Int {
         val words = text.trim().split(Regex("\\s+")).size
         val avgTokenPerWord = 1.3
         (words * avgTokenPerWord).toInt().coerceAtLeast(1)
     }
-
-    fun getCachedIntents(): List<ParsedIntent> = intentCache.values.map { it.intent }
-
-    fun getIntentCacheSize(): Int = intentCache.size
+        fun getCachedIntents(): List<ParsedIntent> = intentCache.values.map { it.intent }
+        fun getIntentCacheSize(): Int = intentCache.size
 
     fun clearCache() {
         intentCache.clear()
     }
-
-    fun getMetrics(): NLPMetrics {
+        fun getMetrics(): NLPMetrics {
         val totalCalls = cacheHits.get() + cacheMisses.get()
         val hitRate = if (totalCalls > 0) cacheHits.get().toDouble() / totalCalls else 0.0
         val sortedTimes = parseTimeHistory.sorted()
@@ -428,14 +401,12 @@ class NLPOptimizer private constructor() {
             averageConfidence = avgConf
         )
     }
-
-    private fun evictStaleCacheEntries() {
+        private fun evictStaleCacheEntries() {
         val now = System.currentTimeMillis()
         val toRemove = intentCache.filter { (now - it.value.timestampMs) > config.cacheTtlMs }
         toRemove.keys.forEach { intentCache.remove(it) }
     }
-
-    fun reset() {
+        fun reset() {
         intentCache.clear()
         parseTimeHistory.clear()
         intentCounts.clear()

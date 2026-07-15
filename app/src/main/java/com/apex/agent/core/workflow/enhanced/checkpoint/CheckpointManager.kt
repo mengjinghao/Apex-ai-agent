@@ -118,7 +118,7 @@ class InMemoryCheckpointer(
             synchronized(list) {
                 list.removeAll { it.createdAt < threshold }
             }
-            if (list.isEmpty()) storage.remove(tid)
+        if (list.isEmpty()) storage.remove(tid)
         }
     }
 }

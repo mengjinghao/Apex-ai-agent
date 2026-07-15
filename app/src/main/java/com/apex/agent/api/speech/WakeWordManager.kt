@@ -50,17 +50,13 @@ class WakeWordManager(
 ) {
     private val dataStore = context.wakeWordDataStore
     private val json = Json { ignoreUnknownKeys = true }
-
-    private val _config = MutableStateFlow(WakeWordConfig())
-    val config: StateFlow<WakeWordConfig> = _config.asStateFlow()
-
-    private val _isListening = MutableStateFlow(false)
-    val isListening: StateFlow<Boolean> = _isListening.asStateFlow()
-
-    private val _lastDetectedWakeWord = MutableStateFlow<WakeWord?>(null)
-    val lastDetectedWakeWord: StateFlow<WakeWord?> = _lastDetectedWakeWord.asStateFlow()
-
-    private var onWakeWordDetected: ((WakeWord) -> Unit)? = null
+        private val _config = MutableStateFlow(WakeWordConfig())
+        val config: StateFlow<WakeWordConfig> = _config.asStateFlow()
+        private val _isListening = MutableStateFlow(false)
+        val isListening: StateFlow<Boolean> = _isListening.asStateFlow()
+        private val _lastDetectedWakeWord = MutableStateFlow<WakeWord?>(null)
+        val lastDetectedWakeWord: StateFlow<WakeWord?> = _lastDetectedWakeWord.asStateFlow()
+        private var onWakeWordDetected: ((WakeWord) -> Unit)? = null
 
     companion object {
         private val WAKE_WORDS_CONFIG = stringPreferencesKey("wake_words_config")
@@ -81,8 +77,7 @@ class WakeWordManager(
     init {
         loadConfig()
     }
-
-    private fun loadConfig() {
+        private fun loadConfig() {
         coroutineScope.launch {
             dataStore.data.collect { prefs ->
                 val configJson = prefs[WAKE_WORDS_CONFIG]
@@ -124,24 +119,21 @@ class WakeWordManager(
             }
         }
     }
-
-    fun setOnWakeWordDetected(callback: (WakeWord) -> Unit) {
+        fun setOnWakeWordDetected(callback: (WakeWord) -> Unit) {
         onWakeWordDetected = callback
     }
 
     suspend fun addWakeWord(phrase: String, isRegex: Boolean = false): Boolean {
         if (_config.value.wakeWords.size >= MAX_WAKE_WORDS) {
             AppLogger.w(TAG, "Maximum number of wake words reached")
-            return false
+        return false
         }
-
         val newWakeWord = WakeWord(
             id = System.currentTimeMillis().toString(),
             phrase = phrase.trim(),
             isRegex = isRegex,
             sensitivity = _config.value.globalSensitivity
         )
-
         val updatedWakeWords = _config.value.wakeWords + newWakeWord
         saveWakeWords(updatedWakeWords)
         return true
@@ -167,8 +159,7 @@ class WakeWordManager(
         }
         saveWakeWords(updatedWakeWords)
     }
-
-    private suspend fun saveWakeWords(wakeWords: List<WakeWord>) {
+        private suspend fun saveWakeWords(wakeWords: List<WakeWord>) {
         val updatedConfig = _config.value.copy(wakeWords = wakeWords)
         _config.value = updatedConfig
 
@@ -212,8 +203,7 @@ class WakeWordManager(
             prefs[DETECTION_THRESHOLD] = threshold
         }
     }
-
-    fun detectWakeWord(text: String): WakeWord? {
+        fun detectWakeWord(text: String): WakeWord? {
         if (!_config.value.globalEnabled) return null
 
         for (wakeWord in _config.value.wakeWords) {
@@ -229,25 +219,21 @@ class WakeWordManager(
             } else {
                 text.lowercase().contains(wakeWord.phrase.lowercase())
             }
-
-            if (match) {
+        if (match) {
                 _lastDetectedWakeWord.value = wakeWord
                 onWakeWordDetected?.invoke(wakeWord)
-                return wakeWord
+        return wakeWord
             }
         }
         return null
     }
-
-    fun startListening() {
+        fun startListening() {
         _isListening.value = true
     }
-
-    fun stopListening() {
+        fun stopListening() {
         _isListening.value = false
     }
-
-    fun resetLastDetectedWakeWord() {
+        fun resetLastDetectedWakeWord() {
         _lastDetectedWakeWord.value = null
     }
 }

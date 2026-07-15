@@ -20,8 +20,7 @@ class StandardSendBroadcastToolExecutor(private val context: Context) {
     companion object {
         private const val TAG = "SendBroadcastToolExecutor"
     }
-
-    private fun applyComponentName(intent: Intent, rawComponentName: String) {
+        private fun applyComponentName(intent: Intent, rawComponentName: String) {
         val parts = rawComponentName.split("/", limit = 2)
         if (parts.size != 2) {
             return
@@ -50,7 +49,6 @@ class StandardSendBroadcastToolExecutor(private val context: Context) {
                 error = validation.errorMessage
             )
         }
-
         val action = tool.parameters.find { it.name == "action" }?.value?.trim().orEmpty()
         val uri = tool.parameters.find { it.name == "uri" }?.value
         val packageName = tool.parameters.find { it.name == "package" }?.value
@@ -60,7 +58,6 @@ class StandardSendBroadcastToolExecutor(private val context: Context) {
         val extraValue = tool.parameters.find { it.name == "extra_value" }?.value ?: ""
         val extraKey2 = tool.parameters.find { it.name == "extra_key2" }?.value?.trim().orEmpty()
         val extraValue2 = tool.parameters.find { it.name == "extra_value2" }?.value ?: ""
-
         val extrasJsonString = tool.parameters.find { it.name == "extras" }?.value
 
         return try {
@@ -69,28 +66,26 @@ class StandardSendBroadcastToolExecutor(private val context: Context) {
                 if (!uri.isNullOrBlank()) {
                     data = Uri.parse(uri)
                 }
-                if (!packageName.isNullOrBlank()) {
+        if (!packageName.isNullOrBlank()) {
                     `package` = packageName
                 }
-                if (!componentName.isNullOrBlank()) {
+        if (!componentName.isNullOrBlank()) {
                     applyComponentName(this, componentName)
                 }
-
-                if (extraKey.isNotBlank()) {
+        if (extraKey.isNotBlank()) {
                     putExtra(extraKey, extraValue)
                 }
-                if (extraKey2.isNotBlank()) {
+        if (extraKey2.isNotBlank()) {
                     putExtra(extraKey2, extraValue2)
                 }
-
-                if (!extrasJsonString.isNullOrBlank()) {
+        if (!extrasJsonString.isNullOrBlank()) {
                     try {
                         val extrasJson = JSONObject(extrasJsonString)
-                        val keys = extrasJson.keys()
+        val keys = extrasJson.keys()
                         while (keys.hasNext()) {
                             val key = keys.next()
-                            val value = extrasJson.get(key)
-                            when (value) {
+        val value = extrasJson.get(key)
+        when (value) {
                                 is String -> putExtra(key, value)
                                 is Int -> putExtra(key, value)
                                 is Boolean -> putExtra(key, value)
@@ -105,14 +100,12 @@ class StandardSendBroadcastToolExecutor(private val context: Context) {
                     }
                 }
             }
-
-            val resultMessage =
+        val resultMessage =
                 withContext(Dispatchers.Main) {
                     context.sendBroadcast(intent)
                     "Broadcast sent successfully"
                 }
-
-            val extrasBundle = Bundle()
+        val extrasBundle = Bundle()
             intent.extras?.let { extrasBundle.putAll(it) }
 
             ToolResult(
@@ -139,8 +132,7 @@ class StandardSendBroadcastToolExecutor(private val context: Context) {
             )
         }
     }
-
-    fun validateParameters(tool: AITool): ToolValidationResult {
+        fun validateParameters(tool: AITool): ToolValidationResult {
         val action = tool.parameters.find { it.name == "action" }?.value
         if (action.isNullOrBlank()) {
             return ToolValidationResult(valid = false, errorMessage = "Missing required parameter: action")

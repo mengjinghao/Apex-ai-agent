@@ -29,11 +29,11 @@ private data class ToolLifecycleDispatch(
 
 internal object ToolPkgToolLifecycleBridge : AIToolHook {
     private val installed = AtomicBoolean(false)
-    private val dispatchScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val dispatchChannel = Channel<ToolLifecycleDispatch>(Channel.UNLIMITED)
+        private val dispatchScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val dispatchChannel = Channel<ToolLifecycleDispatch>(Channel.UNLIMITED)
     @Volatile
     private var hooks: List<ToolPkgToolLifecycleHookRegistration> = emptyList()
-    private val runtimeChangeListener =
+        private val runtimeChangeListener =
         PackageManager.ToolPkgRuntimeChangeListener {
             syncToolPkgRegistrations(toolPkgPackageManager().getImportedToolPkgContainerRuntimes())
         }
@@ -45,8 +45,7 @@ internal object ToolPkgToolLifecycleBridge : AIToolHook {
             }
         }
     }
-
-    fun register() {
+        fun register() {
         if (!installed.compareAndSet(false, true)) {
             return
         }
@@ -108,8 +107,7 @@ internal object ToolPkgToolLifecycleBridge : AIToolHook {
             eventPayload = buildBasePayload(tool)
         )
     }
-
-    private fun enqueue(eventName: String, eventPayload: Map<String, Any?>) {
+        private fun enqueue(eventName: String, eventPayload: Map<String, Any?>) {
         val result = dispatchChannel.trySend(
             ToolLifecycleDispatch(
                 eventName = eventName,
@@ -120,8 +118,7 @@ internal object ToolPkgToolLifecycleBridge : AIToolHook {
             AppLogger.w(TAG, "Tool lifecycle event dropped: ${eventName}")
         }
     }
-
-    private fun deliver(dispatch: ToolLifecycleDispatch) {
+        private fun deliver(dispatch: ToolLifecycleDispatch) {
         val manager = toolPkgPackageManager()
         hooks.forEach { hook ->
             val result =
@@ -143,16 +140,14 @@ internal object ToolPkgToolLifecycleBridge : AIToolHook {
             }
         }
     }
-
-    private fun buildBasePayload(tool: AITool): Map<String, Any?> {
+        private fun buildBasePayload(tool: AITool): Map<String, Any?> {
         return buildMap {
             put("toolName", tool.name)
             put("parameters", tool.parameters.associate { parameter -> parameter.name to parameter.value })
             put("description", tool.description)
         }
     }
-
-    private fun parseToolResultJson(result: ToolResult): Any? {
+        private fun parseToolResultJson(result: ToolResult): Any? {
         val text = result.result.toJson().trim()
         if (text.isEmpty()) {
             return null
@@ -164,8 +159,7 @@ internal object ToolPkgToolLifecycleBridge : AIToolHook {
             else -> null
         }
     }
-
-    private fun syncToolPkgRegistrations(activeContainers: List<ToolPkgContainerRuntime>) {
+        private fun syncToolPkgRegistrations(activeContainers: List<ToolPkgContainerRuntime>) {
         hooks =
             activeContainers.flatMap { runtime ->
                 runtime.toolLifecycleHooks.map { hook ->

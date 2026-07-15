@@ -45,8 +45,7 @@ class TaskPlanner(private val context: Context) {
     companion object {
         private const val TAG = "TaskPlanner"
     }
-
-    fun createPlan(goal: String): TaskPlan {
+        fun createPlan(goal: String): TaskPlan {
         val lowerGoal = goal.lowercase()
         val steps = when {
             lowerGoal.contains("code") || lowerGoal.contains("代码") || lowerGoal.contains("编程") -> createCodingSteps(goal)
@@ -54,9 +53,7 @@ class TaskPlanner(private val context: Context) {
             lowerGoal.contains("write") || lowerGoal.contains("写作") || lowerGoal.contains("撰写") -> createWritingSteps(goal)
             else -> createGenericSteps(goal)
         }
-
         val estimatedTime = steps.sumOf { it.estimatedTime }
-
         return TaskPlan(
             originalGoal = goal,
             steps = steps,
@@ -64,8 +61,7 @@ class TaskPlanner(private val context: Context) {
             requiredCapabilities = listOf("general")
         )
     }
-
-    private fun createCodingSteps(goal: String): List<PlanStep> {
+        private fun createCodingSteps(goal: String): List<PlanStep> {
         return listOf(
             PlanStep(1, "分析需求和理解任务", AgentRole.RESEARCHER, 120, emptyList(), listOf("analysis", "web_search")),
             PlanStep(2, "设计解决方案", AgentRole.DESIGNER, 180, listOf("1"), listOf("design", "planning")),
@@ -73,8 +69,7 @@ class TaskPlanner(private val context: Context) {
             PlanStep(4, "测试和验�? AgentRole.EXECUTOR, 300, listOf("3"), listOf("testing", "review"))
         )
     }
-
-    private fun createResearchSteps(goal: String): List<PlanStep> {
+        private fun createResearchSteps(goal: String): List<PlanStep> {
         return listOf(
             PlanStep(1, "定义搜索范围", AgentRole.RESEARCHER, 60, emptyList(), listOf("analysis")),
             PlanStep(2, "执行网络搜索", AgentRole.RESEARCHER, 300, listOf("1"), listOf("web_search")),
@@ -82,8 +77,7 @@ class TaskPlanner(private val context: Context) {
             PlanStep(4, "生成报告", AgentRole.EXECUTOR, 180, listOf("3"), listOf("reporting"))
         )
     }
-
-    private fun createWritingSteps(goal: String): List<PlanStep> {
+        private fun createWritingSteps(goal: String): List<PlanStep> {
         return listOf(
             PlanStep(1, "收集相关信息", AgentRole.RESEARCHER, 120, emptyList(), listOf("research")),
             PlanStep(2, "构思大纲和结构", AgentRole.DESIGNER, 120, listOf("1"), listOf("outline")),
@@ -91,23 +85,20 @@ class TaskPlanner(private val context: Context) {
             PlanStep(4, "编辑和润�? AgentRole.EXECUTOR, 300, listOf("3"), listOf("editing"))
         )
     }
-
-    private fun createGenericSteps(goal: String): List<PlanStep> {
+        private fun createGenericSteps(goal: String): List<PlanStep> {
         return listOf(
             PlanStep(1, "理解和分析需�? AgentRole.COORDINATOR, 60, emptyList(), listOf("analysis")),
             PlanStep(2, "制定计划", AgentRole.COORDINATOR, 120, listOf("1"), listOf("planning")),
             PlanStep(3, "执行任务", AgentRole.EXECUTOR, 300, listOf("2"), listOf("execution"))
         )
     }
-
-    fun updateStepStatus(plan: TaskPlan, stepNumber: Int, status: StepStatus): TaskPlan {
+        fun updateStepStatus(plan: TaskPlan, stepNumber: Int, status: StepStatus): TaskPlan {
         val newSteps = plan.steps.map {
             if (it.stepNumber == stepNumber) it.copy(status = status) else it
         }
         return plan.copy(steps = newSteps)
     }
-
-    fun getProgress(plan: TaskPlan): Float {
+        fun getProgress(plan: TaskPlan): Float {
         val total = plan.steps.size
         val completed = plan.steps.count { it.status == StepStatus.COMPLETED }
         return if (total > 0) completed.toFloat() / total else 0f
@@ -131,7 +122,7 @@ class TaskPlanner(private val context: Context) {
     suspend fun executeWithPipeline(goal: String): PipelineResult? {
         if (!shouldUsePipeline(goal)) {
             AppLogger.d(TAG, "任务不需要管道执�?${goal}")
-            return null
+        return null
         }
 
         AppLogger.i(TAG, "使用管道执行任务: ${goal}")

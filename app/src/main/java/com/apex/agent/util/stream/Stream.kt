@@ -20,42 +20,36 @@ import com.apex.core.tools.javascript.not
 
 object StreamLogger {
     private const val TAG = "StreamFramework"
-    private var enabled = true
+        private var enabled = true
     private var verboseEnabled = false
 
     fun setEnabled(enabled: Boolean) {
         this.enabled = enabled
     }
-
-    fun setVerboseEnabled(enabled: Boolean) {
+        fun setVerboseEnabled(enabled: Boolean) {
         this.verboseEnabled = enabled
     }
-
-    fun d(component: String, message: String) {
+        fun d(component: String, message: String) {
         if (enabled) {
             AppLogger.d(TAG, "[${component}] ${message}")
         }
     }
-
-    fun i(component: String, message: String) {
+        fun i(component: String, message: String) {
         if (enabled) {
             AppLogger.i(TAG, "[${component}] ${message}")
         }
     }
-
-    fun v(component: String, message: String) {
+        fun v(component: String, message: String) {
         if (enabled && verboseEnabled) {
             AppLogger.v(TAG, "[${component}] ${message}")
         }
     }
-
-    fun w(component: String, message: String) {
+        fun w(component: String, message: String) {
         if (enabled) {
             AppLogger.w(TAG, "[${component}] ${message}")
         }
     }
-
-    fun e(component: String, message: String, throwable: Throwable? = null) {
+        fun e(component: String, message: String, throwable: Throwable? = null) {
         if (enabled) {
             if (throwable != null) {
                 AppLogger.e(TAG, "[${component}] ${message}", throwable)
@@ -78,7 +72,7 @@ interface Stream<T> {
     val bufferedCount: Int
     suspend fun lock()
     suspend fun unlock()
-    fun clearBuffer()
+        fun clearBuffer()
     suspend fun collect(collector: StreamCollector<T>)
     suspend fun collect(onEach: suspend (T) -> Unit) {
         collect(
@@ -113,15 +107,14 @@ interface StreamLockListener {
 
 abstract class AbstractStream<T> : Stream<T> {
     private val mutex = Mutex()
-    private val isLockedFlag = AtomicBoolean(false)
-    private val isClosedFlag = AtomicBoolean(false)
-    private val buffer = ConcurrentLinkedQueue<T>()
-    private val listeners = ConcurrentLinkedQueue<StreamLockListener>()
-    
-    private val emittedCount = AtomicInteger(0)
-    private val droppedCount = AtomicInteger(0)
-    private val lockedCount = AtomicInteger(0)
-    private val unlockedCount = AtomicInteger(0)
+        private val isLockedFlag = AtomicBoolean(false)
+        private val isClosedFlag = AtomicBoolean(false)
+        private val buffer = ConcurrentLinkedQueue<T>()
+        private val listeners = ConcurrentLinkedQueue<StreamLockListener>()
+        private val emittedCount = AtomicInteger(0)
+        private val droppedCount = AtomicInteger(0)
+        private val lockedCount = AtomicInteger(0)
+        private val unlockedCount = AtomicInteger(0)
 
     override val isLocked: Boolean get() = isLockedFlag.get()
     override val bufferedCount: Int get() = buffer.size
@@ -134,12 +127,10 @@ abstract class AbstractStream<T> : Stream<T> {
             lockedCount = lockedCount.get().toLong(),
             unlockedCount = unlockedCount.get().toLong()
         )
-    
-    fun addLockListener(listener: StreamLockListener) {
+        fun addLockListener(listener: StreamLockListener) {
         listeners.add(listener)
     }
-    
-    fun removeLockListener(listener: StreamLockListener) {
+        fun removeLockListener(listener: StreamLockListener) {
         listeners.remove(listener)
     }
     
@@ -190,15 +181,14 @@ abstract class AbstractStream<T> : Stream<T> {
             true
         } ?: false
     }
-    
-    fun tryLock(): Boolean {
+        fun tryLock(): Boolean {
         if (mutex.tryLock()) {
             try {
                 if (!isLockedFlag.get() && !isClosedFlag.get()) {
                     isLockedFlag.set(true)
                     lockedCount.incrementAndGet()
                     StreamLogger.d("Stream", "流已锁定(try)")
-                    return true
+        return true
                 }
             } finally {
                 mutex.unlock()
@@ -214,16 +204,14 @@ abstract class AbstractStream<T> : Stream<T> {
                 unlockedCount.incrementAndGet()
                 StreamLogger.d("Stream", "流已解锁，发送缓存数�?�?{bufferSize项}�?)
                 notifyUnlock(bufferSize)
-                
-                val tempList = ArrayList<T>(buffer)
+        val tempList = ArrayList<T>(buffer)
                 buffer.clear()
-                
-                for (item in tempList) {
+        for (item in tempList) {
                     try {
                         emitBufferedItem(item)
                     } catch (e: Exception) {
                         StreamLogger.w("Stream", "处理缓存项时发生异常: ${e.message}")
-                        throw e
+        throw e
                     }
                 }
             }
@@ -249,7 +237,7 @@ abstract class AbstractStream<T> : Stream<T> {
                 OverflowPolicy.SUSPEND -> {
                     buffer.offer(value)
                     StreamLogger.v("Stream", "锁定中，值已缓存")
-                    return true
+        return true
                 }
                 OverflowPolicy.DROP_OLDEST -> {
                     buffer.poll()
@@ -257,7 +245,7 @@ abstract class AbstractStream<T> : Stream<T> {
                     droppedCount.incrementAndGet()
                     StreamLogger.v("Stream", "锁定中，DROP_OLDEST策略")
                     notifyBufferOverflow(policy, value)
-                    return true
+        return true
                 }
                 OverflowPolicy.DROP_NEWEST -> {
                     buffer.offer(value)
@@ -265,11 +253,11 @@ abstract class AbstractStream<T> : Stream<T> {
                     droppedCount.incrementAndGet()
                     StreamLogger.v("Stream", "锁定中，DROP_NEWEST策略")
                     notifyBufferOverflow(policy, value)
-                    return true
+        return true
                 }
                 OverflowPolicy.THROW -> {
                     notifyBufferOverflow(policy, value)
-                    throw BufferOverflowException("Buffer overflow with THROW policy")
+        throw BufferOverflowException("Buffer overflow with THROW policy")
                 }
             }
         }
@@ -303,14 +291,13 @@ class FlowAsStream<T>(
         try {
             flow.collect { value ->
                 incrementEmitted()
-                if (!isClosed() && !tryBuffer(value, bufferPolicy)) {
+        if (!isClosed() && !tryBuffer(value, bufferPolicy)) {
                     collector.emit(value)
                 }
             }
         } finally {
             markClosed()
-            
-            if (isLocked) {
+        if (isLocked) {
                 StreamLogger.i("FlowAsStream", "流关闭时处于锁定状态，尝试解锁处理缓冲数据")
                 try {
                     unlock()
@@ -341,8 +328,8 @@ class FlowAsStreamWithBackpressure<T>(
 ) : AbstractStream<T>() {
     private var activeCollector: StreamCollector<T>? = null
     private val backpressureBuffer = ArrayDeque<T>()
-    private val processedCount = AtomicInteger(0)
-    private val needsMore = AtomicBoolean(true)
+        private val processedCount = AtomicInteger(0)
+        private val needsMore = AtomicBoolean(true)
 
     override suspend fun collect(collector: StreamCollector<T>) {
         activeCollector = collector
@@ -350,14 +337,14 @@ class FlowAsStreamWithBackpressure<T>(
         try {
             flow.collect { value ->
                 incrementEmitted()
-                if (isLocked) {
+        if (isLocked) {
                     if (backpressureBuffer.size >= bufferSize) {
                         when (overflow) {
                             BufferOverflow.SUSPEND -> {
                                 while (backpressureBuffer.isNotEmpty() && isLocked) {
                                     kotlinx.coroutines.delay(10)
                                 }
-                                if (!isLocked) {
+        if (!isLocked) {
                                     collector.emit(value)
                                     return@collect
                                 }
@@ -392,8 +379,7 @@ class FlowAsStreamWithBackpressure<T>(
                 collector.emit(backpressureBuffer.removeFirst())
                 processedCount.incrementAndGet()
             }
-            
-            if (isLocked && backpressureBuffer.isEmpty()) {
+        if (isLocked && backpressureBuffer.isEmpty()) {
                 unlock()
             }
         }
@@ -403,18 +389,14 @@ class FlowAsStreamWithBackpressure<T>(
         activeCollector?.emit(item)
         processedCount.incrementAndGet()
     }
-    
-    fun requestMore() {
+        fun requestMore() {
         needsMore.set(true)
     }
-    
-    fun pauseEmission() {
+        fun pauseEmission() {
         needsMore.set(false)
     }
-    
-    fun getProcessedCount(): Int = processedCount.get()
-    
-    fun getPendingCount(): Int = backpressureBuffer.size
+        fun getProcessedCount(): Int = processedCount.get()
+        fun getPendingCount(): Int = backpressureBuffer.size
 }
 
 class BatchStreamCollector<T>(
@@ -423,21 +405,20 @@ class BatchStreamCollector<T>(
     private val flushTimeout: Duration = Duration.parse("100ms")
 ) : StreamCollector<T> {
     private val batch = ArrayList<T>(batchSize)
-    private var lastFlushTime = System.currentTimeMillis()
-    private val lock = Any()
+        private var lastFlushTime = System.currentTimeMillis()
+        private val lock = Any()
     
     override suspend fun emit(value: T) {
         synchronized(lock) {
             batch.add(value)
-            val shouldFlush = batch.size >= batchSize || 
+        val shouldFlush = batch.size >= batchSize || 
                 (System.currentTimeMillis() - lastFlushTime) >= flushTimeout.inWholeMilliseconds
             
             if (shouldFlush && batch.isNotEmpty()) {
                 val toEmit = ArrayList(batch)
                 batch.clear()
                 lastFlushTime = System.currentTimeMillis()
-                
-                for (item in toEmit) {
+        for (item in toEmit) {
                     upstream.emit(item)
                 }
             }
@@ -449,7 +430,7 @@ class BatchStreamCollector<T>(
             if (batch.isNotEmpty()) {
                 val toEmit = ArrayList(batch)
                 batch.clear()
-                for (item in toEmit) {
+        for (item in toEmit) {
                     upstream.emit(item)
                 }
             }
@@ -462,7 +443,7 @@ class ConditionalLockStream<T>(
     private val shouldLock: suspend (T) -> Boolean = { true }
 ) : Stream<T> by upstream {
     private var pendingValues = ArrayDeque<T>()
-    private val conditionMutex = Mutex()
+        private val conditionMutex = Mutex()
     
     override val isLocked: Boolean get() = upstream.isLocked
     override val bufferedCount: Int get() = upstream.bufferedCount + pendingValues.size
@@ -518,7 +499,7 @@ fun <T> Stream<T>.asFlow(): Flow<T> = StreamAsFlow(this)
 
 fun <T> Stream<T>.launchIn(scope: CoroutineScope, onEach: suspend (T) -> Unit = {}): Job {
     StreamLogger.d("Stream.launchIn", "在协程作用域中启动Stream收集")
-    return scope.launch {
+        return scope.launch {
         collect { value ->
             StreamLogger.v("Stream.launchIn", "收集到元�?${value}")
             onEach(value)
@@ -581,7 +562,7 @@ abstract class AbstractBufferedStream<T>(
     private val overflowPolicy: OverflowPolicy = OverflowPolicy.SUSPEND
 ) : AbstractStream<T>() {
     private val buffer: ArrayDeque<T> = ArrayDeque(initialCapacity)
-    private val capacity: Int
+        private val capacity: Int
     
     init {
         this.capacity = if (initialCapacity <= 0) Int.MAX_VALUE else initialCapacity
@@ -602,7 +583,7 @@ abstract class AbstractBufferedStream<T>(
                     while (isBufferFull() && !isClosed()) {
                         kotlinx.coroutines.delay(10)
                     }
-                    if (!isClosed()) {
+        if (!isClosed()) {
                         buffer.addLast(value)
                         true
                     } else {
@@ -625,7 +606,7 @@ abstract class AbstractBufferedStream<T>(
             }
         } else {
             buffer.addLast(value)
-            return true
+        return true
         }
     }
     
@@ -684,8 +665,7 @@ fun <T> Stream<T>.observeLockState(
     }
     
     addLockListener(listener)
-    
-    return object : Stream<T> by this {}
+        return object : Stream<T> by this {}
 }
 
 fun <T> Stream<T>.withBufferCapacity(

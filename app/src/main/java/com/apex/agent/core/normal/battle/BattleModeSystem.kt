@@ -77,7 +77,7 @@ class BattleModeSystem {
     private val sessions = ConcurrentHashMap<String, BattleSession>()
         private val contestants = mutableListOf<BattleContestant>()
         private val leaderboard = ConcurrentHashMap<String, Int>()  // contestantId -> wins
-        init {
+    init {
         registerBuiltinContestants()
     }
         fun startBattle(

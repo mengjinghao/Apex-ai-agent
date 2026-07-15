@@ -146,41 +146,35 @@ class AgentCollaborationFramework(
         COMPROMISE,
         TIMEOUT
     }
-
-    private val agentsDir: File
+        private val agentsDir: File
         get() = File(context.filesDir, "collab_agents").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val tasksDir: File
+        private val tasksDir: File
         get() = File(context.filesDir, "collab_tasks").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val messagesDir: File
+        private val messagesDir: File
         get() = File(context.filesDir, "collab_messages").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val sessionsDir: File
+        private val sessionsDir: File
         get() = File(context.filesDir, "collab_sessions").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val knowledgeDir: File
+        private val knowledgeDir: File
         get() = File(context.filesDir, "collab_knowledge").also {
             if (!it.exists()) it.mkdirs()
         }
-
-    private val activeAgents = mutableMapOf<String, Agent>()
-    private val activeTasks = mutableMapOf<String, Task>()
-    private val activeSessions = mutableMapOf<String, CollaborationSession>()
-    private val messageQueue = mutableListOf<Message>()
+        private val activeAgents = mutableMapOf<String, Agent>()
+        private val activeTasks = mutableMapOf<String, Task>()
+        private val activeSessions = mutableMapOf<String, CollaborationSession>()
+        private val messageQueue = mutableListOf<Message>()
 
     suspend fun registerAgent(agent: Agent): Boolean = withContext(Dispatchers.IO) {
         try {
             val agentFile = File(agentsDir, "${agent.id}.json")
-            val json = JSONObject().apply {
+        val json = JSONObject().apply {
                 put("id", agent.id)
                 put("name", agent.name)
                 put("role", agent.role.name)
@@ -210,7 +204,7 @@ class AgentCollaborationFramework(
                 ?.mapNotNull { file ->
                     try {
                         val json = JSONObject(file.readText())
-                        val agent = Agent(
+        val agent = Agent(
                             id = json.getString("id"),
                             name = json.getString("name"),
                             role = AgentRole.valueOf(json.getString("role")),
@@ -262,8 +256,7 @@ class AgentCollaborationFramework(
         activeTasks[task.id] = task
         task
     }
-
-    private suspend fun saveTask(task: Task) = withContext(Dispatchers.IO) {
+        private suspend fun saveTask(task: Task) = withContext(Dispatchers.IO) {
         val taskFile = File(tasksDir, "${task.id}.json")
         val json = JSONObject().apply {
             put("id", task.id)
@@ -326,7 +319,7 @@ class AgentCollaborationFramework(
             ?.forEach { file ->
                 try {
                     val json = JSONObject(file.readText())
-                    val task = Task(
+        val task = Task(
                         id = json.getString("id"),
                         title = json.getString("title"),
                         description = json.getString("description"),
@@ -349,7 +342,6 @@ class AgentCollaborationFramework(
                     AppLogger.w(TAG, "解析任务配置失败: ${file.name}", e)
                 }
             }
-
         if (filter != null) {
             allTasks.filter { it.status == filter }
         } else {
@@ -378,8 +370,7 @@ class AgentCollaborationFramework(
         saveMessage(message)
         message
     }
-
-    private suspend fun saveMessage(message: Message) = withContext(Dispatchers.IO) {
+        private suspend fun saveMessage(message: Message) = withContext(Dispatchers.IO) {
         val messageFile = File(messagesDir, "${message.id}.json")
         val json = JSONObject().apply {
             put("id", message.id)
@@ -404,7 +395,7 @@ class AgentCollaborationFramework(
             ?.forEach { file ->
                 try {
                     val json = JSONObject(file.readText())
-                    val message = Message(
+        val message = Message(
                         id = json.getString("id"),
                         senderAgent = json.getString("senderAgent"),
                         recipientAgent = if (json.isNull("recipientAgent")) null else json.getString("recipientAgent"),
@@ -415,8 +406,7 @@ class AgentCollaborationFramework(
                             .map { json.getJSONArray("attachments").getString(it) },
                         isRead = json.getBoolean("isRead")
                     )
-
-                    if (agentId == null || message.senderAgent == agentId || message.recipientAgent == agentId) {
+        if (agentId == null || message.senderAgent == agentId || message.recipientAgent == agentId) {
                         messages.add(message)
                     }
                 } catch (e: Exception) {
@@ -450,8 +440,7 @@ class AgentCollaborationFramework(
         activeSessions[session.id] = session
         session
     }
-
-    private suspend fun saveSession(session: CollaborationSession) = withContext(Dispatchers.IO) {
+        private suspend fun saveSession(session: CollaborationSession) = withContext(Dispatchers.IO) {
         val sessionFile = File(sessionsDir, "${session.id}.json")
         val json = JSONObject().apply {
             put("id", session.id)
@@ -476,7 +465,7 @@ class AgentCollaborationFramework(
             ?.forEach { file ->
                 try {
                     val json = JSONObject(file.readText())
-                    val session = CollaborationSession(
+        val session = CollaborationSession(
                         id = json.getString("id"),
                         name = json.getString("name"),
                         type = CollaborationType.valueOf(json.getString("type")),
@@ -498,7 +487,6 @@ class AgentCollaborationFramework(
                     AppLogger.w(TAG, "解析会话配置失败: ${file.name}", e)
                 }
             }
-
         if (status != null) {
             sessions.filter { it.status == status }
         } else {
@@ -548,23 +536,21 @@ class AgentCollaborationFramework(
             appendLine("代理数量: ${session.agents.size}")
             appendLine("任务数量: ${session.tasks.size}")
             appendLine()
-
-            val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+        val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
             appendLine("开始时�? ${timeFormat.format(Date(session.startTime))}")
             session.endTime?.let {
                 appendLine("结束时间: ${timeFormat.format(Date(it))}")
             }
         }
     }
-
-    private suspend fun callAI(systemPrompt: String, userPrompt: String): String {
+        private suspend fun callAI(systemPrompt: String, userPrompt: String): String {
         val history = listOf(
             PromptTurn(PromptTurnKind.SYSTEM, systemPrompt),
             PromptTurn(PromptTurnKind.USER, userPrompt)
         )
         return try {
             val stream = aiService.sendMessage(context, history, stream = false)
-            val sb = StringBuilder()
+        val sb = StringBuilder()
             stream.collect { chunk -> sb.append(chunk) }
             sb.toString()
         } catch (e: Exception) {
@@ -579,7 +565,6 @@ class AgentCollaborationFramework(
     suspend fun executeSession(sessionId: String): Boolean = withContext(Dispatchers.IO) {
         val session = activeSessions[sessionId] ?: return@withContext false
         AppLogger.d(TAG, "正在执行协作会话: ${session.name}, 类型: ${session.type}")
-
         val updatedSession = session.copy(status = SessionStatus.ACTIVE)
         saveSession(updatedSession)
         activeSessions[session.id] = updatedSession
@@ -592,7 +577,6 @@ class AgentCollaborationFramework(
                 true
             }
         }
-
         if (result) {
             val completedSession = updatedSession.copy(
                 status = SessionStatus.COMPLETED,
@@ -604,8 +588,7 @@ class AgentCollaborationFramework(
 
         result
     }
-
-    private suspend fun executeSequential(session: CollaborationSession): Boolean {
+        private suspend fun executeSequential(session: CollaborationSession): Boolean {
         session.tasks.forEach { taskId ->
             val task = activeTasks[taskId] ?: return@forEach
             AppLogger.d(TAG, "顺序执行任务: ${task.title}")
@@ -616,8 +599,7 @@ class AgentCollaborationFramework(
         }
         return true
     }
-
-    private suspend fun executeParallel(session: CollaborationSession): Boolean {
+        private suspend fun executeParallel(session: CollaborationSession): Boolean {
         val jobs = session.tasks.map { taskId ->
             val task = activeTasks[taskId] ?: return@map null
             async {
@@ -645,8 +627,8 @@ class AgentCollaborationFramework(
             val sessionKnowledgeDir = File(knowledgeDir, sessionId).also {
                 if (!it.exists()) it.mkdirs()
             }
-            val knowledgeFile = File(sessionKnowledgeDir, "${UUID.randomUUID()}.json")
-            val json = JSONObject().apply {
+        val knowledgeFile = File(sessionKnowledgeDir, "${UUID.randomUUID()}.json")
+        val json = JSONObject().apply {
                 put("key", key)
                 put("value", value)
                 put("agentId", agentId)
@@ -664,14 +646,13 @@ class AgentCollaborationFramework(
     suspend fun queryKnowledge(sessionId: String, query: String): List<String> = withContext(Dispatchers.IO) {
         val sessionKnowledgeDir = File(knowledgeDir, sessionId)
         if (!sessionKnowledgeDir.exists()) return@withContext emptyList()
-
         val results = mutableListOf<String>()
         sessionKnowledgeDir.listFiles { _, name -> name.endsWith(".json") }?.forEach { file ->
             try {
                 val json = JSONObject(file.readText())
-                val key = json.getString("key")
-                val value = json.getString("value")
-                if (key.contains(query, ignoreCase = true) || value.contains(query, ignoreCase = true)) {
+        val key = json.getString("key")
+        val value = json.getString("value")
+        if (key.contains(query, ignoreCase = true) || value.contains(query, ignoreCase = true)) {
                     results.add("${key}: ${value}")
                 }
             } catch (e: Exception) {
@@ -689,7 +670,6 @@ class AgentCollaborationFramework(
         agentOpinions: Map<String, String>
     ): String = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "正在解决冲突: ${topic}")
-
         val systemPrompt = "你是一个中立且专业的仲裁专家。你的任务是分析多个 AI 代理之间的观点冲突，并给出一个公平、合理的折中方案或最终决定�?
         val userPrompt = buildString {
             appendLine("冲突主题：的${topic}")
@@ -699,7 +679,6 @@ class AgentCollaborationFramework(
             }
             appendLine("\n请分析这些观点并给出建议的解决方案�?)
         }
-
         val resolution = callAI(systemPrompt, userPrompt)
         AppLogger.d(TAG, "冲突已解�? ${resolution}")
         resolution
@@ -712,7 +691,6 @@ class AgentCollaborationFramework(
         val task = activeTasks[taskId] ?: return@withContext emptyList()
 
         AppLogger.d(TAG, "正在分解任务: ${task.title}")
-
         val systemPrompt = "你是一个专业的项目经理和任务分解专家。你的任务是将一个复杂任务分解为多个具体的、可执行的子任务�?
         val userPrompt = """
             请将以下任务分解�?3-5 个具体的子任务�?
@@ -722,7 +700,6 @@ class AgentCollaborationFramework(
             请严格以 JSON 数组格式返回，每个对象包�?"title" (String) �?"description" (String)�?
             仅返�?JSON，不要有任何其他解释文字�?
         """.trimIndent()
-
         val response = callAI(systemPrompt, userPrompt)
         val subtasks = mutableListOf<Task>()
 
@@ -732,10 +709,9 @@ class AgentCollaborationFramework(
             } else {
                 JSONArray()
             }
-
-            for (i in 0 until jsonArray.length()) {
+        for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
-                val subtask = createTask(
+        val subtask = createTask(
                     title = obj.getString("title"),
                     description = obj.getString("description"),
                     priority = task.priority,
@@ -773,9 +749,8 @@ class AgentCollaborationFramework(
         tasksDir.listFiles()?.forEach { file ->
             try {
                 val json = JSONObject(file.readText())
-                val updatedAt = json.getLong("updatedAt")
-
-                if (updatedAt < cutoffTime) {
+        val updatedAt = json.getLong("updatedAt")
+        if (updatedAt < cutoffTime) {
                     file.delete()
                     AppLogger.d(TAG, "清理旧任�? ${file.name}")
                 }
@@ -789,11 +764,11 @@ class AgentCollaborationFramework(
     private suspend fun callForCollaboration(prompt: String, system: String = "你是一名专业的多代理协作协调者�?): String {
         return try {
             val ai = EnhancedAIService.getInstance(context)
-            val turns = listOf(
+        val turns = listOf(
                 PromptTurn(kind = PromptTurnKind.SYSTEM, content = system),
                 PromptTurn(kind = PromptTurnKind.USER, content = prompt)
             )
-            val result = StringBuilder()
+        val result = StringBuilder()
             ai.sendMessage(
                 message = turns[1].content,
                 functionType = com.apex.data.model.FunctionType.CHAT,
@@ -814,7 +789,6 @@ class AgentCollaborationFramework(
     suspend fun decomposeTask(taskId: String): List<String> = withContext(Dispatchers.IO) {
         val task = activeTasks[taskId]
             ?: return@withContext emptyList()
-
         val prompt = """
             请将以下复杂任务分解�?3-5 个可直接执行的子任务，每个子任务一行即可：
             标题: ${task.title}
@@ -829,7 +803,6 @@ class AgentCollaborationFramework(
               ]
             }
         """.trimIndent()
-
         val response = callForCollaboration(prompt)
         parseJsonStringList(response, "subtasks").ifEmpty {
             listOf(
@@ -870,12 +843,12 @@ class AgentCollaborationFramework(
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             val sessionFile = File(context.filesDir, "knowledge_${sessionId}.json")
-            val json = if (sessionFile.exists()) {
+        val json = if (sessionFile.exists()) {
                 JSONObject(sessionFile.readText())
             } else {
                 JSONObject().put("sessionId", sessionId).put("entries", JSONArray())
             }
-            val entry = JSONObject().apply {
+        val entry = JSONObject().apply {
                 put("key", key)
                 put("value", value)
                 put("agentId", agentId)
@@ -898,18 +871,16 @@ class AgentCollaborationFramework(
         withContext(Dispatchers.IO) {
             try {
                 val sessionFile = File(context.filesDir, "knowledge_${sessionId}.json")
-                if (!sessionFile.exists()) return@withContext emptyList()
-
-                val json = JSONObject(sessionFile.readText())
-                val entries = json.getJSONArray("entries")
-                val result = mutableListOf<Pair<String, String>>()
-                val keywords = query.split(Regex("[\\s,，]+")).filter { it.isNotBlank() }
-
-                for (i in 0 until entries.length()) {
+        if (!sessionFile.exists()) return@withContext emptyList()
+        val json = JSONObject(sessionFile.readText())
+        val entries = json.getJSONArray("entries")
+        val result = mutableListOf<Pair<String, String>>()
+        val keywords = query.split(Regex("[\\s,，]+")).filter { it.isNotBlank() }
+        for (i in 0 until entries.length()) {
                     val e = entries.getJSONObject(i)
-                    val key = e.optString("key", "")
-                    val value = e.optString("value", "")
-                    if (keywords.any { kw ->
+        val key = e.optString("key", "")
+        val value = e.optString("value", "")
+        if (keywords.any { kw ->
                             key.contains(kw, ignoreCase = true) || value.contains(kw, ignoreCase = true)
                     }) {
                         result.add(key to value)
@@ -921,14 +892,13 @@ class AgentCollaborationFramework(
                 emptyList()
             }
         }
-
-    private fun parseJsonStringList(response: String, arrayKey: String): List<String> {
+        private fun parseJsonStringList(response: String, arrayKey: String): List<String> {
         return try {
             val start = response.indexOf("{")
-            val end = response.lastIndexOf("}")
-            if (start < 0 || end <= start) return emptyList()
-            val json = JSONObject(response.substring(start, end + 1))
-            val array = json.optJSONArray(arrayKey) ?: return emptyList()
+        val end = response.lastIndexOf("}")
+        if (start < 0 || end <= start) return emptyList()
+        val json = JSONObject(response.substring(start, end + 1))
+        val array = json.optJSONArray(arrayKey) ?: return emptyList()
             List(array.length()) { i -> array.optString(i, "").trim() }.filter { it.isNotBlank() }
         } catch (e: Exception) {
             emptyList()

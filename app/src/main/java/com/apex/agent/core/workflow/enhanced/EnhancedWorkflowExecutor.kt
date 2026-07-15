@@ -161,13 +161,12 @@ class EnhancedWorkflowExecutor private constructor(
 
     /** 执行事件流（实时） */
     private val _events = MutableSharedFlow<ExecutionEvent>(extraBufferCapacity = 256)
-    val events: SharedFlow<ExecutionEvent> = _events.asSharedFlow()
+        val events: SharedFlow<ExecutionEvent> = _events.asSharedFlow()
 
     /** 活跃执行状态 */
     private val _activeExecutions = MutableStateFlow<Map<String, ExecutionState>>(emptyMap())
-    val activeExecutions: StateFlow<Map<String, ExecutionState>> = _activeExecutions.asStateFlow()
-
-    private val runningJobs = ConcurrentHashMap<String, Job>()
+        val activeExecutions: StateFlow<Map<String, ExecutionState>> = _activeExecutions.asStateFlow()
+        private val runningJobs = ConcurrentHashMap<String, Job>()
 
     /**
      * 执行工作流
@@ -258,7 +257,7 @@ class EnhancedWorkflowExecutor private constructor(
             rootSpan.recordException(e)
             rootSpan.end(SpanStatus.ERROR)
             _events.emit(ExecutionEvent.WorkflowCancelled(threadId, e.message ?: ""))
-            throw e
+        throw e
         } catch (e: Throwable) {
             rootSpan.recordException(e)
             rootSpan.end(SpanStatus.ERROR)
@@ -327,7 +326,6 @@ class EnhancedWorkflowExecutor private constructor(
     val sortedNodes = validator.validate(workflow).topologicalOrder.mapNotNull { id ->
             workflow.getNodeById(id)
         }.filter { it.type == EnhancedNodeType.EXECUTE || it.type == EnhancedNodeType.SAGA }
-
         val sagaBuilder = SagaBuilder<Any?>()
         for (node in sortedNodes) {
             sagaBuilder.step(
@@ -351,10 +349,8 @@ class EnhancedWorkflowExecutor private constructor(
                 }
             )
         }
-
         val saga = sagaBuilder.build()
         val sagaResult = saga.run()
-
         when (sagaResult) {
             is SagaResult.Success -> ExecutionResult(
                 threadId = context.threadId,
@@ -392,7 +388,7 @@ class EnhancedWorkflowExecutor private constructor(
     ) {
         if (!node.enabled) {
             context.nodeResults[node.id] = NodeResult.Skipped("节点已禁用")
-            return
+        return
         }
         if (node.id in context.executionPath) return  // 防止重复执行
         context.executionPath.add(node.id)
@@ -430,7 +426,7 @@ class EnhancedWorkflowExecutor private constructor(
                 ConnectionConditionDef.FALSE -> nodeResult is NodeResult.Failure
                 ConnectionConditionDef.ALWAYS -> true
             }
-            if (shouldTraverse) {
+        if (shouldTraverse) {
                 val nextNode = context.workflow.getNodeById(conn.targetNodeId) ?: continue
                 executeNodeCascade(nextNode, context, parentSpanId)
             }
@@ -456,7 +452,6 @@ class EnhancedWorkflowExecutor private constructor(
                 "node.retryPolicy" to (node.retryPolicy?.toString() ?: "default")
             )
         )
-
         val startTime = System.currentTimeMillis()
         var result: NodeResult
 
@@ -475,7 +470,7 @@ class EnhancedWorkflowExecutor private constructor(
         } catch (e: CancellationException) {
             span.recordException(e)
             span.end(SpanStatus.ERROR)
-            throw e
+        throw e
         } catch (e: Throwable) {
             result = NodeResult.Failure(e, System.currentTimeMillis() - startTime)
             span.recordException(e)
@@ -504,7 +499,6 @@ class EnhancedWorkflowExecutor private constructor(
                 durationMs = System.currentTimeMillis() - startTime
             )
         )
-
         return result
     }
 
@@ -555,8 +549,7 @@ class EnhancedWorkflowExecutor private constructor(
             NodeResult.Success("manual", System.currentTimeMillis() - start)
         }
     }
-
-    private suspend fun executeActionNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
+        private suspend fun executeActionNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
         val start = System.currentTimeMillis()
         val actionType = node.config.actionType
             ?: return NodeResult.Failure(IllegalStateException("缺少 actionType"), 0)
@@ -567,7 +560,6 @@ class EnhancedWorkflowExecutor private constructor(
     val resolvedParams = node.config.actionConfig.mapValues { (_, v) ->
             resolveParameterValue(v, context)
         }
-
         return when (val r = handler.execute(actionType, resolvedParams, context)) {
             is ActionResult.Success -> {
                 context.variables["__last_output"] = r.output
@@ -579,21 +571,19 @@ class EnhancedWorkflowExecutor private constructor(
             )
         }
     }
-
-    private suspend fun executeConditionNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
+        private suspend fun executeConditionNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
         val start = System.currentTimeMillis()
         val left = node.config.left?.resolve(context.variables)
             ?: return NodeResult.Failure(IllegalStateException("条件缺少 left"), 0)
         val right = node.config.right?.resolve(context.variables) ?: ""
         val op = node.config.operator ?: "="
-
         val result = when (op.uppercase()) {
             "=", "==" -> left == right
             "!=", "<>" -> left != right
             ">", "<", ">=", "<=" -> {
                 val ln = left.toDoubleOrNull()
-                val rn = right.toDoubleOrNull()
-                if (ln != null && rn != null) {
+        val rn = right.toDoubleOrNull()
+        if (ln != null && rn != null) {
                     when (op) {
                         ">" -> ln > rn
                         "<" -> ln < rn
@@ -613,8 +603,7 @@ class EnhancedWorkflowExecutor private constructor(
         context.variables["__cond_${node.id}"] = result
         return NodeResult.Success(result.toString(), System.currentTimeMillis() - start)
     }
-
-    private suspend fun executeLogicNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
+        private suspend fun executeLogicNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
         val start = System.currentTimeMillis()
         val op = node.config.operator?.uppercase() ?: "AND"
         // 简化实现：对 inputs 列表求布尔值
@@ -630,8 +619,7 @@ class EnhancedWorkflowExecutor private constructor(
         }
         return NodeResult.Success(result.toString(), System.currentTimeMillis() - start)
     }
-
-    private suspend fun executeExtractNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
+        private suspend fun executeExtractNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
         val start = System.currentTimeMillis()
         val mode = node.config.extractMode ?: return NodeResult.Failure(
             IllegalStateException("缺少 extractMode"), 0
@@ -646,7 +634,7 @@ class EnhancedWorkflowExecutor private constructor(
                 val path = node.config.expression ?: ""
                 try {
                     val json = Json.parseToJsonElement(source)
-                    var current = json
+        var current = json
                     for (seg in path.split(".")) {
                         current = current.jsonObject[seg] ?: return@executeExtractNode NodeResult.Success(
                             "", System.currentTimeMillis() - start
@@ -678,7 +666,7 @@ class EnhancedWorkflowExecutor private constructor(
                 node.config.expression?.let { expr ->
                     try {
                         val json = Json.parseToJsonElement(source)
-                        var current = json
+        var current = json
                         for (seg in expr.removePrefix(".").split(".")) {
                             current = current.jsonObject[seg] ?: return@executeExtractNode NodeResult.Success("", System.currentTimeMillis() - start)
                         }
@@ -689,8 +677,7 @@ class EnhancedWorkflowExecutor private constructor(
         }
         return NodeResult.Success(result, System.currentTimeMillis() - start)
     }
-
-    private suspend fun executeFanOutNode(
+        private suspend fun executeFanOutNode(
         node: EnhancedNode,
         context: ExecutionContext,
         spanId: String
@@ -706,11 +693,9 @@ class EnhancedWorkflowExecutor private constructor(
             is String -> itemsRaw.split(",").map { it.trim() }.filter { it.isNotEmpty() }
             else -> listOf(itemsRaw ?: "")
         }
-
         val downstreamNodes = context.workflow.getOutgoingConnections(node.id)
             .mapNotNull { context.workflow.getNodeById(it.targetNodeId) }
             .filter { it.type != EnhancedNodeType.FAN_IN }
-
         val result = parallelExecutor.fanOut(
             items = items,
             maxConcurrency = spec.maxConcurrency,
@@ -729,8 +714,7 @@ class EnhancedWorkflowExecutor private constructor(
         context.variables["__fanout_${node.id}_result"] = result.outputs
         return NodeResult.Success(result.outputs, System.currentTimeMillis() - start)
     }
-
-    private suspend fun executeFanInNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
+        private suspend fun executeFanInNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
         val start = System.currentTimeMillis()
         val spec = node.config.fanInSpec ?: return NodeResult.Failure(
             IllegalStateException("缺少 fanInSpec"), 0
@@ -743,7 +727,6 @@ class EnhancedWorkflowExecutor private constructor(
             .mapNotNull { (id, r) ->
                 (r as? NodeResult.Success)?.output?.let { id to it }
             }.toMap()
-
         val aggregator = when (spec.aggregatorType) {
             AggregatorTypeDef.FIRST -> Aggregators.First
             AggregatorTypeDef.LAST -> Aggregators.Last
@@ -758,8 +741,7 @@ class EnhancedWorkflowExecutor private constructor(
         context.variables["__fanin_${node.id}_result"] = merged
         return NodeResult.Success(merged, System.currentTimeMillis() - start)
     }
-
-    private suspend fun executeLoopNode(
+        private suspend fun executeLoopNode(
         node: EnhancedNode,
         context: ExecutionContext,
         spanId: String
@@ -768,7 +750,6 @@ class EnhancedWorkflowExecutor private constructor(
         val spec = node.config.loopSpec ?: return NodeResult.Failure(
             IllegalStateException("缺少 loopSpec"), 0
         )
-
         val bodyNodes = spec.bodyNodeIds.mapNotNull { context.workflow.getNodeById(it) }
         val loopSpec: LoopSpec = when (spec.loopType) {
             LoopTypeDef.COUNT -> LoopSpec.Count(spec.times ?: 1, spec.maxConcurrency > 1)
@@ -792,7 +773,6 @@ class EnhancedWorkflowExecutor private constructor(
                 )
             }
         }
-
         val result = loopExecutor.execute(loopSpec) { loopCtx ->
             context.variables["__loop_iter"] = loopCtx.iteration
             context.variables["__loop_item"] = loopCtx.item
@@ -805,8 +785,7 @@ class EnhancedWorkflowExecutor private constructor(
         context.variables["__loop_${node.id}_result"] = result.outputs
         return NodeResult.Success(result.outputs, System.currentTimeMillis() - start)
     }
-
-    private suspend fun executeSubWorkflowNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
+        private suspend fun executeSubWorkflowNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
         val start = System.currentTimeMillis()
         val config = node.config.subWorkflowConfig ?: return NodeResult.Failure(
             IllegalStateException("缺少 subWorkflowConfig"), 0
@@ -814,7 +793,6 @@ class EnhancedWorkflowExecutor private constructor(
         if (subWorkflowExecutor == null) {
             return NodeResult.Failure(IllegalStateException("未配置子工作流执行器"), 0)
         }
-
         val invocation = SubWorkflowInvocation(
             subWorkflowId = config.subWorkflowId,
             subWorkflowVersion = config.subWorkflowVersion,
@@ -825,7 +803,6 @@ class EnhancedWorkflowExecutor private constructor(
             parentThreadId = context.threadId,
             parentNodeId = node.id
         )
-
         return when (val r = subWorkflowExecutor.invoke(invocation)) {
             is SubWorkflowResult.Completed -> {
                 context.variables.putAll(r.outputs)
@@ -843,13 +820,11 @@ class EnhancedWorkflowExecutor private constructor(
             )
         }
     }
-
-    private suspend fun executeHumanInputNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
+        private suspend fun executeHumanInputNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
         val start = System.currentTimeMillis()
         val config = node.config.humanInputConfig ?: return NodeResult.Failure(
             IllegalStateException("缺少 humanInputConfig"), 0
         )
-
         val payload = InterruptPayload(
             nodeId = node.id,
             threadId = context.threadId,
@@ -859,7 +834,6 @@ class EnhancedWorkflowExecutor private constructor(
             options = config.options,
             timeoutMs = config.timeoutMs
         )
-
         return try {
             val cmd = ApprovalGatewayHolder.get().awaitApproval(payload)
             context.variables["__approval_${node.id}"] = cmd.reason ?: "approved"
@@ -868,8 +842,7 @@ class EnhancedWorkflowExecutor private constructor(
             NodeResult.Failure(e, System.currentTimeMillis() - start)
         }
     }
-
-    private suspend fun executeDelayNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
+        private suspend fun executeDelayNode(node: EnhancedNode, context: ExecutionContext): NodeResult {
         val start = System.currentTimeMillis()
         val ms = node.config.delayMs ?: 0L
         if (ms > 0) delay(ms)
@@ -886,7 +859,7 @@ class EnhancedWorkflowExecutor private constructor(
         regex.findAll(value).forEach { m ->
             val (ref) = m.destructured
             val parts = ref.split(".", limit = 2)
-            val v = context.variables["__node_${parts[0]}_output"] ?: context.variables[parts[0]]
+        val v = context.variables["__node_${parts[0]}_output"] ?: context.variables[parts[0]]
             val resolved = if (parts.size == 2 && v is Map<*, *>) v[parts[1]]?.toString() ?: ""
                           else v?.toString() ?: ""
             result = result.replace("\${$ref}", resolved)
@@ -926,7 +899,6 @@ class EnhancedWorkflowExecutor private constructor(
     }
 
     // ============ 执行事件 ============
-
     sealed class ExecutionEvent {
         data class NodeStarted(val threadId: String, val nodeId: String, val nodeName: String) : ExecutionEvent()
         data class NodeCompleted(val threadId: String, val nodeId: String, val nodeName: String, val success: Boolean, val durationMs: Long) : ExecutionEvent()
@@ -963,19 +935,15 @@ class EnhancedWorkflowExecutor private constructor(
         fun withSubWorkflowExecutor(exec: DelegatingSubWorkflowExecutor) = apply {
             this.subWorkflowExecutor = exec
         }
-
         fun withActionHandler(actionType: String, handler: ActionHandler) = apply {
             actionHandlers[actionType] = handler
         }
-
         fun withCompensateHandler(actionType: String, handler: CompensateHandler) = apply {
             compensateHandlers[actionType] = handler
         }
-
         fun withTriggerHandler(type: TriggerTypeDef, handler: TriggerHandler) = apply {
             triggerHandlers[type] = handler
         }
-
         fun build(): EnhancedWorkflowExecutor {
             return EnhancedWorkflowExecutor(
                 tracer = tracer,

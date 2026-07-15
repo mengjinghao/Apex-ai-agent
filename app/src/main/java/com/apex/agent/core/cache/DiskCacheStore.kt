@@ -41,16 +41,14 @@ class DiskCacheStore(
 ) : ICacheStore<String, String> {
 
     private val log = LoggerFactory.getLogger(DiskCacheStore::class.java)
-    private val lock = ReentrantReadWriteLock()
-    private val index = ConcurrentHashMap<String, CacheEntry<String>>()
-
-    private val serializer = CacheSerialization
+        private val lock = ReentrantReadWriteLock()
+        private val index = ConcurrentHashMap<String, CacheEntry<String>>()
+        private val serializer = CacheSerialization
     private val scheduler: ScheduledExecutorService =
         Executors.newSingleThreadScheduledExecutor { r ->
             Thread(r, "disk-cache-cleanup").apply { isDaemon = true }
         }
-
-    private var hits: Long = 0L
+        private var hits: Long = 0L
     private var misses: Long = 0L
     private var evictions: Long = 0L
     private var currentDiskBytes: Long = 0L
@@ -74,27 +72,27 @@ class DiskCacheStore(
             val entry = index[key] ?: return null.also {
                 lock.write { misses++ }
             }
-            if (entry.isExpired()) {
+        if (entry.isExpired()) {
                 lock.write {
                     deleteFile(key)
                     index.remove(key)
                     misses++
                 }
-                return null
+        return null
             }
-            val jsonString = readFile(key) ?: return null.also {
+        val jsonString = readFile(key) ?: return null.also {
                 lock.write {
                     index.remove(key)
                     misses++
                 }
             }
-            val deserialized = serializer.deserialize(jsonString) { it }
-            val updated = deserialized.recordAccess()
+        val deserialized = serializer.deserialize(jsonString) { it }
+        val updated = deserialized.recordAccess()
             index[key] = updated
             lock.write {
                 hits++
             }
-            return updated
+        return updated
         }
     }
 
@@ -111,14 +109,14 @@ class DiskCacheStore(
     override fun remove(key: String): Boolean {
         lock.write {
             val existed = index.containsKey(key)
-            if (existed) {
+        if (existed) {
                 deleteFile(key)
-                val entry = index.remove(key)
-                if (entry != null) {
+        val entry = index.remove(key)
+        if (entry != null) {
                     currentDiskBytes -= entry.sizeBytes.coerceAtLeast(0)
                 }
             }
-            return existed
+        return existed
         }
     }
 
@@ -143,9 +141,9 @@ class DiskCacheStore(
                     deleteFile(key)
                     index.remove(key)
                 }
-                return false
+        return false
             }
-            return fileFor(key).exists()
+        return fileFor(key).exists()
         }
     }
 
@@ -167,7 +165,7 @@ class DiskCacheStore(
     override fun evict(policy: CachePolicy): List<String> {
         lock.write {
             val evictedKeys = mutableListOf<String>()
-            val candidates = when (policy) {
+        val candidates = when (policy) {
                 is CachePolicy.TtlPolicy -> {
                     index.values.filter { it.isExpired() }.map { it.key }
                 }
@@ -186,10 +184,10 @@ class DiskCacheStore(
                         .map { it.key }
                 }
             }
-            for (key in candidates) {
+        for (key in candidates) {
                 deleteFile(key)
-                val entry = index.remove(key)
-                if (entry != null) {
+        val entry = index.remove(key)
+        if (entry != null) {
                     currentDiskBytes -= entry.sizeBytes.coerceAtLeast(0)
                     evictedKeys.add(key)
                 }
@@ -203,7 +201,7 @@ class DiskCacheStore(
         var loaded = 0
         for (key in keys) {
             val file = fileFor(key)
-            if (file.exists()) {
+        if (file.exists()) {
                 loaded++
             }
         }
@@ -230,7 +228,7 @@ class DiskCacheStore(
                 if (file.isFile && file.extension == "json") {
                     try {
                         val content = file.readText()
-                        val wrapper = serializer.json.decodeFromString<
+        val wrapper = serializer.json.decodeFromString<
                             CacheSerialization.JsonElement
                         >(content)
                         // 简化重建：仅记录 key 和文件存在性
@@ -306,12 +304,12 @@ class DiskCacheStore(
         if (maxSize > 0 && index.size > maxSize) {
             val overage = index.size - maxSize
             val entries = index.values.sortedBy { it.lastAccessedAt }
-            for (i in 0 until overage) {
+        for (i in 0 until overage) {
                 if (i >= entries.size) break
                 val key = entries[i].key
                 deleteFile(key)
-                val removed = index.remove(key)
-                if (removed != null) {
+        val removed = index.remove(key)
+        if (removed != null) {
                     currentDiskBytes -= removed.sizeBytes.coerceAtLeast(0)
                     evictions++
                 }
@@ -319,11 +317,11 @@ class DiskCacheStore(
         }
         if (maxDiskBytes > 0 && currentDiskBytes > maxDiskBytes) {
             val entries = index.values.sortedBy { it.lastAccessedAt }
-            for (entry in entries) {
+        for (entry in entries) {
                 if (currentDiskBytes <= maxDiskBytes) break
                 deleteFile(entry.key)
-                val removed = index.remove(entry.key)
-                if (removed != null) {
+        val removed = index.remove(entry.key)
+        if (removed != null) {
                     currentDiskBytes -= removed.sizeBytes.coerceAtLeast(0)
                     evictions++
                 }
@@ -335,13 +333,13 @@ class DiskCacheStore(
     private fun cleanupExpired() {
         lock.write {
             val expired = index.values.filter { it.isExpired() }
-            for (entry in expired) {
+        for (entry in expired) {
                 deleteFile(entry.key)
                 index.remove(entry.key)
                 currentDiskBytes -= entry.sizeBytes.coerceAtLeast(0)
                 evictions++
             }
-            if (expired.isNotEmpty()) {
+        if (expired.isNotEmpty()) {
                 log.info("cleanupExpired: removed {} expired entries", expired.size)
             }
         }

@@ -91,7 +91,7 @@ object DynamicModelParamsAdapter {
     for (rule in scenarioRules) {
             if (matchesAnyKeyword(inputLower, rule.keywords)) {
                 AppLogger.d(TAG, "匹配到场�?${rule.scenario.name}, 用户输入: ${userInput.take(50)}")
-                return rule.params
+        return rule.params
             }
         }
         
@@ -114,7 +114,6 @@ object DynamicModelParamsAdapter {
      */
     fun getScenarioDescription(userInput: String): String {
         val inputLower = userInput.lowercase()
-        
         for (rule in scenarioRules) {
             if (matchesAnyKeyword(inputLower, rule.keywords)) {
                 return when (rule.scenario) {
@@ -124,7 +123,6 @@ object DynamicModelParamsAdapter {
                 }
             }
         }
-        
         return "通用平衡"
     }
 }

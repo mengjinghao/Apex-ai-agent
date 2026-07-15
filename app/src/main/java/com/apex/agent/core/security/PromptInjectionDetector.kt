@@ -115,19 +115,19 @@ class PromptInjectionDetector {
 
             // ===== 中文模式 =====
             add(InjectionPattern(
-                pattern = Pattern.compile("忽略之前�?所有）?(指令|指示|规则|设定�?),
+                pattern = Pattern.compile("忽略之前�所有）?(指令|指示|规则|设定�?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.9f,
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("无视之前�?所有）?(指令|指示|规则|设定�?),
+                pattern = Pattern.compile("无视之前�所有）?(指令|指示|规则|设定�?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.9f,
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("忘记之前�?所有）?(指令|指示|规则|设定|内容�?),
+                pattern = Pattern.compile("忘记之前�所有）?(指令|指示|规则|设定|内容�?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.85f,
                 severity = RiskLevel.HIGH
@@ -151,7 +151,7 @@ class PromptInjectionDetector {
                 severity = RiskLevel.MEDIUM
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("从现在开始[�?]?�?是一个|将成为|扮演�?),
+                pattern = Pattern.compile("从现在开始[�?]?�是一个|将成为|扮演�?),
                 type = InjectionPatternType.ROLE_ASSIGNMENT,
                 baseConfidence = 0.8f,
                 severity = RiskLevel.HIGH
@@ -163,7 +163,7 @@ class PromptInjectionDetector {
                 severity = RiskLevel.HIGH
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("覆盖(之前|原有|你的�?所有）?(指令|规则|设定�?),
+                pattern = Pattern.compile("覆盖(之前|原有|你的�所有）?(指令|规则|设定�?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.9f,
                 severity = RiskLevel.CRITICAL
@@ -181,7 +181,7 @@ class PromptInjectionDetector {
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("进入(开发者|管理员|根|上帝�?模式"),
+                pattern = Pattern.compile("进入(开发者|管理员|根|上帝�模式"),
                 type = InjectionPatternType.JAILBREAK,
                 baseConfidence = 0.85f,
                 severity = RiskLevel.CRITICAL
@@ -241,7 +241,6 @@ class PromptInjectionDetector {
      * @return 发现的注入模式列�?     */
     fun detectInjectionPatterns(input: String): List<InjectionFinding> {
         if (input.isEmpty()) return emptyList()
-
         val findings = mutableListOf<InjectionFinding>()
 
         INJECTION_PATTERNS.forEach { injectionPattern ->
@@ -260,7 +259,6 @@ class PromptInjectionDetector {
                 break
             }
         }
-
         return findings
     }
 
@@ -270,7 +268,6 @@ class PromptInjectionDetector {
      * @return 发现的角色劫持发现列�?     */
     fun detectRoleHijacking(input: String): List<InjectionFinding> {
         if (input.isEmpty()) return emptyList()
-
         val findings = mutableListOf<InjectionFinding>()
 
         ROLE_HIJACK_PATTERNS.forEach { hijackPattern ->
@@ -288,7 +285,6 @@ class PromptInjectionDetector {
                 break
             }
         }
-
         return findings
     }
 
@@ -301,13 +297,11 @@ class PromptInjectionDetector {
     fun detectAll(input: String): List<InjectionFinding> {
         val patternFindings = detectInjectionPatterns(input)
         val hijackFindings = detectRoleHijacking(input)
-
         val allFindings = patternFindings + hijackFindings
 
         if (allFindings.isNotEmpty()) {
-            AppLogger.w(TAG, "检测到 ${allFindings.size} 个提示注�?角色劫持模式")
+            AppLogger.w(TAG, "检测到 ${allFindings.size} 个提示注�角色劫持模式")
         }
-
         return allFindings
     }
 }
@@ -320,7 +314,7 @@ enum class InjectionPatternType {
     ROLE_ASSIGNMENT,
     /** 角色劫持：试图改�?AI 的身份和行为 */
     ROLE_HIJACK,
-    /** 角色标记：伪装系�?助手/用户角色标记 */
+    /** 角色标记：伪装系�助手/用户角色标记 */
     ROLE_MARKER,
     /** 安全绕过：试图绕过安全限�?*/
     SAFETY_BYPASS,

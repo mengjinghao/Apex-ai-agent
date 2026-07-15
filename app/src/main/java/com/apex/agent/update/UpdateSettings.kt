@@ -180,16 +180,15 @@ object VersionComparator {
         }
         return ParsedVersion(coreParts, preParts, pre.isBlank())
     }
-
-    fun compare(a: String, b: String): Int {
+        fun compare(a: String, b: String): Int {
         val pa = parse(a)
         val pb = parse(b)
         // 比较 core 部分
     val maxLen = maxOf(pa.core.size, pb.core.size)
         for (i in 0 until maxLen) {
             val av = pa.core.getOrElse(i) { 0 }
-            val bv = pb.core.getOrElse(i) { 0 }
-            if (av != bv) return av - bv
+        val bv = pb.core.getOrElse(i) { 0 }
+        if (av != bv) return av - bv
         }
         // 都没有预发布 → 相等
         // 一个有预发布、一个没有 → 没有的更大（正式版 > 预发布版）
@@ -200,10 +199,10 @@ object VersionComparator {
             else -> {
                 // 都有预发布，逐段比较
     val maxPre = maxOf(pa.pre.size, pb.pre.size)
-                for (i in 0 until maxPre) {
+        for (i in 0 until maxPre) {
                     val av = pa.pre.getOrElse(i) { 0 }
-                    val bv = pb.pre.getOrElse(i) { 0 }
-                    if (av != bv) return av - bv
+        val bv = pb.pre.getOrElse(i) { 0 }
+        if (av != bv) return av - bv
                 }
                 0
             }
@@ -223,14 +222,14 @@ object VersionComparator {
 /** 将字节数格式化为人类可读字符串。 */
 internal fun formatBytes(bytes: Long): String {
     if (bytes <= 0) return "0 B"
-    val units = arrayOf("B", "KB", "MB", "GB", "TB")
-    var v = bytes.toDouble()
-    var idx = 0
+        val units = arrayOf("B", "KB", "MB", "GB", "TB")
+        var v = bytes.toDouble()
+        var idx = 0
     while (v >= 1024.0 && idx < units.lastIndex) {
         v /= 1024.0
         idx++
     }
-    return if (idx == 0) "${bytes} B" else String.format(java.util.Locale.US, "%.1f %s", v, units[idx])
+        return if (idx == 0) "${bytes} B" else String.format(java.util.Locale.US, "%.1f %s", v, units[idx])
 }
 
 /**
@@ -250,19 +249,19 @@ internal fun extractSha256(release: UpdateRelease, apkAsset: UpdateAsset): Strin
         val apk = apkAsset.name.lowercase()
         n == "$apk.sha256" || n == "$apk.sha256sum" || n == "$apk.txt"
     }
-    if (shaAsset != null) {
+        if (shaAsset != null) {
         // GitHub 资源需要 token 才能直接拉内容，这里只能拿到 URL。
         // 简化处理：仅尝试从 URL 文件名推断（无法直接 fetch，因为浏览器下载会跳转）。
         // 实际下载时再尝试拉取 .sha256 内容并比对。
     return null
     }
-    val notes = release.body ?: return null
+        val notes = release.body ?: return null
     // 2. release notes 中的 "SHA-256: <hex>"
-    val shaRegex = Regex("(?:SHA-?256|sha256)[:\\s]+([0-9a-fA-F]{64})", RegexOption.IGNORE_CASE)
+        val shaRegex = Regex("(?:SHA-?256|sha256)[:\\s]+([0-9a-fA-F]{64})", RegexOption.IGNORE_CASE)
     shaRegex.find(notes)?.let { return it.groupValues[1].lowercase() }
     // 3. release notes 中的 "<apk-name>: <hex>"
-    val apkName = Regex.escape(apkAsset.name)
-    val nameRegex = Regex("$apkName[:\\s]+([0-9a-fA-F]{64})", RegexOption.IGNORE_CASE)
+        val apkName = Regex.escape(apkAsset.name)
+        val nameRegex = Regex("$apkName[:\\s]+([0-9a-fA-F]{64})", RegexOption.IGNORE_CASE)
     nameRegex.find(notes)?.let { return it.groupValues[1].lowercase() }
-    return null
+        return null
 }

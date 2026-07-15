@@ -41,8 +41,7 @@ class ToolCallProtocolAdapter {
             Protocol.AUTO -> buildOpenAIDefinitions(filtered, config)
         }
     }
-
-    fun parseToolCalls(
+        fun parseToolCalls(
         response: String,
         registry: (String) -> ToolSpec?,
         protocol: Protocol = Protocol.AUTO
@@ -55,8 +54,7 @@ class ToolCallProtocolAdapter {
             Protocol.AUTO -> autoDetectAndParse(response, registry)
         }
     }
-
-    fun convertToolCallsToNative(
+        fun convertToolCallsToNative(
         calls: List<ParsedToolCall>,
         targetProtocol: Protocol
     ): Any {
@@ -68,21 +66,20 @@ class ToolCallProtocolAdapter {
             else -> convertToOpenAIFormat(calls)
         }
     }
-
-    fun convertResultToXml(
+        fun convertResultToXml(
         results: List<ExecutionResult>,
         toolCalls: List<ParsedToolCall>
     ): String {
         val sb = StringBuilder()
         for ((i, result) in results.withIndex()) {
             val call = toolCalls.find { it.toolCallId == result.toolCallId }
-            val toolName = call?.rawName ?: result.toolName
+        val toolName = call?.rawName ?: result.toolName
             sb.appendLine("<result tool=\"$toolName\" id=\"${result.toolCallId}\">")
-            when (val outcome = result.outcome) {
+        when (val outcome = result.outcome) {
                 is ToolOutcome.Success -> {
                     sb.appendLine("  <status>success</status>")
                     sb.appendLine("  <data>${escapeXml(outcome.data)}</data>")
-                    if (outcome.metadata.isNotEmpty()) {
+        if (outcome.metadata.isNotEmpty()) {
                         sb.appendLine("  <metadata>${escapeXml(JSONObject(outcome.metadata).toString())}</metadata>")
                     }
                 }
@@ -99,12 +96,10 @@ class ToolCallProtocolAdapter {
         }
         return sb.toString()
     }
-
-    private fun resolveProtocol(preferred: Protocol): Protocol {
+        private fun resolveProtocol(preferred: Protocol): Protocol {
         return if (preferred == Protocol.AUTO) Protocol.NATIVE_OPENAI else preferred
     }
-
-    private fun buildOpenAIDefinitions(
+        private fun buildOpenAIDefinitions(
         tools: List<ToolSpec>,
         config: ProtocolConfig
     ): ToolDefinitions {
@@ -114,7 +109,7 @@ class ToolCallProtocolAdapter {
             fn.put("name", tool.name)
             fn.put("description", truncate(tool.description, config.maxToolDescriptionLen))
             fn.put("parameters", buildJsonSchema(tool.parameters))
-            val definition = JSONObject().apply {
+        val definition = JSONObject().apply {
                 put("type", "function")
                 put("function", fn)
             }
@@ -122,8 +117,7 @@ class ToolCallProtocolAdapter {
         }
         return ToolDefinitions(Protocol.NATIVE_OPENAI, arr)
     }
-
-    private fun buildAnthropicDefinitions(
+        private fun buildAnthropicDefinitions(
         tools: List<ToolSpec>,
         config: ProtocolConfig
     ): ToolDefinitions {
@@ -137,8 +131,7 @@ class ToolCallProtocolAdapter {
         }
         return ToolDefinitions(Protocol.NATIVE_ANTHROPIC, arr)
     }
-
-    private fun buildXmlPrompt(
+        private fun buildXmlPrompt(
         tools: List<ToolSpec>,
         config: ProtocolConfig
     ): ToolDefinitions {
@@ -148,9 +141,9 @@ class ToolCallProtocolAdapter {
         for (tool in tools) {
             sb.appendLine("<tool name=\"${tool.name}\">")
             sb.appendLine("  <description>${escapeXml(tool.description)}</description>")
-            if (tool.parameters.isNotEmpty()) {
+        if (tool.parameters.isNotEmpty()) {
                 sb.appendLine("  <parameters>")
-                for (param in tool.parameters) {
+        for (param in tool.parameters) {
                     val req = if (param.required) " required=\"true\"" else ""
                     sb.appendLine("    <param name=\"${param.name}\" type=\"${param.type.name.lowercase()}\"$req>")
                     sb.appendLine("      <description>${escapeXml(param.description)}</description>")
@@ -170,8 +163,7 @@ class ToolCallProtocolAdapter {
         sb.appendLine("Use format: <tool name=\"tool_name\"><param name=\"param_name\">value</param></tool>")
         return ToolDefinitions(Protocol.XML, sb.toString(), sb.toString())
     }
-
-    private fun buildTextPrompt(
+        private fun buildTextPrompt(
         tools: List<ToolSpec>,
         config: ProtocolConfig
     ): ToolDefinitions {
@@ -192,8 +184,7 @@ class ToolCallProtocolAdapter {
         }
         return ToolDefinitions(Protocol.TEXT, sb.toString(), sb.toString())
     }
-
-    private fun buildJsonSchema(params: List<ParameterSpec>): JSONObject {
+        private fun buildJsonSchema(params: List<ParameterSpec>): JSONObject {
         val schema = JSONObject()
         schema.put("type", "object")
         val properties = JSONObject()
@@ -202,17 +193,17 @@ class ToolCallProtocolAdapter {
             val prop = JSONObject()
             prop.put("type", mapTypeToJsonSchema(param.type))
             prop.put("description", param.description)
-            if (param.defaultValue != null) {
+        if (param.defaultValue != null) {
                 prop.put("default", param.defaultValue)
             }
-            if (param.enumValues != null) {
+        if (param.enumValues != null) {
                 prop.put("enum", JSONArray(param.enumValues))
             }
-            if (param.examples != null) {
+        if (param.examples != null) {
                 prop.put("examples", JSONArray(param.examples))
             }
             properties.put(param.name, prop)
-            if (param.required) {
+        if (param.required) {
                 required.put(param.name)
             }
         }
@@ -222,8 +213,7 @@ class ToolCallProtocolAdapter {
         }
         return schema
     }
-
-    private fun mapTypeToJsonSchema(type: ParameterType): String {
+        private fun mapTypeToJsonSchema(type: ParameterType): String {
         return when (type) {
             ParameterType.STRING -> "string"
             ParameterType.INTEGER -> "integer"
@@ -236,32 +226,31 @@ class ToolCallProtocolAdapter {
             ParameterType.OBJECT -> "object"
         }
     }
-
-    private fun parseOpenAIToolCalls(
+        private fun parseOpenAIToolCalls(
         response: String,
         registry: (String) -> ToolSpec?
     ): List<ParsedToolCall> {
         val results = mutableListOf<ParsedToolCall>()
         try {
             val json = JSONObject(response)
-            val choices = json.optJSONArray("choices") ?: return results
+        val choices = json.optJSONArray("choices") ?: return results
             for (i in 0 until choices.length()) {
                 val choice = choices.getJSONObject(i)
-                val delta = choice.optJSONObject("delta") ?: choice.optJSONObject("message") ?: continue
+        val delta = choice.optJSONObject("delta") ?: choice.optJSONObject("message") ?: continue
                 val toolCalls = delta.optJSONArray("tool_calls") ?: continue
                 for (j in 0 until toolCalls.length()) {
                     val tc = toolCalls.getJSONObject(j)
-                    val id = tc.optString("id", UUID.randomUUID().toString())
-                    val fn = tc.optJSONObject("function") ?: continue
+        val id = tc.optString("id", UUID.randomUUID().toString())
+        val fn = tc.optJSONObject("function") ?: continue
                     val name = fn.optString("name", "")
-                    val argsStr = fn.optString("arguments", "{}")
-                    val args = try {
+        val argsStr = fn.optString("arguments", "{}")
+        val args = try {
                         JSONObject(argsStr).toMap()
                     } catch (_: Exception) {
                         emptyMap()
                     }
-                    val spec = registry(name)
-                    if (spec != null) {
+        val spec = registry(name)
+        if (spec != null) {
                         results.add(ParsedToolCall(id, spec, args, name))
                     }
                 }
@@ -269,62 +258,57 @@ class ToolCallProtocolAdapter {
         } catch (e: Exception) { AppLogger.e(TAG, "parseOpenAIToolCalls failed", e) }
         return results
     }
-
-    private fun parseAnthropicToolCalls(
+        private fun parseAnthropicToolCalls(
         response: String,
         registry: (String) -> ToolSpec?
     ): List<ParsedToolCall> {
         val results = mutableListOf<ParsedToolCall>()
         try {
             val json = JSONObject(response)
-            val content = json.optJSONArray("content") ?: return results
+        val content = json.optJSONArray("content") ?: return results
             for (i in 0 until content.length()) {
                 val block = content.getJSONObject(i)
-                if (block.optString("type") != "tool_use") continue
+        if (block.optString("type") != "tool_use") continue
                 val id = block.optString("id", UUID.randomUUID().toString())
-                val name = block.optString("name", "")
-                val input = block.optJSONObject("input")?.toMap() ?: emptyMap()
-                val spec = registry(name)
-                if (spec != null) {
+        val name = block.optString("name", "")
+        val input = block.optJSONObject("input")?.toMap() ?: emptyMap()
+        val spec = registry(name)
+        if (spec != null) {
                     results.add(ParsedToolCall(id, spec, input, name))
                 }
             }
         } catch (e: Exception) { AppLogger.e(TAG, "parseAnthropicToolCalls failed", e) }
         return results
     }
-
-    private fun parseXmlToolCalls(
+        private fun parseXmlToolCalls(
         response: String,
         registry: (String) -> ToolSpec?
     ): List<ParsedToolCall> {
         val results = mutableListOf<ParsedToolCall>()
         val toolPattern = Regex("<tool\\s+name\\s*=\\s*\"([^\"]+)\"\\s*>([\\s\\S]*?)</tool>")
         val paramPattern = Regex("<param\\s+name\\s*=\\s*\"([^\"]+)\"\\s*>([\\s\\S]*?)</param>")
-
         for (match in toolPattern.findAll(response)) {
             val name = match.groupValues[1]
             val body = match.groupValues[2]
             val args = mutableMapOf<String, Any?>()
-            for (pm in paramPattern.findAll(body)) {
+        for (pm in paramPattern.findAll(body)) {
                 args[pm.groupValues[1]] = pm.groupValues[2].trim()
             }
-            val spec = registry(name)
-            val id = UUID.randomUUID().toString()
-            if (spec != null) {
+        val spec = registry(name)
+        val id = UUID.randomUUID().toString()
+        if (spec != null) {
                 results.add(ParsedToolCall(id, spec, args, name))
             }
         }
         return results
     }
-
-    private fun parseTextToolCalls(
+        private fun parseTextToolCalls(
         response: String,
         registry: (String) -> ToolSpec?
     ): List<ParsedToolCall> {
         return parseXmlToolCalls(response, registry)
     }
-
-    private fun autoDetectAndParse(
+        private fun autoDetectAndParse(
         response: String,
         registry: (String) -> ToolSpec?
     ): List<ParsedToolCall> {
@@ -339,8 +323,7 @@ class ToolCallProtocolAdapter {
             else -> parseXmlToolCalls(trimmed, registry)
         }
     }
-
-    private fun convertToOpenAIFormat(calls: List<ParsedToolCall>): JSONArray {
+        private fun convertToOpenAIFormat(calls: List<ParsedToolCall>): JSONArray {
         val arr = JSONArray()
         for (call in calls) {
             val tc = JSONObject().apply {
@@ -355,8 +338,7 @@ class ToolCallProtocolAdapter {
         }
         return arr
     }
-
-    private fun convertToAnthropicFormat(calls: List<ParsedToolCall>): JSONArray {
+        private fun convertToAnthropicFormat(calls: List<ParsedToolCall>): JSONArray {
         val arr = JSONArray()
         for (call in calls) {
             val block = JSONObject().apply {
@@ -369,20 +351,18 @@ class ToolCallProtocolAdapter {
         }
         return arr
     }
-
-    private fun convertToXmlFormat(calls: List<ParsedToolCall>): String {
+        private fun convertToXmlFormat(calls: List<ParsedToolCall>): String {
         val sb = StringBuilder()
         for (call in calls) {
             sb.appendLine("<tool name=\"${call.rawName}\">")
-            for ((key, value) in call.arguments) {
+        for ((key, value) in call.arguments) {
                 sb.appendLine("  <param name=\"$key\">${escapeXml(value?.toString() ?: "")}</param>")
             }
             sb.appendLine("</tool>")
         }
         return sb.toString()
     }
-
-    private fun convertToTextFormat(calls: List<ParsedToolCall>): String {
+        private fun convertToTextFormat(calls: List<ParsedToolCall>): String {
         val sb = StringBuilder()
         for (call in calls) {
             val argsStr = call.arguments.entries.joinToString(", ") { "${it.key}=${it.value}" }
@@ -390,12 +370,10 @@ class ToolCallProtocolAdapter {
         }
         return sb.toString()
     }
-
-    private fun truncate(text: String, maxLen: Int): String {
+        private fun truncate(text: String, maxLen: Int): String {
         return if (text.length <= maxLen) text else text.take(maxLen - 3) + "..."
     }
-
-    private fun escapeXml(text: String): String {
+        private fun escapeXml(text: String): String {
         return text
             .replace("&", "&amp;")
             .replace("<", "&lt;")
@@ -403,8 +381,7 @@ class ToolCallProtocolAdapter {
             .replace("\"", "&quot;")
             .replace("'", "&apos;")
     }
-
-    private fun JSONObject.toMap(): Map<String, Any?> {
+        private fun JSONObject.toMap(): Map<String, Any?> {
         val map = mutableMapOf<String, Any?>()
         for (key in keys()) {
             map[key] = opt(key)

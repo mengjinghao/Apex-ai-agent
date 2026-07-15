@@ -16,16 +16,13 @@ class MultiModalFusionEngine(
         private const val TAG = "MultiModalFusionEngine"
         private const val FUSED_EMBEDDING_DIMENSION = 512
     }
-
-    private val embeddingCache = mutableMapOf<String, ModalEmbedding>()
+        private val embeddingCache = mutableMapOf<String, ModalEmbedding>()
 
     suspend fun processMultiModalInput(input: MultiModalInput): FusionResult = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "Processing multi-modal input with ${input.modalities.size} modalities")
-
         val embeddings = input.modalities.mapNotNull { modalData ->
             embedModalData(modalData)
         }
-
         val fusedEmbedding = fuseEmbeddings(embeddings)
         val insights = extractInsights(input, embeddings)
         val reasoning = generateReasoning(input, insights)
@@ -39,15 +36,13 @@ class MultiModalFusionEngine(
             reasoning = reasoning
         )
     }
-
-    private suspend fun embedModalData(modalData: ModalData): ModalEmbedding? {
+        private suspend fun embedModalData(modalData: ModalData): ModalEmbedding? {
         val cacheKey = "${modalData.type.name}:${modalData.data.hashCode()}"
         
         embeddingCache[cacheKey]?.let {
             AppLogger.d(TAG, "Cache hit for ${modalData.type}")
-            return it
+        return it
         }
-
         val embedding = when (modalData.type) {
             ModalType.TEXT -> embedText(modalData.data)
             ModalType.SPEECH -> embedSpeech(modalData.data)
@@ -60,16 +55,13 @@ class MultiModalFusionEngine(
         embedding?.let {
             embeddingCache[cacheKey] = it
         }
-
         return embedding
     }
-
-    private fun embedText(text: String): ModalEmbedding {
+        private fun embedText(text: String): ModalEmbedding {
         val embedding = FloatArray(FUSED_EMBEDDING_DIMENSION) { i ->
             (text.hashCode() * (i + 1) % 1000).toFloat() / 1000
         }
         normalizeEmbedding(embedding)
-        
         return ModalEmbedding(
             type = ModalType.TEXT,
             embedding = embedding,
@@ -77,13 +69,11 @@ class MultiModalFusionEngine(
             modelUsed = "text-embedding"
         )
     }
-
-    private fun embedSpeech(audioBase64: String): ModalEmbedding {
+        private fun embedSpeech(audioBase64: String): ModalEmbedding {
         val embedding = FloatArray(FUSED_EMBEDDING_DIMENSION) { i ->
             (audioBase64.length * (i + 7) % 1000).toFloat() / 1000
         }
         normalizeEmbedding(embedding)
-        
         return ModalEmbedding(
             type = ModalType.SPEECH,
             embedding = embedding,
@@ -91,13 +81,11 @@ class MultiModalFusionEngine(
             modelUsed = "speech-embedding"
         )
     }
-
-    private fun embedImage(imageBase64: String): ModalEmbedding {
+        private fun embedImage(imageBase64: String): ModalEmbedding {
         val embedding = FloatArray(FUSED_EMBEDDING_DIMENSION) { i ->
             (imageBase64.hashCode() * (i + 13) % 1000).toFloat() / 1000
         }
         normalizeEmbedding(embedding)
-        
         return ModalEmbedding(
             type = ModalType.IMAGE,
             embedding = embedding,
@@ -105,13 +93,11 @@ class MultiModalFusionEngine(
             modelUsed = "vision-embedding"
         )
     }
-
-    private fun embedVideo(videoInfo: String): ModalEmbedding {
+        private fun embedVideo(videoInfo: String): ModalEmbedding {
         val embedding = FloatArray(FUSED_EMBEDDING_DIMENSION) { i ->
             (videoInfo.length * (i + 17) % 1000).toFloat() / 1000
         }
         normalizeEmbedding(embedding)
-        
         return ModalEmbedding(
             type = ModalType.VIDEO,
             embedding = embedding,
@@ -119,13 +105,11 @@ class MultiModalFusionEngine(
             modelUsed = "video-embedding"
         )
     }
-
-    private fun embedFile(fileInfo: String): ModalEmbedding {
+        private fun embedFile(fileInfo: String): ModalEmbedding {
         val embedding = FloatArray(FUSED_EMBEDDING_DIMENSION) { i ->
             (fileInfo.hashCode() * (i + 3) % 1000).toFloat() / 1000
         }
         normalizeEmbedding(embedding)
-        
         return ModalEmbedding(
             type = ModalType.FILE,
             embedding = embedding,
@@ -133,13 +117,11 @@ class MultiModalFusionEngine(
             modelUsed = "file-embedding"
         )
     }
-
-    private fun embedStructuredData(data: String): ModalEmbedding {
+        private fun embedStructuredData(data: String): ModalEmbedding {
         val embedding = FloatArray(FUSED_EMBEDDING_DIMENSION) { i ->
             (data.length * (i + 5) % 1000).toFloat() / 1000
         }
         normalizeEmbedding(embedding)
-        
         return ModalEmbedding(
             type = ModalType.STRUCTURED_DATA,
             embedding = embedding,
@@ -147,8 +129,7 @@ class MultiModalFusionEngine(
             modelUsed = "structured-data-embedding"
         )
     }
-
-    private fun normalizeEmbedding(embedding: FloatArray) {
+        private fun normalizeEmbedding(embedding: FloatArray) {
         var sum = 0.0f
         embedding.forEach { sum += it * it }
         val norm = kotlin.math.sqrt(sum.toDouble()).toFloat()
@@ -158,12 +139,10 @@ class MultiModalFusionEngine(
             }
         }
     }
-
-    private fun fuseEmbeddings(embeddings: List<ModalEmbedding>): FloatArray {
+        private fun fuseEmbeddings(embeddings: List<ModalEmbedding>): FloatArray {
         if (embeddings.isEmpty()) {
             return FloatArray(FUSED_EMBEDDING_DIMENSION) { 0f }
         }
-
         val fused = FloatArray(FUSED_EMBEDDING_DIMENSION) { 0f }
         val weights = calculateModalityWeights(embeddings)
 
@@ -177,8 +156,7 @@ class MultiModalFusionEngine(
         normalizeEmbedding(fused)
         return fused
     }
-
-    private fun calculateModalityWeights(embeddings: List<ModalEmbedding>): List<Double> {
+        private fun calculateModalityWeights(embeddings: List<ModalEmbedding>): List<Double> {
         val baseWeights = mapOf(
             ModalType.TEXT to 1.0,
             ModalType.SPEECH to 0.8,
@@ -187,18 +165,15 @@ class MultiModalFusionEngine(
             ModalType.FILE to 0.9,
             ModalType.STRUCTURED_DATA to 1.1
         )
-
         var totalWeight = 0.0
         val weights = embeddings.map { embedding ->
             val weight = baseWeights.getOrDefault(embedding.type, 1.0)
             totalWeight += weight
             weight
         }
-
         return weights.map { it / totalWeight }
     }
-
-    private fun extractInsights(input: MultiModalInput, embeddings: List<ModalEmbedding>): List<Insight> {
+        private fun extractInsights(input: MultiModalInput, embeddings: List<ModalEmbedding>): List<Insight> {
         val insights = mutableListOf<Insight>()
 
         input.modalities.forEach { modalData ->
@@ -220,14 +195,11 @@ class MultiModalFusionEngine(
         }
 
         insights.addAll(findCrossModalRelationships(input))
-
         return insights
     }
-
-    private fun extractTextInsights(modalData: ModalData): List<Insight> {
+        private fun extractTextInsights(modalData: ModalData): List<Insight> {
         val text = modalData.data
         val insights = mutableListOf<Insight>()
-
         if (text.contains("?", ignoreCase = true)) {
             insights.add(Insight(
                 type = InsightType.QUESTION,
@@ -236,7 +208,6 @@ class MultiModalFusionEngine(
                 confidence = 0.9f
             ))
         }
-
         if (text.contains("需�?, ignoreCase = true) || text.contains("应该", ignoreCase = true)) {
             insights.add(Insight(
                 type = InsightType.ACTION_ITEM,
@@ -252,11 +223,9 @@ class MultiModalFusionEngine(
             sourceModal = ModalType.TEXT,
             confidence = 1.0f
         ))
-
         return insights
     }
-
-    private fun extractImageInsights(modalData: ModalData): List<Insight> {
+        private fun extractImageInsights(modalData: ModalData): List<Insight> {
         val metadata = modalData.metadata
         
         return listOf(Insight(
@@ -266,8 +235,7 @@ class MultiModalFusionEngine(
             confidence = modalData.confidence
         ))
     }
-
-    private fun extractSpeechInsights(modalData: ModalData): List<Insight> {
+        private fun extractSpeechInsights(modalData: ModalData): List<Insight> {
         return listOf(Insight(
             type = InsightType.FACTS,
             content = "语音输入 - 时长: ${modalData.metadata["duration"]}�?,
@@ -275,8 +243,7 @@ class MultiModalFusionEngine(
             confidence = modalData.confidence
         ))
     }
-
-    private fun extractVideoInsights(modalData: ModalData): List<Insight> {
+        private fun extractVideoInsights(modalData: ModalData): List<Insight> {
         return listOf(Insight(
             type = InsightType.FACTS,
             content = "视频输入 - 时长: ${modalData.metadata["duration"]}�? 分辨�? ${modalData.metadata["resolution"]}",
@@ -284,12 +251,10 @@ class MultiModalFusionEngine(
             confidence = modalData.confidence
         ))
     }
-
-    private fun findCrossModalRelationships(input: MultiModalInput): List<Insight> {
+        private fun findCrossModalRelationships(input: MultiModalInput): List<Insight> {
         val insights = mutableListOf<Insight>()
         val textModals = input.modalities.filter { it.type == ModalType.TEXT }
         val imageModals = input.modalities.filter { it.type == ModalType.IMAGE }
-
         if (textModals.isNotEmpty() && imageModals.isNotEmpty()) {
             insights.add(Insight(
                 type = InsightType.RELATIONSHIP,
@@ -299,11 +264,9 @@ class MultiModalFusionEngine(
                 relatedInsights = listOf("text_analysis", "image_analysis")
             ))
         }
-
         return insights
     }
-
-    private fun generateReasoning(input: MultiModalInput, insights: List<Insight>): String {
+        private fun generateReasoning(input: MultiModalInput, insights: List<Insight>): String {
         return buildString {
             appendLine("多模态融合推理过�?")
             appendLine("输入模�? ${input.modalities.joinToString { it.type.name }}")
@@ -319,22 +282,18 @@ class MultiModalFusionEngine(
             appendLine("- 综合所有信息生成结�?)
         }
     }
-
-    private fun calculateConfidence(embeddings: List<ModalEmbedding>, insights: List<Insight>): Float {
+        private fun calculateConfidence(embeddings: List<ModalEmbedding>, insights: List<Insight>): Float {
         val embeddingConfidence = if (embeddings.isEmpty()) 0.5f else {
             embeddings.map { 1.0f }.average().toFloat()
         }
-        
         val insightConfidence = if (insights.isEmpty()) 0.5f else {
             insights.map { it.confidence }.average()
         }
-
         return (embeddingConfidence * 0.4f + insightConfidence * 0.6f).coerceIn(0.1f, 1.0f)
     }
 
     suspend fun generateFusionReport(input: MultiModalInput): FusionReport = withContext(Dispatchers.IO) {
         val result = processMultiModalInput(input)
-        
         val modalityContributions = mutableMapOf<ModalType, Double>()
         input.modalities.forEach { modalData ->
             modalityContributions[modalData.type] = modalityContributions.getOrDefault(modalData.type, 0.0) + 1.0
@@ -353,12 +312,10 @@ class MultiModalFusionEngine(
             overallConfidence = result.confidence
         )
     }
-
-    fun clearCache() {
+        fun clearCache() {
         embeddingCache.clear()
     }
-
-    fun getCacheSize(): Int {
+        fun getCacheSize(): Int {
         return embeddingCache.size
     }
 }

@@ -473,7 +473,7 @@ object ColorQrCodeUtil {
         bitMatrix.setRegion(8, dimension - 7, 1, 7)
 
         // Version information (v7+)
-    if (version.versionNumber > 6) {
+        if (version.versionNumber > 6) {
             bitMatrix.setRegion(dimension - 11, 0, 3, 6)
         bitMatrix.setRegion(0, dimension - 11, 6, 3)
         }

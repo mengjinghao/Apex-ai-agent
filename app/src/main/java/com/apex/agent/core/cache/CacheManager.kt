@@ -76,13 +76,13 @@ class CacheManager<V>(
         // L1
         memoryStore.get(key)?.let { entry ->
             recordAccess(key)
-            return entry.value
+        return entry.value
         }
         // L2
         diskStore?.get(key)?.let { entry ->
             memoryStore.put(CacheEntry(key, entry.value))
             recordAccess(key)
-            return entry.value
+        return entry.value
         }
         // L3
         distributedStore?.get(key)?.let { entry ->
@@ -90,7 +90,7 @@ class CacheManager<V>(
             memoryStore.put(CacheEntry(key, v))
             diskStore?.put(CacheEntry(key, v.toString()))
             recordAccess(key)
-            return v
+        return v
         }
         return null
     }
@@ -225,14 +225,14 @@ class CacheManager<V>(
                 loaded++
                 continue
             }
-            val fromDisk = diskStore?.get(key)
-            if (fromDisk != null) {
+        val fromDisk = diskStore?.get(key)
+        if (fromDisk != null) {
                 memoryStore.put(CacheEntry(key, fromDisk.value as V))
                 loaded++
                 continue
             }
-            val fromRemote = distributedStore?.get(key)
-            if (fromRemote != null) {
+        val fromRemote = distributedStore?.get(key)
+        if (fromRemote != null) {
                 memoryStore.put(CacheEntry(key, fromRemote.value))
                 loaded++
                 continue

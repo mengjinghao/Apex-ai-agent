@@ -36,7 +36,6 @@ data class MCPPackage(
         fun fromServer(context: Context, serverConfig: MCPServerConfig): MCPPackage? {
             return loadFromServer(context, serverConfig).mcpPackage
         }
-
         fun loadFromServer(context: Context, serverConfig: MCPServerConfig): LoadResult {
             // 创建桥接客户�?
     val bridgeClient = MCPBridgeClient(context, serverConfig.name)
@@ -45,9 +44,9 @@ data class MCPPackage(
             try {
                 // 尝试连接
     val connected = runBlocking { bridgeClient.connect() }
-                if (!connected) {
+        if (!connected) {
                     com.apex.util.AppLogger.w(TAG, "无法连接到MCP服务�?${serverConfig.name}")
-                    return LoadResult(
+        return LoadResult(
                         mcpPackage = null,
                         errorMessage =
                             bridgeClient.getLastConnectionFailureDetail()
@@ -59,12 +58,12 @@ data class MCPPackage(
 
                 // 获取工具列表
     val jsonTools = runBlocking { bridgeClient.getTools() }
-                if (jsonTools.isEmpty()) {
+        if (jsonTools.isEmpty()) {
                     com.apex.util.AppLogger.w(TAG, "MCP服务�?{serverConfig.name} 没有提供任何工具")
                     // 不要因为没有工具就返回null
                     // 返回一个包含空工具列表的有效包
                     com.apex.util.AppLogger.d(TAG, "创建不包含工具的MCP�? 服务已连接但没有工具")
-                    return LoadResult(mcpPackage = MCPPackage(serverConfig, emptyList()))
+        return LoadResult(mcpPackage = MCPPackage(serverConfig, emptyList()))
                 }
 
                 com.apex.util.AppLogger.d(TAG, "成功从MCP服务器获�?{jsonTools.size} 个工具）
@@ -78,22 +77,21 @@ data class MCPPackage(
 
                                 // 直接获取描述，如果没有则使用空字符串
     val description = jsonTool.optString("description", "")
-
-                                if (name.isEmpty()) return@mapNotNull null
+        if (name.isEmpty()) return@mapNotNull null
 
                                 // 提取参数信息
     val params = mutableListOf<MCPToolParameter>()
                                 // 改为从inputSchema中获取参数信�?
     val inputSchema = jsonTool.optJSONObject("inputSchema")
-                                val propertiesObj = inputSchema?.optJSONObject("properties")
-                                val requiredArray = inputSchema?.optJSONArray("required")
+        val propertiesObj = inputSchema?.optJSONObject("properties")
+        val requiredArray = inputSchema?.optJSONArray("required")
 
                                 propertiesObj?.keys()?.forEach { paramName ->
                                     val paramObj = propertiesObj.optJSONObject(paramName)
-                                    if (paramObj != null) {
+        if (paramObj != null) {
                                         val paramDescription = paramObj.optString("description", "")
-                                        val paramType = paramObj.optString("type", "string")
-                                        val paramRequired =
+        val paramType = paramObj.optString("type", "string")
+        val paramRequired =
                                                 requiredArray?.let { required ->
                                                     (0 until required.length()).any {
                                                         required.optString(it) == paramName
@@ -120,12 +118,12 @@ data class MCPPackage(
                         }
 
                 // 注意：不要断开连接！让客户端保持活跃状�?               // 客户端会被缓存在MCPManager中以供后续使�?               com.apex.util.AppLogger.d(TAG, "成功创建MCP包，包含 ${mcpTools.size} 个工具，保持连接活跃")
-    return LoadResult(mcpPackage = MCPPackage(serverConfig, mcpTools))
+        return LoadResult(mcpPackage = MCPPackage(serverConfig, mcpTools))
             } catch (e: Exception) {
                 com.apex.util.AppLogger.e(TAG, "创建MCP包时出错: ${e.message}", e)
                 // 只有在发生异常时才断开连接
                 bridgeClient.disconnect()
-                return LoadResult(
+        return LoadResult(
                     mcpPackage = null,
                     errorMessage = e.message ?: "Unexpected exception while creating MCP package"
                 )

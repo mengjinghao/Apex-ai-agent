@@ -11,16 +11,13 @@ enum class FootprintLevel(val level: Int, val description: String, val surfaceAr
     PLUGIN(4, "Plugin", "第三方能�?),
     MCP_SERVER(5, "MCP Server", "工具化非核心能力"),
     NEW_CORE_TOOL(6, "New Core Tool", "最后手�?);
-
-    fun isLowerThan(other: FootprintLevel): Boolean {
+        fun isLowerThan(other: FootprintLevel): Boolean {
         return this.level < other.level
     }
-
-    fun isHigherThan(other: FootprintLevel): Boolean {
+        fun isHigherThan(other: FootprintLevel): Boolean {
         return this.level > other.level
     }
-
-    fun canPromoteTo(target: FootprintLevel): Boolean {
+        fun canPromoteTo(target: FootprintLevel): Boolean {
         return target.level > this.level
     }
 
@@ -28,7 +25,6 @@ enum class FootprintLevel(val level: Int, val description: String, val surfaceAr
         fun fromLevel(level: Int): FootprintLevel? {
             return values().firstOrNull { it.level == level }
         }
-
         fun fromDescription(description: String): FootprintLevel? {
             return values().firstOrNull { it.description == description }
         }
@@ -59,14 +55,12 @@ data class Capability(
 class CapabilityRegistry private constructor() {
 
     private val logger = LoggerFactory.getLogger(CapabilityRegistry::class.java)
-    private val capabilities = ConcurrentHashMap<String, Capability>()
-    private val capabilityListeners = mutableListOf<CapabilityChangeListener>()
-
-    fun addListener(listener: CapabilityChangeListener) {
+        private val capabilities = ConcurrentHashMap<String, Capability>()
+        private val capabilityListeners = mutableListOf<CapabilityChangeListener>()
+        fun addListener(listener: CapabilityChangeListener) {
         capabilityListeners.add(listener)
     }
-
-    fun removeListener(listener: CapabilityChangeListener) {
+        fun removeListener(listener: CapabilityChangeListener) {
         capabilityListeners.remove(listener)
     }
 
@@ -75,8 +69,7 @@ class CapabilityRegistry private constructor() {
         fun onCapabilityUnregistered(capability: Capability)
         fun onCapabilityUpdated(capability: Capability)
     }
-
-    private fun notifyListeners(capability: Capability, changeType: ChangeType) {
+        private fun notifyListeners(capability: Capability, changeType: ChangeType) {
         capabilityListeners.forEach { listener ->
             try {
                 when (changeType) {
@@ -89,59 +82,49 @@ class CapabilityRegistry private constructor() {
             }
         }
     }
-
-    private enum class ChangeType {
+        private enum class ChangeType {
         REGISTERED,
         UNREGISTERED,
         UPDATED
     }
-
-    fun register(capability: Capability): Boolean {
+        fun register(capability: Capability): Boolean {
         val validationErrors = capability.validate()
         if (validationErrors.isNotEmpty()) {
             logger.warn("Capability validation failed for ${capability.name}: ${validationErrors.joinToString(", ")}")
-            return false
+        return false
         }
-
         val validator = CoreNarrowWaistValidator()
         val validationResult = validator.validate(capability)
         if (!validationResult.isValid) {
             logger.warn("Core narrow waist validation failed for ${capability.name}: ${validationResult.reason}")
-            return false
+        return false
         }
-
         val isUpdate = capabilities.containsKey(capability.name)
         capabilities[capability.name] = capability
         logger.info("Registered capability: ${capability.name} at level ${capability.level.description}")
         notifyListeners(capability, if (isUpdate) ChangeType.UPDATED else ChangeType.REGISTERED)
         return true
     }
-
-    fun unregister(name: String): Boolean {
+        fun unregister(name: String): Boolean {
         val removed = capabilities.remove(name)
         if (removed != null) {
             notifyListeners(removed, ChangeType.UNREGISTERED)
         }
         return removed != null
     }
-
-    fun getCapability(name: String): Capability? {
+        fun getCapability(name: String): Capability? {
         return capabilities[name]
     }
-
-    fun getCapabilitiesByLevel(level: FootprintLevel): List<Capability> {
+        fun getCapabilitiesByLevel(level: FootprintLevel): List<Capability> {
         return capabilities.values.filter { it.level == level }
     }
-
-    fun getAllCapabilities(): List<Capability> {
+        fun getAllCapabilities(): List<Capability> {
         return capabilities.values.toList()
     }
-
-    fun validate(capability: Capability): ValidationResult {
+        fun validate(capability: Capability): ValidationResult {
         return CoreNarrowWaistValidator().validate(capability)
     }
-
-    fun getStatistics(): Statistics {
+        fun getStatistics(): Statistics {
         val byLevel = FootprintLevel.values().associateWith { level ->
             capabilities.values.count { it.level == level }
         }
@@ -151,8 +134,7 @@ class CapabilityRegistry private constructor() {
             requiresConfigCount = capabilities.values.count { it.requiresConfig }
         )
     }
-
-    fun registerBuiltinCapabilities() {
+        fun registerBuiltinCapabilities() {
         register(Capability(
             name = "system.info",
             level = FootprintLevel.EXTEND_EXISTING,
@@ -214,20 +196,16 @@ class CapabilityRegistry private constructor() {
 class CoreNarrowWaistValidator {
 
     private val logger = LoggerFactory.getLogger(CoreNarrowWaistValidator::class.java)
-
-    fun validate(capability: Capability): ValidationResult {
+        fun validate(capability: Capability): ValidationResult {
         if (capability.level == FootprintLevel.NEW_CORE_TOOL) {
             return validateCoreTool(capability)
         }
-
         if (capability.level.isLowerThan(FootprintLevel.PLUGIN)) {
             return validateNonPlugin(capability)
         }
-
         return ValidationResult(true)
     }
-
-    private fun validateCoreTool(capability: Capability): ValidationResult {
+        private fun validateCoreTool(capability: Capability): ValidationResult {
         val alternatives = findAlternativeImplementations(capability)
         if (alternatives.isNotEmpty()) {
             return ValidationResult(
@@ -236,35 +214,28 @@ class CoreNarrowWaistValidator {
                 alternatives = alternatives
             )
         }
-
         if (!isFundamentalCapability(capability)) {
             return ValidationResult(
                 isValid = false,
                 reason = "Core tool ${capability.name} is not a fundamental capability that requires core-level implementation"
             )
         }
-
         return ValidationResult(true)
     }
-
-    private fun validateNonPlugin(capability: Capability): ValidationResult {
+        private fun validateNonPlugin(capability: Capability): ValidationResult {
         if (capability.level == FootprintLevel.EXTEND_EXISTING) {
             return ValidationResult(true)
         }
-
         if (capability.requiresConfig && capability.checkFn == null) {
             return ValidationResult(
                 isValid = false,
                 reason = "Service-gated tool ${capability.name} requires config but has no check function"
             )
         }
-
         return ValidationResult(true)
     }
-
-    private fun findAlternativeImplementations(capability: Capability): List<String> {
+        private fun findAlternativeImplementations(capability: Capability): List<String> {
         val alternatives = mutableListOf<String>()
-        
         if (canBePlugin(capability)) {
             alternatives.add("Plugin")
         }
@@ -274,25 +245,20 @@ class CoreNarrowWaistValidator {
         if (canBeCLI(capability)) {
             alternatives.add("CLI command")
         }
-
         return alternatives
     }
-
-    private fun canBePlugin(capability: Capability): Boolean {
+        private fun canBePlugin(capability: Capability): Boolean {
         return !capability.name.startsWith("core.")
     }
-
-    private fun canBeServiceGated(capability: Capability): Boolean {
+        private fun canBeServiceGated(capability: Capability): Boolean {
         return capability.requiresConfig
     }
-
-    private fun canBeCLI(capability: Capability): Boolean {
+        private fun canBeCLI(capability: Capability): Boolean {
         return capability.description.contains("查询") || 
                capability.description.contains("配置") ||
                capability.description.contains("状�?)
     }
-
-    private fun isFundamentalCapability(capability: Capability): Boolean {
+        private fun isFundamentalCapability(capability: Capability): Boolean {
         val fundamentalNames = setOf(
             "core.message",
             "core.tool_call",

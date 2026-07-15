@@ -15,24 +15,21 @@ class WebSocketManager {
         private const val MAX_RECONNECT_ATTEMPTS = 5
         private const val PING_INTERVAL_MS = 30000L
     }
-
-    private var webSocket: WebSocket? = null
+        private var webSocket: WebSocket? = null
     private var isConnected = false
     private var reconnectAttempts = 0
     private var currentTaskId: String? = null
 
     private val messageListeners = ConcurrentHashMap<String, MessageListener>()
-    private val pendingMessages = ConcurrentHashMap<String, QueuedMessage>()
-    private val sentMessages = ConcurrentHashMap<String, Long>()
-
-    private val client = OkHttpClient.Builder()
+        private val pendingMessages = ConcurrentHashMap<String, QueuedMessage>()
+        private val sentMessages = ConcurrentHashMap<String, Long>()
+        private val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .pingInterval(PING_INTERVAL_MS, TimeUnit.MILLISECONDS)
         .build()
-
-    fun connect(taskId: String, serverUrl: String): Boolean {
+        fun connect(taskId: String, serverUrl: String): Boolean {
         currentTaskId = taskId
 
         val request = Request.Builder()
@@ -41,11 +38,9 @@ class WebSocketManager {
             .build()
 
         webSocket = client.newWebSocket(request, createWebSocketListener())
-
         return true
     }
-
-    fun disconnect() {
+        fun disconnect() {
         webSocket?.close(1000, "User disconnected")
         webSocket = null
         isConnected = false
@@ -54,29 +49,25 @@ class WebSocketManager {
         pendingMessages.clear()
         sentMessages.clear()
     }
-
-    fun sendMessage(message: WebSocketMessage): Boolean {
+        fun sendMessage(message: WebSocketMessage): Boolean {
         if (!isConnected) {
             queueMessage(message)
-            return false
+        return false
         }
-
         val messageJson = message.toJson()
         val sent = webSocket?.send(messageJson) ?: false
 
         if (sent) {
             sentMessages[message.messageId] = System.currentTimeMillis()
-            if (message.requiresAck) {
+        if (message.requiresAck) {
                 pendingMessages[message.messageId] = QueuedMessage(message, System.currentTimeMillis())
             }
         } else {
             queueMessage(message)
         }
-
         return sent
     }
-
-    fun sendAgentStatusUpdate(agentId: String, status: AgentStatus, taskId: String) {
+        fun sendAgentStatusUpdate(agentId: String, status: AgentStatus, taskId: String) {
         val message = WebSocketMessage(
             type = MessageType.AGENT_STATUS_UPDATE,
             taskId = taskId,
@@ -88,8 +79,7 @@ class WebSocketManager {
         )
         sendMessage(message)
     }
-
-    fun sendTaskProgress(taskId: String, progress: Float) {
+        fun sendTaskProgress(taskId: String, progress: Float) {
         val message = WebSocketMessage(
             type = MessageType.TASK_PROGRESS,
             taskId = taskId,
@@ -100,8 +90,7 @@ class WebSocketManager {
         )
         sendMessage(message)
     }
-
-    fun sendAgentMessage(message: AgentMessage, taskId: String) {
+        fun sendAgentMessage(message: AgentMessage, taskId: String) {
         val webSocketMessage = WebSocketMessage(
             type = MessageType.AGENT_MESSAGE,
             taskId = taskId,
@@ -115,8 +104,7 @@ class WebSocketManager {
         )
         sendMessage(webSocketMessage)
     }
-
-    fun sendResourceRequest(agentId: String, resourceType: String, taskId: String) {
+        fun sendResourceRequest(agentId: String, resourceType: String, taskId: String) {
         val message = WebSocketMessage(
             type = MessageType.RESOURCE_REQUEST,
             taskId = taskId,
@@ -129,20 +117,16 @@ class WebSocketManager {
         )
         sendMessage(message)
     }
-
-    fun addMessageListener(taskId: String, listener: MessageListener) {
+        fun addMessageListener(taskId: String, listener: MessageListener) {
         messageListeners[taskId] = listener
     }
-
-    fun removeMessageListener(taskId: String) {
+        fun removeMessageListener(taskId: String) {
         messageListeners.remove(taskId)
     }
-
-    private fun queueMessage(message: WebSocketMessage) {
+        private fun queueMessage(message: WebSocketMessage) {
         pendingMessages[message.messageId] = QueuedMessage(message, System.currentTimeMillis())
     }
-
-    private fun retryPendingMessages() {
+        private fun retryPendingMessages() {
         val currentTime = System.currentTimeMillis()
         val timeout = 30000L
 
@@ -162,13 +146,11 @@ class WebSocketManager {
             }
         }
     }
-
-    private fun handleAck(messageId: String) {
+        private fun handleAck(messageId: String) {
         pendingMessages.remove(messageId)
         sentMessages.remove(messageId)
     }
-
-    private fun handleNack(messageId: String, reason: String) {
+        private fun handleNack(messageId: String, reason: String) {
         val queuedMessage = pendingMessages[messageId]
         if (queuedMessage != null && queuedMessage.retryCount < MAX_RECONNECT_ATTEMPTS) {
             pendingMessages[messageId] = queuedMessage.copy(retryCount = queuedMessage.retryCount + 1)
@@ -178,8 +160,7 @@ class WebSocketManager {
             pendingMessages.remove(messageId)
         }
     }
-
-    private fun createWebSocketListener(): WebSocketListener {
+        private fun createWebSocketListener(): WebSocketListener {
         return object : WebSocketListener() {
 
             override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -222,15 +203,13 @@ class WebSocketManager {
             }
         }
     }
-
-    private fun handleReceivedMessage(text: String) {
+        private fun handleReceivedMessage(text: String) {
         try {
             val json = JSONObject(text)
-            val type = json.getString("type")
-            val messageId = json.optString("messageId", "")
-            val taskId = json.optString("taskId", "")
-
-            when (type) {
+        val type = json.getString("type")
+        val messageId = json.optString("messageId", "")
+        val taskId = json.optString("taskId", "")
+        when (type) {
                 MessageType.ACK.name -> {
                     handleAck(messageId)
                 }
@@ -240,7 +219,7 @@ class WebSocketManager {
                 }
                 else -> {
                     val payload = json.optJSONObject("payload")
-                    val message = WebSocketMessage(
+        val message = WebSocketMessage(
                         type = MessageType.valueOf(type),
                         messageId = messageId,
                         taskId = taskId,
@@ -253,12 +232,10 @@ class WebSocketManager {
             AppLogger.e(TAG, "Error handling received message: ${e.message}")
         }
     }
-
-    private fun handleDisconnection() {
+        private fun handleDisconnection() {
         currentTaskId?.let { taskId ->
             messageListeners[taskId]?.onDisconnected()
         }
-
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
             reconnectAttempts++
             AppLogger.d(TAG, "Attempting to reconnect... (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})")
@@ -275,8 +252,7 @@ class WebSocketManager {
             }
         }
     }
-
-    private fun resendPendingMessages() {
+        private fun resendPendingMessages() {
         pendingMessages.values.forEach { queuedMessage ->
             webSocket?.send(queuedMessage.message.toJson())
         }
@@ -321,13 +297,11 @@ data class WebSocketMessage(
         json.put("messageId", messageId)
         json.put("taskId", taskId)
         json.put("requiresAck", requiresAck)
-
         val payloadJson = JSONObject()
         payload.forEach { (key, value) ->
             payloadJson.put(key, value)
         }
         json.put("payload", payloadJson)
-
         return json.toString()
     }
 }
@@ -337,5 +311,5 @@ fun JSONObject.toMap(): Map<String, Any> {
     keys().forEach { key ->
         map[key] = get(key)
     }
-    return map
+        return map
 }

@@ -47,7 +47,7 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
                     } catch (e: IllegalArgumentException) {
                         return null
                     }
-                    return createModel(id, name, type, dataMap)
+        return createModel(id, name, type, dataMap)
                 }
                 null
             }
@@ -169,16 +169,15 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
     //         null
     //     }
     // }
-    private fun createWebPModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
+        private fun createWebPModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
         return try {
             val basePath = data["basePath"] as? String ?: return null
             val availableFiles = extractAvailableMediaFiles(data, "webpFiles", setOf("webp"))
-            val emotionMap =
+        val emotionMap =
                 parseExplicitEmotionMap(data["emotionToFileMap"] as? Map<*, *>)
                     .ifEmpty { inferEmotionToMediaFileMap(availableFiles) }
                     .ifEmpty { fallbackEmotionMap(availableFiles) }
-
-            if (emotionMap.isNotEmpty() || availableFiles.isNotEmpty()) {
+        if (emotionMap.isNotEmpty() || availableFiles.isNotEmpty()) {
                 WebPAvatarModel(
                     id = id,
                     name = name,
@@ -198,17 +197,15 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
             null
         }
     }
-
-    private fun createMp4Model(id: String, name: String, data: Map<String, Any>): AvatarModel? {
+        private fun createMp4Model(id: String, name: String, data: Map<String, Any>): AvatarModel? {
         return try {
             val basePath = data["basePath"] as? String ?: return null
             val availableFiles = extractAvailableMediaFiles(data, "mp4Files", setOf("mp4"))
-            val emotionMap =
+        val emotionMap =
                 parseExplicitEmotionMap(data["emotionToFileMap"] as? Map<*, *>)
                     .ifEmpty { inferEmotionToMediaFileMap(availableFiles) }
                     .ifEmpty { fallbackEmotionMap(availableFiles) }
-
-            if (emotionMap.isNotEmpty() || availableFiles.isNotEmpty()) {
+        if (emotionMap.isNotEmpty() || availableFiles.isNotEmpty()) {
                 Mp4AvatarModel(
                     id = id,
                     name = name,
@@ -228,8 +225,7 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
             null
         }
     }
-
-    private fun createMmdModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
+        private fun createMmdModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
         return try {
             val basePath = data["basePath"] as? String ?: return null
             val modelFile = data["modelFile"] as? String ?: return null
@@ -255,8 +251,7 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
             null
         }
     }
-
-    private fun createGltfModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
+        private fun createGltfModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
         return try {
             val basePath = data["basePath"] as? String ?: return null
             val modelFile = data["modelFile"] as? String ?: return null
@@ -279,8 +274,7 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
             null
         }
     }
-
-    private fun createFbxModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
+        private fun createFbxModel(id: String, name: String, data: Map<String, Any>): AvatarModel? {
         return try {
             val basePath = data["basePath"] as? String ?: return null
             val modelFile = data["modelFile"] as? String ?: return null
@@ -303,31 +297,26 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
             null
         }
     }
-
-    private fun parseExplicitEmotionMap(raw: Map<*, *>): Map<AvatarEmotion, String> {
+        private fun parseExplicitEmotionMap(raw: Map<*, *>): Map<AvatarEmotion, String> {
         if (raw == null) {
             return emptyMap()
         }
-
         return raw.entries.mapNotNull { (rawEmotion, rawFileName) ->
             val emotionName = rawEmotion?.toString()?.trim().orEmpty()
-            val fileName = rawFileName?.toString()?.trim().orEmpty()
-            if (emotionName.isEmpty() || fileName.isEmpty()) {
+        val fileName = rawFileName?.toString()?.trim().orEmpty()
+        if (emotionName.isEmpty() || fileName.isEmpty()) {
                 return@mapNotNull null
             }
-
-            val emotion = runCatching { AvatarEmotion.valueOf(emotionName.uppercase()) }.getOrNull()
+        val emotion = runCatching { AvatarEmotion.valueOf(emotionName.uppercase()) }.getOrNull()
                 ?: return@mapNotNull null
             emotion to fileName
         }.toMap()
     }
-
-    private fun parseCurrentEmotion(data: Map<String, Any>): AvatarEmotion {
+        private fun parseCurrentEmotion(data: Map<String, Any>): AvatarEmotion {
         val raw = data["currentEmotion"]?.toString()?.trim().orEmpty()
         return runCatching { AvatarEmotion.valueOf(raw.uppercase()) }.getOrDefault(AvatarEmotion.IDLE)
     }
-
-    private fun extractAvailableMediaFiles(
+        private fun extractAvailableMediaFiles(
         data: Map<String, Any>,
         listKey: String,
         allowedExtensions: Set<String>
@@ -342,23 +331,19 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
             ?.distinct()
             .orEmpty()
     }
-
-    private fun fallbackEmotionMap(availableFiles: List<String>): Map<AvatarEmotion, String> {
+        private fun fallbackEmotionMap(availableFiles: List<String>): Map<AvatarEmotion, String> {
         val firstFile = availableFiles.firstOrNull() ?: return emptyMap()
         return mapOf(AvatarEmotion.IDLE to firstFile)
     }
-
-    private fun inferEmotionToMediaFileMap(fileNames: List<String>): Map<AvatarEmotion, String> {
+        private fun inferEmotionToMediaFileMap(fileNames: List<String>): Map<AvatarEmotion, String> {
         if (fileNames.isEmpty()) {
             return emptyMap()
         }
-
         val normalizedByBaseName = LinkedHashMap<String, String>()
         fileNames.forEach { fileName ->
             val baseName = File(fileName).nameWithoutExtension.lowercase()
             normalizedByBaseName.putIfAbsent(baseName, fileName)
         }
-
         val candidates = linkedMapOf(
             AvatarEmotion.IDLE to listOf("idle", "default", "normal", "standby"),
             AvatarEmotion.LISTENING to listOf("listening", "talking", "speak", "speaking", "chat"),
@@ -368,7 +353,6 @@ class AvatarModelFactoryImpl : AvatarModelFactory {
             AvatarEmotion.CONFUSED to listOf("confused", "shy", "aojiao", "embarrassed"),
             AvatarEmotion.SURPRISED to listOf("surprised", "surprise", "wow")
         )
-
         return candidates.mapNotNull { (emotion, aliases) ->
             val matched = aliases.firstNotNullOfOrNull { alias -> normalizedByBaseName[alias] }
             matched?.let { emotion to it }

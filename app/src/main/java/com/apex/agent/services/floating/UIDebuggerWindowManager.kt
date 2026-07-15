@@ -27,9 +27,8 @@ class UIDebuggerWindowManager(
     
     // Floating ball position state
     private var ballX = mutableStateOf(100f)
-    private var ballY = mutableStateOf(100f)
-
-    fun show() {
+        private var ballY = mutableStateOf(100f)
+        fun show() {
         if (composeView != null) return
 
         val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -79,8 +78,7 @@ class UIDebuggerWindowManager(
         }
         windowManager.addView(composeView, params)
     }
-    
-    private fun updateWindowPosition() {
+        private fun updateWindowPosition() {
         params?.let { layoutParams ->
             layoutParams.x = ballX.value.toInt()
             layoutParams.y = ballY.value.toInt()
@@ -89,8 +87,7 @@ class UIDebuggerWindowManager(
             }
         }
     }
-    
-    private fun updateWindowLayout() {
+        private fun updateWindowLayout() {
         params?.let { layoutParams ->
             if (isExpanded.value) {
                 // Expand to full screen
@@ -110,8 +107,7 @@ class UIDebuggerWindowManager(
             }
         }
     }
-
-    fun remove() {
+        fun remove() {
         composeView?.let {
             windowManager.removeView(it)
             composeView = null

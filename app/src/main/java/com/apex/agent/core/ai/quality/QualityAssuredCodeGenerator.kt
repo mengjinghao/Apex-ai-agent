@@ -130,7 +130,6 @@ class QualityAssuredCodeGenerator(
                 )
             )
         }
-        
         return results
     }
     
@@ -169,7 +168,6 @@ class QualityAssuredCodeGenerator(
         analysisResult?.issues?.forEach { issue ->
             issues.add("${issue.severity}: ${issue.message}")
         }
-        
         return ValidationResult(
             isValid = issues.isEmpty(),
             issues = issues,
@@ -186,23 +184,19 @@ class QualityAssuredCodeGenerator(
             // 首次尝试：使用标准提示
             buildImprovedPrompt(task, attempt)
         }
-        
         return llamaEngine.generate(prompt)
     }
-    
-    private fun buildInitialPrompt(task: CodeGenerationTask): String {
+        private fun buildInitialPrompt(task: CodeGenerationTask): String {
         return buildString {
             appendLine("You are an expert ${task.language} developer.")
             appendLine("Generate high-quality, production-ready code.")
             appendLine()
-            
-            if (task.context != null) {
+        if (task.context != null) {
                 appendLine("Context:")
                 appendLine(task.context)
                 appendLine()
             }
-            
-            if (task.examples.isNotEmpty()) {
+        if (task.examples.isNotEmpty()) {
                 appendLine("Examples:")
                 task.examples.forEachIndexed { index, example ->
                     appendLine("Example ${index + 1}:")
@@ -213,8 +207,7 @@ class QualityAssuredCodeGenerator(
             
             appendLine("Task: ${task.description}")
             appendLine()
-            
-            if (task.constraints.isNotEmpty()) {
+        if (task.constraints.isNotEmpty()) {
                 appendLine("Constraints:")
                 task.constraints.forEach { appendLine("- ${it}") }
                 appendLine()
@@ -230,16 +223,14 @@ class QualityAssuredCodeGenerator(
             appendLine("Provide only the code, no explanations.")
         }
     }
-    
-    private fun buildImprovedPrompt(task: CodeGenerationTask, attempt: Int): String {
+        private fun buildImprovedPrompt(task: CodeGenerationTask, attempt: Int): String {
         return buildString {
             appendLine("Previous attempt had issues. Please improve the code.")
             appendLine()
             
             appendLine("Original task: ${task.description}")
             appendLine()
-            
-            if (task.feedback != null) {
+        if (task.feedback != null) {
                 appendLine("Issues found in previous attempt:")
                 appendLine(task.feedback)
                 appendLine()
@@ -255,8 +246,7 @@ class QualityAssuredCodeGenerator(
             appendLine("Provide only the improved code.")
         }
     }
-    
-    private fun calculateQualityScore(
+        private fun calculateQualityScore(
         code: String,
         analysisResult: CodeAnalysisResult,
         task: CodeGenerationTask
@@ -286,17 +276,14 @@ class QualityAssuredCodeGenerator(
             val missingImports = task.requiredImports.count { !code.contains(it) }
             score -= missingImports * 0.1f
         }
-        
         return maxOf(0.0f, minOf(1.0f, score))
     }
-    
-    private fun calculateSimpleQualityScore(code: String, issues: List<String>): Float {
+        private fun calculateSimpleQualityScore(code: String, issues: List<String>): Float {
         var score = 1.0f
         score -= issues.size * 0.1f
         return maxOf(0.0f, minOf(1.0f, score))
     }
-    
-    private fun checkConstraint(code: String, constraint: String): Boolean {
+        private fun checkConstraint(code: String, constraint: String): Boolean {
         // 达到最大尝试次数，返回最佳结果或抛出异常
         // 实际项目中应该有更复杂的逻辑
     return when {
@@ -312,14 +299,12 @@ class QualityAssuredCodeGenerator(
             else -> true // 默认认为满足
         }
     }
-    
-    private fun buildFeedbackFromIssues(issues: List<CodeIssue>): String {
+        private fun buildFeedbackFromIssues(issues: List<CodeIssue>): String {
         if (issues.isEmpty()) return ""
-        
         return buildString {
             issues.forEach { issue ->
                 appendLine("- [${issue.severity}] ${issue.message}")
-                if (issue.lineNumber != null) {
+        if (issue.lineNumber != null) {
                     appendLine("  Line: ${issue.lineNumber}")
                 }
             }

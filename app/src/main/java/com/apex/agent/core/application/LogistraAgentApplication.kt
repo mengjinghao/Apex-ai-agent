@@ -140,7 +140,6 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         }
 
         ensureWorkManagerInitialized()
-
         if (isCrashReportRecoveryStartup) {
             AppLogger.w(TAG, "检测到崩溃报告启动，保留上一轮日志供崩溃页面导出")
         }
@@ -207,21 +206,21 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         ShowerEnvironment.shellRunner = LogistraShowerShellRunner
         ShowerEnvironment.logSink =
             ShowerLogSink { priority, tag, message, throwable -&gt;
-                when (priority) {
+        when (priority) {
                     AppLogger.VERBOSE -&gt;
-                        if (throwable != null) AppLogger.v(tag, message, throwable) else AppLogger.v(tag, message)
+        if (throwable != null) AppLogger.v(tag, message, throwable) else AppLogger.v(tag, message)
                     AppLogger.DEBUG -&gt;
-                        if (throwable != null) AppLogger.d(tag, message, throwable) else AppLogger.d(tag, message)
+        if (throwable != null) AppLogger.d(tag, message, throwable) else AppLogger.d(tag, message)
                     AppLogger.INFO -&gt;
-                        if (throwable != null) AppLogger.i(tag, message, throwable) else AppLogger.i(tag, message)
+        if (throwable != null) AppLogger.i(tag, message, throwable) else AppLogger.i(tag, message)
                     AppLogger.WARN -&gt;
-                        if (throwable != null) AppLogger.w(tag, message, throwable) else AppLogger.w(tag, message)
+        if (throwable != null) AppLogger.w(tag, message, throwable) else AppLogger.w(tag, message)
                     AppLogger.ERROR -&gt;
-                        if (throwable != null) AppLogger.e(tag, message, throwable) else AppLogger.e(tag, message)
+        if (throwable != null) AppLogger.e(tag, message, throwable) else AppLogger.e(tag, message)
                     AppLogger.ASSERT -&gt;
-                        if (throwable != null) AppLogger.wtf(tag, message, throwable) else AppLogger.wtf(tag, message)
+        if (throwable != null) AppLogger.wtf(tag, message, throwable) else AppLogger.wtf(tag, message)
                     else -&gt;
-                        if (throwable != null) {
+        if (throwable != null) {
                             AppLogger.println(priority, tag, "${message}\n${AppLogger.getStackTraceString(throwable)}")
                         } else {
                             AppLogger.println(priority, tag, message)
@@ -240,7 +239,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         AppLogger.d(TAG, "【启动计时】WaifuMessageProcessor初始化完�?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize global image loader (needed for UI)
-    val imageOkHttpClient = OkHttpClient.Builder()
+        val imageOkHttpClient = OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
@@ -289,7 +288,6 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         // Initialize AppInitializer and start phased initialization
         appInitializer = AppInitializer(applicationContext)
         appInitializer.startInitialization()
-        
         val totalTime = System.currentTimeMillis() - startTime
         AppLogger.d(TAG, "【启动计时】应用启动关键路径完�?- 总耗时: ${totalTime}ms")
     }
@@ -310,8 +308,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         get() = WorkConfiguration.Builder()
             .setMinimumLoggingLevel(if (BuildConfig.DEBUG) AppLogger.DEBUG else AppLogger.INFO)
             .build()
-
-    private fun ensureWorkManagerInitialized() {
+        private fun ensureWorkManagerInitialized() {
         try {
             WorkManager.getInstance(applicationContext)
         } catch (_: IllegalStateException) {
@@ -322,8 +319,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
             }
         }
     }
-
-    private fun launchCleanOnExitCleanup() {
+        private fun launchCleanOnExitCleanup() {
         applicationScope.launch {
             val cleanupStartTime = System.currentTimeMillis()
             try {
@@ -339,14 +335,13 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
             }
         }
     }
-
-    private fun cleanDirectory(tempDir: File, preserveRootNoMedia: Boolean): Int {
+        private fun cleanDirectory(tempDir: File, preserveRootNoMedia: Boolean): Int {
         if (!tempDir.exists() || !tempDir.isDirectory) {
             return 0
         }
         if (preserveRootNoMedia) {
             val noMediaFile = File(tempDir, ".nomedia")
-            if (!noMediaFile.exists()) {
+        if (!noMediaFile.exists()) {
                 noMediaFile.createNewFile()
             }
         }
@@ -361,8 +356,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         AppLogger.d(TAG, "${totalDeleted}个临时文�? ${tempDir.absolutePath}")
         return totalDeleted
     }
-
-    private fun deleteRecursively(
+        private fun deleteRecursively(
         rootDir: File,
         file: File,
         preserveRootNoMedia: Boolean,
@@ -379,7 +373,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                     isRoot = false
                 )
             }
-            if (!isRoot &amp;&amp; file.exists()) {
+        if (!isRoot &amp;&amp; file.exists()) {
                 file.delete()
             }
         } else if (file.isFile) {
@@ -387,28 +381,27 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                 preserveRootNoMedia &amp;&amp;
                     file.parentFile?.absolutePath == rootDir.absolutePath &amp;&amp;
                     file.name == ".nomedia"
-            if (!isRootNoMedia &amp;&amp; file.delete()) {
+        if (!isRootNoMedia &amp;&amp; file.delete()) {
                 deletedCount++
             }
         }
         return deletedCount
     }
-
-    private fun startGlobalAIForegroundServiceIfNeeded() {
+        private fun startGlobalAIForegroundServiceIfNeeded() {
         try {
             // val alwaysListeningEnabled = runBlocking {
             //     WakeWordPreferences(applicationContext).alwaysListeningEnabledFlow.first()
             // }
-    val externalHttpEnabled = runBlocking {
+        val externalHttpEnabled = runBlocking {
                 ExternalHttpApiPreferences.getInstance(applicationContext).enabledFlow.first()
             }
-            if ((/* !alwaysListeningEnabled &amp;&amp; */ !externalHttpEnabled) || AIForegroundService.isRunning.get()) {
+        if ((/* !alwaysListeningEnabled &amp;&amp; */ !externalHttpEnabled) || AIForegroundService.isRunning.get()) {
                 return
             }
-            val intent = Intent(this, AIForegroundService::class.java).apply {
+        val intent = Intent(this, AIForegroundService::class.java).apply {
                 putExtra(AIForegroundService.EXTRA_STATE, AIForegroundService.STATE_IDLE)
             }
-            if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.O) {
                 startForegroundService(intent)
             } else {
                 startService(intent)
@@ -426,7 +419,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                 try {
                     // 使用更安全的方式检查preferencesManager
     val manager = runCatching { preferencesManager }.getOrNull()
-                    if (manager != null) {
+        if (manager != null) {
                         manager.appLanguage.first()
                     } else {
                         UserPreferencesManager.DEFAULT_LANGUAGE
@@ -443,8 +436,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
     val locale = LocaleUtils.getLocaleForLanguageCode(languageCode, this)
             // 设置默认语言
             Locale.setDefault(locale)
-
-            if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.TIRAMISU) {
                 // Android 13+ 使用AppCompatDelegate API
     val localeList = LocaleListCompat.create(locale)
                 AppCompatDelegate.setApplicationLocales(localeList)
@@ -452,7 +444,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
             } else {
                 // 较旧版本Android - 此处使用的部分更新将在attachBaseContext中完成更完整更新
     val config = Configuration()
-                if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.N) {
                     val localeList = LocaleList(locale)
                     LocaleList.setDefault(localeList)
                     config.setLocales(localeList)
@@ -473,8 +465,8 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         // 在基础上下文附加前应用语言设置
     try {
             val code = LocaleUtils.getCurrentLanguage(base)
-            val locale = LocaleUtils.getLocaleForLanguageCode(code, base)
-            val config = Configuration(base.resources.configuration)
+        val locale = LocaleUtils.getLocaleForLanguageCode(code, base)
+        val config = Configuration(base.resources.configuration)
 
             // 设置语言配置
     if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.N) {
@@ -527,7 +519,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         // 在应用终止时关闭LocalWebServer服务�?
     try {
             val webServer = LocalWebServer.getInstance(applicationContext, LocalWebServer.ServerType.WORKSPACE)
-            if (webServer.isRunning()) {
+        if (webServer.isRunning()) {
                 webServer.stop()
                 AppLogger.d(TAG, "应用终止，已关闭本地Web服务�?)
             }

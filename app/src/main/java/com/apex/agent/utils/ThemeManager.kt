@@ -23,13 +23,11 @@ object ThemeManager {
         LIGHT(1),
         DARK(2)
     }
-
-    private const val SP_NAME = "Apex_theme_settings"
-    private const val KEY_THEME_TYPE = "key_theme_type"
-    private const val KEY_DARK_MODE = "key_dark_mode"
-    private const val KEY_MATERIAL_YOU_COLOR = "key_material_you_color"
-
-    private lateinit var sp: SharedPreferences
+        private const val SP_NAME = "Apex_theme_settings"
+        private const val KEY_THEME_TYPE = "key_theme_type"
+        private const val KEY_DARK_MODE = "key_dark_mode"
+        private const val KEY_MATERIAL_YOU_COLOR = "key_material_you_color"
+        private lateinit var sp: SharedPreferences
 
     // 初始化（在Application中调用一次即可）
     fun init(context: Context) {
@@ -53,8 +51,7 @@ object ThemeManager {
         val color = sp.getInt(KEY_MATERIAL_YOU_COLOR, -1)
         return if (color == -1) null else color
     }
-
-    fun setMaterialYouColor(color: Int) {
+        fun setMaterialYouColor(color: Int) {
         sp.edit().putInt(KEY_MATERIAL_YOU_COLOR, color).apply()
     }
 

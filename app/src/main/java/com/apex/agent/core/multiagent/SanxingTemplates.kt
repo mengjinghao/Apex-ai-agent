@@ -173,7 +173,7 @@ object SanxingTemplateLibrary {
         return SanxingTaskTemplate(
             id = "code_development",
             name = "工程项目开�?,
-            description = "架构设计+代码开�?质量检�?完整项目交付",
+            description = "架构设计+代码开�质量检�完整项目交付",
             icon = "??",
             category = TemplateCategory.CODE,
             config = TemplateConfig(

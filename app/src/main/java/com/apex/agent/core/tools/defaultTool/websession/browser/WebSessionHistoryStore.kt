@@ -37,25 +37,21 @@ internal class WebSessionHistoryStore private constructor(private val context: C
             }
         }
     }
-
-    private val json = Json {
+        private val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
-
-    val bookmarksFlow: Flow<List<WebSessionBookmark>> =
+        val bookmarksFlow: Flow<List<WebSessionBookmark>> =
         context.webSessionHistoryDataStore.data.map { preferences ->
             decodeBookmarks(preferences[KEY_BOOKMARKS])
                 .sortedByDescending { it.updatedAt }
         }
-
-    val historyFlow: Flow<List<WebSessionHistoryEntry>> =
+        val historyFlow: Flow<List<WebSessionHistoryEntry>> =
         context.webSessionHistoryDataStore.data.map { preferences ->
             decodeHistory(preferences[KEY_HISTORY])
                 .sortedByDescending { it.visitedAt }
         }
-
-    val desktopModeFlow: Flow<Boolean> =
+        val desktopModeFlow: Flow<Boolean> =
         context.webSessionHistoryDataStore.data.map { preferences ->
             preferences[KEY_DESKTOP_MODE] ?: true
         }
@@ -64,14 +60,13 @@ internal class WebSessionHistoryStore private constructor(private val context: C
         val normalizedUrl = normalizeUrl(url) ?: return
         if (isReload) {
             updateTitle(normalizedUrl, title)
-            return
+        return
         }
-
         val now = System.currentTimeMillis()
         context.webSessionHistoryDataStore.edit { preferences ->
             val current = decodeHistory(preferences[KEY_HISTORY])
-            val normalizedTitle = normalizeTitle(title, normalizedUrl)
-            val updated =
+        val normalizedTitle = normalizeTitle(title, normalizedUrl)
+        val updated =
                 if (current.firstOrNull()?.url == normalizedUrl) {
                     current.toMutableList().also { list ->
                         list[0] = list[0].copy(
@@ -108,8 +103,7 @@ internal class WebSessionHistoryStore private constructor(private val context: C
                         entry
                     }
                 }
-
-            val bookmarks =
+        val bookmarks =
                 decodeBookmarks(preferences[KEY_BOOKMARKS]).map { bookmark ->
                     if (bookmark.url == normalizedUrl && normalizedTitle.isNotBlank()) {
                         bookmark.copy(title = normalizedTitle, updatedAt = System.currentTimeMillis())
@@ -130,8 +124,8 @@ internal class WebSessionHistoryStore private constructor(private val context: C
 
         context.webSessionHistoryDataStore.edit { preferences ->
             val current = decodeBookmarks(preferences[KEY_BOOKMARKS])
-            val existing = current.firstOrNull { it.url == normalizedUrl }
-            val updated =
+        val existing = current.firstOrNull { it.url == normalizedUrl }
+        val updated =
                 buildList {
                     add(
                         existing?.copy(
@@ -185,24 +179,21 @@ internal class WebSessionHistoryStore private constructor(private val context: C
             preferences[KEY_DESKTOP_MODE] = enabled
         }
     }
-
-    private fun decodeBookmarks(raw: String): List<WebSessionBookmark> {
+        private fun decodeBookmarks(raw: String): List<WebSessionBookmark> {
         return if (raw.isNullOrBlank()) {
             emptyList()
         } else {
             runCatching { json.decodeFromString<List<WebSessionBookmark>>(raw) }.getOrElse { emptyList() }
         }
     }
-
-    private fun decodeHistory(raw: String): List<WebSessionHistoryEntry> {
+        private fun decodeHistory(raw: String): List<WebSessionHistoryEntry> {
         return if (raw.isNullOrBlank()) {
             emptyList()
         } else {
             runCatching { json.decodeFromString<List<WebSessionHistoryEntry>>(raw) }.getOrElse { emptyList() }
         }
     }
-
-    private fun normalizeUrl(raw: String): String? {
+        private fun normalizeUrl(raw: String): String? {
         val trimmed = raw.trim()
         if (trimmed.isBlank()) {
             return null
@@ -214,10 +205,9 @@ internal class WebSessionHistoryStore private constructor(private val context: C
         if (!lower.startsWith("http://") && !lower.startsWith("https://")) {
     return null
         }
-
         return runCatching {
             val uri = Uri.parse(trimmed)
-            val scheme = uri.scheme?.lowercase(Locale.ROOT) ?: return null
+        val scheme = uri.scheme?.lowercase(Locale.ROOT) ?: return null
             val host = uri.host?.lowercase(Locale.ROOT) ?: return null
             val portPart =
                 when {
@@ -226,7 +216,7 @@ internal class WebSessionHistoryStore private constructor(private val context: C
                     scheme == "https" && uri.port == 443 -> ""
                     else -> ":${uri.port}"
                 }
-            val path = uri.encodedPath?.ifBlank { "/" } ?: "/"
+        val path = uri.encodedPath?.ifBlank { "/" } ?: "/"
             buildString {
                 append(scheme)
                 append("://")
@@ -240,8 +230,7 @@ internal class WebSessionHistoryStore private constructor(private val context: C
             }
         }.getOrElse { trimmed }
     }
-
-    private fun normalizeTitle(title: String, fallbackUrl: String): String {
+        private fun normalizeTitle(title: String, fallbackUrl: String): String {
         val trimmed = title.trim()
         return if (trimmed.isBlank()) fallbackUrl else trimmed
     }

@@ -58,7 +58,7 @@ interface ShellExecutor {
     ) {
         companion object {
             fun granted() = PermissionStatus(true)
-            fun denied(reason: String) = PermissionStatus(false, reason)
+        fun denied(reason: String) = PermissionStatus(false, reason)
         }
     }
 }

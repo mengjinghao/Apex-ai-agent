@@ -53,7 +53,7 @@ object NotificationUtils {
             val channel = NotificationChannel(config.id, config.name, config.importance).apply {
                 config.description?.let { description = it }
             }
-            val notificationManager =
+        val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }

@@ -22,8 +22,7 @@ open class StandardShellToolExecutor(private val context: Context) {
         private const val TAG = "ADBToolExecutor"
         private const val DEFAULT_TIMEOUT = 15000L // 15 seconds
     }
-
-    fun invoke(tool: AITool): ToolResult {
+        fun invoke(tool: AITool): ToolResult {
         // Validate parameters
     val validationResult = validateParameters(tool)
         if (!validationResult.valid) {
@@ -34,14 +33,12 @@ open class StandardShellToolExecutor(private val context: Context) {
                     error = validationResult.errorMessage
             )
         }
-
         val command = tool.parameters.find { it.name == "command" }?.value ?: ""
         // Timeout parameter is kept for API compatibility but not used by AdbCommandExecutor
     return try {
             // Use AdbCommandExecutor to execute the command
     val result = runBlocking { AndroidShellExecutor.executeShellCommand(command) }
-
-            if (result.success) {
+        if (result.success) {
                 ToolResult(
                         toolName = tool.name,
                         success = true,

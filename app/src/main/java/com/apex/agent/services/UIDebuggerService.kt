@@ -29,10 +29,10 @@ import com.apex.ui.features.toolbox.screens.uidebugger.UIDebuggerViewModel
  */
 class UIDebuggerService : Service(), ViewModelStoreOwner {
     private val TAG = "UIDebuggerService"
-    private lateinit var windowManager: UIDebuggerWindowManager
+        private lateinit var windowManager: UIDebuggerWindowManager
     private lateinit var lifecycleOwner: ServiceLifecycleOwner
     override val viewModelStore = ViewModelStore()
-    private lateinit var viewModel: UIDebuggerViewModel
+        private lateinit var viewModel: UIDebuggerViewModel
 
     private var floatingChatService: FloatingChatService? = null
     private var isBound = false
@@ -54,8 +54,7 @@ class UIDebuggerService : Service(), ViewModelStoreOwner {
             viewModel.setWindowInteractionController(null)
         }
     }
-
-    private val NOTIFICATION_ID = 1337
+        private val NOTIFICATION_ID = 1337
     private val CHANNEL_ID = "UIDebuggerChannel"
 
     override fun onBind(intent: Intent): IBinder? = null
@@ -108,22 +107,20 @@ class UIDebuggerService : Service(), ViewModelStoreOwner {
             isBound = false
         }
     }
-
-    private fun createNotificationChannel() {
+        private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "UI Debugger Service"
-            val descriptionText = "Displays a floating overlay for UI debugging"
-            val importance = NotificationManager.IMPORTANCE_LOW
+        val descriptionText = "Displays a floating overlay for UI debugging"
+        val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
-            val notificationManager: NotificationManager =
+        val notificationManager: NotificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
-
-    private fun createNotification(): Notification {
+        private fun createNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("UI Debugger Active")
             .setContentText("Tap to manage the UI debugger overlay.")

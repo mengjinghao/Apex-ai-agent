@@ -27,23 +27,19 @@ class AgentModelCardManager(private val context: Context) {
         private val KEY_MODEL_CARDS = stringPreferencesKey("model_cards")
         private val KEY_ROLE_MAPPINGS = stringPreferencesKey("role_mappings")
     }
-
-    private val gson = Gson()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _modelCards = mutableListOf<ModelCard>()
-    private val _roleCardMap = mutableMapOf<AgentRole, ModelCard>()
-
-    val modelCards: List<ModelCard>
+        private val gson = Gson()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val _modelCards = mutableListOf<ModelCard>()
+        private val _roleCardMap = mutableMapOf<AgentRole, ModelCard>()
+        val modelCards: List<ModelCard>
         get() = _modelCards.toList()
-
-    val activeCards: List<ModelCard>
+        val activeCards: List<ModelCard>
         get() = _modelCards.filter { it.isActive }
 
     init {
         scope.launch { loadFromDataStore() }
     }
-
-    private suspend fun loadFromDataStore() {
+        private suspend fun loadFromDataStore() {
         try {
             val prefs = context.modelCardDataStore.data.first()
 
@@ -60,30 +56,27 @@ class AgentModelCardManager(private val context: Context) {
                 _roleCardMap.clear()
                 mappings.forEach { (roleName, cardId) ->
                     val role = try { AgentRole.valueOf(roleName) } catch (e: Exception) { null }
-                    val card = _modelCards.find { it.id == cardId }
-                    if (role != null && card != null) {
+        val card = _modelCards.find { it.id == cardId }
+        if (role != null && card != null) {
                         _roleCardMap[role] = card
                     }
                 }
             }
-
-            if (_modelCards.isEmpty()) {
+        if (_modelCards.isEmpty()) {
                 createDefaultCards()
             }
         } catch (e: Exception) {
             createDefaultCards()
         }
     }
-
-    private suspend fun saveToDataStore() {
+        private suspend fun saveToDataStore() {
         context.modelCardDataStore.edit { prefs ->
             prefs[KEY_MODEL_CARDS] = gson.toJson(_modelCards)
-            val roleMap = _roleCardMap.mapKeys { it.key.name to it.value.id }
+        val roleMap = _roleCardMap.mapKeys { it.key.name to it.value.id }
             prefs[KEY_ROLE_MAPPINGS] = gson.toJson(roleMap)
         }
     }
-
-    private suspend fun createDefaultCards() {
+        private suspend fun createDefaultCards() {
         val defaultCards = listOf(
             ModelCard(name = "全能助手", description = "通用多用途AI助手", provider = ModelProvider.DEEPSEEK, roles = setOf(AgentRole.COORDINATOR, AgentRole.MONITOR), temperature = 0.7f, isActive = true),
             ModelCard(name = "研究专家", description = "专业研究Agent的专用模, provider = ModelProvider.OPENAI, roles = setOf(AgentRole.RESEARCHER), temperature = 0.5f, isActive = true),
@@ -98,19 +91,16 @@ class AgentModelCardManager(private val context: Context) {
         }
         saveToDataStore()
     }
-
-    fun getCardById(id: String): ModelCard? = _modelCards.find { it.id == id }
-
-    fun getCardsForRole(role: AgentRole): List<ModelCard> = _modelCards.filter { role in it.roles }
-
-    fun getCardForRole(role: AgentRole): ModelCard? = _roleCardMap[role] ?: getCardsForRole(role).firstOrNull()
+        fun getCardById(id: String): ModelCard? = _modelCards.find { it.id == id }
+        fun getCardsForRole(role: AgentRole): List<ModelCard> = _modelCards.filter { role in it.roles }
+        fun getCardForRole(role: AgentRole): ModelCard? = _roleCardMap[role] ?: getCardsForRole(role).firstOrNull()
 
     suspend fun setCardForRole(role: AgentRole, cardId: String): Boolean {
         val card = getCardById(cardId) ?: return false
         if (role in card.roles) {
             _roleCardMap[role] = card
             saveToDataStore()
-            return true
+        return true
         }
         return false
     }
@@ -120,7 +110,7 @@ class AgentModelCardManager(private val context: Context) {
         if (index != -1) {
             _modelCards[index] = card
             saveToDataStore()
-            return true
+        return true
         }
         return false
     }
@@ -133,8 +123,7 @@ class AgentModelCardManager(private val context: Context) {
         }
         return removed
     }
-
-    fun destroy() {
+        fun destroy() {
         scope.cancel()
     }
 

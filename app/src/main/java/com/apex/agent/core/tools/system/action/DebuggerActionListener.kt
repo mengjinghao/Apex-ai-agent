@@ -37,9 +37,8 @@ class DebuggerActionListener(private val context: Context) : ActionListener {
             return ShizukuAuthorizer.getShizukuStartupInstructions(context)
         }
     }
-
-    private val isListening = AtomicBoolean(false)
-    private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
+        private val isListening = AtomicBoolean(false)
+        private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
     private var monitoringJob: Job? = null
     private var windowMonitorProcess: ShellProcess? = null
     private var activityMonitorProcess: ShellProcess? = null
@@ -79,11 +78,10 @@ class DebuggerActionListener(private val context: Context) : ActionListener {
         withContext(Dispatchers.IO) {
             try {
                 val permStatus = hasPermission()
-                if (!permStatus.granted) {
+        if (!permStatus.granted) {
                     return@withContext ActionListener.ListeningResult.failure(permStatus.reason)
                 }
-
-                if (isListening.get()) {
+        if (isListening.get()) {
                     return@withContext ActionListener.ListeningResult.failure(context.getString(R.string.admin_already_listening))
                 }
 
@@ -277,8 +275,7 @@ class DebuggerActionListener(private val context: Context) : ActionListener {
                 "MOVE" -> ActionListener.ActionType.SWIPE
                 else -> ActionListener.ActionType.GESTURE
             }
-
-            val event = ActionListener.ActionEvent(
+        val event = ActionListener.ActionEvent(
                 timestamp = System.currentTimeMillis(),
                 actionType = actionType,
                 coordinates = Pair(x, y),
@@ -317,7 +314,7 @@ class DebuggerActionListener(private val context: Context) : ActionListener {
     private fun extractPackageNameFromWindowInfo(windowInfo: String): String? {
         // 尝试从窗口信息中提取包名
         // 示例格式: mCurrentFocus=Window{abc123 u0 com.example.app/com.example.app.MainActivity}
-    val packagePattern = Regex("""([a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z0-9_]+)+)/""")
+        val packagePattern = Regex("""([a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z0-9_]+)+)/""")
         return packagePattern.find(windowInfo)?.groupValues?.get(1)
     }
 
@@ -329,7 +326,7 @@ class DebuggerActionListener(private val context: Context) : ActionListener {
     private fun extractCurrentActivityFromStack(activityStack: String): String? {
         // 尝试从Activity栈信息中提取当前Activity
         // 示例格式: Running activities (most recent first): ActivityRecord{abc123 u0 com.example.app/.MainActivity t123}
-    val activityPattern = Regex("""ActivityRecord\{[^}]*\s+([^/]+/[^}]+)""")
+        val activityPattern = Regex("""ActivityRecord\{[^}]*\s+([^/]+/[^}]+)""")
         return activityPattern.find(activityStack)?.groupValues?.get(1)
     }
 } 

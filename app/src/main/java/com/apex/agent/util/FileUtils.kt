@@ -33,13 +33,12 @@ import com.apex.agent.core.concurrent.in
 object FileUtils {
 
     private const val TAG = "FileUtils"
-    private const val BACKGROUND_IMAGES_DIR = "background_images"
-    private const val BACKGROUND_VIDEOS_DIR = "background_videos"
+        private const val BACKGROUND_IMAGES_DIR = "background_images"
+        private const val BACKGROUND_VIDEOS_DIR = "background_videos"
 
     // List of common video file extensions
     private val VIDEO_EXTENSIONS = listOf("mp4", "3gp", "webm", "mkv", "avi", "mov", "flv", "wmv")
-
-    private val TEXT_BASED_EXTENSIONS = setOf(
+        private val TEXT_BASED_EXTENSIONS = setOf(
         "txt", "md", "log", "ini", "env", "csv", "tsv", "text", "me",
         "html", "htm", "css", "js", "json", "xml", "yaml", "yml", "svg", "url",
         "sass", "scss", "less", "ejs", "hbs", "pug", "rss", "atom", "vtt", "webmanifest", "jsp", "asp", "aspx",
@@ -55,17 +54,15 @@ object FileUtils {
         "rtf", "tex", "srt", "sub", "asciidoc", "adoc", "rst", "org", "wiki", "mediawiki",
         "vcf", "ics", "gpx", "kml", "opml"
     )
-
-    private val TEXT_BASED_FILENAMES = setOf(
+        private val TEXT_BASED_FILENAMES = setOf(
         "readme", "makefile", "dockerfile", "license", "changelog", "authors",
         "contributors", "copying", "install", "news", "todo", "version",
         "gemfile", "rakefile", "vagrantfile", "buildfile"
     )
-
-    private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "ico", "tiff", "tif", "heic", "heif")
-    private val AUDIO_EXTENSIONS = setOf("mp3", "wav", "ogg", "flac", "aac", "wma", "m4a", "opus")
-    private val DOCUMENT_EXTENSIONS = setOf("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "odp", "rtf", "tex", "epub")
-    private val ARCHIVE_EXTENSIONS = setOf("zip", "rar", "7z", "tar", "gz", "bz2", "xz", "zst")
+        private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "ico", "tiff", "tif", "heic", "heif")
+        private val AUDIO_EXTENSIONS = setOf("mp3", "wav", "ogg", "flac", "aac", "wma", "m4a", "opus")
+        private val DOCUMENT_EXTENSIONS = setOf("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "odp", "rtf", "tex", "epub")
+        private val ARCHIVE_EXTENSIONS = setOf("zip", "rar", "7z", "tar", "gz", "bz2", "xz", "zst")
 
     /**
      * Checks if a file extension corresponds to a text-based file format.
@@ -75,8 +72,7 @@ object FileUtils {
     fun isTextBasedExtension(extension: String): Boolean {
         return extension.lowercase() in TEXT_BASED_EXTENSIONS
     }
-
-    fun isTextBasedFileName(fileName: String): Boolean {
+        fun isTextBasedFileName(fileName: String): Boolean {
         val name = fileName.trim()
         if (name.isBlank()) return false
 
@@ -100,7 +96,6 @@ object FileUtils {
         if (!file.exists() || !file.canRead()) {
             return false
         }
-
         if (file.length() == 0L) {
             return true
         }
@@ -108,17 +103,15 @@ object FileUtils {
         try {
             file.inputStream().use { input ->
                 val buffer = ByteArray(minOf(sampleSize.toLong(), file.length()).toInt())
-                val bytesRead = input.read(buffer)
-
-                if (bytesRead <= 0) {
+        val bytesRead = input.read(buffer)
+        if (bytesRead <= 0) {
                     return true
                 }
-
-                return isTextLikeBytes(buffer, bytesRead)
+        return isTextLikeBytes(buffer, bytesRead)
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error checking if file is text-like: ${file.path}", e)
-            return false
+        return false
         }
     }
 
@@ -139,8 +132,7 @@ object FileUtils {
     fun isTextLike(bytes: ByteArray): Boolean {
         return isTextLikeBytes(bytes, bytes.size)
     }
-
-    private fun isTextLikeBytes(bytes: ByteArray, length: Int): Boolean {
+        private fun isTextLikeBytes(bytes: ByteArray, length: Int): Boolean {
         if (length == 0) return true
 
         var textChars = 0
@@ -188,7 +180,6 @@ object FileUtils {
                 }
             }
         }
-
         if (nonTextChars == 0) return true
         val totalChars = textChars + nonTextChars
         if (totalChars == 0) return true
@@ -216,7 +207,6 @@ object FileUtils {
         if (com.apex.ui.features.chat.webview.workspace.process.GitIgnoreFilter.shouldIgnore(file, workspaceRoot, gitignoreRules)) {
             return false
         }
-
         return isTextBasedFile(file)
     }
 
@@ -252,17 +242,15 @@ object FileUtils {
         var outputStream: FileOutputStream? = null
         try {
             inputStream = context.contentResolver.openInputStream(uri)
-            if (inputStream == null) {
+        if (inputStream == null) {
                 AppLogger.e("FileUtils", "Failed to open input stream for URI: $uri")
                 return@withContext null
             }
-
-            val originalExtension = getFileExtensionFromUri(context, uri) ?: "dat"
-            val file = File(context.filesDir, "${uniqueName}_${UUID.randomUUID()}.${originalExtension}")
+        val originalExtension = getFileExtensionFromUri(context, uri) ?: "dat"
+        val file = File(context.filesDir, "${uniqueName}_${UUID.randomUUID()}.${originalExtension}")
             outputStream = FileOutputStream(file)
-
-            val buffer = ByteArray(4 * 1024)
-            var read: Int
+        val buffer = ByteArray(4 * 1024)
+        var read: Int
             while (inputStream.read(buffer).also { read = it } != -1) {
                 outputStream.write(buffer, 0, read)
             }
@@ -282,20 +270,18 @@ object FileUtils {
             }
         }
     }
-
-    private suspend fun getFileExtensionFromUri(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) {
+        private suspend fun getFileExtensionFromUri(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) {
         val uriPath = uri.path
         if (uriPath != null) {
             val pathExtension = uriPath.substringAfterLast('.', "")
-            if (pathExtension.isNotEmpty() && pathExtension.length <= 10 && !pathExtension.contains('/')) {
+        if (pathExtension.isNotEmpty() && pathExtension.length <= 10 && !pathExtension.contains('/')) {
                 return@withContext pathExtension.lowercase()
             }
         }
-
         val mimeType = context.contentResolver.getType(uri)
         if (mimeType != null) {
             val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-            if (extension != null) {
+        if (extension != null) {
                 return@withContext extension.lowercase()
             }
         }
@@ -303,10 +289,10 @@ object FileUtils {
         context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) {
                 val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                if (nameIndex >= 0) {
+        if (nameIndex >= 0) {
                     val fileName = cursor.getString(nameIndex)
-                    val fileExtension = fileName?.substringAfterLast('.', "")
-                    if (!fileExtension.isNullOrEmpty() && fileExtension.length <= 10) {
+        val fileExtension = fileName?.substringAfterLast('.', "")
+        if (!fileExtension.isNullOrEmpty() && fileExtension.length <= 10) {
                         return@withContext fileExtension.lowercase()
                     }
                 }
@@ -315,11 +301,10 @@ object FileUtils {
 
         return@withContext null
     }
-
-    private fun cleanOldBackgroundFiles(directory: File, currentFileName: String) {
+        private fun cleanOldBackgroundFiles(directory: File, currentFileName: String) {
         try {
             val files = directory.listFiles()
-            if (files != null && files.size > 1) {
+        if (files != null && files.size > 1) {
                 files.forEach { file ->
                     if (file.name != currentFileName) {
                         file.delete()
@@ -330,8 +315,7 @@ object FileUtils {
             AppLogger.e(TAG, "Error cleaning old background files", e)
         }
     }
-
-    fun checkVideoSize(context: Context, uri: Uri, maxSizeMB: Int = 30): Boolean {
+        fun checkVideoSize(context: Context, uri: Uri, maxSizeMB: Int = 30): Boolean {
         try {
             context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
                 val fileSize = pfd.statSize
@@ -372,7 +356,7 @@ object FileUtils {
     fun writeTextSafe(file: File, text: String, charset: Charset = Charsets.UTF_8): Boolean {
         return try {
             file.parentFile?.mkdirs()
-            val tempFile = File(file.parentFile, ".${file.name}.tmp")
+        val tempFile = File(file.parentFile, ".${file.name}.tmp")
             tempFile.writeText(text, charset)
             tempFile.renameTo(file)
             true
@@ -431,7 +415,7 @@ object FileUtils {
         if (target.exists() && !overwrite) return false
         return try {
             target.parentFile?.mkdirs()
-            if (target.exists()) target.delete()
+        if (target.exists()) target.delete()
             source.renameTo(target)
         } catch (_: Exception) {
             false
@@ -600,7 +584,7 @@ object FileUtils {
                         if (matcher.matches(file)) {
                             result.add(file.toFile())
                         }
-                        return java.nio.file.FileVisitResult.CONTINUE
+        return java.nio.file.FileVisitResult.CONTINUE
                     }
                 })
         } catch (_: Exception) { }
@@ -709,7 +693,7 @@ object FileUtils {
                 while (input.read(buffer).also { read = it } >= 0) {
                     if (output == null || currentSize >= maxSize) {
                         output?.close()
-                        val partFile = File(file.parentFile, "${file.name}.part${String.format("%03d", partIndex++)}")
+        val partFile = File(file.parentFile, "${file.name}.part${String.format("%03d", partIndex++)}")
                         output = FileOutputStream(partFile)
                         parts.add(partFile)
                         currentSize = 0L
@@ -832,8 +816,8 @@ object FileUtils {
         if (a.length() != b.length()) return a.length().coerceAtLeast(b.length()) - a.length().coerceAtMost(b.length())
         return try {
             val bytesA = a.readBytes()
-            val bytesB = b.readBytes()
-            var diffCount = 0L
+        val bytesB = b.readBytes()
+        var diffCount = 0L
             for (i in bytesA.indices) {
                 if (bytesA[i] != bytesB[i]) diffCount++
             }
@@ -881,18 +865,18 @@ object FileUtils {
     fun chmod(file: File, mode: String): Boolean {
         return try {
             val permissions = mutableSetOf<PosixFilePermission>()
-            val owner = mode[0].digitToInt()
-            val group = mode[1].digitToInt()
-            val other = mode[2].digitToInt()
-            if (owner and 4 != 0) permissions.add(PosixFilePermission.OWNER_READ)
-            if (owner and 2 != 0) permissions.add(PosixFilePermission.OWNER_WRITE)
-            if (owner and 1 != 0) permissions.add(PosixFilePermission.OWNER_EXECUTE)
-            if (group and 4 != 0) permissions.add(PosixFilePermission.GROUP_READ)
-            if (group and 2 != 0) permissions.add(PosixFilePermission.GROUP_WRITE)
-            if (group and 1 != 0) permissions.add(PosixFilePermission.GROUP_EXECUTE)
-            if (other and 4 != 0) permissions.add(PosixFilePermission.OTHERS_READ)
-            if (other and 2 != 0) permissions.add(PosixFilePermission.OTHERS_WRITE)
-            if (other and 1 != 0) permissions.add(PosixFilePermission.OTHERS_EXECUTE)
+        val owner = mode[0].digitToInt()
+        val group = mode[1].digitToInt()
+        val other = mode[2].digitToInt()
+        if (owner and 4 != 0) permissions.add(PosixFilePermission.OWNER_READ)
+        if (owner and 2 != 0) permissions.add(PosixFilePermission.OWNER_WRITE)
+        if (owner and 1 != 0) permissions.add(PosixFilePermission.OWNER_EXECUTE)
+        if (group and 4 != 0) permissions.add(PosixFilePermission.GROUP_READ)
+        if (group and 2 != 0) permissions.add(PosixFilePermission.GROUP_WRITE)
+        if (group and 1 != 0) permissions.add(PosixFilePermission.GROUP_EXECUTE)
+        if (other and 4 != 0) permissions.add(PosixFilePermission.OTHERS_READ)
+        if (other and 2 != 0) permissions.add(PosixFilePermission.OTHERS_WRITE)
+        if (other and 1 != 0) permissions.add(PosixFilePermission.OTHERS_EXECUTE)
             Files.setPosixFilePermissions(file.toPath(), permissions)
             true
         } catch (_: Exception) {

@@ -120,8 +120,8 @@ data class Question(
 class ConversationGameEngine {
 
     private val sessions = ConcurrentHashMap<String, GameSession>()
-    private val questionBank = mutableListOf<Question>()
-    private val gameDefinitions = mutableMapOf<GameType, GameDefinition>()
+        private val questionBank = mutableListOf<Question>()
+        private val gameDefinitions = mutableMapOf<GameType, GameDefinition>()
 
     init {
         registerBuiltinGames()
@@ -141,7 +141,6 @@ class ConversationGameEngine {
         require(players.size in def.minPlayers..def.maxPlayers) {
             "玩家数需在 ${def.minPlayers}-${def.maxPlayers} 之间"
         }
-
         val sessionId = "game_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
         val session = GameSession(
             id = sessionId,
@@ -180,7 +179,6 @@ class ConversationGameEngine {
             GameType.TRIVIA -> handleTriviaInput(session, player, input)
             GameType.IMPROV -> handleImprov(session, player, input)
         }
-
         val updatedMove = move.copy(result = result)
         val updatedHistory = session.history + updatedMove
 
@@ -218,7 +216,6 @@ class ConversationGameEngine {
             lastActivityAt = System.currentTimeMillis(),
             winner = if (result is MoveResult.Victory) result.winner else null
         )
-
         return updatedMove
     }
 
@@ -228,7 +225,6 @@ class ConversationGameEngine {
     fun getCurrentPrompt(sessionId: String): String? {
         val session = sessions[sessionId] ?: return null
         if (session.state == GameState.ENDED) return "游戏已结束"
-
         return when (session.gameType) {
             GameType.RIDDLE -> {
                 val q = session.gameData["currentQuestion"] as? Question ?: return null
@@ -239,7 +235,7 @@ class ConversationGameEngine {
                 buildString {
                     appendLine("知识问答（第${session.round}/${session.maxRounds}轮）:")
                     appendLine(q.question)
-                    if (q.options.isNotEmpty()) {
+        if (q.options.isNotEmpty()) {
                         q.options.forEachIndexed { i, opt -> appendLine("${'A' + i}. $opt") }
                     }
                 }
@@ -330,8 +326,7 @@ class ConversationGameEngine {
             MoveResult.Incorrect("不对哦，再想想", q.hints.firstOrNull())
         }
     }
-
-    private fun handleQuizInput(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleQuizInput(session: GameSession, player: String, input: String): MoveResult {
         val q = session.gameData["currentQuestion"] as? Question ?: return MoveResult.Continue("无题目")
         val answerIndex = when {
             input.matches(Regex("[A-Da-d]")) -> input.uppercase().first() - 'A'
@@ -344,8 +339,7 @@ class ConversationGameEngine {
             MoveResult.Incorrect("错误，正确答案是 ${q.answer}")
         }
     }
-
-    private fun handleTwentyQuestions(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleTwentyQuestions(session: GameSession, player: String, input: String): MoveResult {
         val target = session.gameData["target"] as? String ?: "苹果"
         return when {
             input.contains(target, ignoreCase = true) || input.equals(target, ignoreCase = true) -> {
@@ -359,8 +353,7 @@ class ConversationGameEngine {
             else -> MoveResult.Continue("请提问是/否问题")
         }
     }
-
-    private fun handleWordChain(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleWordChain(session: GameSession, player: String, input: String): MoveResult {
         val lastWord = session.gameData["lastWord"] as? String ?: ""
         val lastChar = lastWord.lastOrNull()?.lowercaseChar()
         val firstChar = input.firstOrNull()?.lowercaseChar()
@@ -370,12 +363,10 @@ class ConversationGameEngine {
             MoveResult.Incorrect("接不上，「$lastWord」的最后一个字是「$lastChar」")
         }
     }
-
-    private fun handleStoryChain(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleStoryChain(session: GameSession, player: String, input: String): MoveResult {
         return MoveResult.Progress("好的，故事继续: $input", mapOf("lastSentence" to input))
     }
-
-    private fun handleWouldYouRather(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleWouldYouRather(session: GameSession, player: String, input: String): MoveResult {
         val options = session.gameData["options"] as? List<*> ?: listOf("A", "B")
         return when {
             input.contains("1") || input.contains("a", true) || input.contains(options.getOrNull(0) ?: "") -> {
@@ -387,8 +378,7 @@ class ConversationGameEngine {
             else -> MoveResult.Incorrect("请选择 1 或 2")
         }
     }
-
-    private fun handleTextAdventure(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleTextAdventure(session: GameSession, player: String, input: String): MoveResult {
         // 简化的文字冒险
     val scenes = mapOf(
             "十字路口" to "你选择往${input}走，前方出现了...",
@@ -404,12 +394,10 @@ class ConversationGameEngine {
         }
         return MoveResult.Progress(scenes[newScene] ?: "你继续前行...", mapOf("currentScene" to newScene))
     }
-
-    private fun handleRolePlay(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleRolePlay(session: GameSession, player: String, input: String): MoveResult {
         return MoveResult.Continue("(DM) $input 的行动成功了，接下来...")
     }
-
-    private fun handleTriviaInput(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleTriviaInput(session: GameSession, player: String, input: String): MoveResult {
         val q = session.gameData["currentQuestion"] as? Question ?: return MoveResult.Continue("无题目")
         return if (input.trim().equals(q.answer, ignoreCase = true)) {
             MoveResult.Correct("正确！${q.explanation ?: ""}", 5)
@@ -417,8 +405,7 @@ class ConversationGameEngine {
             MoveResult.Incorrect("答案是「${q.answer}」")
         }
     }
-
-    private fun handleImprov(session: GameSession, player: String, input: String): MoveResult {
+        private fun handleImprov(session: GameSession, player: String, input: String): MoveResult {
         return MoveResult.Continue("（接戏）针对「$input」，我回应...")
     }
 
@@ -437,8 +424,7 @@ class ConversationGameEngine {
             GameType.IMPROV -> mapOf("topic" to "即兴")
         }
     }
-
-    private fun generateWouldYouRather(): List<String> {
+        private fun generateWouldYouRather(): List<String> {
         val options = listOf(
             listOf("永远不能说谎", "永远只能沉默"),
             listOf("拥有读心术", "拥有预知未来"),
@@ -448,8 +434,7 @@ class ConversationGameEngine {
         )
         return options.random()
     }
-
-    private fun registerBuiltinGames() {
+        private fun registerBuiltinGames() {
         gameDefinitions[GameType.RIDDLE] = GameDefinition(GameType.RIDDLE, "猜谜", "传统谜语游戏", "🧩", 1, 4, 5, "答对得分，答错可要提示")
         gameDefinitions[GameType.QUIZ] = GameDefinition(GameType.QUIZ, "知识问答", "多选题问答", "📚", 1, 4, 10, "选 ABCD 或 1234")
         gameDefinitions[GameType.TWENTY_QUESTIONS] = GameDefinition(GameType.TWENTY_QUESTIONS, "二十问", "猜物游戏", "❓", 1, 4, 20, "只能问是/否问题")
@@ -461,8 +446,7 @@ class ConversationGameEngine {
         gameDefinitions[GameType.TRIVIA] = GameDefinition(GameType.TRIVIA, "冷知识", "趣味知识", "💡", 1, 4, 10, "答对得分")
         gameDefinitions[GameType.IMPROV] = GameDefinition(GameType.IMPROV, "即兴表演", "即兴接话", "🎭", 2, 4, 10, "即兴接话")
     }
-
-    private fun loadBuiltinQuestions() {
+        private fun loadBuiltinQuestions() {
         // 谜语
         questionBank.addAll(listOf(
             Question("r1", "riddle", 1, "千条线，万条线，落到水里看不见", "雨", hints = listOf("和天气有关", "从天上掉下来")),

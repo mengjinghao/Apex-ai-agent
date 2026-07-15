@@ -38,18 +38,16 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
         val activeThreadCount: Int,
         val queueDepth: Int
     )
-
-    private val logger = LoggerFactory.getLogger("BurstOptimizer-$name")
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val isOptimizing = AtomicBoolean(false)
-    private val optimizationCount = AtomicInteger(0)
-    private val totalOptimizationTimeNs = AtomicLong(0)
-    private val reports = CopyOnWriteArrayList<OptimizationReport>()
-    private val taskExecutionTimes = ConcurrentHashMap<String, AtomicLong>()
-    private val taskSuccessCount = ConcurrentHashMap<String, AtomicInteger>()
-    private val taskFailureCount = ConcurrentHashMap<String, AtomicInteger>()
-
-    private var isRunning = false
+        private val logger = LoggerFactory.getLogger("BurstOptimizer-$name")
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val isOptimizing = AtomicBoolean(false)
+        private val optimizationCount = AtomicInteger(0)
+        private val totalOptimizationTimeNs = AtomicLong(0)
+        private val reports = CopyOnWriteArrayList<OptimizationReport>()
+        private val taskExecutionTimes = ConcurrentHashMap<String, AtomicLong>()
+        private val taskSuccessCount = ConcurrentHashMap<String, AtomicInteger>()
+        private val taskFailureCount = ConcurrentHashMap<String, AtomicInteger>()
+        private var isRunning = false
     private var optimizationJob: Job? = null
 
     fun start() {
@@ -63,13 +61,11 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
         }
         logger.info("Burst optimizer started: $name")
     }
-
-    fun stop() {
+        fun stop() {
         isRunning = false
         optimizationJob?.cancel()
     }
-
-    fun recordTaskExecution(taskType: String, durationMs: Long, success: Boolean) {
+        fun recordTaskExecution(taskType: String, durationMs: Long, success: Boolean) {
         taskExecutionTimes.computeIfAbsent(taskType) { AtomicLong(0) }.addAndGet(durationMs)
         if (success) {
             taskSuccessCount.computeIfAbsent(taskType) { AtomicInteger(0) }.incrementAndGet()
@@ -82,18 +78,15 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
         val kernelState = BurstKernel.getState()
         val schedulerMetrics = BurstKernel.run { /* would get from scheduler */ }
         val now = System.currentTimeMillis()
-
         val taskTypes = taskExecutionTimes.keys.toList()
         val totalTasks = taskTypes.sumOf {
             (taskSuccessCount[it]?.get() ?: 0) + (taskFailureCount[it]?.get() ?: 0)
         }
-
         val totalExecTime = taskTypes.sumOf { taskExecutionTimes[it]?.get() ?: 0 }
         val avgExecTime = if (totalTasks > 0) totalExecTime.toDouble() / totalTasks else 0.0
 
         val bottlenecks = detectBottlenecks()
         val recommendations = generateRecommendations(bottlenecks)
-
         return OptimizationReport(
             timestamp = now,
             taskThroughput = if (totalTasks > 0) totalTasks.toDouble() / ((now - 0).coerceAtLeast(1) / 1000.0) else 0.0,
@@ -118,7 +111,7 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
         try {
             val report = getOptimizationReport()
             reports.add(report)
-            if (reports.size > 100) reports.removeAt(0)
+        if (reports.size > 100) reports.removeAt(0)
 
             applyOptimizations(report)
 
@@ -130,8 +123,7 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
             isOptimizing.set(false)
         }
     }
-
-    private fun detectBottlenecks(): List<String> {
+        private fun detectBottlenecks(): List<String> {
         val bottlenecks = mutableListOf<String>()
         val highFailureTypes = taskFailureCount.filter { (type, count) ->
             val success = taskSuccessCount[type]?.get() ?: 0
@@ -141,7 +133,6 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
         if (highFailureTypes.isNotEmpty()) {
             bottlenecks.add("High failure rate for task types: ${highFailureTypes.keys}")
         }
-
         val slowTaskTypes = taskExecutionTimes.filter { (type, time) ->
             val count = (taskSuccessCount[type]?.get() ?: 0) + (taskFailureCount[type]?.get() ?: 0)
             count > MIN_TASKS_FOR_ANALYSIS && time.get().toDouble() / count > 5000
@@ -149,11 +140,9 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
         if (slowTaskTypes.isNotEmpty()) {
             bottlenecks.add("Slow execution for task types: ${slowTaskTypes.keys}")
         }
-
         return bottlenecks
     }
-
-    private fun generateRecommendations(bottlenecks: List<String>): List<String> {
+        private fun generateRecommendations(bottlenecks: List<String>): List<String> {
         val recommendations = mutableListOf<String>()
         if (bottlenecks.isNotEmpty()) {
             recommendations.add("Increase concurrency for bottleneck task types")
@@ -164,8 +153,7 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
         recommendations.add("Review thread pool configuration for optimal throughput")
         return recommendations
     }
-
-    private suspend fun applyOptimizations(report: OptimizationReport) {
+        private suspend fun applyOptimizations(report: OptimizationReport) {
         if (report.concurrencyUtilization > 0.8) {
             logger.info("Increasing concurrency due to high utilization")
         }
@@ -176,8 +164,7 @@ class BurstOptimizer(private val name: String = "burst-optimizer") {
             logger.info("High average execution time detected, recommendations generated")
         }
     }
-
-    fun getStats(): Map<String, Any> = mapOf(
+        fun getStats(): Map<String, Any> = mapOf(
         "name" to name,
         "optimizations" to optimizationCount.get(),
         "reports" to reports.size,
@@ -208,11 +195,10 @@ class BurstTaskAnalyzer(private val name: String = "task-analyzer") {
     enum class ParallelismHint {
         HIGH, MEDIUM, LOW, SEQUENTIAL
     }
-
-    private val logger = LoggerFactory.getLogger("TaskAnalyzer-$name")
-    private val analysisCache = ConcurrentHashMap<String, TaskAnalysis>()
-    private val history = ConcurrentHashMap<String, MutableList<Long>>()
-    private val maxHistorySize = 20
+        private val logger = LoggerFactory.getLogger("TaskAnalyzer-$name")
+        private val analysisCache = ConcurrentHashMap<String, TaskAnalysis>()
+        private val history = ConcurrentHashMap<String, MutableList<Long>>()
+        private val maxHistorySize = 20
 
     fun analyze(task: BurstTask): TaskAnalysis {
         val cached = analysisCache[task.id]
@@ -222,30 +208,25 @@ class BurstTaskAnalyzer(private val name: String = "task-analyzer") {
         analysisCache[task.id] = analysis
         return analysis
     }
-
-    fun recordExecution(taskId: String, durationMs: Long) {
+        fun recordExecution(taskId: String, durationMs: Long) {
         history.computeIfAbsent(taskId) { mutableListOf() }.add(durationMs)
         val list = history[taskId] ?: return
         while (list.size > maxHistorySize) list.removeAt(0)
     }
-
-    fun getEstimatedDuration(taskType: String): Long {
+        fun getEstimatedDuration(taskType: String): Long {
         val durations = history.filterKeys { it.startsWith(taskType) }.values.flatten()
         if (durations.isEmpty()) return 1000L
         return durations.average().toLong()
     }
-
-    fun getAverageDuration(taskId: String): Long {
+        fun getAverageDuration(taskId: String): Long {
         val durations = history[taskId] ?: return 1000L
         return if (durations.isNotEmpty()) durations.average().toLong() else 1000L
     }
-
-    fun clear() {
+        fun clear() {
         analysisCache.clear()
         history.clear()
     }
-
-    private fun classifyTask(task: BurstTask): TaskAnalysis {
+        private fun classifyTask(task: BurstTask): TaskAnalysis {
         val description = task.description.lowercase()
         val cpuIntensive = listOf("compute", "calculation", "analysis", "transform", "encode", "decode")
             .any { description.contains(it) }
@@ -255,7 +236,6 @@ class BurstTaskAnalyzer(private val name: String = "task-analyzer") {
             .any { description.contains(it) }
         val networkIntensive = listOf("fetch", "download", "upload", "request", "api", "remote", "sync")
             .any { description.contains(it) }
-
         val parallelism = when {
             cpuIntensive -> ParallelismHint.MEDIUM
             ioIntensive -> ParallelismHint.HIGH
@@ -263,7 +243,6 @@ class BurstTaskAnalyzer(private val name: String = "task-analyzer") {
             networkIntensive -> ParallelismHint.HIGH
             else -> ParallelismHint.MEDIUM
         }
-
         return TaskAnalysis(
             taskId = task.id,
             taskType = task.description.take(50),
@@ -298,16 +277,15 @@ class BurstResourceManager(private val name: String = "resource-manager") {
         val memoryUtilization: Double,
         val coreUtilization: Double
     )
-
-    private val logger = LoggerFactory.getLogger("ResourceManager-$name")
-    private val pool = ResourcePool()
-    private val usedMemory = AtomicInteger(0)
-    private val usedCores = AtomicInteger(0)
-    private val usedThreads = AtomicInteger(0)
-    private val usedNetwork = AtomicInteger(0)
-    private val peakMemory = AtomicInteger(0)
-    private val peakCores = AtomicInteger(0)
-    private val peakThreads = AtomicInteger(0)
+        private val logger = LoggerFactory.getLogger("ResourceManager-$name")
+        private val pool = ResourcePool()
+        private val usedMemory = AtomicInteger(0)
+        private val usedCores = AtomicInteger(0)
+        private val usedThreads = AtomicInteger(0)
+        private val usedNetwork = AtomicInteger(0)
+        private val peakMemory = AtomicInteger(0)
+        private val peakCores = AtomicInteger(0)
+        private val peakThreads = AtomicInteger(0)
 
     data class ResourceReservation(
         val memoryMb: Int,
@@ -315,8 +293,7 @@ class BurstResourceManager(private val name: String = "resource-manager") {
         val threads: Int,
         val networkConns: Int
     )
-
-    fun reserve(requirements: ResourceReservation): Boolean {
+        fun reserve(requirements: ResourceReservation): Boolean {
         if (usedMemory.get() + requirements.memoryMb > pool.maxMemoryMb) return false
         if (usedCores.get() + requirements.cores > pool.maxCores) return false
         if (usedThreads.get() + requirements.threads > pool.maxThreads) return false
@@ -330,8 +307,7 @@ class BurstResourceManager(private val name: String = "resource-manager") {
         updatePeak()
         return true
     }
-
-    fun release(requirements: ResourceReservation) {
+        fun release(requirements: ResourceReservation) {
         usedMemory.addAndGet(-requirements.memoryMb)
         usedCores.addAndGet(-requirements.cores)
         usedThreads.addAndGet(-requirements.threads)
@@ -342,8 +318,7 @@ class BurstResourceManager(private val name: String = "resource-manager") {
         usedThreads.set(usedThreads.get().coerceAtLeast(0))
         usedNetwork.set(usedNetwork.get().coerceAtLeast(0))
     }
-
-    fun getUsage(): ResourceUsage = ResourceUsage(
+        fun getUsage(): ResourceUsage = ResourceUsage(
         usedMemoryMb = usedMemory.get(),
         usedCores = usedCores.get(),
         usedThreads = usedThreads.get(),
@@ -351,15 +326,13 @@ class BurstResourceManager(private val name: String = "resource-manager") {
         memoryUtilization = usedMemory.get().toDouble() / pool.maxMemoryMb,
         coreUtilization = usedCores.get().toDouble() / pool.maxCores
     )
-
-    fun isAvailable(requirements: ResourceReservation): Boolean {
+        fun isAvailable(requirements: ResourceReservation): Boolean {
         return usedMemory.get() + requirements.memoryMb <= pool.maxMemoryMb &&
             usedCores.get() + requirements.cores <= pool.maxCores &&
             usedThreads.get() + requirements.threads <= pool.maxThreads &&
             usedNetwork.get() + requirements.networkConns <= pool.maxNetworkConnections
     }
-
-    fun getPool(): ResourcePool = pool
+        fun getPool(): ResourcePool = pool
 
     fun getStats(): Map<String, Any> = mapOf(
         "name" to name,
@@ -373,8 +346,7 @@ class BurstResourceManager(private val name: String = "resource-manager") {
         "peakCores" to peakCores.get(),
         "peakThreads" to peakThreads.get()
     )
-
-    private fun updatePeak() {
+        private fun updatePeak() {
         peakMemory.updateAndGet { maxOf(it, usedMemory.get()) }
         peakCores.updateAndGet { maxOf(it, usedCores.get()) }
         peakThreads.updateAndGet { maxOf(it, usedThreads.get()) }
@@ -398,53 +370,48 @@ class BurstCacheOptimizer(private val name: String = "cache-optimizer") {
         val evictions: Long,
         val averageAccessTimeUs: Double
     )
-
-    private val logger = LoggerFactory.getLogger("CacheOptimizer-$name")
-    private val config = CacheConfig()
-    private val cache = LinkedHashMap<String, ByteArray>(config.maxEntries, 0.75f, true)
-    private val lock = Any()
-    private val hits = AtomicLong(0)
-    private val misses = AtomicLong(0)
-    private val evictions = AtomicLong(0)
-    private val currentMemory = AtomicLong(0)
-
-    fun get(key: String): ByteArray? {
+        private val logger = LoggerFactory.getLogger("CacheOptimizer-$name")
+        private val config = CacheConfig()
+        private val cache = LinkedHashMap<String, ByteArray>(config.maxEntries, 0.75f, true)
+        private val lock = Any()
+        private val hits = AtomicLong(0)
+        private val misses = AtomicLong(0)
+        private val evictions = AtomicLong(0)
+        private val currentMemory = AtomicLong(0)
+        fun get(key: String): ByteArray? {
         synchronized(lock) {
             val value = cache[key]
             if (value != null) {
                 hits.incrementAndGet()
-                return value
+        return value
             }
             misses.incrementAndGet()
-            return null
+        return null
         }
     }
-
-    fun put(key: String, value: ByteArray) {
+        fun put(key: String, value: ByteArray) {
         synchronized(lock) {
             while (cache.size >= config.maxEntries || currentMemory.get() + value.size > config.maxMemoryBytes) {
                 val oldest = cache.entries.firstOrNull()?.key ?: break
                 val removed = cache.remove(oldest)
-                if (removed != null) {
+        if (removed != null) {
                     currentMemory.addAndGet(-removed.size.toLong())
                     evictions.incrementAndGet()
                 }
             }
-            val oldValue = cache.put(key, value)
-            if (oldValue != null) {
+        val oldValue = cache.put(key, value)
+        if (oldValue != null) {
                 currentMemory.addAndGet(-oldValue.size.toLong())
             }
             currentMemory.addAndGet(value.size.toLong())
         }
     }
-
-    fun remove(key: String) {
+        fun remove(key: String) {
         synchronized(lock) {
             cache.remove(key)?.let { currentMemory.addAndGet(-it.size.toLong()) }
         }
     }
-
-    fun clear() {
+        fun clear() {
         synchronized(lock) {
             cache.clear()
             currentMemory.set(0)
@@ -453,8 +420,7 @@ class BurstCacheOptimizer(private val name: String = "cache-optimizer") {
             evictions.set(0)
         }
     }
-
-    fun getStats(): CacheStats {
+        fun getStats(): CacheStats {
         synchronized(lock) {
             return CacheStats(
                 entries = cache.size,
@@ -465,8 +431,7 @@ class BurstCacheOptimizer(private val name: String = "cache-optimizer") {
             )
         }
     }
-
-    fun getConfig(): CacheConfig = config
+        fun getConfig(): CacheConfig = config
 }
 
 class BurstExecutionPlanner(private val name: String = "execution-planner") {
@@ -485,10 +450,9 @@ class BurstExecutionPlanner(private val name: String = "execution-planner") {
         val priority: Int,
         val assignedWorker: String? = null
     )
-
-    private val logger = LoggerFactory.getLogger("ExecutionPlanner-$name")
-    private val planHistory = ConcurrentHashMap<String, ExecutionPlan>()
-    private val planCount = AtomicInteger(0)
+        private val logger = LoggerFactory.getLogger("ExecutionPlanner-$name")
+        private val planHistory = ConcurrentHashMap<String, ExecutionPlan>()
+        private val planCount = AtomicInteger(0)
 
     suspend fun createPlan(tasks: List<BurstTask>): ExecutionPlan {
         val planId = "plan-${planCount.incrementAndGet()}"
@@ -500,11 +464,9 @@ class BurstExecutionPlanner(private val name: String = "execution-planner") {
                 priority = task.priority
             )
         }
-
         val order = topologicalSort(planned)
         val totalDuration = planned.sumOf { it.estimatedDurationMs }
         val parallelism = calculateParallelism(planned)
-
         val plan = ExecutionPlan(
             planId = planId,
             tasks = planned,
@@ -522,16 +484,13 @@ class BurstExecutionPlanner(private val name: String = "execution-planner") {
             val deps = findDependencies(task, plan.tasks)
             task.copy(dependencies = deps)
         }
-
         val order = topologicalSort(optimized)
         return plan.copy(tasks = optimized, executionOrder = order)
     }
-
-    fun getPlan(planId: String): ExecutionPlan? = planHistory[planId]
+        fun getPlan(planId: String): ExecutionPlan? = planHistory[planId]
 
     fun clear() { planHistory.clear() }
-
-    private fun estimateDuration(task: BurstTask): Long {
+        private fun estimateDuration(task: BurstTask): Long {
         val baseEstimate = 1000L
         val complexityMultiplier = when {
             task.description.length > 1000 -> 5
@@ -541,36 +500,31 @@ class BurstExecutionPlanner(private val name: String = "execution-planner") {
         }
         return baseEstimate * complexityMultiplier
     }
-
-    private fun topologicalSort(tasks: List<PlannedTask>): List<String> {
+        private fun topologicalSort(tasks: List<PlannedTask>): List<String> {
         val visited = mutableSetOf<String>()
         val order = mutableListOf<String>()
-
         fun visit(taskId: String) {
             if (taskId in visited) return
             visited.add(taskId)
-            val task = tasks.find { it.taskId == taskId } ?: return
+        val task = tasks.find { it.taskId == taskId } ?: return
             for (dep in task.dependencies) {
                 visit(dep)
             }
             order.add(taskId)
         }
-
         for (task in tasks) {
             visit(task.taskId)
         }
         return order
     }
-
-    private fun findDependencies(task: PlannedTask, allTasks: List<PlannedTask>): List<String> {
+        private fun findDependencies(task: PlannedTask, allTasks: List<PlannedTask>): List<String> {
         return allTasks.filter { other ->
             other.taskId != task.taskId &&
                 other.estimatedDurationMs < task.estimatedDurationMs &&
                 other.priority >= task.priority
         }.map { it.taskId }
     }
-
-    private fun calculateParallelism(tasks: List<PlannedTask>): Int {
+        private fun calculateParallelism(tasks: List<PlannedTask>): Int {
         val cpuCount = Runtime.getRuntime().availableProcessors()
         return cpuCount.coerceAtMost(tasks.size)
     }
@@ -589,15 +543,14 @@ class BurstPerformanceMonitor(private val name: String = "burst-perf-monitor") {
         val errorRate: Double,
         val resourceUtilization: Double
     )
-
-    private val latencies = ConcurrentLinkedQueue<Long>()
-    private val maxSamples = 10000
+        private val latencies = ConcurrentLinkedQueue<Long>()
+        private val maxSamples = 10000
     private val completedCount = AtomicLong(0)
-    private val failedCount = AtomicLong(0)
-    private val totalLatency = AtomicLong(0)
-    private val latencyCount = AtomicInteger(0)
-    private val snapshots = CopyOnWriteArrayList<PerformanceSnapshot>()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        private val failedCount = AtomicLong(0)
+        private val totalLatency = AtomicLong(0)
+        private val latencyCount = AtomicInteger(0)
+        private val snapshots = CopyOnWriteArrayList<PerformanceSnapshot>()
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     init {
         scope.launch {
@@ -607,18 +560,15 @@ class BurstPerformanceMonitor(private val name: String = "burst-perf-monitor") {
             }
         }
     }
-
-    fun recordCompletion(durationMs: Long) {
+        fun recordCompletion(durationMs: Long) {
         completedCount.incrementAndGet()
         latencies.add(durationMs)
         totalLatency.addAndGet(durationMs)
         latencyCount.incrementAndGet()
         while (latencies.size > maxSamples) latencies.poll()
     }
-
-    fun recordFailure() { failedCount.incrementAndGet() }
-
-    fun takeSnapshot(): PerformanceSnapshot {
+        fun recordFailure() { failedCount.incrementAndGet() }
+        fun takeSnapshot(): PerformanceSnapshot {
         val sorted = latencies.sorted()
         val completed = completedCount.get()
         val failed = failedCount.get()
@@ -643,12 +593,9 @@ class BurstPerformanceMonitor(private val name: String = "burst-perf-monitor") {
         while (snapshots.size > 100) snapshots.removeAt(0)
         return snapshot
     }
-
-    fun getLatestSnapshot(): PerformanceSnapshot? = snapshots.lastOrNull()
-
-    fun getSnapshotHistory(): List<PerformanceSnapshot> = snapshots.toList()
-
-    fun getMetrics(): Map<String, Any> {
+        fun getLatestSnapshot(): PerformanceSnapshot? = snapshots.lastOrNull()
+        fun getSnapshotHistory(): List<PerformanceSnapshot> = snapshots.toList()
+        fun getMetrics(): Map<String, Any> {
         val latest = getLatestSnapshot()
         return mapOf(
             "name" to name,
@@ -659,8 +606,7 @@ class BurstPerformanceMonitor(private val name: String = "burst-perf-monitor") {
             "snapshots" to snapshots.size
         )
     }
-
-    fun reset() {
+        fun reset() {
         latencies.clear()
         completedCount.set(0)
         failedCount.set(0)
@@ -668,6 +614,5 @@ class BurstPerformanceMonitor(private val name: String = "burst-perf-monitor") {
         latencyCount.set(0)
         snapshots.clear()
     }
-
-    fun shutdown() { scope.cancel() }
+        fun shutdown() { scope.cancel() }
 }

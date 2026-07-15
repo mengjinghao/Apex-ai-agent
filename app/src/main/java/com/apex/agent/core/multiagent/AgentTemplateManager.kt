@@ -24,29 +24,23 @@ class AgentTemplateManager(private val context: Context) {
         private const val TAG = "AgentTemplateManager"
         private val KEY_TEMPLATES = stringPreferencesKey("agent_templates")
     }
-
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val gson = Gson()
-    private val _templates = mutableMapOf<String, AgentTemplate>()
-
-    val templates: List<AgentTemplate>
+        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        private val gson = Gson()
+        private val _templates = mutableMapOf<String, AgentTemplate>()
+        val templates: List<AgentTemplate>
         get() = _templates.values.toList()
-
-    val defaultTemplates: List<AgentTemplate>
+        val defaultTemplates: List<AgentTemplate>
         get() = _templates.values.filter { it.isDefault }
-
-    val categories: List<String>
+        val categories: List<String>
         get() = _templates.values.map { it.category }.distinct()
 
     init {
         scope.launch { loadFromDataStore() }
     }
-    
-    fun cleanup() {
+        fun cleanup() {
         scope.cancel()
     }
-
-    private suspend fun loadFromDataStore() {
+        private suspend fun loadFromDataStore() {
         try {
             val prefs = context.templateDataStore.data.first()
             prefs[KEY_TEMPLATES]?.let { json ->
@@ -55,29 +49,25 @@ class AgentTemplateManager(private val context: Context) {
                 _templates.clear()
                 loadedTemplates.forEach { template -> _templates[template.id] = template }
             }
-            if (_templates.isEmpty()) createDefaultTemplates()
+        if (_templates.isEmpty()) createDefaultTemplates()
         } catch (e: Exception) {
             createDefaultTemplates()
         }
     }
-
-    private suspend fun saveToDataStore() {
+        private suspend fun saveToDataStore() {
         context.templateDataStore.edit { prefs ->
             prefs[KEY_TEMPLATES] = gson.toJson(_templates.values.toList())
         }
     }
-
-    private suspend fun createDefaultTemplates() {
+        private suspend fun createDefaultTemplates() {
         val defaults = AgentTemplate.getDefaultTemplates()
         _templates.clear()
         defaults.forEach { template -> _templates[template.id] = template }
         saveToDataStore()
     }
-
-    fun getTemplateById(id: String): AgentTemplate? = _templates[id]
+        fun getTemplateById(id: String): AgentTemplate? = _templates[id]
     fun getTemplatesByCategory(category: String): List<AgentTemplate> = _templates.values.filter { it.category == category }
-
-    fun searchTemplates(query: String): List<AgentTemplate> {
+        fun searchTemplates(query: String): List<AgentTemplate> {
         val lowerQuery = query.lowercase()
         return _templates.values.filter { template ->
             template.name.lowercase().contains(lowerQuery) ||
@@ -85,9 +75,8 @@ class AgentTemplateManager(private val context: Context) {
             template.tags.any { it.lowercase().contains(lowerQuery) }
         }
     }
-
-    fun getMostUsedTemplates(limit: Int = 5): List<AgentTemplate> = _templates.values.sortedByDescending { it.usageCount }.take(limit)
-    fun getHighestRatedTemplates(limit: Int = 5): List<AgentTemplate> = _templates.values.sortedByDescending { it.rating }.take(limit)
+        fun getMostUsedTemplates(limit: Int = 5): List<AgentTemplate> = _templates.values.sortedByDescending { it.usageCount }.take(limit)
+        fun getHighestRatedTemplates(limit: Int = 5): List<AgentTemplate> = _templates.values.sortedByDescending { it.rating }.take(limit)
 
     suspend fun addTemplate(template: AgentTemplate): Boolean {
         if (template.id in _templates) return false
@@ -127,8 +116,7 @@ class AgentTemplateManager(private val context: Context) {
         _templates[templateId] = template.copy(rating = newRating, updated = System.currentTimeMillis())
         saveToDataStore()
     }
-
-    fun duplicateTemplate(templateId: String, newName: String? = null): AgentTemplate? {
+        fun duplicateTemplate(templateId: String, newName: String? = null): AgentTemplate? {
         val original = _templates[templateId] ?: return null
         return original.copy(id = UUID.randomUUID().toString(), name = newName ?: "${original.name} (副本�?, isDefault = false, tags = original.tags.toMutableSet().apply { add("duplicate") }, usageCount = 0, rating = 0f, created = System.currentTimeMillis(), updated = System.currentTimeMillis())
     }

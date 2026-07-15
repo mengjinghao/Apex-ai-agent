@@ -38,7 +38,6 @@ class SkillParallelExecutor private constructor(
                 ).also { INSTANCE = it }
             }
         }
-
         fun getInstance(corePoolSize: Int, maxPoolSize: Int, keepAliveMs: Long, maxQueueSize: Int): SkillParallelExecutor {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: SkillParallelExecutor(corePoolSize, maxPoolSize, keepAliveMs, maxQueueSize).also { INSTANCE = it }
@@ -64,8 +63,7 @@ class SkillParallelExecutor private constructor(
         val throughput: Float,
         val cpuUtilization: Float
     )
-
-    private val threadPool = ThreadPoolExecutor(
+        private val threadPool = ThreadPoolExecutor(
         corePoolSize,
         maxPoolSize,
         keepAliveTimeMs,
@@ -73,22 +71,19 @@ class SkillParallelExecutor private constructor(
         SynchronousQueue(),
         SkillThreadFactory()
     )
-
-    private val taskQueue = SkillTaskQueue(maxQueueSize, usePriorityQueue = true)
-    private val activeTasks = ConcurrentHashMap<String, Thread>()
-    private val completedTasks = ConcurrentHashMap<String, SkillTaskQueue.TaskResult>()
-    private val taskExecutors = ConcurrentHashMap<String, TaskExecutor>()
-
-    private val submittedCount = AtomicLong(0)
-    private val completedCount = AtomicLong(0)
-    private val failedCount = AtomicLong(0)
-    private val totalExecutionTime = AtomicLong(0)
-    private val peakConcurrency = AtomicInteger(0)
-    private val currentConcurrency = AtomicInteger(0)
-    private val totalCpuTime = AtomicLong(0)
-    private val activeCpuTime = AtomicLong(0)
-
-    private var isRunning = false
+        private val taskQueue = SkillTaskQueue(maxQueueSize, usePriorityQueue = true)
+        private val activeTasks = ConcurrentHashMap<String, Thread>()
+        private val completedTasks = ConcurrentHashMap<String, SkillTaskQueue.TaskResult>()
+        private val taskExecutors = ConcurrentHashMap<String, TaskExecutor>()
+        private val submittedCount = AtomicLong(0)
+        private val completedCount = AtomicLong(0)
+        private val failedCount = AtomicLong(0)
+        private val totalExecutionTime = AtomicLong(0)
+        private val peakConcurrency = AtomicInteger(0)
+        private val currentConcurrency = AtomicInteger(0)
+        private val totalCpuTime = AtomicLong(0)
+        private val activeCpuTime = AtomicLong(0)
+        private var isRunning = false
     private var dispatcherThread: Thread? = null
 
     private val listeners = CopyOnWriteArrayList<ExecutionListener>()
@@ -99,26 +94,21 @@ class SkillParallelExecutor private constructor(
         fun onTaskFailed(taskId: String, error: String)
         fun onParallelismChanged(newLevel: Int)
     }
-
-    fun addListener(listener: ExecutionListener) {
+        fun addListener(listener: ExecutionListener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener)
         }
     }
-
-    fun removeListener(listener: ExecutionListener) {
+        fun removeListener(listener: ExecutionListener) {
         listeners.remove(listener)
     }
-
-    fun registerExecutor(skillName: String, executor: TaskExecutor) {
+        fun registerExecutor(skillName: String, executor: TaskExecutor) {
         taskExecutors[skillName] = executor
     }
-
-    fun unregisterExecutor(skillName: String) {
+        fun unregisterExecutor(skillName: String) {
         taskExecutors.remove(skillName)
     }
-
-    fun start() {
+        fun start() {
         if (isRunning) return
         isRunning = true
         dispatcherThread = Thread { dispatchLoop() }.apply {
@@ -127,8 +117,7 @@ class SkillParallelExecutor private constructor(
         }
         AppLogger.d(TAG, "SkillParallelExecutor started with corePoolSize=${corePoolSize}, maxPoolSize=${maxPoolSize}")
     }
-
-    fun stop() {
+        fun stop() {
         isRunning = false
         dispatcherThread?.interrupt()
         dispatcherThread = null
@@ -149,13 +138,11 @@ class SkillParallelExecutor private constructor(
 
         AppLogger.d(TAG, "SkillParallelExecutor stopped")
     }
-
-    fun submit(task: SkillTaskQueue.SkillTask): Boolean {
+        fun submit(task: SkillTaskQueue.SkillTask): Boolean {
         if (!isRunning) {
             AppLogger.w(TAG, "Executor not running, task ${task}.id rejected")
-            return false
+        return false
         }
-
         val submitted = taskQueue.enqueue(task)
         if (submitted) {
             submittedCount.incrementAndGet()
@@ -165,8 +152,7 @@ class SkillParallelExecutor private constructor(
         }
         return submitted
     }
-
-    fun submitAndExecute(task: SkillTaskQueue.SkillTask): SkillTaskQueue.TaskResult {
+        fun submitAndExecute(task: SkillTaskQueue.SkillTask): SkillTaskQueue.TaskResult {
         val submitted = submit(task)
         if (!submitted) {
             return SkillTaskQueue.TaskResult(
@@ -181,7 +167,7 @@ class SkillParallelExecutor private constructor(
             val result = completedTasks[task.id]
             if (result != null) {
                 completedTasks.remove(task.id)
-                return result
+        return result
             }
             Thread.sleep(10)
         }
@@ -194,7 +180,6 @@ class SkillParallelExecutor private constructor(
                taskQueue.getTaskState(task.id) != SkillTaskQueue.TaskState.FAILED) {
             kotlinx.coroutines.delay(10)
         }
-
         return taskQueue.getTaskResult(task.id)
             ?: SkillTaskQueue.TaskResult(
                 taskId = task.id,
@@ -203,12 +188,10 @@ class SkillParallelExecutor private constructor(
                 error = "Task result not found"
             )
     }
-
-    fun submitAll(tasks: List<SkillTaskQueue.SkillTask>): Int {
+        fun submitAll(tasks: List<SkillTaskQueue.SkillTask>): Int {
         return taskQueue.enqueueAll(tasks)
     }
-
-    fun cancelTask(taskId: String): Boolean {
+        fun cancelTask(taskId: String): Boolean {
         val cancelled = taskQueue.cancelTask(taskId)
         if (cancelled) {
             activeTasks[taskId]?.interrupt()
@@ -217,20 +200,16 @@ class SkillParallelExecutor private constructor(
         }
         return cancelled
     }
-
-    fun getTaskState(taskId: String): SkillTaskQueue.TaskState? {
+        fun getTaskState(taskId: String): SkillTaskQueue.TaskState? {
         return taskQueue.getTaskState(taskId)
     }
-
-    fun getActiveTaskCount(): Int {
+        fun getActiveTaskCount(): Int {
         return currentConcurrency.get()
     }
-
-    fun getQueueSize(): Int {
+        fun getQueueSize(): Int {
         return taskQueue.size()
     }
-
-    fun getStats(): ExecutorStats {
+        fun getStats(): ExecutorStats {
         val completed = completedCount.get()
         val totalTime = totalExecutionTime.get()
         val avgExecTime = if (completed > 0) totalTime / completed else 0L
@@ -257,8 +236,7 @@ class SkillParallelExecutor private constructor(
             cpuUtilization = cpuUtil
         )
     }
-
-    fun resetStats() {
+        fun resetStats() {
         submittedCount.set(0)
         completedCount.set(0)
         failedCount.set(0)
@@ -266,26 +244,23 @@ class SkillParallelExecutor private constructor(
         peakConcurrency.set(0)
         taskQueue.resetStats()
     }
-
-    fun adjustPoolSize(newCoreSize: Int, newMaxSize: Int) {
+        fun adjustPoolSize(newCoreSize: Int, newMaxSize: Int) {
         threadPool.corePoolSize = newCoreSize
         threadPool.maximumPoolSize = newMaxSize
         AppLogger.d(TAG, "Pool size adjusted: core=${newCoreSize}, max=${newMaxSize}")
     }
-
-    fun getDynamicConcurrencyLevel(): Int {
+        fun getDynamicConcurrencyLevel(): Int {
         val cpuCores = Runtime.getRuntime().availableProcessors()
         val memoryMb = Runtime.getRuntime().maxMemory() / (1024 * 1024)
         val baseConcurrency = min(cpuCores * 2, maxPoolSize)
         val memoryBasedConcurrency = (memoryMb / 256).toInt()
         return max(2, min(baseConcurrency, memoryBasedConcurrency))
     }
-
-    private fun dispatchLoop() {
+        private fun dispatchLoop() {
         while (isRunning) {
             try {
                 val availableSlots = getDynamicConcurrencyLevel() - currentConcurrency.get()
-                if (availableSlots > 0 && !taskQueue.isEmpty()) {
+        if (availableSlots > 0 && !taskQueue.isEmpty()) {
                     repeat(min(availableSlots, taskQueue.size())) {
                         val task = taskQueue.dequeue() ?: return@repeat
                         executeTask(task)
@@ -299,16 +274,14 @@ class SkillParallelExecutor private constructor(
             }
         }
     }
-
-    private fun executeTask(task: SkillTaskQueue.SkillTask) {
+        private fun executeTask(task: SkillTaskQueue.SkillTask) {
         val executor = taskExecutors[task.skillName] ?: return
 
         val thread = Thread {
             val startTime = System.currentTimeMillis()
             taskQueue.setTaskRunning(task.id)
             currentConcurrency.incrementAndGet()
-
-            val current = currentConcurrency.get()
+        val current = currentConcurrency.get()
             while (current > peakConcurrency.get()) {
                 peakConcurrency.compareAndSet(peakConcurrency.get(), current)
             }
@@ -319,8 +292,7 @@ class SkillParallelExecutor private constructor(
                 val result = kotlinx.coroutines.runBlocking {
                     executor.execute(task)
                 }
-
-                val duration = System.currentTimeMillis() - startTime
+        val duration = System.currentTimeMillis() - startTime
                 totalExecutionTime.addAndGet(duration)
                 completedCount.incrementAndGet()
 
@@ -339,8 +311,7 @@ class SkillParallelExecutor private constructor(
                 val duration = System.currentTimeMillis() - startTime
                 totalExecutionTime.addAndGet(duration)
                 failedCount.incrementAndGet()
-
-                val errorMsg = e.message ?: e.javaClass.simpleName
+        val errorMsg = e.message ?: e.javaClass.simpleName
                 taskQueue.setTaskFailed(task.id, errorMsg)
                 completedTasks[task.id] = taskQueue.getTaskResult(task.id) ?: SkillTaskQueue.TaskResult(
                     taskId = task.id,
@@ -363,21 +334,17 @@ class SkillParallelExecutor private constructor(
 
         activeTasks[task.id] = thread
     }
-
-    fun getQueueStats(): SkillTaskQueue.QueueStats {
+        fun getQueueStats(): SkillTaskQueue.QueueStats {
         return taskQueue.getStats()
     }
-
-    fun getQueueMonitoringInfo(): SkillTaskQueue.MonitoringInfo {
+        fun getQueueMonitoringInfo(): SkillTaskQueue.MonitoringInfo {
         return taskQueue.getMonitoringInfo()
     }
-
-    fun shutdownNow() {
+        fun shutdownNow() {
         stop()
         INSTANCE = null
     }
-
-    class SkillThreadFactory : java.util.concurrent.ThreadFactory {
+        class SkillThreadFactory : java.util.concurrent.ThreadFactory {
         private val poolNumber = AtomicInteger(1)
         private val threadNumber = AtomicInteger(1)
         private val group = ThreadGroup("SkillExecutorPool-${poolNumber.getAndIncrement()}")

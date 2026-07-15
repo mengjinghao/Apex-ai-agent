@@ -21,22 +21,18 @@ class MultimodalAgentManager(private val context: Context) {
         private const val MAX_AUDIO_DURATION = 60000
         private const val VIDEO_FRAME_RATE = 30
     }
-
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val gson = Gson()
-
-    private val visionProcessor = VisionProcessor()
-    private val audioProcessor = AudioProcessor()
-    private val crossModalReasoner = CrossModalReasoner()
-
-    private val modalityStates = ConcurrentHashMap<String, ModalityState>()
-    private val processingQueue = ConcurrentHashMap<String, MutableList<MultimodalTask>>()
-
-    private val _processingStatus = MutableStateFlow<Map<String, ProcessingStatus>>(emptyMap())
-    val processingStatus: StateFlow<Map<String, ProcessingStatus>> = _processingStatus
+        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        private val gson = Gson()
+        private val visionProcessor = VisionProcessor()
+        private val audioProcessor = AudioProcessor()
+        private val crossModalReasoner = CrossModalReasoner()
+        private val modalityStates = ConcurrentHashMap<String, ModalityState>()
+        private val processingQueue = ConcurrentHashMap<String, MutableList<MultimodalTask>>()
+        private val _processingStatus = MutableStateFlow<Map<String, ProcessingStatus>>(emptyMap())
+        val processingStatus: StateFlow<Map<String, ProcessingStatus>> = _processingStatus
 
     private val _crossModalInsights = MutableStateFlow<List<CrossModalInsight>>(emptyList())
-    val crossModalInsights: StateFlow<List<CrossModalInsight>> = _crossModalInsights
+        val crossModalInsights: StateFlow<List<CrossModalInsight>> = _crossModalInsights
 
     init {
         initializeProcessors()
@@ -136,14 +132,12 @@ class MultimodalAgentManager(private val context: Context) {
     ) {
         data class Correlation(val modality1: ModalityState.Modality, val modality2: ModalityState.Modality, val strength: Float, val description: String)
     }
-
-    private fun initializeProcessors() {
+        private fun initializeProcessors() {
         ModalityState.Modality.values().forEach { modality ->
             modalityStates[modality.name] = ModalityState(modality, true)
         }
     }
-
-    fun processImage(agentId: String, imageData: ByteArray, options: ImageProcessingOptions = ImageProcessingOptions()): VisionResult {
+        fun processImage(agentId: String, imageData: ByteArray, options: ImageProcessingOptions = ImageProcessingOptions()): VisionResult {
         return scope.runBlocking {
             _processingStatus.value = _processingStatus.value + mapOf(
                 agentId to ProcessingStatus(agentId, ModalityState.Modality.IMAGE, 0f, "Processing image...")
@@ -165,8 +159,7 @@ class MultimodalAgentManager(private val context: Context) {
             }
         }
     }
-
-    fun processAudio(agentId: String, audioData: ByteArray, options: AudioProcessingOptions = AudioProcessingOptions()): AudioResult {
+        fun processAudio(agentId: String, audioData: ByteArray, options: AudioProcessingOptions = AudioProcessingOptions()): AudioResult {
         return scope.runBlocking {
             _processingStatus.value = _processingStatus.value + mapOf(
                 agentId to ProcessingStatus(agentId, ModalityState.Modality.AUDIO, 0f, "Processing audio...")
@@ -188,8 +181,7 @@ class MultimodalAgentManager(private val context: Context) {
             }
         }
     }
-
-    fun processVideo(agentId: String, videoData: ByteArray, options: VideoProcessingOptions = VideoProcessingOptions()): VideoResult {
+        fun processVideo(agentId: String, videoData: ByteArray, options: VideoProcessingOptions = VideoProcessingOptions()): VideoResult {
         return scope.runBlocking {
             _processingStatus.value = _processingStatus.value + mapOf(
                 agentId to ProcessingStatus(agentId, ModalityState.Modality.VIDEO, 0f, "Processing video...")
@@ -211,8 +203,7 @@ class MultimodalAgentManager(private val context: Context) {
             }
         }
     }
-
-    fun processMultimodalTask(task: MultimodalTask): CrossModalResult {
+        fun processMultimodalTask(task: MultimodalTask): CrossModalResult {
         return scope.runBlocking {
             task.status = MultimodalTask.TaskStatus.PROCESSING
 
@@ -229,10 +220,8 @@ class MultimodalAgentManager(private val context: Context) {
             }
 
             task.results.putAll(results)
-
-            val crossModalResult = crossModalReasoner.reason(results)
-
-            val insights = crossModalResult.insights.map { insight ->
+        val crossModalResult = crossModalReasoner.reason(results)
+        val insights = crossModalResult.insights.map { insight ->
                 CrossModalInsight(
                     insightId = UUID.randomUUID().toString(),
                     sourceModalities = insight.sourceModalities,
@@ -249,29 +238,25 @@ class MultimodalAgentManager(private val context: Context) {
             crossModalResult
         }
     }
-
-    fun generateImage(description: String, style: String = "realistic"): ByteArray {
+        fun generateImage(description: String, style: String = "realistic"): ByteArray {
         return scope.runBlocking {
             val generator = ImageGenerator()
             generator.generate(description, style)
         }
     }
-
-    fun generateSpeech(text: String, voice: String = "default", speed: Float = 1.0f): ByteArray {
+        fun generateSpeech(text: String, voice: String = "default", speed: Float = 1.0f): ByteArray {
         return scope.runBlocking {
             val generator = SpeechGenerator()
             generator.generate(text, voice, speed)
         }
     }
-
-    fun generateVideo(script: String, duration: Float): ByteArray {
+        fun generateVideo(script: String, duration: Float): ByteArray {
         return scope.runBlocking {
             val generator = VideoGenerator()
             generator.generate(script, duration)
         }
     }
-
-    fun translateBetweenModalities(content: Any, fromModality: ModalityState.Modality, toModality: ModalityState.Modality): Any {
+        fun translateBetweenModalities(content: Any, fromModality: ModalityState.Modality, toModality: ModalityState.Modality): Any {
         return when {
             fromModality == ModalityState.Modality.TEXT && toModality == ModalityState.Modality.IMAGE -> {
                 generateImage(content as String)
@@ -288,8 +273,7 @@ class MultimodalAgentManager(private val context: Context) {
             else -> content
         }
     }
-
-    fun shutdown() {
+        fun shutdown() {
         scope.cancel()
     }
 
@@ -321,7 +305,6 @@ class VisionProcessor {
 
     fun analyze(imageData: ByteArray, options: MultimodalAgentManager.ImageProcessingOptions): MultimodalAgentManager.VisionResult {
         Thread.sleep(100)
-
         return MultimodalAgentManager.VisionResult(
             labels = listOf("object", "scene", "concept"),
             objects = listOf(
@@ -338,10 +321,8 @@ class VisionProcessor {
             confidence = 0.9f
         )
     }
-
-    fun analyzeVideo(videoData: ByteArray, options: MultimodalAgentManager.VideoProcessingOptions): MultimodalAgentManager.VideoResult {
+        fun analyzeVideo(videoData: ByteArray, options: MultimodalAgentManager.VideoProcessingOptions): MultimodalAgentManager.VideoResult {
         Thread.sleep(100)
-
         return MultimodalAgentManager.VideoResult(
             frames = listOf(
                 MultimodalAgentManager.VideoResult.VideoFrame(0f, Base64.encodeToString(byteArrayOf(), Base64.DEFAULT)),
@@ -362,7 +343,6 @@ class AudioProcessor {
 
     fun transcribe(audioData: ByteArray, options: MultimodalAgentManager.AudioProcessingOptions): MultimodalAgentManager.AudioResult {
         Thread.sleep(100)
-
         return MultimodalAgentManager.AudioResult(
             transcript = "Transcribed audio content",
             language = "zh-CN",
@@ -381,11 +361,9 @@ class CrossModalReasoner {
         val description: String,
         val confidence: Float
     )
-
-    fun reason(results: Map<MultimodalAgentManager.ModalityState.Modality, Any>): MultimodalAgentManager.CrossModalResult {
+        fun reason(results: Map<MultimodalAgentManager.ModalityState.Modality, Any>): MultimodalAgentManager.CrossModalResult {
         val insights = mutableListOf<Insight>()
         val correlations = mutableListOf<MultimodalAgentManager.CrossModalResult.Correlation>()
-
         if (results.containsKey(MultimodalAgentManager.ModalityState.Modality.IMAGE) &&
             results.containsKey(MultimodalAgentManager.ModalityState.Modality.TEXT)) {
             insights.add(Insight(
@@ -400,7 +378,6 @@ class CrossModalReasoner {
                 "Strong semantic alignment detected"
             ))
         }
-
         if (results.containsKey(MultimodalAgentManager.ModalityState.Modality.AUDIO) &&
             results.containsKey(MultimodalAgentManager.ModalityState.Modality.VIDEO)) {
             insights.add(Insight(
@@ -409,7 +386,6 @@ class CrossModalReasoner {
                 0.92f
             ))
         }
-
         return MultimodalAgentManager.CrossModalResult(
             unifiedUnderstanding = "Cross-modal analysis complete",
             insights = insights,

@@ -14,13 +14,10 @@ import android.view.Surface
 object ShowerVideoRenderer {
 
     private val core = com.ai.assistance.showerclient.ShowerVideoRenderer()
-
-    fun attach(surface: Surface, videoWidth: Int, videoHeight: Int) =
+        fun attach(surface: Surface, videoWidth: Int, videoHeight: Int) =
         core.attach(surface, videoWidth, videoHeight)
-
-    fun detach() = core.detach()
-
-    fun onFrame(data: ByteArray) = core.onFrame(data)
+        fun detach() = core.detach()
+        fun onFrame(data: ByteArray) = core.onFrame(data)
 
     suspend fun captureCurrentFramePng(): ByteArray? =
         core.captureCurrentFramePng()

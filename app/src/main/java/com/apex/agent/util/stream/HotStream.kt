@@ -68,18 +68,18 @@ class MutableSharedStreamImpl<T>(
         data class Value<T>(val payload: T) : SharedEvent<T>
         data class Completion(val cause: Throwable) : SharedEvent<Nothing>
     }
-
-    private val replayLimit = replay.coerceAtLeast(0)
-    private val replayBuffer = ArrayDeque<T>()
-    private val subscribers = linkedMapOf<Long, Channel<SharedEvent<T>>>()
-    private val stateLock = Any()
-    private var nextSubscriberId = 0L
+        private val replayLimit = replay.coerceAtLeast(0)
+        private val replayBuffer = ArrayDeque<T>()
+        private val subscribers = linkedMapOf<Long, Channel<SharedEvent<T>>>()
+        private val stateLock = Any()
+        private var nextSubscriberId = 0L
     private var closeCause: Throwable? = null
     private var isClosed = false
 
     internal val internalSubscriptionCountFlow = MutableStateFlow(0)
 
-    // 热流不需要锁定机制，所以这里提供默认实�?   override val isLocked: Boolean = false
+    // 热流不需要锁定机制，所以这里提供默认实�?
+    override val isLocked: Boolean = false
     override val bufferedCount: Int = 0
 
     override suspend fun lock() {
@@ -111,7 +111,6 @@ class MutableSharedStreamImpl<T>(
                     subscribers.values.toList()
                 }
             }
-
         for (channel in subscriberChannels) {
             channel.send(SharedEvent.Value(value))
         }
@@ -138,8 +137,7 @@ class MutableSharedStreamImpl<T>(
             replayBuffer.clear()
         }
     }
-
-    fun close(cause: Throwable? = null) {
+        fun close(cause: Throwable? = null) {
         val subscriberChannels =
             synchronized(stateLock) {
                 if (isClosed) {
@@ -180,32 +178,29 @@ class MutableSharedStreamImpl<T>(
             replaySnapshot.forEach { value ->
                 collector.emit(value)
             }
-
-            if (subscriberChannel == null) {
+        if (subscriberChannel == null) {
                 if (closedSnapshot != null) {
                     throw closedSnapshot
                 }
-                return
+        return
             }
-
-            for (event in subscriberChannel) {
+        for (event in subscriberChannel) {
                 when (event) {
                     is SharedEvent.Value -> collector.emit(event.payload)
                     is SharedEvent.Completion -> {
                         if (event.cause != null) {
                             throw event.cause
                         }
-                        return
+        return
                     }
                 }
             }
-
-            if (closedSnapshot != null) {
+        if (closedSnapshot != null) {
                 throw closedSnapshot
             }
         } finally {
             subscriberChannel?.cancel()
-            if (subscriberId != null) {
+        if (subscriberId != null) {
                 synchronized(stateLock) {
                     subscribers.remove(subscriberId)
                     internalSubscriptionCountFlow.value = subscribers.size
@@ -213,8 +208,7 @@ class MutableSharedStreamImpl<T>(
             }
         }
     }
-
-    private fun appendToReplayBufferLocked(value: T) {
+        private fun appendToReplayBufferLocked(value: T) {
         if (replayLimit <= 0) {
             return
         }
@@ -229,7 +223,8 @@ class MutableSharedStreamImpl<T>(
 class MutableStateStreamImpl<T>(initialValue: T) : MutableStateStream<T> {
     internal val internalFlow = MutableStateFlow(initialValue)
 
-    // 热流不需要锁定机制，所以这里提供默认实�?   override val isLocked: Boolean = false
+    // 热流不需要锁定机制，所以这里提供默认实�?
+    override val isLocked: Boolean = false
     override val bufferedCount: Int = 0
 
     override suspend fun lock() {
@@ -301,7 +296,7 @@ fun <T> Stream<T>.share(
         onComplete: suspend () -> Unit = {}
 ): SharedStream<T> {
     val sharedStream = MutableSharedStreamImpl<T>(replay = replay)
-    var upstreamJob: Job? = null
+        var upstreamJob: Job? = null
 
     when (started) {
         StreamStart.EAGERLY -> {
@@ -319,7 +314,7 @@ fun <T> Stream<T>.share(
         StreamStart.LAZILY -> {
             scope.launch {
                 val subscriptionCountFlow = sharedStream.getInternalSubscriptionCountFlow()
-                if (subscriptionCountFlow != null) {
+        if (subscriptionCountFlow != null) {
                     subscriptionCountFlow.collect { count ->
                         if (count > 0 && upstreamJob?.isActive != true) {
                             upstreamJob =
@@ -355,8 +350,7 @@ fun <T> Stream<T>.share(
             }
         }
     }
-
-    return sharedStream
+        return sharedStream
 }
 
 /** 将Stream转变为StateStream，类似于Flow的stateIn */
@@ -366,7 +360,7 @@ fun <T> Stream<T>.state(
         started: StreamStart = StreamStart.EAGERLY
 ): StateStream<T> {
     val stateStream = MutableStateStreamImpl(initialValue)
-    var upstreamJob: Job? = null
+        var upstreamJob: Job? = null
 
     when (started) {
         StreamStart.EAGERLY -> {
@@ -375,7 +369,7 @@ fun <T> Stream<T>.state(
         StreamStart.LAZILY -> {
             scope.launch {
                 val subscriptionCountFlow = stateStream.getInternalSubscriptionCountFlow()
-                if (subscriptionCountFlow != null) {
+        if (subscriptionCountFlow != null) {
                     subscriptionCountFlow.collect { count ->
                         if (count > 0 && upstreamJob == null) {
                             upstreamJob =
@@ -398,8 +392,7 @@ fun <T> Stream<T>.state(
             }
         }
     }
-
-    return stateStream
+        return stateStream
 }
 
 /** 流启动模�?/

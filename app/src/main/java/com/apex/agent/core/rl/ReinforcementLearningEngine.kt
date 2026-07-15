@@ -31,19 +31,17 @@ class ReinforcementLearningEngine(
         private const val RL_EPISODES_BATCH_RUN_ID = "rl_episodes"
         private const val EPISODE_ACTION_PREFIX = "episode:"
     }
-
-    private var qTable = mutableMapOf<String, MutableMap<String, QValue>>()
-    private var policies = mutableMapOf<String, Policy>()
-    private var currentEpisode: MutableList<Transition> = mutableListOf()
-    private var currentTaskId: String? = null
+        private var qTable = mutableMapOf<String, MutableMap<String, QValue>>()
+        private var policies = mutableMapOf<String, Policy>()
+        private var currentEpisode: MutableList<Transition> = mutableListOf()
+        private var currentTaskId: String? = null
     private val episodesHistory = mutableListOf<Episode>()
-
-    private var learningRate = DEFAULT_LEARNING_RATE
+        private var learningRate = DEFAULT_LEARNING_RATE
     private var discountFactor = DEFAULT_DISCOUNT_FACTOR
     private var epsilon = DEFAULT_EPSILON
 
     private val gson = Gson()
-    private var episodesLoaded = false
+        private var episodesLoaded = false
 
     private val rng = Random()
 
@@ -57,25 +55,19 @@ class ReinforcementLearningEngine(
         if (possibleActions.isEmpty()) {
             throw IllegalArgumentException(context.getString(R.string.error_no_possible_actions))
         }
-
         val stateKey = stateToKey(state)
-
         if (rng.nextDouble() < epsilon) {
             val randomAction = possibleActions.random()
             AppLogger.d(TAG, "Exploring: ${randomAction.type}")
             return@withContext randomAction
         }
-
         val qValues = getQValuesForState(stateKey)
-        
         if (qValues.isEmpty()) {
             initializeQValues(stateKey, possibleActions)
             return@withContext possibleActions.random()
         }
-
         val bestActionKey = qValues.maxByOrNull { it.value.value }?.key
         val bestAction = possibleActions.find { actionToKey(it) == bestActionKey }
-        
         if (bestAction != null) {
             AppLogger.d(TAG, "Exploiting: ${bestAction.type}")
             return@withContext bestAction
@@ -94,46 +86,36 @@ class ReinforcementLearningEngine(
         val stateKey = stateToKey(state)
         val actionKey = actionToKey(action)
         val nextStateKey = stateToKey(nextState)
-
         val transition = Transition(state, action, nextState, reward, done)
         currentEpisode.add(transition)
-
         val currentQValue = getQValue(stateKey, actionKey)
         val maxNextQValue = getMaxQValue(nextStateKey)
-
         val targetValue = if (done) {
             reward.value
         } else {
             reward.value + discountFactor * maxNextQValue
         }
-
         val delta = targetValue - currentQValue
         val newQValue = currentQValue + learningRate * delta
 
         updateQValue(stateKey, actionKey, newQValue)
 
         AppLogger.d(TAG, "Updated Q-value: ${stateKey} -> ${actionKey} = ${newQValue} (delta: ${delta})")
-
         if (done) {
             finishEpisode(reward.value, reward.value > 0)
         }
     }
-
-    private fun getQValuesForState(stateKey: String): Map<String, QValue> {
+        private fun getQValuesForState(stateKey: String): Map<String, QValue> {
         return qTable.getOrDefault(stateKey, mutableMapOf())
     }
-
-    private fun getQValue(stateKey: String, actionKey: String): Double {
+        private fun getQValue(stateKey: String, actionKey: String): Double {
         return qTable[stateKey]?.get(actionKey)?.value ?: 0.0
     }
-
-    private fun getMaxQValue(stateKey: String): Double {
+        private fun getMaxQValue(stateKey: String): Double {
         return qTable[stateKey]?.values?.maxOfOrNull { it.value } ?: 0.0
     }
-
-    private fun updateQValue(stateKey: String, actionKey: String, value: Double) {
+        private fun updateQValue(stateKey: String, actionKey: String, value: Double) {
         val stateMap = qTable.getOrPut(stateKey) { mutableMapOf() }
-        
         val existingQValue = stateMap[actionKey]
         val visits = existingQValue?.visits ?: 0
         
@@ -145,13 +127,12 @@ class ReinforcementLearningEngine(
             lastUpdated = System.currentTimeMillis()
         )
     }
-
-    private fun initializeQValues(stateKey: String, actions: List<Action>) {
+        private fun initializeQValues(stateKey: String, actions: List<Action>) {
         val stateMap = qTable.getOrPut(stateKey) { mutableMapOf() }
         
         actions.forEach { action ->
             val actionKey = actionToKey(action)
-            if (stateMap[actionKey] == null) {
+        if (stateMap[actionKey] == null) {
                 stateMap[actionKey] = QValue(
                     stateKey = stateKey,
                     actionKey = actionKey,
@@ -160,18 +141,15 @@ class ReinforcementLearningEngine(
             }
         }
     }
-
-    private fun stateToKey(state: State): String {
+        private fun stateToKey(state: State): String {
         return state.features.entries
             .sortedBy { it.key }
             .joinToString("|") { "${it.key}=${it.value}" }
     }
-
-    private fun actionToKey(action: Action): String {
+        private fun actionToKey(action: Action): String {
         return "${action.type.name}:${action.description.take(50)}"
     }
-
-    private suspend fun finishEpisode(totalReward: Double, success: Boolean) = withContext(Dispatchers.IO) {
+        private suspend fun finishEpisode(totalReward: Double, success: Boolean) = withContext(Dispatchers.IO) {
         val episode = Episode(
             taskId = currentTaskId ?: context.getString(R.string.rl_default_task_id),
             transitions = currentEpisode.toList(),
@@ -195,11 +173,9 @@ class ReinforcementLearningEngine(
         currentEpisode.clear()
         currentTaskId = null
     }
-
-    private suspend fun saveEpisode(episode: Episode) = withContext(Dispatchers.IO) {
+        private suspend fun saveEpisode(episode: Episode) = withContext(Dispatchers.IO) {
         val database = SessionDatabase.getInstance(context)
         ensureDefaultBatchRun(database)
-
         val entity = RLTrajectoryEntity(
             id = episode.id,
             batchRunId = RL_EPISODES_BATCH_RUN_ID,
@@ -217,11 +193,10 @@ class ReinforcementLearningEngine(
             AppLogger.d(TAG, "Episode persisted to RL trajectory storage: ${episode.id}")
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to persist episode ${episode.id} to RL trajectory storage", e)
-            throw IllegalStateException(context.getString(R.string.error_persist_rl_episode, episode.id), e)
+        throw IllegalStateException(context.getString(R.string.error_persist_rl_episode, episode.id), e)
         }
     }
-
-    private suspend fun ensureDefaultBatchRun(database: SessionDatabase) = withContext(Dispatchers.IO) {
+        private suspend fun ensureDefaultBatchRun(database: SessionDatabase) = withContext(Dispatchers.IO) {
         val batchRunDao = database.batchRunDao()
         val existing = batchRunDao.getBatchRunById(RL_EPISODES_BATCH_RUN_ID)
         if (existing == null) {
@@ -236,14 +211,13 @@ class ReinforcementLearningEngine(
             )
         }
     }
-
-    private suspend fun loadEpisodesFromStorage(): List<Episode> = withContext(Dispatchers.IO) {
+        private suspend fun loadEpisodesFromStorage(): List<Episode> = withContext(Dispatchers.IO) {
         val database = SessionDatabase.getInstance(context)
         val trajectories = try {
             database.rlTrajectoryDao().getAllTrajectories()
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to load persisted episodes", e)
-            throw IllegalStateException(context.getString(R.string.error_load_rl_episodes), e)
+        throw IllegalStateException(context.getString(R.string.error_load_rl_episodes), e)
         }
 
         trajectories
@@ -265,8 +239,7 @@ class ReinforcementLearningEngine(
         updatePolicyFromQTable(policy.id)
         policy
     }
-
-    private fun updatePolicyFromQTable(policyId: String) {
+        private fun updatePolicyFromQTable(policyId: String) {
         val policy = policies[policyId] ?: return
         
         val stateActions = mutableMapOf<String, List<ActionProbability>>()
@@ -326,7 +299,6 @@ class ReinforcementLearningEngine(
 
         // 获取最近的 episodes 进行评估（包含持久化加载的历史记录）
     val recentEpisodes = getAllEpisodes().takeLast(testEpisodes.coerceAtLeast(1))
-
         if (recentEpisodes.isEmpty()) {
             AppLogger.d(TAG, "No episodes available for evaluation")
             return@withContext TrainingStats(
@@ -379,7 +351,7 @@ class ReinforcementLearningEngine(
     suspend fun getAllEpisodes(): List<Episode> = withContext(Dispatchers.IO) {
         if (!episodesLoaded) {
             val persistedEpisodes = loadEpisodesFromStorage()
-            val existingIds = episodesHistory.map { it.id }.toSet()
+        val existingIds = episodesHistory.map { it.id }.toSet()
             persistedEpisodes
                 .filter { it.id !in existingIds }
                 .forEach { episodesHistory.add(it) }
@@ -395,8 +367,7 @@ class ReinforcementLearningEngine(
         episodesLoaded = false
         getAllEpisodes()
     }
-
-    fun setHyperparameters(
+        fun setHyperparameters(
         learningRate: Double = this.learningRate,
         discountFactor: Double = this.discountFactor,
         epsilon: Double = this.epsilon
@@ -405,8 +376,7 @@ class ReinforcementLearningEngine(
         this.discountFactor = discountFactor.coerceIn(0.0, 1.0)
         this.epsilon = epsilon.coerceIn(0.0, 1.0)
     }
-
-    fun reset() {
+        fun reset() {
         qTable.clear()
         policies.clear()
         currentEpisode.clear()
@@ -415,8 +385,7 @@ class ReinforcementLearningEngine(
         episodesLoaded = false
         epsilon = DEFAULT_EPSILON
     }
-
-    fun getQTableSize(): Int {
+        fun getQTableSize(): Int {
         return qTable.values.sumOf { it.size }
     }
 }
@@ -449,28 +418,24 @@ class RewardCalculator(private val context: Context) {
             totalReward -= 50.0
             rewardType = RewardType.FAILURE
         }
-
         val reason = when {
             success -> context.getString(R.string.reward_task_completed)
             else -> context.getString(R.string.reward_task_failed)
         }
-
         return Reward(
             value = totalReward,
             type = rewardType,
             reason = reason
         )
     }
-
-    private fun calculateTimeBonus(durationMs: Long): Double {
+        private fun calculateTimeBonus(durationMs: Long): Double {
         val optimalTime = 30000.0
         if (durationMs <= optimalTime) return 20.0
         
         val excessRatio = (durationMs - optimalTime) / optimalTime
         return max(-10.0, 20.0 - excessRatio * 15)
     }
-
-    private fun calculateResourceBonus(resourceUsage: Double): Double {
+        private fun calculateResourceBonus(resourceUsage: Double): Double {
         return if (resourceUsage < 0.5) {
             10.0
         } else if (resourceUsage < 0.8) {
@@ -479,8 +444,7 @@ class RewardCalculator(private val context: Context) {
             -5.0
         }
     }
-
-    fun calculateIntermediateReward(progress: Double): Reward {
+        fun calculateIntermediateReward(progress: Double): Reward {
         val reward = progress * 10
         return Reward(
             value = reward,

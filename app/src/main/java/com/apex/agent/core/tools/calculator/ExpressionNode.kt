@@ -27,7 +27,6 @@ data class BinaryOperationNode(
     override fun evaluate(): Double {
         val leftValue = left.evaluate()
         val rightValue = right.evaluate()
-
         return when (operator) {
             "+" -> leftValue + rightValue
             "-" -> leftValue - rightValue
@@ -52,7 +51,6 @@ data class BinaryOperationNode(
 data class UnaryOperationNode(val operator: String, val operand: ExpressionNode) : ExpressionNode {
     override fun evaluate(): Double {
         val value = operand.evaluate()
-
         return when (operator) {
             "+" -> value
             "-" -> -value
@@ -105,7 +103,6 @@ data class CompoundAssignmentNode(
     override fun evaluate(): Double {
         val currentValue = ExpressionContext.getVariable(variableName)
         val rightValue = value.evaluate()
-
         val result =
                 when (operator) {
                     "+=" -> currentValue + rightValue
@@ -143,7 +140,6 @@ data class TemplateStringNode(
                         else -> part.toString()
                     }
                 }
-
         return try {
             result.toDouble()
         } catch (e: NumberFormatException) {

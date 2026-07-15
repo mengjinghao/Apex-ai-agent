@@ -56,7 +56,6 @@ object ModelConfigConnectionTester {
         val testedModelName = getModelByIndex(config.modelName, actualModelIndex)
         val configForTest = config.copy(modelName = testedModelName)
         val items = mutableListOf<ModelConnectionTestItem>()
-
         val service =
             AIServiceFactory.createService(
                 config = configForTest,
@@ -96,8 +95,7 @@ object ModelConfigConnectionTester {
                     enableRetry = false
                 ).collect { }
             }
-
-            if (configForTest.enableToolCall) {
+        if (configForTest.enableToolCall) {
                 runCase(ModelConnectionTestType.TOOL_CALL) {
                     val availableTools =
                         listOf(
@@ -118,8 +116,8 @@ object ModelConfigConnectionTester {
 
                     suspend fun runToolCallTest(toolName: String) {
                         val toolTagName = ChatMarkupRegex.generateRandomToolTagName()
-                        val toolResultTagName = ChatMarkupRegex.generateRandomToolResultTagName()
-                        val testHistory = mutableListOf("system" to "You are a helpful assistant.")
+        val toolResultTagName = ChatMarkupRegex.generateRandomToolResultTagName()
+        val testHistory = mutableListOf("system" to "You are a helpful assistant.")
                         testHistory.add(
                             "assistant" to
                                 "<${toolTagName} name=\"${toolName}\"><param name=\"text\">ping</param></${toolTagName}>"
@@ -141,12 +139,11 @@ object ModelConfigConnectionTester {
                     runToolCallTest("echo")
                 }
             }
-
-            if (configForTest.enableDirectImageProcessing) {
+        if (configForTest.enableDirectImageProcessing) {
                 runCase(ModelConnectionTestType.IMAGE) {
                     val imageFile = AssetCopyUtils.copyAssetToCache(context, "test/1.jpg")
-                    val imageId = ImagePoolManager.addImage(imageFile.absolutePath)
-                    if (imageId == "error") {
+        val imageId = ImagePoolManager.addImage(imageFile.absolutePath)
+        if (imageId == "error") {
                         throw IllegalStateException("Failed to create test image")
                     }
                     try {
@@ -169,12 +166,11 @@ object ModelConfigConnectionTester {
                     }
                 }
             }
-
-            if (configForTest.enableDirectAudioProcessing) {
+        if (configForTest.enableDirectAudioProcessing) {
                 runCase(ModelConnectionTestType.AUDIO) {
                     val audioFile = AssetCopyUtils.copyAssetToCache(context, "test/1.mp3")
-                    val audioId = MediaPoolManager.addMedia(audioFile.absolutePath, "audio/mpeg")
-                    if (audioId == "error") {
+        val audioId = MediaPoolManager.addMedia(audioFile.absolutePath, "audio/mpeg")
+        if (audioId == "error") {
                         throw IllegalStateException("Failed to create test audio")
                     }
                     try {
@@ -197,12 +193,11 @@ object ModelConfigConnectionTester {
                     }
                 }
             }
-
-            if (configForTest.enableDirectVideoProcessing) {
+        if (configForTest.enableDirectVideoProcessing) {
                 runCase(ModelConnectionTestType.VIDEO) {
                     val videoFile = AssetCopyUtils.copyAssetToCache(context, "test/1.mp4")
-                    val videoId = MediaPoolManager.addMedia(videoFile.absolutePath, "video/mp4")
-                    if (videoId == "error") {
+        val videoId = MediaPoolManager.addMedia(videoFile.absolutePath, "video/mp4")
+        if (videoId == "error") {
                         throw IllegalStateException("Failed to create test video")
                     }
                     try {
@@ -227,7 +222,7 @@ object ModelConfigConnectionTester {
             }
         } catch (e: CancellationException) {
             runCatching { service.cancelStreaming() }
-            throw e
+        throw e
         } catch (e: Exception) {
             if (items.none { it.type == ModelConnectionTestType.CHAT }) {
                 items.add(
@@ -242,7 +237,6 @@ object ModelConfigConnectionTester {
             onActiveServiceChanged(null)
             service.release()
         }
-
         return ModelConnectionTestReport(
             configId = configForTest.id,
             configName = configForTest.name,

@@ -77,15 +77,12 @@ class KanbanViewModel(
         val blocked: Int,
         val averageExecutionMinutes: Int
     )
-
-    private val _uiState = MutableStateFlow(buildUiState())
-    val uiState: StateFlow<KanbanUiState> = _uiState.asStateFlow()
-
-    private val _selectedTask = MutableStateFlow<KanbanTask?>(null)
-    val selectedTask: StateFlow<KanbanTask?> = _selectedTask.asStateFlow()
-
-    private val _boardEvent = MutableStateFlow<BoardEvent?>(null)
-    val boardEvent: StateFlow<BoardEvent?> = _boardEvent.asStateFlow()
+        private val _uiState = MutableStateFlow(buildUiState())
+        val uiState: StateFlow<KanbanUiState> = _uiState.asStateFlow()
+        private val _selectedTask = MutableStateFlow<KanbanTask?>(null)
+        val selectedTask: StateFlow<KanbanTask?> = _selectedTask.asStateFlow()
+        private val _boardEvent = MutableStateFlow<BoardEvent?>(null)
+        val boardEvent: StateFlow<BoardEvent?> = _boardEvent.asStateFlow()
 
     /**
      * 刷新 UI 状�?     */
@@ -131,7 +128,7 @@ class KanbanViewModel(
         val success = board.moveTask(taskId, targetColumnId)
         if (success) {
             refreshState()
-            val task = board.getTask(taskId)
+        val task = board.getTask(taskId)
             task?.let { emitEvent(BoardEvent.TaskMoved(it, targetColumnId)) }
         }
         return success
@@ -168,7 +165,7 @@ class KanbanViewModel(
         if (task != null) {
             val result = dispatcher.dispatchTask(task)
             refreshState()
-            when (result) {
+        when (result) {
                 is TaskDispatcher.DispatchResult.Success -> {
                     emitEvent(BoardEvent.TaskDispatched(task, result.worker.name, result.agentAssigned))
                 }
@@ -247,11 +244,9 @@ class KanbanViewModel(
             }
             events.add(TimelineEvent(event.timestamp, type, event.message))
         }
-
         return events.sortedBy { it.timestamp }
     }
-
-    private fun buildUiState(): KanbanUiState {
+        private fun buildUiState(): KanbanUiState {
         val columns = board.columns.map { column ->
             ColumnUiState(
                 id = column.id,
@@ -263,7 +258,6 @@ class KanbanViewModel(
                 hasWorker = column.assignedWorker != null || column.requiredAgentRoles.isNotEmpty()
             )
         }
-
         val allTasks = board.getAllTasks()
         val taskStats = TaskStatistics(
             total = allTasks.size,
@@ -277,7 +271,6 @@ class KanbanViewModel(
                 allTasks.filter { it.actualMinutes > 0 }.map { it.actualMinutes }.average().toInt()
             } else 0
         )
-
         return KanbanUiState(
             boardId = board.id,
             boardName = board.name,
@@ -289,8 +282,7 @@ class KanbanViewModel(
             lastUpdated = System.currentTimeMillis()
         )
     }
-
-    private fun buildTaskUiState(task: KanbanTask): TaskUiState {
+        private fun buildTaskUiState(task: KanbanTask): TaskUiState {
         return TaskUiState(
             id = task.id,
             title = task.title,
@@ -315,12 +307,10 @@ class KanbanViewModel(
             executionMinutes = if (task.startedAt != null) task.getExecutionMinutes() else null
         )
     }
-
-    private fun emitEvent(event: BoardEvent) {
+        private fun emitEvent(event: BoardEvent) {
         _boardEvent.value = event
     }
-
-    fun clearEvent() {
+        fun clearEvent() {
         _boardEvent.value = null
     }
 

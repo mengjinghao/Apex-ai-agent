@@ -131,16 +131,16 @@ data class TelemetrySnapshot(
 class TelemetryCollector private constructor() {
 
     private val events = CopyOnWriteArrayList<TelemetryEvent>()
-    private val config = TelemetryConfig()
-    private var currentSession: TelemetrySession? = null
+        private val config = TelemetryConfig()
+        private var currentSession: TelemetrySession? = null
     private val eventCount = AtomicLong(0)
-    private val flushCount = AtomicInteger(0)
-    private val storedReports = mutableListOf<TelemetryReport>()
-    private var lastFlushTimeMs: Long? = null
+        private val flushCount = AtomicInteger(0)
+        private val storedReports = mutableListOf<TelemetryReport>()
+        private var lastFlushTimeMs: Long? = null
     private val categoryCounts = ConcurrentHashMap<EventCategory, AtomicInteger>()
-    private val typeCounts = ConcurrentHashMap<EventType, AtomicInteger>()
-    private val latencyAccumulator = CopyOnWriteArrayList<Long>()
-    private var context: Context? = null
+        private val typeCounts = ConcurrentHashMap<EventType, AtomicInteger>()
+        private val latencyAccumulator = CopyOnWriteArrayList<Long>()
+        private var context: Context? = null
     private var scope: CoroutineScope? = null
     private var sessionJob: Job? = null
     private val mutex = Mutex()
@@ -154,12 +154,10 @@ class TelemetryCollector private constructor() {
                 instance ?: TelemetryCollector().also { instance = it }
             }
         }
-
         private const val MAX_LATENCY_SAMPLES = 500
         private const val SESSION_TIMEOUT_MS = 300000L
     }
-
-    fun initialize(ctx: Context, coroutineScope: CoroutineScope) {
+        fun initialize(ctx: Context, coroutineScope: CoroutineScope) {
         context = ctx
         scope = coroutineScope
         if (!config.enabled) return
@@ -175,14 +173,12 @@ class TelemetryCollector private constructor() {
             installCrashHandler(ctx)
         }
     }
-
-    fun shutdown() {
+        fun shutdown() {
         sessionJob?.cancel()
         flush()
         currentSession?.let { endSession(it.sessionId) }
     }
-
-    fun recordEvent(event: TelemetryEvent) {
+        fun recordEvent(event: TelemetryEvent) {
         if (!config.enabled) return
         if (config.samplingRate < 1.0 && Math.random() > config.samplingRate) return
 
@@ -200,19 +196,16 @@ class TelemetryCollector private constructor() {
         typeCounts.computeIfAbsent(event.type) { AtomicInteger(0) }.incrementAndGet()
         if (event.durationMs != null) {
             latencyAccumulator.add(event.durationMs)
-            if (latencyAccumulator.size > MAX_LATENCY_SAMPLES) latencyAccumulator.removeAt(0)
+        if (latencyAccumulator.size > MAX_LATENCY_SAMPLES) latencyAccumulator.removeAt(0)
         }
-
         if (events.size >= config.batchSize) {
             scope?.launch { flush() }
         }
-
         if (config.developmentMode) {
             logEvent(event)
         }
     }
-
-    fun record(type: EventType, category: EventCategory, metadata: Map<String, Any> = emptyMap(), durationMs: Long? = null, success: Boolean? = null) {
+        fun record(type: EventType, category: EventCategory, metadata: Map<String, Any> = emptyMap(), durationMs: Long? = null, success: Boolean? = null) {
         val event = TelemetryEvent(
             id = UUID.randomUUID().toString(),
             type = type,
@@ -226,20 +219,16 @@ class TelemetryCollector private constructor() {
         )
         recordEvent(event)
     }
-
-    fun recordError(type: EventType, category: EventCategory, errorCode: String, metadata: Map<String, Any> = emptyMap()) {
+        fun recordError(type: EventType, category: EventCategory, errorCode: String, metadata: Map<String, Any> = emptyMap()) {
         record(type, category, metadata + mapOf("error" to errorCode), success = false)
     }
-
-    fun recordFeatureUsage(featureName: String, durationMs: Long? = null, success: Boolean = true) {
+        fun recordFeatureUsage(featureName: String, durationMs: Long? = null, success: Boolean = true) {
         record(EventType.FEATURE_USED, EventCategory.USAGE, mapOf("feature" to featureName), durationMs, success)
     }
-
-    fun recordPerformance(category: String, durationMs: Long, metadata: Map<String, Any> = emptyMap()) {
+        fun recordPerformance(category: String, durationMs: Long, metadata: Map<String, Any> = emptyMap()) {
         record(EventType.PERFORMANCE, EventCategory.PERFORMANCE, mapOf("category" to category) + metadata, durationMs)
     }
-
-    fun recordCrash(throwable: Throwable, thread: Thread? = null) {
+        fun recordCrash(throwable: Throwable, thread: Thread? = null) {
         currentSession?.crashDetected = true
         val sw = StringWriter()
         throwable.printStackTrace(PrintWriter(sw))
@@ -257,8 +246,7 @@ class TelemetryCollector private constructor() {
             flush()
         } catch (_: Exception) {}
     }
-
-    fun startNewSession(): TelemetrySession {
+        fun startNewSession(): TelemetrySession {
         val session = TelemetrySession(
             sessionId = UUID.randomUUID().toString(),
             startTimeMs = System.currentTimeMillis(),
@@ -269,8 +257,7 @@ class TelemetryCollector private constructor() {
         record(EventType.SESSION_START, EventCategory.SYSTEM, mapOf("session" to session.sessionId))
         session
     }
-
-    fun endSession(sessionId: String): TelemetrySession? {
+        fun endSession(sessionId: String): TelemetrySession? {
         val session = currentSession ?: return null
         if (session.sessionId != sessionId) return null
         session.isActive = false
@@ -283,23 +270,21 @@ class TelemetryCollector private constructor() {
         flush()
         currentSession
     }
-
-    fun flush(): TelemetryReport? {
+        fun flush(): TelemetryReport? {
         if (events.isEmpty()) return null
 
         return mutex.withLock {
             val batch = events.take(config.maxReportSize).toList()
             events.removeAll(batch)
-
-            val summary = computeSummary(batch)
-            val report = TelemetryReport(
+        val summary = computeSummary(batch)
+        val report = TelemetryReport(
                 reportId = UUID.randomUUID().toString(),
                 sessionId = currentSession?.sessionId ?: "no_session",
                 events = batch,
                 summary = summary
             )
             storedReports.add(report)
-            if (storedReports.size > config.maxStoredEvents / config.batchSize) {
+        if (storedReports.size > config.maxStoredEvents / config.batchSize) {
                 storedReports.removeAt(0)
             }
             lastFlushTimeMs = System.currentTimeMillis()
@@ -308,14 +293,11 @@ class TelemetryCollector private constructor() {
             report
         }
     }
-
-    fun getSession(): TelemetrySession? = currentSession
+        fun getSession(): TelemetrySession? = currentSession
 
     fun getPendingEvents(): List<TelemetryEvent> = events.toList()
-
-    fun getStoredReports(): List<TelemetryReport> = storedReports.toList()
-
-    fun getPendingReportCount(): Int = storedReports.size
+        fun getStoredReports(): List<TelemetryReport> = storedReports.toList()
+        fun getPendingReportCount(): Int = storedReports.size
 
     fun getSnapshot(): TelemetrySnapshot {
         val session = currentSession
@@ -330,18 +312,15 @@ class TelemetryCollector private constructor() {
             crashDetected = session?.crashDetected ?: false
         )
     }
-
-    fun clear() {
+        fun clear() {
         events.clear()
         storedReports.clear()
         latencyAccumulator.clear()
     }
-
-    fun updateConfig(newConfig: TelemetryConfig) {
+        fun updateConfig(newConfig: TelemetryConfig) {
         newConfig
     }
-
-    fun exportAsJson(report: TelemetryReport): String {
+        fun exportAsJson(report: TelemetryReport): String {
         val arr = JSONArray()
         for (event in report.events) {
             val obj = JSONObject()
@@ -353,7 +332,7 @@ class TelemetryCollector private constructor() {
             event.durationMs?.let { obj.put("duration_ms", it) }
             event.success?.let { obj.put("success", it) }
             event.errorCode?.let { obj.put("error_code", it) }
-            if (event.metadata.isNotEmpty()) {
+        if (event.metadata.isNotEmpty()) {
                 obj.put("metadata", JSONObject(event.metadata as Map<String, Any>))
             }
             arr.put(obj)
@@ -371,8 +350,7 @@ class TelemetryCollector private constructor() {
             put("events", arr)
         }.toString(2)
     }
-
-    private fun computeSummary(batch: List<TelemetryEvent>): TelemetrySummary {
+        private fun computeSummary(batch: List<TelemetryEvent>): TelemetrySummary {
         val errors = batch.count { it.success == false }
         val durations = batch.mapNotNull { it.durationMs }
         val avgLatency = if (durations.isNotEmpty()) durations.average() else 0.0
@@ -392,46 +370,40 @@ class TelemetryCollector private constructor() {
             cpuUsagePercent = 0.0
         )
     }
-
-    private fun persistReport(report: TelemetryReport) {
+        private fun persistReport(report: TelemetryReport) {
         try {
             val dir = File(context?.filesDir, config.storageDirectory)
-            if (!dir.exists()) dir.mkdirs()
-            val file = File(dir, "report_${report.reportId}.json")
+        if (!dir.exists()) dir.mkdirs()
+        val file = File(dir, "report_${report.reportId}.json")
             file.writeText(exportAsJson(report))
         } catch (_: Exception) {}
     }
-
-    private fun installCrashHandler(ctx: Context) {
+        private fun installCrashHandler(ctx: Context) {
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             recordCrash(throwable, thread)
             defaultHandler?.uncaughtException(thread, throwable)
         }
     }
-
-    private fun checkSessionHeartbeat() {
+        private fun checkSessionHeartbeat() {
         val session = currentSession ?: return
         if (System.currentTimeMillis() - session.lastActivityMs > SESSION_TIMEOUT_MS) {
             endSession(session.sessionId)
             startNewSession()
         }
     }
-
-    private fun getAppVersion(ctx: Context): String {
+        private fun getAppVersion(ctx: Context): String {
         try {
             val pkg = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
             "${pkg.versionName ?: "unknown"} (${pkg.versionCode})"
         } catch (_: Exception) { "unknown" }
     }
-
-    private fun anonymize(snapshot: DeviceSnapshot?): DeviceSnapshot? {
+        private fun anonymize(snapshot: DeviceSnapshot?): DeviceSnapshot? {
         if (snapshot == null) return null
         val hash = { s: String -> MessageDigest.getInstance("SHA-256").digest(s.toByteArray()).take(4).joinToString("") { "%02x".format(it) } }
         snapshot.copy(fingerprint = hash(snapshot.fingerprint), display = hash(snapshot.display), board = "unknown", cpuAbi = "unknown")
     }
-
-    private fun logEvent(event: TelemetryEvent) {
+        private fun logEvent(event: TelemetryEvent) {
         android.util.Log.d("Telemetry", "[${event.type.code}] ${event.category.code} | ${event.metadata.take(3)}")
     }
 }

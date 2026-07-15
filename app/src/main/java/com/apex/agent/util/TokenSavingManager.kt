@@ -78,12 +78,10 @@ class TokenSavingManager private constructor(private val context: Context) {
 
     suspend fun refreshSettings() {
         val preferencesManager = UserPreferencesManager.getInstance(context)
-
         val newEnabled = preferencesManager.tokenSavingModeEnabled.first()
         val newIntensity = preferencesManager.tokenSavingIntensity.first()
         val newSemanticPruning = preferencesManager.semanticPruningEnabled.first()
         val newAdaptiveWindow = preferencesManager.adaptiveWindowEnabled.first()
-
         val settingsChanged = isEnabled != newEnabled ||
                 tokenSavingIntensity != newIntensity ||
                 semanticPruningEnabled != newSemanticPruning ||
@@ -115,8 +113,7 @@ class TokenSavingManager private constructor(private val context: Context) {
         minContextMessages = currentIntensityConfig.minMessages
         importanceThreshold = currentIntensityConfig.importanceThreshold
     }
-
-    fun isTokenSavingEnabled(): Boolean = isEnabled
+        fun isTokenSavingEnabled(): Boolean = isEnabled
 
     /**
      * 获取当前力度级别配置
@@ -138,8 +135,7 @@ class TokenSavingManager private constructor(private val context: Context) {
         val isComplex = isComplexTask(input)
         return TokenSavingIntensity.getDegradedIntensity(tokenSavingIntensity, isComplex)
     }
-
-    fun optimizeMessages(
+        fun optimizeMessages(
         messages: List<Message>,
         currentInput: String
     ): List<Message> {
@@ -162,28 +158,24 @@ class TokenSavingManager private constructor(private val context: Context) {
             pruningManager = ContextPruningManager(minContextMessages, importanceThreshold)
             AppLogger.d("TokenSavingManager", "Complex task detected, degraded from ${tokenSavingIntensity} to ${effectiveConfig.level}")
         }
-
         val originalTokens = messages.sumOf { ChatUtils.estimateTokenCount(it.content) }
-
         var optimizedMessages = messages
 
         if (adaptiveWindowEnabled && windowManager != null) {
             val windowConfig = windowManager?.calculateWindowConfig(currentInput, messages)
-            
-            if (windowConfig == null) {
+        if (windowConfig == null) {
                 // 恢复原始配置
     if (wasDegraded) {
                     minContextMessages = originalMinMessages
                     importanceThreshold = originalThreshold
                 }
-                return messages
+        return messages
             }
             
             // 应用窗口乘数
     val adjustedWindowMultiplier = windowConfig.messageCount * effectiveConfig.windowMultiplier
             val adjustedMessageCount = adjustedWindowMultiplier.toInt().coerceAtLeast(effectiveConfig.minMessages)
-            
-            val messagesForWindow = if (windowConfig.messageCount > adjustedMessageCount) {
+        val messagesForWindow = if (windowConfig.messageCount > adjustedMessageCount) {
                 windowConfig.copy(messageCount = adjustedMessageCount)
             } else {
                 windowConfig
@@ -208,14 +200,12 @@ class TokenSavingManager private constructor(private val context: Context) {
                     minContextMessages = originalMinMessages
                     importanceThreshold = originalThreshold
                 }
-                
-                return optimizedMessages
+        return optimizedMessages
             }
         }
-
         if (semanticPruningEnabled && pruningManager != null) {
             val pruningResult = pruningManager?.pruneContext(optimizedMessages, currentInput)
-            if (pruningResult != null) {
+        if (pruningResult != null) {
                 optimizedMessages = pruningResult.prunedMessages
 
                 lastStats = TokenSavingStats(
@@ -235,24 +225,20 @@ class TokenSavingManager private constructor(private val context: Context) {
             minContextMessages = originalMinMessages
             importanceThreshold = originalThreshold
         }
-
         return optimizedMessages
     }
-
-    fun getLastStats(): TokenSavingStats? = lastStats
+        fun getLastStats(): TokenSavingStats? = lastStats
 
     fun getComplexityStats(): Map<TaskComplexity, Int>? {
         return windowManager?.getComplexityStats()
     }
-
-    fun estimateSavings(
+        fun estimateSavings(
         messages: List<Message>,
         currentInput: String
     ): TokenSavingStats? {
         if (messages.isEmpty()) return null
 
         val originalTokens = messages.sumOf { ChatUtils.estimateTokenCount(it.content) }
-
         if (!isEnabled) {
             return TokenSavingStats(
                 originalTokenCount = originalTokens,
@@ -263,14 +249,12 @@ class TokenSavingManager private constructor(private val context: Context) {
                 intensityLevel = tokenSavingIntensity
             )
         }
-
         val isComplex = isComplexTask(currentInput)
         val effectiveConfig = TokenSavingIntensity.getDegradedIntensity(tokenSavingIntensity, isComplex)
         val wasDegraded = effectiveConfig.level != tokenSavingIntensity
 
         // 预估节省�?
     val estimatedSavings = (originalTokens * (effectiveConfig.estimatedSavingsPercent.toFloat() / 100)).toInt()
-        
         return TokenSavingStats(
             originalTokenCount = originalTokens,
             optimizedTokenCount = originalTokens - estimatedSavings,
@@ -281,8 +265,7 @@ class TokenSavingManager private constructor(private val context: Context) {
             wasDegraded = wasDegraded
         )
     }
-
-    fun resetLearning() {
+        fun resetLearning() {
         windowManager?.resetLearning()
     }
 }

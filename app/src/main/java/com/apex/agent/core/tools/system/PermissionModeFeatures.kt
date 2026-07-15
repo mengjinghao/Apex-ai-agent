@@ -23,14 +23,11 @@ class PermissionConfigBackupManager(
         private const val BACKUP_FILE_NAME = "permission_config.json"
         private const val BACKUP_DIR = "permission_backups"
     }
-
-    private val _isBackingUp = MutableStateFlow(false)
-    val isBackingUp: Flow<Boolean> = _isBackingUp.asStateFlow()
-
-    private val _isRestoring = MutableStateFlow(false)
-    val isRestoring: Flow<Boolean> = _isRestoring.asStateFlow()
-
-    private val json = Json {
+        private val _isBackingUp = MutableStateFlow(false)
+        val isBackingUp: Flow<Boolean> = _isBackingUp.asStateFlow()
+        private val _isRestoring = MutableStateFlow(false)
+        val isRestoring: Flow<Boolean> = _isRestoring.asStateFlow()
+        private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
     }
@@ -42,8 +39,8 @@ class PermissionConfigBackupManager(
         _isBackingUp.value = true
         return try {
             val config = getCurrentConfig()
-            val backupDir = getBackupDir()
-            val backupFile = File(backupDir, BACKUP_FILE_NAME)
+        val backupDir = getBackupDir()
+        val backupFile = File(backupDir, BACKUP_FILE_NAME)
 
             // 创建目录
     if (!backupDir.exists()) {
@@ -72,13 +69,11 @@ class PermissionConfigBackupManager(
         _isRestoring.value = true
         return try {
             val backupFile = getBackupFile()
-
-            if (!backupFile.exists()) {
+        if (!backupFile.exists()) {
                 return RestoreResult.Error("备份文件不存�?)
             }
-
-            val jsonString = backupFile.readText()
-            val config = json.decodeFromString<PermissionConfig>(jsonString)
+        val jsonString = backupFile.readText()
+        val config = json.decodeFromString<PermissionConfig>(jsonString)
 
             // 恢复配置
             restoreConfigFromData(config)
@@ -171,9 +166,9 @@ class PermissionConfigBackupManager(
     fun deleteBackup(): Boolean {
         return try {
             val file = getBackupFile()
-            if (file.exists()) {
+        if (file.exists()) {
                 val deleted = file.delete()
-                if (deleted) {
+        if (deleted) {
                     AppLogger.d(TAG, "备份已删�?)
                 }
                 deleted
@@ -220,12 +215,10 @@ class SmartModeSwitcher(
     companion object {
         private const val TAG = "SmartModeSwitcher"
     }
-
-    private val _autoSwitchEnabled = MutableStateFlow(false)
-    val autoSwitchEnabled: Flow<Boolean> = _autoSwitchEnabled.asStateFlow()
-
-    private val _switchHistory = MutableStateFlow<List<SwitchHistoryItem>>(emptyList())
-    val switchHistory: Flow<List<SwitchHistoryItem>> = _switchHistory.asStateFlow()
+        private val _autoSwitchEnabled = MutableStateFlow(false)
+        val autoSwitchEnabled: Flow<Boolean> = _autoSwitchEnabled.asStateFlow()
+        private val _switchHistory = MutableStateFlow<List<SwitchHistoryItem>>(emptyList())
+        val switchHistory: Flow<List<SwitchHistoryItem>> = _switchHistory.asStateFlow()
 
     /**
      * 启用自动切换
@@ -249,16 +242,13 @@ class SmartModeSwitcher(
     suspend fun smartSwitchToBestMode(): Boolean {
         if (!_autoSwitchEnabled.value) {
             AppLogger.d(TAG, "自动切换未启�?)
-            return false
+        return false
         }
-
         val bestMode = modeManager.autoSelectBestMode()
-
         if (bestMode != null) {
             recordSwitch(bestMode)
-            return true
+        return true
         }
-
         return false
     }
 
@@ -329,8 +319,8 @@ data class SwitchHistoryItem(
         get() {
             // 格式化时间戳
     val date = java.util.Date(timestamp)
-            val format = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
-            return format.format(date)
+        val format = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+        return format.format(date)
         }
 }
 
@@ -399,7 +389,6 @@ class PermissionModeAdvisor(
                     )
                 )
             }
-
         return suggestions
     }
 
@@ -415,8 +404,7 @@ class PermissionModeAdvisor(
             limitations = getModeLimitations(mode)
         )
     }
-
-    private fun getModeFeatures(mode: PermissionMode): List<String> {
+        private fun getModeFeatures(mode: PermissionMode): List<String> {
         return when (mode) {
             PermissionMode.STANDARD -> listOf("安全稳定", "无需额外权限", "适合日常使用")
             PermissionMode.ACCESSIBILITY -> listOf("UI自动�?, "无障碍服�?, "无需Root")
@@ -426,8 +414,7 @@ class PermissionModeAdvisor(
             PermissionMode.ROOT -> listOf("完全Root权限", "系统完全控制", "强大功能")
         }
     }
-
-    private fun getModeLimitations(mode: PermissionMode): List<String> {
+        private fun getModeLimitations(mode: PermissionMode): List<String> {
         return when (mode) {
             PermissionMode.STANDARD -> listOf("功能受限", "无法访问系统文件")
             PermissionMode.ACCESSIBILITY -> listOf("需要用户授�?, "部分功能受限")

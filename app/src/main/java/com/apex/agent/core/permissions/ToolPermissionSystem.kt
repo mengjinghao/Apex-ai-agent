@@ -35,7 +35,6 @@ enum class PermissionLevel {
     ALLOW,      // Allow automatically without asking
     ASK,        // Always ask
     FORBID;     // Never allow
-
     companion object {
         fun fromString(value: String): PermissionLevel {
             return when (value) {
@@ -79,8 +78,8 @@ class ToolPermissionSystem private constructor(private val context: Context) {
     
     // Permission request management
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val permissionRequestOverlay = PermissionRequestOverlay(context)
-    private var currentPermissionCallback: ((PermissionRequestResult) -> Unit)? = null
+        private val permissionRequestOverlay = PermissionRequestOverlay(context)
+        private var currentPermissionCallback: ((PermissionRequestResult) -> Unit)? = null
     private var permissionRequestInfo: Pair<AITool, String>? = null
     
     // 存储当前颜色方案
@@ -95,7 +94,7 @@ class ToolPermissionSystem private constructor(private val context: Context) {
     
     // Permission request state flow
     private val _permissionRequestState = MutableStateFlow<Pair<AITool, String>?>(null)
-    val permissionRequestState = _permissionRequestState.asStateFlow()
+        val permissionRequestState = _permissionRequestState.asStateFlow()
     
     // Permission level flows
     val masterSwitchFlow: Flow<PermissionLevel> = context.toolPermissionsDataStore.data.map { preferences ->
@@ -190,12 +189,10 @@ class ToolPermissionSystem private constructor(private val context: Context) {
      */
     suspend fun checkToolPermission(tool: AITool): Boolean {
         AppLogger.d(TAG, "Starting permission check: ${tool.name}")
-        
         val preferences = context.toolPermissionsDataStore.data.first()
         val masterSwitch = PermissionLevel.fromString(preferences[MASTER_SWITCH] ?: DEFAULT_MASTER_SWITCH)
         val key = toolPermissionKey(tool.name)
         val overrideLevel = preferences[key]?.let { PermissionLevel.fromString(it) }
-        
         val permissionLevel = overrideLevel ?: masterSwitch
         
         return when (permissionLevel) {
@@ -225,7 +222,6 @@ class ToolPermissionSystem private constructor(private val context: Context) {
         _permissionRequestState.value = requestInfo
         
         AppLogger.d(TAG, "Permission request state updated: ${tool.name}")
-        
         return withTimeoutOrNull(PERMISSION_REQUEST_TIMEOUT_MS) {
             suspendCancellableCoroutine { continuation ->
                 // Set callback

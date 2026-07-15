@@ -47,8 +47,7 @@ class ProfileEvolutionManager private constructor(
             
             // 分析用户反馈
     val suggestions = feedbackAnalyzer.extractProfileUpdateSuggestions(messages, currentProfile)
-            
-            if (suggestions.isEmpty()) {
+        if (suggestions.isEmpty()) {
                 AppLogger.d(TAG, "没有画像更新建议")
                 return@withContext false
             }
@@ -62,14 +61,13 @@ class ProfileEvolutionManager private constructor(
                         dimension = suggestion.dimension,
                         value = suggestion.newValue
                     )
-                    if (success) {
+        if (success) {
                         updated = true
                         AppLogger.d(TAG, "更新用户画像维度: ${suggestion.dimension} = ${suggestion.newValue}")
                     }
                 }
             }
-            
-            if (updated) {
+        if (updated) {
                 AppLogger.d(TAG, "用户画像演化完成")
             }
             
@@ -100,7 +98,7 @@ class ProfileEvolutionManager private constructor(
             appendLine(feedbackReport)
             appendLine()
             appendLine("## 画像更新建议")
-            if (suggestions.isNotEmpty()) {
+        if (suggestions.isNotEmpty()) {
                 suggestions.forEachIndexed { index, suggestion ->
                     appendLine("${index + 1}. ${suggestion.dimension}: ${suggestion.newValue} (置信�?${(suggestion.confidence * 100).toInt()}%)")
                 }
@@ -115,7 +113,6 @@ class ProfileEvolutionManager private constructor(
      */
     suspend fun batchEvolveProfiles(userIds: List<String>, messagesMap: Map<String, List<ChatMessage>>): Map<String, Boolean> = withContext(Dispatchers.IO) {
         val results = mutableMapOf<String, Boolean>()
-        
         for (userId in userIds) {
             val messages = messagesMap[userId]
             if (messages != null) {
@@ -156,7 +153,6 @@ class ProfileEvolutionManager private constructor(
      */
     suspend fun analyzeEvolutionTrend(userId: String, historicalMessages: List<List<ChatMessage>>): String = withContext(Dispatchers.IO) {
         val trends = mutableListOf<String>()
-        
         for (i in 1 until historicalMessages.size) {
             val previousMessages = historicalMessages[i-1]
             val currentMessages = historicalMessages[i]
@@ -165,8 +161,7 @@ class ProfileEvolutionManager private constructor(
                 previousMessages,
                 userProfileManager.getUserProfile(userId)
             )
-            
-            val currentSuggestions = feedbackAnalyzer.extractProfileUpdateSuggestions(
+        val currentSuggestions = feedbackAnalyzer.extractProfileUpdateSuggestions(
                 currentMessages,
                 userProfileManager.getUserProfile(userId)
             )
@@ -180,7 +175,6 @@ class ProfileEvolutionManager private constructor(
                 trends.add("画像更新频率稳定")
             }
         }
-        
         if (trends.isEmpty()) {
             "无法分析演化趋势"
         } else {

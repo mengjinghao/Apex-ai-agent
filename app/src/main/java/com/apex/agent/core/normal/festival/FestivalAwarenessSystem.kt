@@ -64,97 +64,83 @@ data class FestivalContext(
 class FestivalAwarenessSystem {
 
     private val festivals = mutableListOf<Festival>()
-    private val solarTerms = mutableListOf<SolarTerm>()
+        private val solarTerms = mutableListOf<SolarTerm>()
 
     init {
         loadBuiltinFestivals()
         loadBuiltinSolarTerms()
     }
-
-    fun getCurrentContext(): FestivalContext {
+        fun getCurrentContext(): FestivalContext {
         val now = System.currentTimeMillis()
         val cal = Calendar.getInstance()
         val month = cal.get(Calendar.MONTH) + 1
         val day = cal.get(Calendar.DAY_OF_MONTH)
-
         val current = festivals.filter { f ->
             val (fMonth, fDay) = parseDate(f.datePattern, cal)
             fMonth == month && (fDay == day || (f.durationDays > 1 && day in fDay..fDay + f.durationDays - 1))
         }
-
         val upcoming = festivals.filter { f ->
             val (fMonth, fDay) = parseDate(f.datePattern, cal)
-            val calCopy = cal.clone() as Calendar
+        val calCopy = cal.clone() as Calendar
             calCopy.set(Calendar.MONTH, fMonth - 1)
             calCopy.set(Calendar.DAY_OF_MONTH, fDay)
-            if (calCopy.timeInMillis < now) calCopy.add(Calendar.YEAR, 1)
-            val daysUntil = ((calCopy.timeInMillis - now) / (24 * 60 * 60_000L)).toInt()
+        if (calCopy.timeInMillis < now) calCopy.add(Calendar.YEAR, 1)
+        val daysUntil = ((calCopy.timeInMillis - now) / (24 * 60 * 60_000L)).toInt()
             daysUntil in 1..30
         }.sortedBy { f ->
             val (fMonth, fDay) = parseDate(f.datePattern, cal)
-            val calCopy = cal.clone() as Calendar
+        val calCopy = cal.clone() as Calendar
             calCopy.set(Calendar.MONTH, fMonth - 1)
             calCopy.set(Calendar.DAY_OF_MONTH, fDay)
-            if (calCopy.timeInMillis < now) calCopy.add(Calendar.YEAR, 1)
+        if (calCopy.timeInMillis < now) calCopy.add(Calendar.YEAR, 1)
             calCopy.timeInMillis
         }.take(3)
-
         val currentTerm = solarTerms.find { it.month == month && kotlin.math.abs(it.day - day) <= 7 }
         val nextTerm = solarTerms.find { st ->
             val stCal = cal.clone() as Calendar
             stCal.set(Calendar.MONTH, st.month - 1)
             stCal.set(Calendar.DAY_OF_MONTH, st.day)
-            if (stCal.timeInMillis < now) stCal.add(Calendar.YEAR, 1)
+        if (stCal.timeInMillis < now) stCal.add(Calendar.YEAR, 1)
             ((stCal.timeInMillis - now) / (24 * 60 * 60_000L)).toInt() in 1..30
         }
-
         val greeting = if (current.isNotEmpty()) current.first().greeting else null
 
         return FestivalContext(current, upcoming, currentTerm, nextTerm, current.isNotEmpty(), greeting)
     }
-
-    fun generateFestivalPrompt(): String {
+        fun generateFestivalPrompt(): String {
         val ctx = getCurrentContext()
         val sb = StringBuilder()
-
         if (ctx.isFestivalDay && ctx.currentFestivals.isNotEmpty()) {
             val f = ctx.currentFestivals.first()
             sb.appendLine("[今日节日: ${f.name} ${f.emoji}]")
             sb.appendLine(f.description)
             sb.appendLine("祝福: ${f.blessing}")
-            if (f.customs.isNotEmpty()) sb.appendLine("习俗: ${f.customs.joinToString()}")
-            if (f.foods.isNotEmpty()) sb.appendLine("应景食物: ${f.foods.joinToString()}")
+        if (f.customs.isNotEmpty()) sb.appendLine("习俗: ${f.customs.joinToString()}")
+        if (f.foods.isNotEmpty()) sb.appendLine("应景食物: ${f.foods.joinToString()}")
         }
 
         ctx.currentSolarTerm?.let { st ->
             sb.appendLine("[当前节气: ${st.name}]")
             sb.appendLine("含义: ${st.meaning}")
-            if (st.healthTips.isNotEmpty()) sb.appendLine("养生: ${st.healthTips.joinToString()}")
+        if (st.healthTips.isNotEmpty()) sb.appendLine("养生: ${st.healthTips.joinToString()}")
         }
-
         if (ctx.upcomingFestivals.isNotEmpty()) {
             sb.appendLine("[即将到来的节日]")
             ctx.upcomingFestivals.forEach { sb.appendLine("- ${it.name} ${it.emoji}") }
         }
-
         return if (sb.isEmpty()) "" else sb.toString()
     }
-
-    fun listFestivals(type: FestivalType? = null): List<Festival> {
+        fun listFestivals(type: FestivalType? = null): List<Festival> {
         return if (type != null) festivals.filter { it.type == type } else festivals
     }
-
-    fun listSolarTerms(): List<SolarTerm> = solarTerms.toList()
-
-    fun addFestival(festival: Festival) { festivals.add(festival) }
-
-    private fun parseDate(pattern: String, cal: Calendar): Pair<Int, Int> {
+        fun listSolarTerms(): List<SolarTerm> = solarTerms.toList()
+        fun addFestival(festival: Festival) { festivals.add(festival) }
+        private fun parseDate(pattern: String, cal: Calendar): Pair<Int, Int> {
         // 简化：仅支持 "M-D" 格式
     val parts = pattern.split("-")
         return if (parts.size == 2) (parts[0].toIntOrNull() ?: 1) to (parts[1].toIntOrNull() ?: 1) else 1 to 1
     }
-
-    private fun loadBuiltinFestivals() {
+        private fun loadBuiltinFestivals() {
         festivals.addAll(listOf(
             Festival("f1", "元旦", FestivalType.SOLAR, "1-1", "新年快乐", listOf("倒计时", "跨年"), listOf("年糕"), "新年新气象", "🎉", "公历新年第一天"),
             Festival("f2", "情人节", FestivalType.INTERNATIONAL, "2-14", "情人节快乐", listOf("送花", "约会"), listOf("巧克力"), "愿有情人终成眷属", "💝", "西方情人节"),
@@ -180,8 +166,7 @@ class FestivalAwarenessSystem {
             Festival("f22", "除夕", FestivalType.TRADITIONAL, "12-31", "除夕快乐", listOf("守岁", "年夜饭"), listOf("饺子", "年糕"), "辞旧迎新", "🧧", "农历年最后一天")
         ))
     }
-
-    private fun loadBuiltinSolarTerms() {
+        private fun loadBuiltinSolarTerms() {
         solarTerms.addAll(listOf(
             SolarTerm("st1", "立春", "春天开始", 2, 4, listOf("咬春"), listOf("养肝", "早起")),
             SolarTerm("st2", "雨水", "降雨开始增多", 2, 19, listOf(), listOf("健脾", "防寒")),

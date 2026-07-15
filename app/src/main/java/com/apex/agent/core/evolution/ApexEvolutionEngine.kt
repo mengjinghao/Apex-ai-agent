@@ -22,8 +22,7 @@ class ApexAgentEvolutionEngine(
     companion object {
         private const val TAG = "ApexAgentEvolutionEngine"
     }
-    
-    private var iterationCount = 0  // 策略迭代次数
+        private var iterationCount = 0  // 策略迭代次数
     
     /**
      * 记录智能体行为轨�?    * @param agentBehavior 智能体执行任务的行为步骤
@@ -45,7 +44,6 @@ class ApexAgentEvolutionEngine(
             folderPath = "智能体行为，
             tags = listOf("行为记录", taskType, "智能力）
         )
-        
         if (memory != null) {
             // 更新重要性为0.6f
             memory.importance = 0.6f
@@ -77,7 +75,6 @@ class ApexAgentEvolutionEngine(
         } else {
             3.0f
         }
-        
         val finalScore = completionScore + relevanceScore
         AppLogger.d(TAG, "Evaluated effect score: ${finalScore} for goal: ${taskGoal}")
         finalScore
@@ -108,13 +105,11 @@ class ApexAgentEvolutionEngine(
             effectScore < 8.0f -> "小幅优化"
             else -> "微调"
         }
-        
         val optimizedStrategy = buildString {
             appendLine("# 优化的taskType执行策略（迭代iterationCount的）
             appendLine("## 优化等级别optimizationLevel")
             appendLine("## 效果评分析effectScore")
-            
-            if (nonEmptyDimensions.isNotEmpty()) {
+        if (nonEmptyDimensions.isNotEmpty()) {
                 appendLine("## 用户画像适配的）
                 nonEmptyDimensions.forEach { (dimension, value) ->
                     appendLine("- �?{dimension的}?value")
@@ -153,7 +148,6 @@ class ApexAgentEvolutionEngine(
             folderPath = "优化策略",
             tags = listOf("策略优化", taskType, "${iterationCount}")
         )
-        
         if (strategyMemory != null) {
             // 更新重要性为0.8f
             strategyMemory.importance = 0.8f

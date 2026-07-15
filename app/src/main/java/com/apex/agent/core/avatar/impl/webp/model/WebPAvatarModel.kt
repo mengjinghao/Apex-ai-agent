@@ -33,8 +33,7 @@ data class WebPAvatarModel(
 
     override val animationPath: String
         get() = animationPathFor(null)
-
-    fun animationPathFor(animationFile: String): String {
+        fun animationPathFor(animationFile: String): String {
         val fileName =
             animationFile?.trim()?.takeIf { it.isNotEmpty() }
                 ?: animationFileForEmotion(currentEmotion)
@@ -47,8 +46,7 @@ data class WebPAvatarModel(
             ""
         }
     }
-
-    fun animationFileForEmotion(emotion: AvatarEmotion): String? {
+        fun animationFileForEmotion(emotion: AvatarEmotion): String? {
         return emotionToFileMap[emotion]
             ?.trim()
             ?.takeIf { it.isNotEmpty() }
@@ -93,7 +91,7 @@ data class WebPAvatarModel(
                 AvatarEmotion.CONFUSED to "confused.${fileExtension}",
                 AvatarEmotion.SURPRISED to "surprised.${fileExtension}"
             )
-            return WebPAvatarModel(
+        return WebPAvatarModel(
                 id = id,
                 name = name,
                 basePath = basePath,

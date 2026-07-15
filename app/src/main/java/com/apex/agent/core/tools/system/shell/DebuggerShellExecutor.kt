@@ -83,7 +83,7 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
     ): ShellExecutor.CommandResult =
             withContext(Dispatchers.IO) {
                 val permStatus = hasPermission()
-                if (!permStatus.granted) {
+        if (!permStatus.granted) {
                     return@withContext ShellExecutor.CommandResult(false, "", permStatus.reason)
                 }
 
@@ -164,7 +164,6 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
             escaped = false
             i++
         }
-
         return false
     }
 
@@ -198,11 +197,13 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
                     delay(delayMs)
                     continue
                 } else {
-                    // 对于其他异常，直接抛�?                   throw e
+                    // 对于其他异常，直接抛�?
+    throw e
                 }
             }
         }
-        // 如果达到最大重试次数，抛出最后一个异�?       throw lastException ?: IllegalStateException("Unknown error in retry operation")
+        // 如果达到最大重试次数，抛出最后一个异�?
+    throw lastException ?: IllegalStateException("Unknown error in retry operation")
     }
 
     /** 直接执行不包含特殊操作符的普通命�?/
@@ -224,8 +225,7 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
 
                     // 创建进程
                     process = service.newProcess(commandParts, null, null)
-
-                    if (process == null) {
+        if (process == null) {
                         return@withContext ShellExecutor.CommandResult(
                                 false,
                                 "",
@@ -252,8 +252,7 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
                                     }
                                 }
                             } else ""
-
-                    val stderr =
+        val stderr =
                             if (errorStream != null) {
                                 retryOperation {
                                     val stderrStream = FileInputStream(errorStream.fileDescriptor)
@@ -262,8 +261,7 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
                                     }
                                 }
                             } else ""
-
-                    val exitCode = processClass.getMethod("waitFor").invoke(process) as Int
+        val exitCode = processClass.getMethod("waitFor").invoke(process) as Int
 
                     // 返回结果
                     return@withContext ShellExecutor.CommandResult(
@@ -348,10 +346,9 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
 
                     // 如果命令以单�?'结尾（后台运行），我们只负责启动，不阻塞等待
     val trimmedForBg = enhancedCommand.trimEnd()
-                    val isBackground =
+        val isBackground =
                             trimmedForBg.endsWith("&") && !trimmedForBg.endsWith("&&")
-
-                    val shellArgs = arrayOf("sh", "-e", "-c", enhancedCommand)
+        val shellArgs = arrayOf("sh", "-e", "-c", enhancedCommand)
                     AppLogger.d(TAG, "Enhanced shell command: ${shellArgs.joinToString(", ", "[", "]")}")
 
                     // 创建进程
@@ -404,8 +401,7 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
                                     }
                                 }
                             } else ""
-
-                    val stderr =
+        val stderr =
                             if (errorStream != null) {
                                 retryOperation {
                                     val stderrStream = FileInputStream(errorStream.fileDescriptor)
@@ -414,8 +410,7 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
                                     }
                                 }
                             } else ""
-
-                    val exitCode = processClass.getMethod("waitFor").invoke(process) as Int
+        val exitCode = processClass.getMethod("waitFor").invoke(process) as Int
 
                     // 关闭文件描述�?
     try {
@@ -467,19 +462,17 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
                             AppLogger.e(TAG, "Error pinging cached binder", e)
                             false
                         }
-
-                if (isCachedAlive) {
+        if (isCachedAlive) {
                     return cached
                 } else {
                     AppLogger.d(TAG, "Cached Shizuku service is dead, removing from cache")
                     serviceCache.remove(connection.uid)
                 }
             }
-
-            val service = IShizukuService.Stub.asInterface(connection.binder)
-            if (service == null) {
+        val service = IShizukuService.Stub.asInterface(connection.binder)
+        if (service == null) {
                 AppLogger.d(TAG, "Failed to create Shizuku service interface")
-                return null
+        return null
             }
 
             AppLogger.d(TAG, "Creating new Shizuku service interface")
@@ -487,7 +480,7 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
             return service
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error getting Shizuku service", e)
-            return null
+        return null
         }
     }
 
@@ -515,14 +508,14 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
                 }
             }
 
-            // 处理单引�?只有当不在双引号中时才处理单引号的开始和结束�?
+            // 处理单引�只有当不在双引号中时才处理单引号的开始和结束�?
     if (c == '\'' && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes
                 i++
                 continue
             }
 
-            // 处理双引�?只有当不在单引号中时才处理双引号的开始和结束�?
+            // 处理双引�只有当不在单引号中时才处理双引号的开始和结束�?
     if (c == '"' && !inSingleQuotes) {
                 inDoubleQuotes = !inDoubleQuotes
                 i++
@@ -553,7 +546,6 @@ class DebuggerShellExecutor(private val context: Context) : ShellExecutor {
     if (inSingleQuotes || inDoubleQuotes) {
             AppLogger.w(TAG, "Warning: Unclosed quotes in command: ${command}")
         }
-
         return result.toTypedArray()
     }
 
@@ -581,12 +573,10 @@ private class ShizukuShellProcess(
             ?: throw IOException("Failed to create Shizuku process")
         processClass = process.javaClass
     }
-
-    private val inputStream: ParcelFileDescriptor by lazy {
+        private val inputStream: ParcelFileDescriptor by lazy {
         processClass.getMethod("getInputStream").invoke(process) as ParcelFileDescriptor
     }
-
-    private val errorStream: ParcelFileDescriptor by lazy {
+        private val errorStream: ParcelFileDescriptor by lazy {
         processClass.getMethod("getErrorStream").invoke(process) as ParcelFileDescriptor
     }
 

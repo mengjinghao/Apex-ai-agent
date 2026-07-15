@@ -36,17 +36,14 @@ class ApiKeyPoolAvailabilityTester(
     private val configManager: ModelConfigManager
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    private val _state = MutableStateFlow(ApiKeyPoolTestState())
-    val state: StateFlow<ApiKeyPoolTestState> = _state.asStateFlow()
-
-    private var job: Job? = null
+        private val _state = MutableStateFlow(ApiKeyPoolTestState())
+        val state: StateFlow<ApiKeyPoolTestState> = _state.asStateFlow()
+        private var job: Job? = null
 
     fun pause() {
         job?.cancel()
     }
-
-    fun isRunning(): Boolean = job?.isActive == true
+        fun isRunning(): Boolean = job?.isActive == true
 
     fun startOrResume(
         context: Context,
@@ -61,7 +58,6 @@ class ApiKeyPoolAvailabilityTester(
         val keysToTest = apiKeyPool
             .filter { it.isEnabled }
             .filter { it.availabilityStatus == ApiKeyAvailabilityStatus.UNTESTED }
-
         if (keysToTest.isEmpty()) {
             _state.update {
                 it.copy(
@@ -74,7 +70,7 @@ class ApiKeyPoolAvailabilityTester(
                     lastError = null
                 )
             }
-            return
+        return
         }
 
         _state.update {
@@ -94,11 +90,10 @@ class ApiKeyPoolAvailabilityTester(
                 val channel = Channel<ApiKeyInfo>(Channel.UNLIMITED)
                 keysToTest.forEach { channel.trySend(it) }
                 channel.close()
-
-                var workingPool = apiKeyPool
+        var workingPool = apiKeyPool
 
                 val workerCount = maxOf(1, min(concurrency, keysToTest.size))
-                val workers = (0 until workerCount).map {
+        val workers = (0 until workerCount).map {
                     launch {
                         for (keyInfo in channel) {
                             val status =
@@ -155,22 +150,20 @@ class ApiKeyPoolAvailabilityTester(
             }
         }
     }
-
-    private suspend fun testSingleKey(
+        private suspend fun testSingleKey(
         context: Context,
         baseConfig: ModelConfigData,
         apiKey: String
     ): Boolean {
         return kotlin.runCatching {
             val modelNameToTest = getModelByIndex(baseConfig.modelName, 0)
-            val configForTest = baseConfig.copy(
+        val configForTest = baseConfig.copy(
                 apiKey = apiKey,
                 modelName = modelNameToTest,
                 useMultipleApiKeys = false,
                 apiKeyPool = emptyList()
             )
-
-            val service = AIServiceFactory.createService(
+        val service = AIServiceFactory.createService(
                 config = configForTest,
                 modelConfigManager = configManager,
                 context = context

@@ -114,7 +114,6 @@ class InterestManagementManager private constructor(
      */
     suspend fun getInterestAdvice(userId: String, messages: List<ChatMessage>, userProfile: HonzonUserProfile? = null): String = withContext(Dispatchers.IO) {
         val profile = analyzeUserInterests(userId, messages, userProfile)
-        
         if (profile.primaryInterest != null) {
             "用户的{profile.primaryInterest}有浓厚兴趣，可以围绕这个话题展开深入讨论�?
         } else {

@@ -82,7 +82,6 @@ class NvidiaAIProvider(
             "NvidiaAIProvider",
             "NVIDIA thinking params applied: enable_thinking=${enableThinking}, gpt_oss_default_effort=${appliedGptOssDefaultEffort}"
         )
-
         return createJsonRequestBody(jsonObject.toString())
     }
 }

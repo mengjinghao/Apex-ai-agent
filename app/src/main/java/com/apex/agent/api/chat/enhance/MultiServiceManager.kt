@@ -25,24 +25,23 @@ class MultiServiceManager(private val context: Context) {
 
     // 配置管理服务
     private val modelConfigService = ModelConfigService.getInstance(context)
-    private val modelConfigManager = ModelConfigManager(context)
+        private val modelConfigManager = ModelConfigManager(context)
 
     // 服务实例缓存
     private val serviceInstances = mutableMapOf<FunctionType, AIService>()
-    private val customServiceInstances = mutableMapOf<String, AIService>()
-    private val serviceMutex = Mutex()
-
-    private val initMutex = Mutex()
+        private val customServiceInstances = mutableMapOf<String, AIService>()
+        private val serviceMutex = Mutex()
+        private val initMutex = Mutex()
     @Volatile private var isInitialized = false
 
-    // 默认AIService，用于兼容现有代�?   private var defaultService: AIService? = null
+    // 默认AIService，用于兼容现有代�?
+    private var defaultService: AIService? = null
 
     /** 初始化服务管理器，确保配置已经准备好 */
     suspend fun initialize() {
         ensureInitialized()
     }
-
-    private suspend fun ensureInitialized() {
+        private suspend fun ensureInitialized() {
         if (isInitialized) return
         initMutex.withLock {
             if (isInitialized) return
@@ -62,7 +61,7 @@ class MultiServiceManager(private val context: Context) {
 
             // 否则，创建新的服务实�?           // 所有功能类型都使用统一的活跃配�?
     val config = modelConfigService.getCurrentConfig() ?: throw IllegalStateException("No active model config found")
-            val service = createServiceFromConfig(config, 0) // 使用默认模型索引
+        val service = createServiceFromConfig(config, 0) // 使用默认模型索引
             serviceInstances[functionType] = service
 
             // 如果是CHAT功能类型，也设置为默认服�?
@@ -80,11 +79,10 @@ class MultiServiceManager(private val context: Context) {
         ensureInitialized()
         return serviceMutex.withLock {
             val normalizedIndex = modelIndex.coerceAtLeast(0)
-            val cacheKey = "${configId}#${normalizedIndex}"
+        val cacheKey = "${configId}#${normalizedIndex}"
             customServiceInstances[cacheKey]?.let { return@withLock it }
-
-            val config = modelConfigManager.getModelConfigFlow(configId).first()
-            val service = createServiceFromConfig(config, normalizedIndex)
+        val config = modelConfigManager.getModelConfigFlow(configId).first()
+        val service = createServiceFromConfig(config, normalizedIndex)
             customServiceInstances[cacheKey] = service
 
             AppLogger.d(TAG, "已为自定义配置创建服务实例，配置=${configId}，模型索，的${normalizedIndex}")
@@ -225,20 +223,16 @@ class MultiServiceManager(private val context: Context) {
     val configWithSelectedModel = config.copy(modelName = selectedModelName)
         
         AppLogger.d(TAG, "创建服务: 原始模型='${config.modelName}', 选中模型='${selectedModelName}' (请求索引=${modelIndex}, 实际索引=${actualIndex})")
-
         val rawService = AIServiceFactory.createService(
             config = configWithSelectedModel,
             modelConfigManager = modelConfigManager,
             context = context
         )
-
         val requestLimitPerMinute = config.requestLimitPerMinute.coerceAtLeast(0)
         val maxConcurrentRequests = config.maxConcurrentRequests.coerceAtLeast(0)
-
         if (requestLimitPerMinute == 0 && maxConcurrentRequests == 0) {
             return rawService
         }
-
         val limiter =
             if (requestLimitPerMinute > 0) {
                 RateLimiterRegistry.getOrCreate(
@@ -248,7 +242,6 @@ class MultiServiceManager(private val context: Context) {
             } else {
                 null
             }
-
         val concurrencySemaphore =
             if (maxConcurrentRequests > 0) {
                 RequestConcurrencyRegistry.getOrCreate(
@@ -258,7 +251,6 @@ class MultiServiceManager(private val context: Context) {
             } else {
                 null
             }
-
         return RateLimitedAIService(
             delegate = rawService,
             rateLimiter = limiter,

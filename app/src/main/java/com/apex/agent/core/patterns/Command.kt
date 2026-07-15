@@ -43,9 +43,8 @@ data class CommandEntry<T>(
 class CommandHistory(private val maxSize: Int = 50) {
 
     private val undoStack = Stack<CommandEntry<*>>()
-    private val redoStack = Stack<CommandEntry<*>>()
-
-    val undoCount: Int get() = undoStack.size
+        private val redoStack = Stack<CommandEntry<*>>()
+        val undoCount: Int get() = undoStack.size
     val redoCount: Int get() = redoStack.size
 
     /** 推入执行历史 */
@@ -102,7 +101,7 @@ class CommandInvoker {
         val entry = history.popUndo() ?: return null
         if (!entry.command.isReversible) {
             history.pushRedo(entry)
-            return CommandResult.Failure("Command ${entry.command.name} is not reversible")
+        return CommandResult.Failure("Command ${entry.command.name} is not reversible")
         }
         val result = entry.command.undo()
         history.pushRedo(entry.copy(result = result))
@@ -115,8 +114,7 @@ class CommandInvoker {
         history.push(entry.copy(result = result))
         return result
     }
-
-    fun getHistory(): List<CommandEntry<*>> = history.getHistory()
+        fun getHistory(): List<CommandEntry<*>> = history.getHistory()
 }
 
 /** 发送消息命令 */

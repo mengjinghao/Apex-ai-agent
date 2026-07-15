@@ -46,7 +46,7 @@ class SceneTemplateRegistry {
 
     private val templates = ConcurrentHashMap<String, SceneTemplate>()
         private val activeTemplates = ConcurrentHashMap<String, String>()  // chatId -> templateId
-        init {
+    init {
         registerBuiltinTemplates()
     }
 

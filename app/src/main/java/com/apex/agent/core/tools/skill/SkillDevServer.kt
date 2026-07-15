@@ -85,25 +85,20 @@ class SkillDevServer private constructor(
         fun onWebSocketMessage(sessionId: String, message: String)
         fun onError(error: String)
     }
-
-    private val config = DevServerConfig.getInstance(context)
-    private val hotReloader = HotReloader.getInstance(context)
-    private val skillManager = SkillManager.getInstance(context)
-
-    private val listeners = CopyOnWriteArrayList<ServerListener>()
-    private val webSocketSessions = ConcurrentHashMap<String, WebSocketSession>()
-
-    private val isRunning = AtomicBoolean(false)
-    private val requestCount = AtomicLong(0)
-    private val startTime = AtomicLong(0)
-
-    private val wsClient = OkHttpClient.Builder()
+        private val config = DevServerConfig.getInstance(context)
+        private val hotReloader = HotReloader.getInstance(context)
+        private val skillManager = SkillManager.getInstance(context)
+        private val listeners = CopyOnWriteArrayList<ServerListener>()
+        private val webSocketSessions = ConcurrentHashMap<String, WebSocketSession>()
+        private val isRunning = AtomicBoolean(false)
+        private val requestCount = AtomicLong(0)
+        private val startTime = AtomicLong(0)
+        private val wsClient = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
-
-    private var localWebSocketServer: LocalWebSocketServer? = null
+        private var localWebSocketServer: LocalWebSocketServer? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     data class WebSocketSession(
@@ -114,7 +109,6 @@ class SkillDevServer private constructor(
 
     override fun serve(session: IHTTPSession): Response {
         requestCount.incrementAndGet()
-
         val uri = session.uri
         val method = session.method.name
 
@@ -124,22 +118,17 @@ class SkillDevServer private constructor(
         if (uri.startsWith(WS_PATH)) {
             return handleWebSocketUpgrade(session)
         }
-
         if (uri.startsWith(API_PATH)) {
             return handleApiRequest(session)
         }
-
         return handleStaticRequest(session)
     }
-
-    fun startServer(): Boolean {
+        fun startServer(): Boolean {
         if (isRunning.get()) {
             AppLogger.d(TAG, "Server already running")
-            return true
+        return true
         }
-
         val settings = config.getServerSettings()
-
         return try {
             PortProcessKiller.killListeners(settings.port)
 
@@ -163,8 +152,7 @@ class SkillDevServer private constructor(
             false
         }
     }
-
-    fun stopServer() {
+        fun stopServer() {
         if (!isRunning.getAndSet(false)) {
             return
         }
@@ -186,26 +174,21 @@ class SkillDevServer private constructor(
             AppLogger.e(TAG, "Error stopping server", e)
         }
     }
-
-    fun isServerRunning(): Boolean = isRunning.get()
-
-    fun getServerUrl(): String {
+        fun isServerRunning(): Boolean = isRunning.get()
+        fun getServerUrl(): String {
         val settings = config.getServerSettings()
         return "http://${settings.host}:${settings.port}"
     }
-
-    fun getWebSocketUrl(): String {
+        fun getWebSocketUrl(): String {
         val settings = config.getServerSettings()
         return "ws://${settings.host}:${settings.port}${WS_PATH}"
     }
-
-    fun broadcastToWebSocketClients(message: String) {
+        fun broadcastToWebSocketClients(message: String) {
         webSocketSessions.keys().forEach { sessionId ->
             sendWebSocketMessage(sessionId, message)
         }
     }
-
-    fun sendWebSocketMessage(sessionId: String, message: String): Boolean {
+        fun sendWebSocketMessage(sessionId: String, message: String): Boolean {
         val session = webSocketSessions[sessionId] ?: return false
 
         return try {
@@ -215,18 +198,15 @@ class SkillDevServer private constructor(
             false
         }
     }
-
-    fun addServerListener(listener: ServerListener) {
+        fun addServerListener(listener: ServerListener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener)
         }
     }
-
-    fun removeServerListener(listener: ServerListener) {
+        fun removeServerListener(listener: ServerListener) {
         listeners.remove(listener)
     }
-
-    private fun handleApiRequest(session: IHTTPSession): Response {
+        private fun handleApiRequest(session: IHTTPSession): Response {
         val uri = session.uri
         val method = session.method.name
 
@@ -234,7 +214,6 @@ class SkillDevServer private constructor(
         val params = session.parameters
 
         val body = readRequestBody(session)
-
         val apiRequest = ApiRequest(
             method = method,
             path = uri,
@@ -244,7 +223,6 @@ class SkillDevServer private constructor(
         )
 
         notifyApiRequest(apiRequest)
-
         return when {
             uri == "${API_PATH}/skills" && method == "GET" -> listSkills()
             uri.startsWith("${API_PATH}/skills/") && method == "GET" -> getSkill(uri.substringAfter("${API_PATH}/skills/"))
@@ -255,14 +233,11 @@ class SkillDevServer private constructor(
             else -> notFound()
         }
     }
-
-    private fun handleWebSocketUpgrade(session: IHTTPSession): Response {
+        private fun handleWebSocketUpgrade(session: IHTTPSession): Response {
         val protocol = session.headers["upgrade"]?.lowercase()
-
         if (protocol != "websocket") {
             return badRequest("Invalid upgrade protocol")
         }
-
         val sessionId = "ws_${System.currentTimeMillis()}_${(Math.random() * 1000).toInt()}"
         webSocketSessions[sessionId] = WebSocketSession(id = sessionId)
 
@@ -272,11 +247,9 @@ class SkillDevServer private constructor(
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to establish WebSocket connection", e)
         }
-
         return webSocketResponse(sessionId)
     }
-
-    private fun establishWebSocketConnection(sessionId: String, url: String) {
+        private fun establishWebSocketConnection(sessionId: String, url: String) {
         val request = Request.Builder()
             .url(url)
             .addHeader("X-Session-ID", sessionId)
@@ -310,37 +283,28 @@ class SkillDevServer private constructor(
             }
         })
     }
-
-    private fun handleStaticRequest(session: IHTTPSession): Response {
+        private fun handleStaticRequest(session: IHTTPSession): Response {
         val uri = if (session.uri == "/") "/index.html" else session.uri
         val settings = config.getServerSettings()
-
         val mimeType = getMimeType(uri)
-
         val workspaceDir = config.getDevWorkspaceDirectory()
         val file = File(workspaceDir, uri)
-
         if (file.exists() && file.isFile) {
             return serveFile(file, mimeType, settings.enableCors, settings.corsOrigins)
         }
-
         val skillsDir = config.getSkillsRootDirectory()
         val skillFile = File(skillsDir, uri.trimStart('/'))
-
         if (skillFile.exists() && skillFile.isFile) {
             return serveFile(skillFile, mimeType, settings.enableCors, settings.corsOrigins)
         }
-
         return notFound()
     }
-
-    private fun serveFile(file: File, mimeType: String, enableCors: Boolean, corsOrigins: List<String>): Response {
+        private fun serveFile(file: File, mimeType: String, enableCors: Boolean, corsOrigins: List<String>): Response {
         return try {
             val bytes = file.readBytes()
-            val inputStream = ByteArrayInputStream(bytes)
-            val response = newFixedLengthResponse(Response.Status.OK, mimeType, inputStream, bytes.size.toLong())
-
-            if (enableCors) {
+        val inputStream = ByteArrayInputStream(bytes)
+        val response = newFixedLengthResponse(Response.Status.OK, mimeType, inputStream, bytes.size.toLong())
+        if (enableCors) {
                 addCorsHeaders(response, corsOrigins)
             }
 
@@ -349,10 +313,8 @@ class SkillDevServer private constructor(
             internalError("Failed to read file: ${e.message}")
         }
     }
-
-    private fun listSkills(): Response {
+        private fun listSkills(): Response {
         val skills = skillManager.getAvailableSkills()
-
         val json = JSONObject()
         val skillsArray = JSONArray()
 
@@ -369,17 +331,13 @@ class SkillDevServer private constructor(
 
         json.put("skills", skillsArray)
         json.put("total", skills.size)
-
         return jsonResponse(json)
     }
-
-    private fun getSkill(skillName: String): Response {
+        private fun getSkill(skillName: String): Response {
         val content = skillManager.readSkillContent(skillName)
-
         if (content == null) {
             return notFound("Skill not found: ${skillName}")
         }
-
         val skillDir = File(config.getSkillsRootDirectory(), skillName)
         val files = if (skillDir.exists()) {
             skillDir.walkTopDown()
@@ -389,28 +347,22 @@ class SkillDevServer private constructor(
         } else {
             emptyList()
         }
-
         val json = JSONObject()
         json.put("name", skillName)
         json.put("content", content)
         json.put("files", JSONArray(files))
         json.put("loaded", skillManager.isSkillLoaded(skillName))
-
         return jsonResponse(json)
     }
-
-    private fun reloadSkill(body: String): Response {
+        private fun reloadSkill(body: String): Response {
         return try {
             val request = if (body.isNullOrBlank()) null else JSONObject(body)
-            val skillName = request?.optString("skillName")
-
-            if (skillName.isNullOrBlank()) {
+        val skillName = request?.optString("skillName")
+        if (skillName.isNullOrBlank()) {
                 return badRequest("Missing skillName parameter")
             }
-
-            val success = hotReloader.reloadSkill(skillName)
-
-            val json = JSONObject()
+        val success = hotReloader.reloadSkill(skillName)
+        val json = JSONObject()
             json.put("success", success)
             json.put("skillName", skillName)
 
@@ -420,8 +372,7 @@ class SkillDevServer private constructor(
             internalError("Failed to reload skill: ${e.message}")
         }
     }
-
-    private fun getConfig(): Response {
+        private fun getConfig(): Response {
         val json = JSONObject()
 
         json.put("server", JSONObject().apply {
@@ -441,11 +392,9 @@ class SkillDevServer private constructor(
             put("fontSize", config.getEditorSettings().fontSize)
             put("tabSize", config.getEditorSettings().tabSize)
         })
-
         return jsonResponse(json)
     }
-
-    private fun getStats(): Response {
+        private fun getStats(): Response {
         val json = JSONObject()
 
         json.put("requestCount", requestCount.get())
@@ -456,7 +405,6 @@ class SkillDevServer private constructor(
             put("totalErrors", hotReloader.getStats().totalErrors)
             put("watchedFiles", hotReloader.getStats().watchedFileCount)
         })
-
         return jsonResponse(json)
     }
 
@@ -468,11 +416,11 @@ private fun executeTool(toolName: String, body: String): Response {
     val executor = toolExecutor
         if (executor != null) {
             val result = kotlinx.coroutines.runBlocking { executor.execute(toolName, request) }
-            val json = JSONObject()
+        val json = JSONObject()
             json.put("toolName", toolName)
             json.put("success", result.success)
             json.put("output", result.output)
-            if (!result.error.isNullOrBlank()) {
+        if (!result.error.isNullOrBlank()) {
                 json.put("error", result.error)
             }
             jsonResponse(json)
@@ -489,8 +437,7 @@ private fun executeTool(toolName: String, body: String): Response {
         internalError("Failed to execute tool: ${e.message}")
     }
 }
-
-    private fun jsonResponse(json: JSONObject): Response {
+        private fun jsonResponse(json: JSONObject): Response {
         val response = newFixedLengthResponse(
             Response.Status.OK,
             "application/json",
@@ -499,29 +446,25 @@ private fun executeTool(toolName: String, body: String): Response {
         response.addHeader("Content-Type", "application/json")
         return response
     }
-
-    private fun notFound(message: String = "Not Found"): Response {
+        private fun notFound(message: String = "Not Found"): Response {
         val json = JSONObject().apply {
             put("error", message)
         }
         return newFixedLengthResponse(Response.Status.NOT_FOUND, "application/json", json.toString())
     }
-
-    private fun badRequest(message: String): Response {
+        private fun badRequest(message: String): Response {
         val json = JSONObject().apply {
             put("error", message)
         }
         return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/json", json.toString())
     }
-
-    private fun internalError(message: String): Response {
+        private fun internalError(message: String): Response {
         val json = JSONObject().apply {
             put("error", message)
         }
         return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/json", json.toString())
     }
-
-    private fun webSocketResponse(sessionId: String): Response {
+        private fun webSocketResponse(sessionId: String): Response {
         val response = newFixedLengthResponse(Response.Status.SWITCHING_PROTOCOLS, "text/plain", "")
         response.addHeader("Upgrade", "websocket")
         response.addHeader("Connection", "Upgrade")
@@ -529,20 +472,18 @@ private fun executeTool(toolName: String, body: String): Response {
         response.addHeader("X-Session-ID", sessionId)
         return response
     }
-
-    private fun addCorsHeaders(response: Response, origins: List<String>): Response {
+        private fun addCorsHeaders(response: Response, origins: List<String>): Response {
         val origin = if (origins.contains("*")) "*" else origins.firstOrNull() ?: "*"
         response.addHeader("Access-Control-Allow-Origin", origin)
         response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
         response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
         return response
     }
-
-    private fun readRequestBody(session: IHTTPSession): String? {
+        private fun readRequestBody(session: IHTTPSession): String? {
         return try {
             val tempFiles = HashMap<String, String>()
             session.parseBody(tempFiles)
-            val postDataPath = tempFiles["postData"]
+        val postDataPath = tempFiles["postData"]
             if (postDataPath != null) {
                 File(postDataPath).readText()
             } else {
@@ -553,8 +494,7 @@ private fun executeTool(toolName: String, body: String): Response {
             null
         }
     }
-
-    private fun getMimeType(uri: String): String {
+        private fun getMimeType(uri: String): String {
         return when {
             uri.endsWith(".html") || uri.endsWith(".htm") -> "text/html"
             uri.endsWith(".css") -> "text/css"
@@ -570,8 +510,7 @@ private fun executeTool(toolName: String, body: String): Response {
             else -> "application/octet-stream"
         }
     }
-
-    private fun notifyServerStarted(port: Int) {
+        private fun notifyServerStarted(port: Int) {
         listeners.forEach { listener ->
             runCatching {
                 listener.onServerStarted(port)
@@ -580,8 +519,7 @@ private fun executeTool(toolName: String, body: String): Response {
             }
         }
     }
-
-    private fun notifyServerStopped() {
+        private fun notifyServerStopped() {
         listeners.forEach { listener ->
             runCatching {
                 listener.onServerStopped()
@@ -590,8 +528,7 @@ private fun executeTool(toolName: String, body: String): Response {
             }
         }
     }
-
-    private fun notifyApiRequest(request: ApiRequest) {
+        private fun notifyApiRequest(request: ApiRequest) {
         listeners.forEach { listener ->
             runCatching {
                 listener.onApiRequest(request)
@@ -600,8 +537,7 @@ private fun executeTool(toolName: String, body: String): Response {
             }
         }
     }
-
-    private fun notifyWebSocketMessage(sessionId: String, message: String) {
+        private fun notifyWebSocketMessage(sessionId: String, message: String) {
         webSocketSessions[sessionId]?.lastActivity = System.currentTimeMillis()
 
         listeners.forEach { listener ->
@@ -612,8 +548,7 @@ private fun executeTool(toolName: String, body: String): Response {
             }
         }
     }
-
-    private fun notifyError(error: String) {
+        private fun notifyError(error: String) {
         listeners.forEach { listener ->
             runCatching {
                 listener.onError(error)
@@ -627,7 +562,6 @@ private fun executeTool(toolName: String, body: String): Response {
         private var serverSocket: java.net.ServerSocket? = null
         private val activeConnections = ConcurrentHashMap<String, ConnectionHandler>()
         private val isRunning = AtomicBoolean(false)
-
         fun start() {
             if (isRunning.getAndSet(true)) return
 
@@ -639,7 +573,7 @@ private fun executeTool(toolName: String, body: String): Response {
                     while (isRunning.get()) {
                         try {
                             val client = serverSocket?.accept()
-                            if (client != null) {
+        if (client != null) {
                                 val handler = ConnectionHandler(client)
                                 activeConnections[handler.id] = handler
                                 handler.start()
@@ -657,30 +591,27 @@ private fun executeTool(toolName: String, body: String): Response {
                 }
             }
         }
-
         fun stop() {
             isRunning.set(false)
             activeConnections.values.forEach { it.close() }
             activeConnections.clear()
             serverSocket?.close()
         }
-
         fun sendMessage(sessionId: String, message: String): Boolean {
             val handler = activeConnections[sessionId] ?: return false
             handler.send(message)
-            return true
+        return true
         }
 
         inner class ConnectionHandler(private val socket: java.net.Socket) : Thread() {
             val id = "conn_${System.currentTimeMillis()}_${(Math.random() * 1000).toInt()}"
-            private var isHandshakeComplete = false
+        private var isHandshakeComplete = false
 
             override fun run() {
                 try {
                     val input = socket.getInputStream().bufferedReader()
-                    val output = socket.getOutputStream().bufferedWriter()
-
-                    val requestLine = input.readLine() ?: return
+        val output = socket.getOutputStream().bufferedWriter()
+        val requestLine = input.readLine() ?: return
 
                     if (requestLine.contains("GET ${WS_PATH}")) {
                         performHandshake(input, output)
@@ -692,10 +623,9 @@ private fun executeTool(toolName: String, body: String): Response {
                     socket.close()
                 }
             }
-
-            private fun performHandshake(input: BufferedReader, output: BufferedWriter) {
+        private fun performHandshake(input: BufferedReader, output: BufferedWriter) {
                 val headers = mutableMapOf<String, String>()
-                var line: String?
+        var line: String?
 
                 while (input.readLine().also { line = it }?.isNotEmpty() == true) {
                     val parts = line?.split(": ", 2) ?: continue
@@ -703,8 +633,7 @@ private fun executeTool(toolName: String, body: String): Response {
                         headers[parts[0].lowercase()] = parts[1]
                     }
                 }
-
-                val webSocketKey = headers["sec-websocket-key"] ?: return
+        val webSocketKey = headers["sec-websocket-key"] ?: return
 
                 val response = buildString {
                     append("HTTP/1.1 101 Switching Protocols\r\n")
@@ -720,15 +649,14 @@ private fun executeTool(toolName: String, body: String): Response {
                 isHandshakeComplete = true
                 handleMessages()
             }
-
-            private fun handleMessages() {
+        private fun handleMessages() {
                 val input = socket.getInputStream()
-                val output = socket.getOutputStream()
+        val output = socket.getOutputStream()
 
                 while (isRunning.get() && isHandshakeComplete) {
                     try {
                         val frame = readFrame(input)
-                        if (frame != null && frame.opcode == 0x1) {
+        if (frame != null && frame.opcode == 0x1) {
                             val message = String(frame.payload, Charsets.UTF_8)
                             notifyWebSocketMessage(id, message)
                         }
@@ -737,13 +665,12 @@ private fun executeTool(toolName: String, body: String): Response {
                     }
                 }
             }
-
-            private fun readFrame(input: java.io.InputStream): Frame? {
+        private fun readFrame(input: java.io.InputStream): Frame? {
                 val firstByte = input.read() ?: return null
                 val opcode = firstByte and 0x0F
 
                 val secondByte = input.read()
-                val isMasked = (secondByte and 0x80) != 0
+        val isMasked = (secondByte and 0x80) != 0
                 var payloadLength = secondByte and 0x7F
 
                 if (payloadLength == 126) {
@@ -752,33 +679,27 @@ private fun executeTool(toolName: String, body: String): Response {
                     payloadLength = 0
                     repeat(8) { payloadLength = (payloadLength shl 8) or input.read() }
                 }
-
-                val maskKey = if (isMasked) ByteArray(4) else null
+        val maskKey = if (isMasked) ByteArray(4) else null
                 if (isMasked) {
                     input.read(maskKey)
                 }
-
-                val payload = ByteArray(payloadLength)
+        val payload = ByteArray(payloadLength)
                 input.read(payload)
-
-                if (isMasked && maskKey != null) {
+        if (isMasked && maskKey != null) {
                     for (i in payload.indices) {
                         payload[i] = (payload[i].toInt() xor maskKey[i % 4].toInt()).toByte()
                     }
                 }
-
-                return Frame(opcode, payload)
+        return Frame(opcode, payload)
             }
-
-            fun send(message: String) {
+        fun send(message: String) {
                 try {
                     val output = socket.getOutputStream()
-                    val payload = message.toByteArray(Charsets.UTF_8)
+        val payload = message.toByteArray(Charsets.UTF_8)
 
                     output.write(0x81)
                     output.write(payload.size)
-
-                    if (payload.size > 65535) {
+        if (payload.size > 65535) {
                         output.write(127)
                         repeat(8) { output.write((payload.size shr (56 - it * 8)) and 0xFF) }
                     } else if (payload.size > 125) {
@@ -793,21 +714,18 @@ private fun executeTool(toolName: String, body: String): Response {
                     AppLogger.e(TAG, "Error sending WebSocket message", e)
                 }
             }
-
-            fun close() {
+        fun close() {
                 try {
                     socket.close()
                 } catch (e: Exception) {
                     // Ignore
                 }
             }
-
-            private data class Frame(val opcode: Int, val payload: ByteArray)
-
-            private fun generateAcceptKey(key: String): String {
+        private data class Frame(val opcode: Int, val payload: ByteArray)
+        private fun generateAcceptKey(key: String): String {
                 val concat = key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-                val digest = java.security.MessageDigest.getInstance("SHA-1").digest(concat.toByteArray())
-                return java.util.Base64.getEncoder().encodeToString(digest)
+        val digest = java.security.MessageDigest.getInstance("SHA-1").digest(concat.toByteArray())
+        return java.util.Base64.getEncoder().encodeToString(digest)
             }
         }
     }

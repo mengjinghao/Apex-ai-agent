@@ -56,16 +56,15 @@ class WorkerRegistry private constructor() {
         val collaborationFramework: com.apex.agent.core.collaboration.AgentCollaborationFramework? = null,
         val additionalData: Map<String, Any> = emptyMap()
     )
-
-    private val registeredWorkers = mutableMapOf<String, Worker>()
-    private val workerListeners = mutableListOf<WorkerChangeListener>()
+        private val registeredWorkers = mutableMapOf<String, Worker>()
+        private val workerListeners = mutableListOf<WorkerChangeListener>()
 
     /**
      * 注册 Worker (使用 PLUGIN 级别�?     */
     fun registerWorker(worker: Worker): RegistrationResult {
         if (registeredWorkers.containsKey(worker.id)) {
             AppLogger.w(TAG, "Worker ${worker.id} already registered")
-            return RegistrationResult.ALREADY_EXISTS
+        return RegistrationResult.ALREADY_EXISTS
         }
 
         // 使用 PLUGIN 级别进行能力声明
@@ -80,7 +79,6 @@ class WorkerRegistry private constructor() {
         registeredWorkers[worker.id] = worker
         notifyListeners(worker, ChangeType.REGISTERED)
         AppLogger.d(TAG, "Registered worker: ${worker.name} (${worker.id})")
-
         return RegistrationResult.SUCCESS
     }
 
@@ -92,7 +90,7 @@ class WorkerRegistry private constructor() {
         if (worker != null) {
             notifyListeners(worker, ChangeType.UNREGISTERED)
             AppLogger.d(TAG, "Unregistered worker: ${workerId}")
-            return true
+        return true
         }
         return false
     }
@@ -151,7 +149,7 @@ class WorkerRegistry private constructor() {
             else -> {
                 // 尝试基于任务类型
     val byType = findWorkersByTaskType(task.taskType)
-                if (byType.isNotEmpty()) byType
+        if (byType.isNotEmpty()) byType
                 else getActiveWorkers()
             }
         }
@@ -180,7 +178,7 @@ class WorkerRegistry private constructor() {
     if (column.requiredAgentRoles.isNotEmpty()) {
             for (role in column.requiredAgentRoles) {
                 val workers = findWorkersByRole(role)
-                if (workers.isNotEmpty()) {
+        if (workers.isNotEmpty()) {
                     return workers.first()
                 }
             }
@@ -189,11 +187,10 @@ class WorkerRegistry private constructor() {
         // 根据列要求的能力查找
     if (column.requiredCapabilities.isNotEmpty()) {
             val workers = findWorkersByCapabilities(column.requiredCapabilities)
-            if (workers.isNotEmpty()) {
+        if (workers.isNotEmpty()) {
                 return workers.first()
             }
         }
-
         return getActiveWorkers().minByOrNull { it.getWorkload() }
     }
 
@@ -231,8 +228,7 @@ class WorkerRegistry private constructor() {
     fun removeListener(listener: WorkerChangeListener) {
         workerListeners.remove(listener)
     }
-
-    private fun notifyListeners(worker: Worker, changeType: ChangeType) {
+        private fun notifyListeners(worker: Worker, changeType: ChangeType) {
         workerListeners.forEach { listener ->
             try {
                 when (changeType) {

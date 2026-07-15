@@ -80,22 +80,18 @@ object SanxingAgentSystem {
             defaultModel = "gpt-4o-mini"
         )
     }
-
-    fun getAvailableProviders(): List<com.apex.data.model.ApiProviderType> {
+        fun getAvailableProviders(): List<com.apex.data.model.ApiProviderType> {
         return com.apex.data.model.ApiProviderType.values().toList()
     }
-
-    fun getAvailableConfigs(): List<com.apex.core.config.ModelConfigService.ModelConfigTemplate> {
+        fun getAvailableConfigs(): List<com.apex.core.config.ModelConfigService.ModelConfigTemplate> {
         return com.apex.core.config.ModelConfigService.CONFIG_TEMPLATES
     }
-
-    fun createStandardAgents(): List<SanxingAgent> {
+        fun createStandardAgents(): List<SanxingAgent> {
         return AgentRole.values().map { role ->
             createAgent(role)
         }
     }
-
-    fun createAgent(role: AgentRole): SanxingAgent {
+        fun createAgent(role: AgentRole): SanxingAgent {
         val agent = Agent(
             id = "sanxing_${role.name.lowercase()}",
             name = role.displayName,
@@ -110,7 +106,6 @@ object SanxingAgentSystem {
             ),
             permissions = getDefaultPermissions(role)
         )
-
         return SanxingAgent(
             agent = agent,
             role = role,
@@ -123,8 +118,7 @@ object SanxingAgentSystem {
             )
         )
     }
-
-    fun createAgentWithGlobalConfig(role: AgentRole, useGlobalConfig: Boolean = true, configId: String? = null): SanxingAgent {
+        fun createAgentWithGlobalConfig(role: AgentRole, useGlobalConfig: Boolean = true, configId: String? = null): SanxingAgent {
         val agent = Agent(
             id = "sanxing_${role.name.lowercase()}",
             name = role.displayName,
@@ -141,7 +135,6 @@ object SanxingAgentSystem {
             useGlobalConfig = useGlobalConfig,
             configId = configId
         )
-
         return SanxingAgent(
             agent = agent,
             role = role,
@@ -154,8 +147,7 @@ object SanxingAgentSystem {
             )
         )
     }
-
-    private fun generateSystemPrompt(role: AgentRole): String {
+        private fun generateSystemPrompt(role: AgentRole): String {
         return when (role) {
             AgentRole.ZHONGSHU_DECISION -> """
                 你现在是「中书省决策中枢」，负责以下核心职责�?
@@ -290,8 +282,7 @@ object SanxingAgentSystem {
             """.trimIndent()
         }
     }
-
-    private fun getDefaultTemperature(role: AgentRole): Double {
+        private fun getDefaultTemperature(role: AgentRole): Double {
         return when (role) {
             AgentRole.ZHONGSHU_DECISION -> 0.4
             AgentRole.MENXIA_AUDIT -> 0.3
@@ -305,8 +296,7 @@ object SanxingAgentSystem {
             AgentRole.YUSHITAI_SUPERVISION -> 0.2
         }
     }
-
-    private fun getDefaultEndpoint(role: AgentRole): String {
+        private fun getDefaultEndpoint(role: AgentRole): String {
         return when (role) {
             AgentRole.ZHONGSHU_DECISION -> "https://api.openai.com/v1/chat/completions"
             AgentRole.MENXIA_AUDIT -> "https://api.anthropic.com/v1/messages"
@@ -320,8 +310,7 @@ object SanxingAgentSystem {
             AgentRole.YUSHITAI_SUPERVISION -> "https://api.openai.com/v1/chat/completions"
         }
     }
-
-    private fun getDefaultPermissions(role: AgentRole): AgentPermissions {
+        private fun getDefaultPermissions(role: AgentRole): AgentPermissions {
         return when (role) {
             AgentRole.ZHONGSHU_DECISION -> AgentPermissions(
                 canUseTools = true,
@@ -395,8 +384,7 @@ object SanxingAgentSystem {
             )
         }
     }
-
-    fun getThreeProvinceAgents(): List<SanxingAgent> {
+        fun getThreeProvinceAgents(): List<SanxingAgent> {
         return listOf(
             createAgent(AgentRole.ZHONGSHU_DECISION),
             createAgent(AgentRole.MENXIA_AUDIT),

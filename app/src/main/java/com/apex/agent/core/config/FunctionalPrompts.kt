@@ -10,23 +10,23 @@ object FunctionalPrompts {
      * Prompt for the AI to generate a comprehensive and structured summary of a conversation.
      */
     const val SUMMARY_PROMPT = """
-        你是负责生成对话摘要的AI助手。你的任务是根据"上一次的摘要"（如果提供）�?最近的对话内容"，生成一份全新的、独立的、全面的摘要。这份新摘要将完全取代之前的摘要，成为后续对话的唯一历史参考�?        **必须严格遵循以下固定格式输出，不得更改格式结构：**
+        你是负责生成对话摘要的AI助手。你的任务是根据"上一次的摘要"（如果提供）�最近的对话内容"，生成一份全新的、独立的、全面的摘要。这份新摘要将完全取代之前的摘要，成为后续对话的唯一历史参考�?        **必须严格遵循以下固定格式输出，不得更改格式结构：**
 
         ==========对话摘要==========
 
         【核心任务状态�?        [先交代用户最新需求的内容与情境类型（真实执行/角色扮演/故事/假设等），再说明当前所处步骤、已完成的动作、正在处理的事项以及下一步。]
-        [明确任务状态（已完�?进行�?等待中），列出未完成的依赖或所需信息；如在等待用户输入，说明原因与所需材料。]
+        [明确任务状态（已完�进行�等待中），列出未完成的依赖或所需信息；如在等待用户输入，说明原因与所需材料。]
         [显式覆盖信息搜集、任务执行、代码编写或其他关键环节的状态，哪怕某环节尚未启动也要说明原因。]
         [最后补充最近一次任务的进度拆解：哪些已完成、哪些进行中、哪些待处理。]
 
         【互动情节与设定�?        [如存在虚构或场景设定，概述名称、角色身份、背景约束及其来源，避免把剧情当成现实。]
         [�?-2段概括近期关键互动：谁提出了什么、目的为何、采用何种表达方式、对任务或剧情的影响，以及仍需确认的事项。]
-        [若用户给出剧�?业务/策略等非技术内容，提炼要点并说明它们如何指导后续输出。]
+        [若用户给出剧�业务/策略等非技术内容，提炼要点并说明它们如何指导后续输出。]
 
-        【对话历程与概要�?        [用不少于3段描述整体演进，每段包含“行�?目的+结果”，可涵盖技术、业务、剧情或策略等不同主题，需特别点名信息搜集、任务执行、代码编写等阶段的衔接；如涉及具体代码，可引用关键片段以辅助说明。]
+        【对话历程与概要�?        [用不少于3段描述整体演进，每段包含“行�目的+结果”，可涵盖技术、业务、剧情或策略等不同主题，需特别点名信息搜集、任务执行、代码编写等阶段的衔接；如涉及具体代码，可引用关键片段以辅助说明。]
         [突出转折、已解决的问题和形成的共识，引用必要的路径、命令、场景节点或原话，确保读者能看懂上下文和因果关系。]
 
-        【关键信息与上下文�?        - [信息�?：用户需求、限制、背景或引用的文�?接口/角色等，说明其具体内容及作用。]
+        【关键信息与上下文�?        - [信息�?：用户需求、限制、背景或引用的文�接口/角色等，说明其具体内容及作用。]
         - [信息�?：技术或剧本结构中的关键元素（函数、配置、日志、人物动机等）及其意义。]
         - [信息�?：问题或创意的探索路径、验证结果与当前状态。]
         - [信息�?：影响后续决策的因素，如优先级、情绪基调、角色约束、外部依赖、时间节点。]
@@ -35,9 +35,9 @@ object FunctionalPrompts {
         ============================
 
         **格式要求�?*
-        1. 必须使用上述固定格式，包括分隔线、标题标识符【】、列表符号等，不得更改�?        2. 标题"对话摘要"必须放在第一行，前后用等号分隔�?        3. 每个部分必须使用【】标识符作为标题，标题后换行�?        4. "核心任务状�?�?互动情节与设�?�?对话历程与概�?使用段落形式；方括号只为示例，实际输出不需保留.5. "关键信息与上下文"使用列表格式，每个信息点�?- "开头�?        6. 结尾使用等号分隔�?
+        1. 必须使用上述固定格式，包括分隔线、标题标识符【】、列表符号等，不得更改�?        2. 标题"对话摘要"必须放在第一行，前后用等号分隔�?        3. 每个部分必须使用【】标识符作为标题，标题后换行�?        4. "核心任务状�?�互动情节与设�?�对话历程与概�使用段落形式；方括号只为示例，实际输出不需保留.5. "关键信息与上下文"使用列表格式，每个信息点�?- "开头�?        6. 结尾使用等号分隔�?
         **内容要求�?*
-        1. 语言风格：专业、清晰、客�?        2. 内容长度：不要限制字数，根据对话内容的复杂程度和重要性，自行决定合适的长度。可以写得详细一些，确保重要信息不丢失。宁可内容多一点，也不要因为过度精简导致关键信息丢失或失真。每个部分都要具备充分篇幅，绝不能以一句话敷衍.3. 信息完整性：优先保证信息的完整性和准确性，技术与非技术内容都需提供必要证据或引�?        4. 内容还原：摘要既要说明“过程如何推进”，也要写清“实际产�?讨论内容是什么”，必要时引用结果文本、结论、代码片段或参数，确保在没有原始对话的情况下依然能完全还原信息本�?        5. 目标：生成的摘要必须是自包含的。即使AI完全忘记了之前的对话，仅凭这份摘要也能够准确理解历史背景、当前状态、具体进度和下一步行�?        6. 时序重点：请先聚焦于最新一段对话（约占输入的最�?0%），明确最新指令、问题和进展，再回顾更早的内容。若新消息与旧内容冲突或更新，应以最新对话为准，并解释差�?    """
+        1. 语言风格：专业、清晰、客�?        2. 内容长度：不要限制字数，根据对话内容的复杂程度和重要性，自行决定合适的长度。可以写得详细一些，确保重要信息不丢失。宁可内容多一点，也不要因为过度精简导致关键信息丢失或失真。每个部分都要具备充分篇幅，绝不能以一句话敷衍.3. 信息完整性：优先保证信息的完整性和准确性，技术与非技术内容都需提供必要证据或引�?        4. 内容还原：摘要既要说明“过程如何推进”，也要写清“实际产�讨论内容是什么”，必要时引用结果文本、结论、代码片段或参数，确保在没有原始对话的情况下依然能完全还原信息本�?        5. 目标：生成的摘要必须是自包含的。即使AI完全忘记了之前的对话，仅凭这份摘要也能够准确理解历史背景、当前状态、具体进度和下一步行�?        6. 时序重点：请先聚焦于最新一段对话（约占输入的最�?0%），明确最新指令、问题和进展，再回顾更早的内容。若新消息与旧内容冲突或更新，应以最新对话为准，并解释差�?    """
 
     const val SUMMARY_PROMPT_EN = """
         You are an AI assistant responsible for generating a conversation summary. Your task is to generate a brand-new, self-contained, comprehensive summary based on the "Previous Summary" (if provided) and the "Recent Conversation". This new summary will completely replace the previous summary and will become the only historical reference for subsequent conversations.
@@ -76,12 +76,10 @@ object FunctionalPrompts {
         **Content requirements:**
         1. Style: professional, clear, objective.2. Length: do not limit length. Decide an appropriate length based on complexity and importance. Prefer being detailed to avoid missing key information.3. Completeness: prioritize completeness and accuracy. Provide evidence/quotes when needed.4. Reconstruction: the summary must describe both “how the process progressed�?and “what the actual outputs/discussion were�?Quote resulting text, conclusions, code snippets, or parameters when needed.5. Goal: the summary must be self-contained so that even if the AI forgets the original conversation, it can fully reconstruct context, current status, progress, and next actions.6. Recency: focus first on the most recent part of the conversation (about the last 30% of input), then review earlier content. If new messages conflict with old content, use the latest messages and explain the differences.
     """
-
-    fun summaryPrompt(useEnglish: Boolean): String {
+        fun summaryPrompt(useEnglish: Boolean): String {
         return if (useEnglish) SUMMARY_PROMPT_EN else SUMMARY_PROMPT
     }
-
-    fun buildSummarySystemPrompt(previousSummary: String?, useEnglish: Boolean): String {
+        fun buildSummarySystemPrompt(previousSummary: String?, useEnglish: Boolean): String {
         var prompt = summaryPrompt(useEnglish).trimIndent()
         if (!previousSummary.isNullOrBlank()) {
             prompt +=
@@ -129,32 +127,27 @@ object FunctionalPrompts {
          “预期修改”为：`// ... existing code ...\nnew line 3`
          那么你的最终输出必须是：`line 1\nline 2\nnew line 3`
     """
-
-    fun fileBindingMergePrompt(useEnglish: Boolean): String {
+        fun fileBindingMergePrompt(useEnglish: Boolean): String {
         return if (useEnglish) FILE_BINDING_MERGE_PROMPT else FILE_BINDING_MERGE_PROMPT_CN
     }
-
-    fun memoryAutoCategorizeUserMessage(useEnglish: Boolean): String {
+        fun memoryAutoCategorizeUserMessage(useEnglish: Boolean): String {
         return if (useEnglish) "Please categorize the memories above." else "请为以上记忆分类"
     }
-
-    fun knowledgeGraphExistingMemoriesPrefix(useEnglish: Boolean): String {
+        fun knowledgeGraphExistingMemoriesPrefix(useEnglish: Boolean): String {
         return if (useEnglish) {
             "To avoid duplicates, please refer to these potentially relevant existing memories. If an extracted entity is semantically the same as an existing memory, use the `alias_for` field:\n"
         } else {
             "为避免重复，请参考以下记忆库中可能相关的已有记忆。在提取实体时，如果发现与下列记忆语义相同的实体，请使用`alias_for`字段进行标注：\n"
         }
     }
-
-    fun knowledgeGraphNoExistingMemoriesMessage(useEnglish: Boolean): String {
+        fun knowledgeGraphNoExistingMemoriesMessage(useEnglish: Boolean): String {
         return if (useEnglish) {
             "The memory library is empty or no relevant memories were found. You may extract entities freely."
         } else {
             "记忆库目前为空或没有找到相关记忆，请自由提取实体�?
         }
     }
-
-    fun knowledgeGraphExistingFoldersPrompt(existingFolders: List<String>, useEnglish: Boolean): String {
+        fun knowledgeGraphExistingFoldersPrompt(existingFolders: List<String>, useEnglish: Boolean): String {
         if (existingFolders.isEmpty()) {
             return if (useEnglish) {
                 "No folder categories exist yet. Please create a suitable category based on the content."
@@ -162,7 +155,6 @@ object FunctionalPrompts {
                 "当前还没有文件夹分类，请根据内容创建一个合适的分类�?
             }
         }
-
         val joined = existingFolders.joinToString(", ")
         return if (useEnglish) {
             "Existing folder categories (prefer reusing them):\n${joined}"
@@ -170,16 +162,14 @@ object FunctionalPrompts {
             "当前已存在的文件夹分类如下，请优先使用或参考它们来决定新知识的分类：\n${joined}"
         }
     }
-
-    fun knowledgeGraphDuplicateTitleInstruction(title: String, count: Int, useEnglish: Boolean): String {
+        fun knowledgeGraphDuplicateTitleInstruction(title: String, count: Int, useEnglish: Boolean): String {
         return if (useEnglish) {
             "Found ${count} memories with the exact same title: \"${title}\". You should strongly prefer `merge` in this analysis and avoid creating another parallel `new` memory for the same fact."
         } else {
             "发现 ${count} 个标题完全相同的记忆: \"${title}\"。本次分析应强烈优先使用 `merge`，不要再为同一事实创建平行 `new` 记忆�?
         }
     }
-
-    fun knowledgeGraphSimilarTitleInstruction(titles: List<String>, useEnglish: Boolean): String {
+        fun knowledgeGraphSimilarTitleInstruction(titles: List<String>, useEnglish: Boolean): String {
         val preview = titles.joinToString(" | ")
         return if (useEnglish) {
             "Found a similar-title memory cluster: [${preview}]. These are likely paraphrases of the same fact. Prefer `merge` or `update`; avoid creating additional `new` memories."
@@ -187,8 +177,7 @@ object FunctionalPrompts {
             "发现一组相似标题记�?[${preview}]。它们很可能是同一事实的不同表述。请优先 `merge` �?`update`，避免继续创建新的重复记忆�?
         }
     }
-
-    fun knowledgeGraphDuplicateHeader(useEnglish: Boolean): String {
+        fun knowledgeGraphDuplicateHeader(useEnglish: Boolean): String {
         return if (useEnglish) "[IMPORTANT: deduplicate memories]\n" else "【重要指令：清理重复记忆】\n"
     }
 
@@ -202,24 +191,19 @@ object FunctionalPrompts {
     const val SUMMARY_SECTION_INTERACTION_EN = "[Interaction & Scenario]"
     const val SUMMARY_SECTION_PROGRESS_EN = "[Conversation Progress & Overview]"
     const val SUMMARY_SECTION_KEY_INFO_EN = "[Key Information & Context]"
-
-    fun summaryUserMessage(useEnglish: Boolean): String {
+        fun summaryUserMessage(useEnglish: Boolean): String {
         return if (useEnglish) "Please summarize the conversation as instructed." else "请按照要求总结对话内容"
     }
-
-    fun waifuEmotionRule(emotionListText: String): String {
+        fun waifuEmotionRule(emotionListText: String): String {
         return "**表达情绪规则：你必须在每个句末判断句中包含的情绪或增强语气，并使�?emotion>${emotionListText}。例如：<emotion>happy</emotion>�?emotion>miss_you</emotion>等。如果没有这些情绪则不插入�?*"
     }
-
-    fun waifuNoCustomEmojiRule(): String {
+        fun waifuNoCustomEmojiRule(): String {
         return "**当前没有可用的自定义表情，请不要使用<emotion>标签�?*"
     }
-
-    fun waifuCustomPromptRule(customPrompt: String): String {
+        fun waifuCustomPromptRule(customPrompt: String): String {
         return customPrompt.trim()
     }
-
-    fun waifuSelfieRule(waifuSelfiePrompt: String): String {
+        fun waifuSelfieRule(waifuSelfiePrompt: String): String {
         return buildString {
             append("**绘图（自拍）**: 当你需要自拍时，你会调用绘图功能�?)
             append("\n*   **基础关键�?*：`${waifuSelfiePrompt}`�?)
@@ -227,19 +211,16 @@ object FunctionalPrompts {
             append("\n*   **合影**: 如果需要主人出镜，你会根据指令明确包含`2 girl`�? girl 代表2个女孩主人也是女孩，主人为黑色长发可爱女生）等关键词�?)
         }
     }
-
-    fun avatarMoodRulesText(
+        fun avatarMoodRulesText(
         customMoodDefinitions: List<Any> = emptyList(),
         useEnglish: Boolean = false
     ): String {
         return ""
     }
-
-    fun translationSystemPrompt(): String {
+        fun translationSystemPrompt(): String {
         return "你是一个专业的翻译助手，能够准确翻译各种语言，并保持原文的语气和风格�?
     }
-
-    fun translationUserPrompt(targetLanguage: String, text: String): String {
+        fun translationUserPrompt(targetLanguage: String, text: String): String {
         return """
 请将以下文本翻译成的${targetLanguage}，保持原文的语气和风格：
 
@@ -247,16 +228,14 @@ ${text}
 
 只返回翻译结果，不要添加任何解释或额外内容�?       """.trim()
     }
-
-    fun packageDescriptionSystemPrompt(useEnglish: Boolean): String {
+        fun packageDescriptionSystemPrompt(useEnglish: Boolean): String {
         return if (useEnglish) {
             "You are a professional technical writer who excels at crafting concise and clear descriptions for software toolkits."
         } else {
             "你是一个专业的技术文档撰写助手，擅长为软件工具包编写简洁清晰的功能描述�?
         }
     }
-
-    fun packageDescriptionUserPrompt(
+        fun packageDescriptionUserPrompt(
         pluginName: String,
         toolList: String,
         useEnglish: Boolean
@@ -289,8 +268,7 @@ ${toolList}
             """.trim()
         }
     }
-
-    fun personaCardGenerationSystemPrompt(useEnglish: Boolean): String {
+        fun personaCardGenerationSystemPrompt(useEnglish: Boolean): String {
         return if (!useEnglish) {
             """
             你是\"角色卡生成助手\"。请严格按照以下流程进行角色卡生成：
@@ -308,7 +286,7 @@ ${toolList}
             - 对于下一个步骤提几个最关键、最具体的小问题
             - 不要重复问已经确认过的内�?
             [完成条件]
-            - 当所�?个步骤都完成时，输出：\"🎉 角色卡生成完成！所有信息都已保存。\"
+            - 当所�个步骤都完成时，输出：\"🎉 角色卡生成完成！所有信息都已保存。\"
             - 完成后不再询问任何问题，等待用户的新指令
 
             [工具调用]
@@ -413,8 +391,7 @@ ${toolList}
          1. `Current UI State`：UI 元素及其属性列表�?        2. `Task Goal`：本步的具体目标
          3. `Execution History`：你之前的动作与结果日志，用于避免重复犯错�?
          请分析输入，选择最合适的单步动作，并按规范JSON格式输出。可使用元素的`bounds`计算点击坐标�?   """
-
-    fun uiControllerPrompt(useEnglish: Boolean): String {
+        fun uiControllerPrompt(useEnglish: Boolean): String {
         return if (useEnglish) UI_CONTROLLER_PROMPT else UI_CONTROLLER_PROMPT_CN
     }
 
@@ -449,7 +426,7 @@ ${toolList}
     finish是结束任务的操作，表示准确完整完成任务，message是终止信息�?
 
 必须遵循的规则：
-1. 在执行任何操作前，先检查当前app是否是目标app，如果不是，先执�?Launch�?. 如果进入到了无关页面，先执行 Back。如果执行Back后页面没有变化，请点击页面左上角的返回键进行返回，或者右上角的X号关闭�?. 如果页面未加载出内容，最多连�?Wait 三次，否则执�?Back重新进入�?. 如果页面显示网络问题，需要重新加载，请点击重新加载�?. 如果当前页面找不到目标联系人、商品、店铺等信息，可以尝�?Swipe 滑动查找�?. 遇到价格区间、时间区间等筛选条件，如果没有完全符合的，可以放宽要求�?. 在做小红书总结类任务时一定要筛选图文笔记�?. 购物车全选后再点击全选可以把状态设为全不选，在做购物车任务时，如果购物车里已经有商品被选中时，你需要点击全选后再点击取消全选，再去找需要购买或者删除的商品�?. 在做外卖任务时，如果相应店铺购物车里已经有其他商品你需要先把购物车清空再去购买用户指定的外卖�?0. 在做点外卖任务时，如果用户需要点多个外卖，请尽量在同一店铺进行购买，如果无法找到可以下单，并说明某个商品未找到�?1. 请严格遵循用户意图执行任务，用户的特殊要求可以执行多次搜索，滑动查找。比如（i）用户要求点一杯咖啡，要咸的，你可以直接搜索咸咖啡，或者搜索咖啡后滑动查找咸的咖啡，比如海盐咖啡。（ii）用户要找到XX群，发一条消息，你可以先搜索XX群，找不到结果后，将"�?字去掉，搜索XX重试。（iii）用户要找到宠物友好的餐厅，你可以搜索餐厅，找到筛选，找到设施，选择可带宠物，或者直接搜索可带宠物，必要时可以使用AI搜索�?2. 在选择日期时，如果原滑动方向与预期日期越来越远，请向反方向滑动查找�?3. 执行任务过程中如果有多个可选择的项目栏，请逐个查找每个项目栏，直到完成任务，一定不要在同一项目栏多次查找，从而陷入死循环�?4. 在执行下一步操作前请一定要检查上一步的操作是否生效，如果点击没生效，可能因为app反应较慢，请先稍微等待一下，如果还是不生效请调整一下点击位置重试，如果仍然不生效请跳过这一步继续任务，并在finish message说明点击不生效�?5. 在执行任务中如果遇到滑动不生效的情况，请调整一下起始点位置，增大滑动距离重试，如果还是不生效，有可能是已经滑到底了，请继续向反方向滑动，直到顶部或底部，如果仍然没有符合要求的结果，请跳过这一步继续任务，并在finish message说明但没找到要求的项目�?6. 在做游戏任务时如果在战斗页面如果有自动战斗一定要开启自动战斗，如果多轮历史状态相似要检查自动战斗是否开启�?7. 如果没有合适的搜索结果，可能是因为搜索页面不对，请返回到搜索页面的上一级尝试重新搜索，如果尝试三次返回上一级搜索后仍然没有符合要求的结果，执行 finish(message="原因").18. 在结束任务前请一定要仔细检查任务是否完整准确的完成，如果出现错选、漏选、多选的情况，请返回之前的步骤进行纠正�?
+1. 在执行任何操作前，先检查当前app是否是目标app，如果不是，先执�?Launch�?. 如果进入到了无关页面，先执行 Back。如果执行Back后页面没有变化，请点击页面左上角的返回键进行返回，或者右上角的X号关闭�?. 如果页面未加载出内容，最多连�?Wait 三次，否则执�?Back重新进入�?. 如果页面显示网络问题，需要重新加载，请点击重新加载�?. 如果当前页面找不到目标联系人、商品、店铺等信息，可以尝�?Swipe 滑动查找�?. 遇到价格区间、时间区间等筛选条件，如果没有完全符合的，可以放宽要求�?. 在做小红书总结类任务时一定要筛选图文笔记�?. 购物车全选后再点击全选可以把状态设为全不选，在做购物车任务时，如果购物车里已经有商品被选中时，你需要点击全选后再点击取消全选，再去找需要购买或者删除的商品�?. 在做外卖任务时，如果相应店铺购物车里已经有其他商品你需要先把购物车清空再去购买用户指定的外卖�?0. 在做点外卖任务时，如果用户需要点多个外卖，请尽量在同一店铺进行购买，如果无法找到可以下单，并说明某个商品未找到�?1. 请严格遵循用户意图执行任务，用户的特殊要求可以执行多次搜索，滑动查找。比如（i）用户要求点一杯咖啡，要咸的，你可以直接搜索咸咖啡，或者搜索咖啡后滑动查找咸的咖啡，比如海盐咖啡。（ii）用户要找到XX群，发一条消息，你可以先搜索XX群，找不到结果后，将"�字去掉，搜索XX重试。（iii）用户要找到宠物友好的餐厅，你可以搜索餐厅，找到筛选，找到设施，选择可带宠物，或者直接搜索可带宠物，必要时可以使用AI搜索�?2. 在选择日期时，如果原滑动方向与预期日期越来越远，请向反方向滑动查找�?3. 执行任务过程中如果有多个可选择的项目栏，请逐个查找每个项目栏，直到完成任务，一定不要在同一项目栏多次查找，从而陷入死循环�?4. 在执行下一步操作前请一定要检查上一步的操作是否生效，如果点击没生效，可能因为app反应较慢，请先稍微等待一下，如果还是不生效请调整一下点击位置重试，如果仍然不生效请跳过这一步继续任务，并在finish message说明点击不生效�?5. 在执行任务中如果遇到滑动不生效的情况，请调整一下起始点位置，增大滑动距离重试，如果还是不生效，有可能是已经滑到底了，请继续向反方向滑动，直到顶部或底部，如果仍然没有符合要求的结果，请跳过这一步继续任务，并在finish message说明但没找到要求的项目�?6. 在做游戏任务时如果在战斗页面如果有自动战斗一定要开启自动战斗，如果多轮历史状态相似要检查自动战斗是否开启�?7. 如果没有合适的搜索结果，可能是因为搜索页面不对，请返回到搜索页面的上一级尝试重新搜索，如果尝试三次返回上一级搜索后仍然没有符合要求的结果，执行 finish(message="原因").18. 在结束任务前请一定要仔细检查任务是否完整准确的完成，如果出现错选、漏选、多选的情况，请返回之前的步骤进行纠正�?
 19. 当你执行 Launch 后发现当前页面是系统的软件启动器/桌面界面时，说明你提供的包名不存在或无效，此时不要再重复执行 Launch，而是在启动器中通过 Swipe 上下滑动查找目标应用图标并点击启动�?
     """
 
@@ -501,16 +478,13 @@ ${toolList}
  Rules you MUST follow:
  1. Before any action, check whether the current app is the target app. If not, use Launch first.2. If you enter an unrelated page, use Back. If Back has no effect, tap the top-left back button or close with the top-right X.3. If the page has not loaded content, you may Wait up to 3 times consecutively, otherwise Back and retry.4. If there is a network issue prompt, tap reload.5. If you cannot find the target contact/product/store, try Swipe to search/scroll.6. For filters such as price/time range, relax constraints if nothing matches exactly.7. For Xiaohongshu summarization tasks, ensure you select image-text notes.8. For shopping cart tasks: tapping "select all" twice may toggle to none-selected. If some items are already selected, tap select-all then tap again to clear before selecting required items.9. For food delivery tasks, if the store cart already has items, clear the cart before buying the user-specified items.10. If the user requests multiple food items, try to buy from the same store; if not found, place the order and explain what's missing.11. Follow the user's intent strictly. You may search multiple times and scroll. If search results are missing, try variations (e.g., remove suffix words like "group").12. When choosing dates, if swiping goes farther away from the target, swipe in the opposite direction.13. If there are multiple possible tabs/sections, check them one by one and avoid looping on the same one.14. Before the next step, verify the previous action took effect. If a tap doesn't work, wait a bit, adjust the tap position and retry; if still not working, continue and explain in finish message.15. If Swipe doesn't work, adjust the start point and increase distance; if already at bottom, swipe in the opposite direction. If still no results, continue and explain in finish message.16. For game tasks, if there is auto-battle on battle screens, enable it.17. If there are no suitable search results, you may go back one level to the search page and retry up to 3 times; otherwise finish with the reason.18. Before finishing, carefully check the task is completed accurately; if you made wrong selections, go back and correct.19. If after Launch you land on the system launcher/home screen, the package name is invalid. Do not repeat Launch; instead, find the app icon by swiping and tap it.
      """
-
-    fun uiAutomationAgentPrompt(useEnglish: Boolean): String {
+        fun uiAutomationAgentPrompt(useEnglish: Boolean): String {
         return if (useEnglish) UI_AUTOMATION_AGENT_PROMPT_EN else UI_AUTOMATION_AGENT_PROMPT
     }
-
-    fun buildUiAutomationAgentPrompt(currentDate: String, useEnglish: Boolean): String {
+        fun buildUiAutomationAgentPrompt(currentDate: String, useEnglish: Boolean): String {
         return uiAutomationAgentPrompt(useEnglish).replace("{{current_date}}", currentDate)
     }
-
-    fun grepContextRefineWithReadPrompt(
+        fun grepContextRefineWithReadPrompt(
         intent: String,
         displayPath: String,
         filePattern: String,
@@ -554,8 +528,7 @@ ${toolList}
  输出必须是一�?JSON 对象，包�?"queries"（正则字符串数组）和 "read"（候�?id 数组）两个字段�?""".trimIndent()
         }
     }
-
-    fun grepContextSelectPrompt(intent: String, displayPath: String, candidatesDigest: String, maxResults: Int, useEnglish: Boolean): String {
+        fun grepContextSelectPrompt(intent: String, displayPath: String, candidatesDigest: String, maxResults: Int, useEnglish: Boolean): String {
         return if (useEnglish) {
             """
  You are a code search assistant. Select the most relevant snippets from the candidates.
@@ -585,8 +558,7 @@ ${toolList}
  """.trimIndent()
         }
     }
-
-    fun buildMemoryAutoCategorizePrompt(
+        fun buildMemoryAutoCategorizePrompt(
         existingFolders: List<String>,
         memoriesDigest: String,
         useEnglish: Boolean
@@ -611,15 +583,14 @@ ${toolList}
  你是知识分类专家。根据记忆内容，为每条记忆分配合适的文件夹路径�?
  ${foldersText}
 
- 请为以下记忆分类，优先使用已有文件夹，必要时创建新文件夹�?返回 JSON 数组：[{"title": "记忆标题", "folder": "文件夹路�?}]
+ 请为以下记忆分类，优先使用已有文件夹，必要时创建新文件夹�返回 JSON 数组：[{"title": "记忆标题", "folder": "文件夹路�?}]
 
  记忆列表�?${memoriesDigest}
 
  只返�?JSON 数组，不要其他内容�?""".trimIndent()
         }
     }
-
-    fun buildKnowledgeGraphExtractionPrompt(
+        fun buildKnowledgeGraphExtractionPrompt(
         duplicatesPromptPart: String,
         existingMemoriesPrompt: String,
         existingFoldersPrompt: String,
@@ -714,7 +685,7 @@ ${duplicatesPromptPart}
 ${existingMemoriesPrompt}
 ${existingFoldersPrompt}
 
-【写入前先过筛�? 只记录用户特异且可复用的信息：稳定偏好、约束、已确认决策、反复错误、项目事实、长期世界观中的稳定设定�? 不记录常�?公开定义（如"TS是什�?"Node是什�?"磁偏角是什�?）�? 不记录未来推测项：下一步建议、TODO、暂定计划�? 若没有长期价值信号，直接返回 `{}`�?
+【写入前先过筛�? 只记录用户特异且可复用的信息：稳定偏好、约束、已确认决策、反复错误、项目事实、长期世界观中的稳定设定�? 不记录常�公开定义（如"TS是什�?"Node是什�?"磁偏角是什�?）�? 不记录未来推测项：下一步建议、TODO、暂定计划�? 若没有长期价值信号，直接返回 `{}`�?
 【抽取策略�? 优先 `update` / `merge`，其次才�?`new`�? `new` 仅在确实新增概念时使用（最�?5 条）�? 长期小说/世界观场景中，反复出现且影响连续性的角色、地点、组织、规则、时间线可以入库�? 若核心是"更新旧概�?，`main` 必须设为 `null`，只输出 `update`�? 如果只是对已有记忆的改写（同主体 + 同动�?+ 同结果），按重复处理：优先使�?`update`/`merge`，不要再 `new`�? 如果 `main` 与已有记忆在语义上是同一事件，`main` 设为 `null`，改�?`update` �?`merge`�? 如果当前轮的大部分事实已被已有记忆覆盖，不要再创建平�?`new`，优先给出一�?`update` 或一�?`merge`�? 在有明确重复证据时继续将 `new` 视为不合格输出�? 提供给你的已有记忆样本是可操作对象：即使本轮没有 `new`，也可以直接对这些已有记忆做 `update`、`merge`、`links`�?
 【语气策略�? 语气可根据场景变化（技术、日常聊天、小说创作），但只能改变表达方式，不能改变入库标准�? 结构和事实必须稳定：语气变化不等于放宽筛选�? 不能因为语气自然化就记录常识或未来计划�? 标题保持简洁并聚焦事件，内容在可读的前提下贴合场景语气�?
 【标题与内容写法�? `main` 标题优先写事件，不写定义�? 推荐标题模板�? - 事件：`[领域] 事件：动�?+ 结果`
@@ -723,8 +694,8 @@ ${existingFoldersPrompt}
 【连接关系规则�? 只有当对话里有明确证据时才建边�? 推荐关系类型�? - 事件流程：`FOLLOWS`、`CORRECTS`、`UPDATES`
   - 参与与上下文：`INVOLVES`、`HAPPENS_AT`
   - 世界观结构：`PART_OF`、`ALLIED_WITH`、`OPPOSES`
-- 不能仅凭"同段提到"就连边�? 拿不准就不连�? 建边范围不应只限于本轮新输出；如�?已有样本记忆"与本轮事�?实体关系明确，也应主动建边�? 输出前请在全量对象上做两两关系检查：`main`、`new`、`update` 目标、以及提供的已有记忆；凡有明确证据都应建边�?
-【示例（必须遵循）�? 仅在问答常识（如"磁偏角是什�?）且无用户特异信号：返回 `{}`�? 仅解�?TS/Node 等公开定义：返�?`{}`�? 闲聊但有实际交流内容：压缩成一条事件型 `main` 记录，不拆技术细节�? 只有空泛寒暄（如"你好/在吗"）：返回 `{}`�? 本轮出现"用户犯错并被纠正"：作为事件写�?`main`�? 长期小说/世界观讨论：反复出现且影响连续性的角色、地名、组织、规则、时间线应入库，按需使用 `new`/`links`�? 仅解释医疗定义（�?流感是什�?）：返回 `{}`�? 仅解释金融定义（�?ETF是什�?）：返回 `{}`�? 项目本轮有明确进展（修复完成/摘要完成/任务终止）：写一条事件型 `main`�? 反复解释但没有新进展/新决策：返回 `{}`�? 世界观设定发生变化（关系/归属变更）：优先 `update`，并在证据明确时使用 `UPDATES` / `PART_OF`�? 本轮只是重述已存在事件：优先 `update`/`merge`，不�?`new`�? 事件里明确出现参与�?工具包且关系清晰：补�?`INVOLVES` 链接�? 本轮确认"已有样本记忆"和其他记忆的明确关系：即使没�?`new`，也应在 `links` 中体现�?
+- 不能仅凭"同段提到"就连边�? 拿不准就不连�? 建边范围不应只限于本轮新输出；如�已有样本记忆"与本轮事�实体关系明确，也应主动建边�? 输出前请在全量对象上做两两关系检查：`main`、`new`、`update` 目标、以及提供的已有记忆；凡有明确证据都应建边�?
+【示例（必须遵循）�? 仅在问答常识（如"磁偏角是什�?）且无用户特异信号：返回 `{}`�? 仅解�?TS/Node 等公开定义：返�?`{}`�? 闲聊但有实际交流内容：压缩成一条事件型 `main` 记录，不拆技术细节�? 只有空泛寒暄（如"你好/在吗"）：返回 `{}`�? 本轮出现"用户犯错并被纠正"：作为事件写�?`main`�? 长期小说/世界观讨论：反复出现且影响连续性的角色、地名、组织、规则、时间线应入库，按需使用 `new`/`links`�? 仅解释医疗定义（�流感是什�?）：返回 `{}`�? 仅解释金融定义（�?ETF是什�?）：返回 `{}`�? 项目本轮有明确进展（修复完成/摘要完成/任务终止）：写一条事件型 `main`�? 反复解释但没有新进展/新决策：返回 `{}`�? 世界观设定发生变化（关系/归属变更）：优先 `update`，并在证据明确时使用 `UPDATES` / `PART_OF`�? 本轮只是重述已存在事件：优先 `update`/`merge`，不�?`new`�? 事件里明确出现参与�工具包且关系清晰：补�?`INVOLVES` 链接�? 本轮确认"已有样本记忆"和其他记忆的明确关系：即使没�?`new`，也应在 `links` 中体现�?
 【输出格式（严格JSON）�? 顶层键：`main`、`new`、`update`、`merge`、`links`、`user`�? `main`: `["标题","内容",["标签"],"folder_path"]` �?`null`�? `new`: `[["标题","内容",["标签"],"folder_path","alias_for_or_null"], ...]`�? `update`: `[["标题","新完整内�?,"原因",可信度或null,重要性或null], ...]`�? `merge`: `[{"source_titles":["A","B"],"new_title":"...","new_content":"...","new_tags":["..."],"folder_path":"...","reason":"..."}, ...]`�? `links`: `[["�?,"目标","RELATION_TYPE","描述",权重], ...]`，关系类型用大写下划线�? `user`: 结构化对象，未变化字段填 `"<UNCHANGED>"`�? 可选值缺失时使用 JSON `null`�?
 现有用户偏好：的${currentPreferences}
 
@@ -756,12 +727,10 @@ Rules:
     const val GROUP_ROLE_RESPONSE_PLANNER_PROMPT_CN = """
 你是群聊角色发言规划器。只返回有效 JSON。任务：规划本轮的发言顺序。你可以规划多轮对话。输出格式：{"rounds":[[{"id":"<成员ID>","speak":true}],[{"id":"<成员ID2>","speak":true}]]}
 规则�? 每一轮（round）是一个数组，包含该轮应该发言的成员�? 你可以规划多轮对话，让成员之间相互讨论�? 对于简单回应，使用单轮，包含一个或多个成员�? 对于讨论场景，使用多轮（例如：成员A发言，然后成员B回应，然后成员A再回复）�? 你可以省略成员来跳过他们，或设置 speak=false�? 如果没有人应该回应，返回 {"rounds":[[]]}�? 只使用提供的成员 ID�? 最�?5 轮，避免过度来回�?   """
-
-    fun groupRoleResponsePlannerPrompt(useEnglish: Boolean): String {
+        fun groupRoleResponsePlannerPrompt(useEnglish: Boolean): String {
         return if (useEnglish) GROUP_ROLE_RESPONSE_PLANNER_PROMPT else GROUP_ROLE_RESPONSE_PLANNER_PROMPT_CN
     }
-
-    fun buildGroupRoleResponsePlannerPrompt(
+        fun buildGroupRoleResponsePlannerPrompt(
         memberLines: String,
         userText: String,
         useEnglish: Boolean
@@ -770,7 +739,7 @@ Rules:
         return buildString {
             append(basePrompt)
             appendLine()
-            if (useEnglish) {
+        if (useEnglish) {
                 appendLine("Members:")
                 appendLine(memberLines.ifBlank { "(none)" })
                 appendLine()

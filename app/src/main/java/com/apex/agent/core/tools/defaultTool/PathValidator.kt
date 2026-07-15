@@ -29,8 +29,7 @@ object PathValidator {
         }
         return null
     }
-
-    fun validateLinuxPath(path: String, toolName: String, paramName: String = "path"): ToolResult? {
+        fun validateLinuxPath(path: String, toolName: String, paramName: String = "path"): ToolResult? {
         if (path.isBlank()) {
             return ToolResult(
                 toolName = toolName,

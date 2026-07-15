@@ -55,8 +55,7 @@ open class AdminUIToolsRefactored(context: Context) :
                     errorCode = UIToolsErrorCode.INVALID_PARAMETER,
                     message = "Parameter 'operation' is required"
                 ).toToolResult(tool.name)
-
-            when (operation) {
+        when (operation) {
                 "uninstall_package" -> handleUninstall(tool)
                 "clear_data" -> handleClearData(tool)
                 "clear_cache" -> handleClearCache(tool)
@@ -110,14 +109,12 @@ open class AdminUIToolsRefactored(context: Context) :
         val cmd = "pm uninstall $flag $pkg"
         return runShellAndPackage(cmd, tool, pkg, "uninstalled")
     }
-
-    private suspend fun handleClearData(tool: AITool): ToolResult {
+        private suspend fun handleClearData(tool: AITool): ToolResult {
         val pkg = getParameter(tool, "package")
             ?: return missingParam("package").toToolResult(tool.name)
         return runShellAndPackage("pm clear $pkg", tool, pkg, "data cleared")
     }
-
-    private suspend fun handleClearCache(tool: AITool): ToolResult {
+        private suspend fun handleClearCache(tool: AITool): ToolResult {
         val pkg = getParameter(tool, "package")
             ?: return missingParam("package").toToolResult(tool.name)
         // Android 没有直接的 pm clear-cache 命令，使用 pm clear 等价于清数据+缓存
@@ -128,22 +125,19 @@ open class AdminUIToolsRefactored(context: Context) :
         AppLogger.w(TAG, "clear_cache falls back to `pm clear` (Android shell cannot clear cache alone); package=$pkg")
         return runShellAndPackage(cmd, tool, pkg, "cache cleared (note: pm clear also clears data)")
     }
-
-    private suspend fun handleForceStop(tool: AITool): ToolResult {
+        private suspend fun handleForceStop(tool: AITool): ToolResult {
         val pkg = getParameter(tool, "package")
             ?: return missingParam("package").toToolResult(tool.name)
         return runShellAndPackage("am force-stop $pkg", tool, pkg, "force stopped")
     }
-
-    private suspend fun handleEnableDisable(tool: AITool, enable: Boolean): ToolResult {
+        private suspend fun handleEnableDisable(tool: AITool, enable: Boolean): ToolResult {
         val pkg = getParameter(tool, "package")
             ?: return missingParam("package").toToolResult(tool.name)
         val cmd = if (enable) "pm enable $pkg" else "pm disable $pkg"
         val verb = if (enable) "enabled" else "disabled"
         return runShellAndPackage(cmd, tool, pkg, verb)
     }
-
-    private suspend fun handlePermission(tool: AITool, grant: Boolean): ToolResult {
+        private suspend fun handlePermission(tool: AITool, grant: Boolean): ToolResult {
         val pkg = getParameter(tool, "package")
             ?: return missingParam("package").toToolResult(tool.name)
         val perm = getParameter(tool, "permission")
@@ -166,8 +160,7 @@ open class AdminUIToolsRefactored(context: Context) :
             )
         ).toToolResult("executeSystemOperation")
     }
-
-    private suspend fun handleSetSetting(tool: AITool, namespace: String): ToolResult {
+        private suspend fun handleSetSetting(tool: AITool, namespace: String): ToolResult {
         val key = getParameter(tool, "key")
             ?: return missingParam("key").toToolResult(tool.name)
         val value = getParameter(tool, "value")
@@ -190,8 +183,7 @@ open class AdminUIToolsRefactored(context: Context) :
             )
         ).toToolResult("executeSystemOperation")
     }
-
-    private suspend fun handleBroadcast(tool: AITool): ToolResult {
+        private suspend fun handleBroadcast(tool: AITool): ToolResult {
         val action = getParameter(tool, "action")
             ?: return missingParam("action").toToolResult(tool.name)
         val extraKey = getParameter(tool, "extra_key")
@@ -217,8 +209,7 @@ open class AdminUIToolsRefactored(context: Context) :
             )
         ).toToolResult("executeSystemOperation")
     }
-
-    private suspend fun runShellAndPackage(
+        private suspend fun runShellAndPackage(
         cmd: String,
         tool: AITool,
         pkg: String,
@@ -240,8 +231,7 @@ open class AdminUIToolsRefactored(context: Context) :
             )
         ).toToolResult(tool.name)
     }
-
-    private fun missingParam(name: String): UIToolsResult.Error = UIToolsResult.Error(
+        private fun missingParam(name: String): UIToolsResult.Error = UIToolsResult.Error(
         errorCode = UIToolsErrorCode.INVALID_PARAMETER,
         message = "Missing required parameter: $name"
     )

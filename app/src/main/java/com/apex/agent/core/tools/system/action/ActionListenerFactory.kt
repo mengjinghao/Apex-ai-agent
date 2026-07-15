@@ -41,7 +41,7 @@ class ActionListenerFactory {
             // 缓存监听�?           listeners[permissionLevel] = listener
 
             AppLogger.d(TAG, "Created action listener for permission level: ${permissionLevel}")
-            return listener
+        return listener
         }
 
         /**
@@ -58,20 +58,18 @@ class ActionListenerFactory {
                 AndroidPermissionLevel.ACCESSIBILITY,
                 AndroidPermissionLevel.STANDARD
             )
-
-            for (level in levels) {
+        for (level in levels) {
                 val listener = getListener(context, level)
-                val permStatus = listener.hasPermission()
-
-                if (listener.isAvailable() && permStatus.granted) {
+        val permStatus = listener.hasPermission()
+        if (listener.isAvailable() && permStatus.granted) {
                     AppLogger.d(TAG, "Found highest available action listener: ${listener.getPermissionLevel()}")
-                    return Pair(listener, permStatus)
+        return Pair(listener, permStatus)
                 }
             }
 
             // 如果没有找到可用的监听器，返回标准监听器（至少能监听基本操作�?           AppLogger.d(TAG, "No available action listener found, falling back to STANDARD")
-    val standardListener = getListener(context, AndroidPermissionLevel.STANDARD)
-            return Pair(standardListener, standardListener.hasPermission())
+        val standardListener = getListener(context, AndroidPermissionLevel.STANDARD)
+        return Pair(standardListener, standardListener.hasPermission())
         }
 
         /**
@@ -84,7 +82,7 @@ class ActionListenerFactory {
                 return getListener(context, actualLevel)
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Error getting preferred permission level, falling back to STANDARD", e)
-                return getListener(context, AndroidPermissionLevel.STANDARD)
+        return getListener(context, AndroidPermissionLevel.STANDARD)
             }
         }
 
@@ -93,7 +91,7 @@ class ActionListenerFactory {
          * @param context Android上下�?        * @return 可用的最高权限UI操作监听�?        */
         suspend fun getHighestAvailableListenerLegacy(context: Context): ActionListener {
             val (listener, _) = getHighestAvailableListener(context)
-            return listener
+        return listener
         }
 
         /**
@@ -117,15 +115,13 @@ class ActionListenerFactory {
             context: Context
         ): Map<AndroidPermissionLevel, Pair<ActionListener, ActionListener.PermissionStatus>> {
             val result = mutableMapOf<AndroidPermissionLevel, Pair<ActionListener, ActionListener.PermissionStatus>>()
-
-            for (level in AndroidPermissionLevel.values()) {
+        for (level in AndroidPermissionLevel.values()) {
                 val listener = getListener(context, level)
-                val status = listener.hasPermission()
+        val status = listener.hasPermission()
 
                 result[level] = Pair(listener, status)
             }
-
-            return result
+        return result
         }
 
         /**
@@ -136,14 +132,14 @@ class ActionListenerFactory {
             listeners.values.forEach { listener ->
                 if (listener.isListening()) {
                     val stopped = listener.stopListening()
-                    if (!stopped) {
+        if (!stopped) {
                         allStopped = false
                         AppLogger.w(TAG, "Failed to stop listener: ${listener.getPermissionLevel()}")
                     }
                 }
             }
             AppLogger.d(TAG, "All listeners stop result: ${allStopped}")
-            return allStopped
+        return allStopped
         }
     }
 } 

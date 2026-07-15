@@ -24,9 +24,8 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
     companion object {
         private const val TAG = "AccessibilityActionListener"
     }
-
-    private val isListening = AtomicBoolean(false)
-    private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
+        private val isListening = AtomicBoolean(false)
+        private var actionCallback: ((ActionListener.ActionEvent) -> Unit)? = null
 
     override fun getPermissionLevel(): AndroidPermissionLevel = AndroidPermissionLevel.ACCESSIBILITY
 
@@ -50,7 +49,7 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
     override suspend fun requestPermission(onResult: (Boolean) -> Unit) {
         if (isAvailable()) {
             onResult(true)
-            return
+        return
         }
 
         // 引导用户打开无障碍服务设�?
@@ -72,11 +71,10 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
         withContext(Dispatchers.IO) {
             try {
                 val permStatus = hasPermission()
-                if (!permStatus.granted) {
+        if (!permStatus.granted) {
                     return@withContext ActionListener.ListeningResult.failure(permStatus.reason)
                 }
-
-                if (!isListening.compareAndSet(false, true)) {
+        if (!isListening.compareAndSet(false, true)) {
                     AppLogger.w(TAG, "启动监听失败：已在监听中")
                     return@withContext ActionListener.ListeningResult.failure(context.getString(R.string.admin_already_listening))
                 }
@@ -134,15 +132,13 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
                 AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> ActionListener.ActionType.SCREEN_CHANGE
                 else -> ActionListener.ActionType.SYSTEM_EVENT
             }
-
-            val elementInfo = ActionListener.ElementInfo(
+        val elementInfo = ActionListener.ElementInfo(
                 className = event.className?.toString(),
                 text = event.text?.joinToString(" "),
                 contentDescription = event.contentDescription?.toString(),
                 packageName = event.packageName?.toString()
             )
-
-            val actionEvent = ActionListener.ActionEvent(
+        val actionEvent = ActionListener.ActionEvent(
                 timestamp = event.eventTime,
                 actionType = actionType,
                 elementInfo = elementInfo,

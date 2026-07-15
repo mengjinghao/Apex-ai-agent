@@ -17,7 +17,6 @@ class InterestAnalyzer(private val context: Context) {
      */
     suspend fun analyzeInterests(messages: List<ChatMessage>, userProfile: HonzonUserProfile? = null): InterestProfile = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "开始分析用户兴趣，消息数量: ${messages.size}")
-        
         val interestProfile = InterestProfile()
         
         // 分析兴趣主题
@@ -77,8 +76,7 @@ class InterestAnalyzer(private val context: Context) {
     val userMessages = messages.filter { it.sender == "user" }
         for (message in userMessages) {
             val content = message.content.lowercase()
-            
-            for ((interest, keywords) in interestKeywords) {
+        for ((interest, keywords) in interestKeywords) {
                 for (keyword in keywords) {
                     if (content.contains(keyword.lowercase())) {
                         interestScores[interest] = interestScores.getOrDefault(interest, 0) + 1
@@ -87,7 +85,6 @@ class InterestAnalyzer(private val context: Context) {
                 }
             }
         }
-        
         if (interestScores.isNotEmpty()) {
             val topInterests = interestScores.entries
                 .sortedByDescending { it.value }
@@ -105,7 +102,6 @@ class InterestAnalyzer(private val context: Context) {
      */
     private fun analyzeInterestIntensity(messages: List<ChatMessage>, profile: InterestProfile) {
         val userMessages = messages.filter { it.sender == "user" }
-        
         for ((interest, score) in profile.interestScores) {
             val intensity = when {
                 score > 10 -> "�?
@@ -144,9 +140,8 @@ class InterestAnalyzer(private val context: Context) {
         // 计算兴趣变化
     for (interest in profile.topInterests) {
             val earlyScore = earlyInterests.getOrDefault(interest, 0)
-            val recentScore = recentInterests.getOrDefault(interest, 0)
-            
-            val trend = when {
+        val recentScore = recentInterests.getOrDefault(interest, 0)
+        val trend = when {
                 recentScore > earlyScore * 1.5 -> "上升"
                 recentScore < earlyScore * 0.5 -> "下降"
                 else -> "稳定"
@@ -161,7 +156,6 @@ class InterestAnalyzer(private val context: Context) {
      */
     private fun analyzeInterestTopics(messages: List<ChatMessage>): Map<String, Int> {
         val interestScores = mutableMapOf<String, Int>()
-        
         val interestKeywords = mapOf(
             "技�?to listOf("技�? "编程", "软件", "硬件", "开�? "代码"),
             "科技" to listOf("科技", "人工智能", "AI", "机器学习"),
@@ -172,12 +166,10 @@ class InterestAnalyzer(private val context: Context) {
             "新闻" to listOf("新闻", "时事", "政治", "经济"),
             "创意" to listOf("创意", "设计", "艺术", "写作")
         )
-        
         val userMessages = messages.filter { it.sender == "user" }
         for (message in userMessages) {
             val content = message.content.lowercase()
-            
-            for ((interest, keywords) in interestKeywords) {
+        for ((interest, keywords) in interestKeywords) {
                 for (keyword in keywords) {
                     if (content.contains(keyword.lowercase())) {
                         interestScores[interest] = interestScores.getOrDefault(interest, 0) + 1
@@ -186,7 +178,6 @@ class InterestAnalyzer(private val context: Context) {
                 }
             }
         }
-        
         return interestScores
     }
     
@@ -213,8 +204,7 @@ class InterestAnalyzer(private val context: Context) {
                 "医生" to listOf("健康", "医学"),
                 "学生" to listOf("学习", "教育")
             )
-            
-            for ((job, interests) in occupationInterests) {
+        for ((job, interests) in occupationInterests) {
                 if (occupation.contains(job)) {
                     for (interest in interests) {
                         interestProfile.interestScores[interest] = interestProfile.interestScores.getOrDefault(interest, 0) + 3

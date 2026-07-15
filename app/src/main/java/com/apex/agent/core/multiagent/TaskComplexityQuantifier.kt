@@ -28,8 +28,7 @@ class TaskComplexityQuantifier {
         val features: TaskFeature,
         val dependencies: List<String>
     )
-
-    private val categoryKeywords = mapOf(
+        private val categoryKeywords = mapOf(
         "coding" to listOf("code", "编程", "开�", "软件", "程序", "algorithm", "算法"),
         "writing" to listOf("write", "写作", "文案", "文章", "内容", "创作"),
         "research" to listOf("research", "研究", "调查", "分析", "探索"),
@@ -41,8 +40,7 @@ class TaskComplexityQuantifier {
         "documentation" to listOf("document", "文档", "记录", "说明", "手册"),
         "other" to listOf("其他", "misc", "general")
     )
-
-    private val difficultyPatterns = mapOf(
+        private val difficultyPatterns = mapOf(
         1 to listOf("简�", "easy", "基础", "基本"),
         2 to listOf("较简�", "relatively easy"),
         3 to listOf("一", "normal", "普",),
@@ -54,16 +52,14 @@ class TaskComplexityQuantifier {
         9 to listOf("极困�", "extremely difficult"),
         10 to listOf("超级困难", "super difficult", "expert")
     )
-
-    private val riskPatterns = mapOf(
+        private val riskPatterns = mapOf(
         1 to listOf("低风�", "low risk", "安全"),
         2 to listOf("较低风险", "relatively low risk"),
         3 to listOf("中等风险", "medium risk"),
         4 to listOf("较高风险", "relatively high risk"),
         5 to listOf("高风�", "high risk", "危险")
     )
-
-    private val skillMapping = mapOf(
+        private val skillMapping = mapOf(
         "coding" to listOf("编程", "算法", "数据结构", "调试"),
         "writing" to listOf("写作", "文案", "编辑", "内容创作"),
         "research" to listOf("研究", "分析", "调查", "信息收集"),
@@ -74,19 +70,17 @@ class TaskComplexityQuantifier {
         "testing" to listOf("测试", "质量保证", "调试", "问题定位"),
         "documentation" to listOf("文档编写", "技术写�", "知识管理")
     )
-
-    fun quantifyTask(taskDescription: String): TaskFeature {
+        fun quantifyTask(taskDescription: String): TaskFeature {
         val startTime = System.currentTimeMillis()
 
         try {
             val category = identifyCategory(taskDescription)
-            val difficulty = calculateDifficulty(taskDescription)
-            val resourceRequirement = estimateResourceRequirement(category, difficulty)
-            val riskLevel = assessRiskLevel(taskDescription, category)
-            val estimatedTime = estimateTime(difficulty, category)
-            val requiredSkills = identifyRequiredSkills(category, taskDescription)
-
-            val elapsedTime = System.currentTimeMillis() - startTime
+        val difficulty = calculateDifficulty(taskDescription)
+        val resourceRequirement = estimateResourceRequirement(category, difficulty)
+        val riskLevel = assessRiskLevel(taskDescription, category)
+        val estimatedTime = estimateTime(difficulty, category)
+        val requiredSkills = identifyRequiredSkills(category, taskDescription)
+        val elapsedTime = System.currentTimeMillis() - startTime
             if (elapsedTime > 1000) {
                 // 超时降级处理
     return TaskFeature(
@@ -98,8 +92,7 @@ class TaskComplexityQuantifier {
                     requiredSkills = requiredSkills.take(3)
                 )
             }
-
-            return TaskFeature(
+        return TaskFeature(
                 category = category,
                 difficulty = difficulty,
                 resourceRequirement = resourceRequirement,
@@ -119,8 +112,7 @@ class TaskComplexityQuantifier {
             )
         }
     }
-
-    fun createSubTaskTickets(originalTask: String, subTasks: List<String>): List<SubTaskTicket> {
+        fun createSubTaskTickets(originalTask: String, subTasks: List<String>): List<SubTaskTicket> {
         return subTasks.mapIndexed { index, subTask ->
             val features = quantifyTask(subTask)
             SubTaskTicket(
@@ -131,20 +123,16 @@ class TaskComplexityQuantifier {
             )
         }
     }
-
-    private fun identifyCategory(taskDescription: String): String {
+        private fun identifyCategory(taskDescription: String): String {
         val lowerDescription = taskDescription.lowercase()
-        
         for ((category, keywords) in categoryKeywords) {
             if (keywords.any { lowerDescription.contains(it.lowercase()) }) {
                 return category
             }
         }
-        
         return "other"
     }
-
-    private fun calculateDifficulty(taskDescription: String): Int {
+        private fun calculateDifficulty(taskDescription: String): Int {
         val lowerDescription = taskDescription.lowercase()
         var maxDifficulty = 1
         
@@ -161,37 +149,31 @@ class TaskComplexityQuantifier {
         } else {
             0
         }
-        
         return min(maxDifficulty + lengthScore + complexityScore, 10)
     }
-
-    private fun estimateResourceRequirement(category: String, difficulty: Int): ResourceRequirement {
+        private fun estimateResourceRequirement(category: String, difficulty: Int): ResourceRequirement {
         val baseMemory = when (category) {
             "coding" -> 256
             "data" -> 512
             "design" -> 128
             else -> 64
         }
-        
         val baseCpu = when (category) {
             "coding" -> 30
             "data" -> 40
             "design" -> 20
             else -> 15
         }
-        
         val baseNetwork = when (category) {
             "research" -> 10
             "communication" -> 8
             else -> 5
         }
-        
         val baseStorage = when (category) {
             "data" -> 100
             "design" -> 50
             else -> 20
         }
-        
         val difficultyMultiplier = 1.0 + (difficulty - 1) * 0.1
         
         return ResourceRequirement(
@@ -201,8 +183,7 @@ class TaskComplexityQuantifier {
             storage = (baseStorage * difficultyMultiplier).toInt()
         )
     }
-
-    private fun assessRiskLevel(taskDescription: String, category: String): Int {
+        private fun assessRiskLevel(taskDescription: String, category: String): Int {
         val lowerDescription = taskDescription.lowercase()
         var maxRisk = 1
         
@@ -216,19 +197,15 @@ class TaskComplexityQuantifier {
     if (category in listOf("coding", "data")) {
             maxRisk = maxOf(maxRisk, 2)
         }
-        
         if (lowerDescription.contains("安全") || lowerDescription.contains("隐私") || lowerDescription.contains("机密")) {
             maxRisk = maxOf(maxRisk, 4)
         }
-        
         if (lowerDescription.contains("紧",) || lowerDescription.contains("重要")) {
             maxRisk = maxOf(maxRisk, 3)
         }
-        
         return min(maxRisk, 5)
     }
-
-    private fun estimateTime(difficulty: Int, category: String): Int {
+        private fun estimateTime(difficulty: Int, category: String): Int {
         val baseTime = when (category) {
             "coding" -> 60
             "data" -> 90
@@ -236,13 +213,11 @@ class TaskComplexityQuantifier {
             "research" -> 120
             else -> 30
         }
-        
         val difficultyMultiplier = 1.0 + (difficulty - 1) * 0.2
         
         return (baseTime * difficultyMultiplier).toInt()
     }
-
-    private fun identifyRequiredSkills(category: String, taskDescription: String): List<String> {
+        private fun identifyRequiredSkills(category: String, taskDescription: String): List<String> {
         val skills = mutableListOf<String>()
         
         // 基于类别添加基础技�",
@@ -252,7 +227,6 @@ class TaskComplexityQuantifier {
         
         // 基于任务描述添加特定技�",
     val lowerDescription = taskDescription.lowercase()
-        
         if (lowerDescription.contains("python")) skills.add("Python")
         if (lowerDescription.contains("java")) skills.add("Java")
         if (lowerDescription.contains("javascript") || lowerDescription.contains("js")) skills.add("JavaScript")
@@ -262,7 +236,6 @@ class TaskComplexityQuantifier {
         if (lowerDescription.contains("ai") || lowerDescription.contains("人工智能")) skills.add("人工智能")
         if (lowerDescription.contains("ui") || lowerDescription.contains("ux")) skills.add("UI/UX设计")
         if (lowerDescription.contains("project") || lowerDescription.contains("项目")) skills.add("项目管理")
-        
         return skills.distinct().take(5)
     }
 }

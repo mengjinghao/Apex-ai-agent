@@ -47,7 +47,6 @@ object ModelRegistry {
     ) {
         val displaySize: String
             get() = formatFileSize(sizeBytes)
-
         val displayQuantization: String
             get() = quantization?.displayName ?: "Unknown"
 
@@ -62,20 +61,17 @@ object ModelRegistry {
             }
         }
     }
-
-    private val llamaModelsDir: File
+        private val llamaModelsDir: File
         get() = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             "Apex/models/llama"
         )
-
-    private val mnnModelsDir: File
+        private val mnnModelsDir: File
         get() = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             "Apex/models/mnn"
         )
-
-    fun detectQuantization(fileName: String): QuantizationFormat? {
+        fun detectQuantization(fileName: String): QuantizationFormat? {
         val lowerName = fileName.lowercase()
         return QuantizationFormat.entries.find { format ->
             lowerName.contains(format.suffix) ||
@@ -83,13 +79,11 @@ object ModelRegistry {
             lowerName.contains("-${format.bits}")
         }
     }
-
-    fun getLlamaModels(): List<LocalModelInfo> {
+        fun getLlamaModels(): List<LocalModelInfo> {
         val models = mutableListOf<LocalModelInfo>()
-
         if (!llamaModelsDir.exists()) {
             AppLogger.w(TAG, "Llama模型目录不存�? ${llamaModelsDir.absolutePath}")
-            return models
+        return models
         }
 
         llamaModelsDir.listFiles { file -> file.isFile && file.name.lowercase().endsWith(".gguf") }
@@ -112,19 +106,17 @@ object ModelRegistry {
         AppLogger.d(TAG, "找到 ${models.size} 个Llama模型")
         return models.sortedByDescending { it.sizeBytes }
     }
-
-    fun getMNNModels(): List<LocalModelInfo> {
+        fun getMNNModels(): List<LocalModelInfo> {
         val models = mutableListOf<LocalModelInfo>()
-
         if (!mnnModelsDir.exists()) {
             AppLogger.w(TAG, "MNN模型目录不存�? ${mnnModelsDir.absolutePath}")
-            return models
+        return models
         }
 
         mnnModelsDir.listFiles { file -> file.isDirectory }
             ?.forEach { folder ->
                 val mnnFile = File(folder, "llm.mnn")
-                if (mnnFile.exists()) {
+        if (mnnFile.exists()) {
                     val totalSize = folder.listFiles()?.sumOf { it.length() } ?: 0L
                     models.add(
                         LocalModelInfo(
@@ -144,16 +136,14 @@ object ModelRegistry {
         AppLogger.d(TAG, "找到 ${models.size} 个MNN模型")
         return models.sortedByDescending { it.sizeBytes }
     }
-
-    fun getAllLocalModels(): List<LocalModelInfo> {
+        fun getAllLocalModels(): List<LocalModelInfo> {
         return (getLlamaModels() + getMNNModels()).sortedByDescending { it.sizeBytes }
     }
-
-    fun getModelOptions(): List<ModelOption> {
+        fun getModelOptions(): List<ModelOption> {
         return getAllLocalModels().map { model ->
             val sizeStr = model.displaySize
             val quantStr = if (model.quantization != null) " [${model.quantization.displayName}]" else ""
-            val typeStr = when {
+        val typeStr = when {
                 model.isLlama -> " (llama.cpp)"
                 model.isMNN -> " (MNN)"
                 else -> ""
@@ -164,10 +154,8 @@ object ModelRegistry {
             )
         }
     }
-
-    fun suggestQuantizationForDevice(deviceRAM: Long, taskComplexity: TaskComplexity): QuantizationFormat {
+        fun suggestQuantizationForDevice(deviceRAM: Long, taskComplexity: TaskComplexity): QuantizationFormat {
         val ramGB = deviceRAM / (1024.0 * 1024.0 * 1024.0)
-
         return when {
             ramGB < 4 -> when (taskComplexity) {
                 TaskComplexity.SIMPLE -> QuantizationFormat.Q2_K

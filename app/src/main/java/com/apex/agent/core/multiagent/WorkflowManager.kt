@@ -25,31 +25,24 @@ class WorkflowManager(private val context: Context) {
         private const val TAG = "WorkflowManager"
         private val KEY_WORKFLOWS = stringPreferencesKey("agent_workflows")
     }
-
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val gson = Gson()
-    private val _workflows = mutableMapOf<String, Workflow>()
-
-    val workflows: List<Workflow>
+        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        private val gson = Gson()
+        private val _workflows = mutableMapOf<String, Workflow>()
+        val workflows: List<Workflow>
         get() = _workflows.values.sortedByDescending { it.updated }
-
-    val enabledWorkflows: List<Workflow>
+        val enabledWorkflows: List<Workflow>
         get() = workflows.filter { it.isEnabled }
-
-    val categories: List<String>
+        val categories: List<String>
         get() = _workflows.values.map { it.category }.distinct()
-
-    val executor: WorkflowExecutor by lazy { WorkflowExecutor(context) }
+        val executor: WorkflowExecutor by lazy { WorkflowExecutor(context) }
 
     init {
         scope.launch { loadFromDataStore() }
     }
-    
-    fun cleanup() {
+        fun cleanup() {
         scope.cancel()
     }
-
-    private suspend fun loadFromDataStore() {
+        private suspend fun loadFromDataStore() {
         try {
             val prefs = context.workflowDataStore.data.first()
             prefs[KEY_WORKFLOWS]?.let { json ->
@@ -58,24 +51,21 @@ class WorkflowManager(private val context: Context) {
                 _workflows.clear()
                 loadedWorkflows.forEach { workflow -> _workflows[workflow.id] = workflow }
             }
-            if (_workflows.isEmpty()) createDefaultWorkflows()
+        if (_workflows.isEmpty()) createDefaultWorkflows()
         } catch (e: Exception) {
             createDefaultWorkflows()
         }
     }
-
-    private suspend fun saveToDataStore() {
+        private suspend fun saveToDataStore() {
         context.workflowDataStore.edit { prefs ->
             prefs[KEY_WORKFLOWS] = gson.toJson(_workflows.values.toList())
         }
     }
-
-    private suspend fun createDefaultWorkflows() {
+        private suspend fun createDefaultWorkflows() {
         val workflowId = UUID.randomUUID().toString()
         val startNode = WorkflowNode(type = NodeType.START, x = 100f, y = 300f, title = "开�?
         val agentNode = WorkflowNode(type = NodeType.AGENT, agentRole = AgentRole.EXECUTOR, x = 400f, y = 300f, title = "执行任务", description = "Agent执行任务")
         val endNode = WorkflowNode(type = NodeType.END, x = 700f, y = 300f, title = "结束")
-
         val default = Workflow(
             id = workflowId,
             name = "示例工作�?
@@ -93,12 +83,10 @@ class WorkflowManager(private val context: Context) {
         _workflows[default.id] = default
         saveToDataStore()
     }
-
-    fun getWorkflowById(id: String): Workflow? = _workflows[id]
+        fun getWorkflowById(id: String): Workflow? = _workflows[id]
 
     fun getWorkflowsByCategory(category: String): List<Workflow> = workflows.filter { it.category == category }
-
-    fun searchWorkflows(query: String): List<Workflow> {
+        fun searchWorkflows(query: String): List<Workflow> {
         val lowerQuery = query.lowercase()
         return workflows.filter { workflow ->
             workflow.name.lowercase().contains(lowerQuery) ||
@@ -106,10 +94,8 @@ class WorkflowManager(private val context: Context) {
             workflow.tags.any { it.lowercase().contains(lowerQuery) }
         }
     }
-
-    fun getMostUsedWorkflows(limit: Int = 5): List<Workflow> = workflows.sortedByDescending { it.executionCount }.take(limit)
-
-    fun createNewWorkflow(name: String = "新工作流", category: String = "通用"): Workflow {
+        fun getMostUsedWorkflows(limit: Int = 5): List<Workflow> = workflows.sortedByDescending { it.executionCount }.take(limit)
+        fun createNewWorkflow(name: String = "新工作流", category: String = "通用"): Workflow {
         val workflow = Workflow(
             name = name,
             category = category,
@@ -150,8 +136,7 @@ class WorkflowManager(private val context: Context) {
         saveToDataStore()
         return copy
     }
-
-    fun executeWorkflow(
+        fun executeWorkflow(
         workflowId: String,
         inputVariables: Map<String, Any> = emptyMap(),
         onProgress: ((WorkflowExecution) -> Unit)? = null
