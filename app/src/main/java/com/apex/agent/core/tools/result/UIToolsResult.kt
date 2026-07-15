@@ -2,8 +2,6 @@ package com.apex.agent.core.tools.result
 
 // STUBBED: had 43 errors
 sealed class UIToolsResult
-data class Success(val placeholder: String = "")
-data class Error(val placeholder: String = "")
 object Timeout
 object ServiceNotAvailable
 object PermissionDenied

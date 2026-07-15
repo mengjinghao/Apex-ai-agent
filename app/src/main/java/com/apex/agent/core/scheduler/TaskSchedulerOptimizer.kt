@@ -2,11 +2,8 @@ package com.apex.agent.core.scheduler
 
 // STUBBED: had 27 errors
 class TaskSchedulerOptimizer
-data class Task(val placeholder: String = "")
-data class ScheduledTask(val placeholder: String = "")
 data class TaskResult(val placeholder: String = "")
 data class SchedulerStats(val placeholder: String = "")
-class DependencyGraph
 data class GraphNode(val placeholder: String = "")
 class CyclicDependencyException
 class WorkStealingExecutor

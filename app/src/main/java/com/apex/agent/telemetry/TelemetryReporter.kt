@@ -4,5 +4,4 @@ package com.apex.agent.telemetry
 data class ExportConfig(val placeholder: String = "")
 data class ExportResult(val placeholder: String = "")
 data class ExportMetrics(val placeholder: String = "")
-enum class ExportFormat { DEFAULT }
 class TelemetryReporter

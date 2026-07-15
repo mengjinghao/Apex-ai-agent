@@ -6,7 +6,6 @@ data class EventTrigger(val placeholder: String = "")
 data class TriggerCondition(val placeholder: String = "")
 enum class ConditionType { DEFAULT }
 data class TriggerAction(val placeholder: String = "")
-enum class ActionType { DEFAULT }
 data class TriggerExecution(val placeholder: String = "")
 sealed class TriggerEvent
 data class TriggerRegistered(val placeholder: String = "")

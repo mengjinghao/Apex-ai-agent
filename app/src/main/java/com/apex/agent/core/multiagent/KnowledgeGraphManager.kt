@@ -3,7 +3,6 @@ package com.apex.agent.core.multiagent
 // STUBBED: had 29 errors
 class KnowledgeGraphManager
 data class KnowledgeNode(val placeholder: String = "")
-enum class NodeType { DEFAULT }
 data class KnowledgeEdge(val placeholder: String = "")
 enum class RelationType { DEFAULT }
 data class GraphStats(val placeholder: String = "")

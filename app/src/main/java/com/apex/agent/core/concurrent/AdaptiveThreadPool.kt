@@ -5,5 +5,4 @@ class AdaptiveThreadPool
 data class AdaptiveConfig(val placeholder: String = "")
 data class ThreadPoolMetrics(val placeholder: String = "")
 class AdaptiveTask
-class Builder
 class DefaultThreadFactory

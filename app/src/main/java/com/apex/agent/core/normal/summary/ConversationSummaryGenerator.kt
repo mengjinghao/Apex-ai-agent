@@ -5,7 +5,6 @@ enum class SummaryStrategy { DEFAULT }
 data class ConversationSummary(val placeholder: String = "")
 data class StructuredSummary(val placeholder: String = "")
 data class TopicSummary(val placeholder: String = "")
-data class TimelineEvent(val placeholder: String = "")
 data class DecisionRecord(val placeholder: String = "")
 data class ActionItem(val placeholder: String = "")
 data class EntityRecord(val placeholder: String = "")

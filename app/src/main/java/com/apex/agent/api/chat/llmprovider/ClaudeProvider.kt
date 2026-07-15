@@ -4,5 +4,4 @@ package com.apex.api.chat.llmprovider
 class ClaudeProvider
 class NonRetriableException
 data class AnthropicUsageCounts(val placeholder: String = "")
-object XmlEscaper
 data class ClaudeSerializedHistory(val placeholder: String = "")

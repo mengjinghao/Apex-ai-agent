@@ -5,4 +5,3 @@ class ModelSelector
 enum class SelectionCriteria { DEFAULT }
 data class DeviceCapabilities(val placeholder: String = "")
 data class SelectionResult(val placeholder: String = "")
-enum class TaskType { DEFAULT }

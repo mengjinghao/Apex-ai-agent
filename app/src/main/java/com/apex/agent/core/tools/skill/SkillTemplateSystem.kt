@@ -10,5 +10,4 @@ data class TemplateWorkflow(val placeholder: String = "")
 data class TemplateNode(val placeholder: String = "")
 data class TemplateConnection(val placeholder: String = "")
 data class TemplateFile(val placeholder: String = "")
-enum class TemplateCategory { DEFAULT }
 data class SkillCreationResult(val placeholder: String = "")

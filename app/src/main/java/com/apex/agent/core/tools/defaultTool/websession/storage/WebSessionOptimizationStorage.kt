@@ -3,7 +3,6 @@ package com.apex.agent.core.tools.defaultTool.websession.storage
 // STUBBED: had 3 errors
 class WebSessionOptimizationStorage
 data class OptimizationData(val placeholder: String = "")
-data class UsageStats(val placeholder: String = "")
 data class LastOperation(val placeholder: String = "")
 data class LastError(val placeholder: String = "")
 data class MethodStats(val placeholder: String = "")

@@ -2,7 +2,6 @@ package com.apex.agent.core.tools.skill
 
 // STUBBED: had 25 errors
 class SkillDevServer
-interface ToolExecutor
 data class ToolExecutionResult(val placeholder: String = "")
 data class ApiRequest(val placeholder: String = "")
 data class ApiResponse(val placeholder: String = "")

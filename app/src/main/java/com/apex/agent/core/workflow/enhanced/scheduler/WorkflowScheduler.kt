@@ -1,7 +1,6 @@
 package com.apex.agent.core.workflow.enhanced.scheduler
 
 // STUBBED: had 5 errors
-class WorkflowScheduler
 data class ScheduledJob(val placeholder: String = "")
 enum class MisfirePolicy { DEFAULT }
 sealed class ScheduleEvent

@@ -4,5 +4,4 @@ package com.apex.agent.core.tools.skill
 class SkillRepoClient
 data class SkillInfo(val placeholder: String = "")
 data class SkillDetail(val placeholder: String = "")
-data class SearchResult(val placeholder: String = "")
 data class UpdateCheckResult(val placeholder: String = "")

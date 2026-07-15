@@ -12,5 +12,3 @@ data class ExternalPackageScanCacheEntry(val placeholder: String = "")
 interface ToolPkgRuntimeChangeListener
 data class PackageScanCandidate(val placeholder: String = "")
 object Uses
-object or
-object for

@@ -7,8 +7,6 @@ data class BoardStatistics(val placeholder: String = "")
 data class ColumnStats(val placeholder: String = "")
 class KanbanColumn
 class KanbanTask
-enum class Status { DEFAULT }
-enum class Priority { DEFAULT }
 data class ConversationEntry(val placeholder: String = "")
 class WorkerRegistry
 data class Worker(val placeholder: String = "")

@@ -6,7 +6,6 @@ data class CodeGenerationTask(val placeholder: String = "")
 data class CodeGenerationResult(val placeholder: String = "")
 data class GenerationProgress(val placeholder: String = "")
 data class BatchProgress(val placeholder: String = "")
-data class ValidationResult(val placeholder: String = "")
 data class CodeAnalysisResult(val placeholder: String = "")
 data class CodeIssue(val placeholder: String = "")
 enum class IssueSeverity { DEFAULT }

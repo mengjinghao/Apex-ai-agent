@@ -7,14 +7,9 @@ data class DangerPattern(val placeholder: String = "")
 enum class DangerPatternType { DEFAULT }
 data class SensitiveApiCall(val placeholder: String = "")
 data class NetworkRequest(val placeholder: String = "")
-data class FileOperation(val placeholder: String = "")
-data class PerformanceReport(val placeholder: String = "")
-data class PerformanceMetrics(val placeholder: String = "")
 data class CompatibilityReport(val placeholder: String = "")
 data class VersionCheck(val placeholder: String = "")
 data class PermissionCheck(val placeholder: String = "")
 data class DependencyCheck(val placeholder: String = "")
 data class ConflictCheck(val placeholder: String = "")
-enum class ConflictType { DEFAULT }
 enum class ValidationStatus { DEFAULT }
-enum class RiskLevel { DEFAULT }

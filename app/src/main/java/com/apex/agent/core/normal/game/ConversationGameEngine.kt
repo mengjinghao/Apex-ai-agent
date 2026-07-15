@@ -8,7 +8,6 @@ data class GameMove(val placeholder: String = "")
 sealed class MoveResult
 data class Correct(val placeholder: String = "")
 data class Incorrect(val placeholder: String = "")
-data class Progress(val placeholder: String = "")
 data class Victory(val placeholder: String = "")
 data class Defeat(val placeholder: String = "")
 data class Continue(val placeholder: String = "")

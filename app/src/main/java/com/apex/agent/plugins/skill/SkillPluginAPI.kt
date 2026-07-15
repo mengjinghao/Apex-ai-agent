@@ -5,9 +5,6 @@ interface SkillPlugin
 enum class SkillPluginCategory { DEFAULT }
 interface SkillPluginContext
 interface SkillPluginDescriptor
-interface SkillPluginLoader
-interface SkillPluginManager
-interface SkillPluginMarketplace
 interface SkillPluginListing
 interface SkillPluginUpdate
 data class PluginValidationResult(val placeholder: String = "")

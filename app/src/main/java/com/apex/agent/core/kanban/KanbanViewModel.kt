@@ -18,5 +18,4 @@ sealed class FlowStep
 data class ColumnStart(val placeholder: String = "")
 data class TaskInColumn(val placeholder: String = "")
 data class ColumnEnd(val placeholder: String = "")
-data class TimelineEvent(val placeholder: String = "")
 enum class Type { DEFAULT }

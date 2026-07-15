@@ -6,7 +6,6 @@ data class StepResult(val placeholder: String = "")
 data class ParsedAgentAction(val placeholder: String = "")
 data class PrivilegedExecutionState(val placeholder: String = "")
 class PhoneAgent
-class ActionHandler
 data class ActionExecResult(val placeholder: String = "")
 data class ShowerUsageContext(val placeholder: String = "")
 interface ToolImplementations

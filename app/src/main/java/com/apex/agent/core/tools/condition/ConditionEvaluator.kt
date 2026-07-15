@@ -18,7 +18,6 @@ data class IdentifierExpr(val placeholder: String = "")
 data class ArrayExpr(val placeholder: String = "")
 data class UnaryExpr(val placeholder: String = "")
 data class BinaryExpr(val placeholder: String = "")
-interface Value
 data class Bool(val placeholder: String = "")
 data class Num(val placeholder: String = "")
 data class Str(val placeholder: String = "")

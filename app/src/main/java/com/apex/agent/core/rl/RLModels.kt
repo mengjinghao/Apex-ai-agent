@@ -1,8 +1,6 @@
 package com.apex.agent.core.rl
 
 // STUBBED: had 1 errors
-data class State(val placeholder: String = "")
-data class Action(val placeholder: String = "")
 enum class ActionType { DEFAULT }
 data class Reward(val placeholder: String = "")
 enum class RewardType { DEFAULT }

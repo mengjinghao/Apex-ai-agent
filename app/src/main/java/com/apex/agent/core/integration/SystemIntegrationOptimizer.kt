@@ -17,6 +17,5 @@ data class EventStats(val placeholder: String = "")
 data class EventBusMetrics(val placeholder: String = "")
 class ServiceMeshOptimizer
 data class ServiceNode(val placeholder: String = "")
-enum class HealthStatus { DEFAULT }
 data class RoutingRule(val placeholder: String = "")
 enum class RoutingStrategy { DEFAULT }

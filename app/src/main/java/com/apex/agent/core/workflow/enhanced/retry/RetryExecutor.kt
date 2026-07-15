@@ -4,8 +4,6 @@ package com.apex.agent.core.workflow.enhanced.retry
 enum class ErrorCategory { DEFAULT }
 interface ErrorClassifier
 class DefaultErrorClassifier
-class CircuitBreaker
-enum class State { DEFAULT }
 class CircuitOpenException
 object CircuitBreakerRegistry
 data class CircuitBreakerConfig(val placeholder: String = "")

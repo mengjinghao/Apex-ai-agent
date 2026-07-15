@@ -4,9 +4,7 @@ package com.apex.agent.core.tools.skill
 class SkillResourceController
 enum class ResourceType { DEFAULT }
 data class ResourceAllocation(val placeholder: String = "")
-data class ResourceUsage(val placeholder: String = "")
 data class ResourceLimit(val placeholder: String = "")
 interface ResourceAllocationStrategy
-enum class TaskComplexity { DEFAULT }
 data class OptimizationSuggestion(val placeholder: String = "")
 enum class SuggestionType { DEFAULT }

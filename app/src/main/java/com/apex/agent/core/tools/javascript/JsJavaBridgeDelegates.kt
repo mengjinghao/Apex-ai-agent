@@ -9,8 +9,5 @@ data class JsInterfaceBinding(val placeholder: String = "")
 data class BridgeResponse(val placeholder: String = "")
 class JsInterfaceProxyReference
 interface proxy
-interface object
 class name
 interface map
-interface callback
-interface callback

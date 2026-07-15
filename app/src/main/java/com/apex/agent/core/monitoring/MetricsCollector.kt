@@ -11,7 +11,6 @@ class ThroughputTracker
 class LatencyTracker
 data class LatencyStats(val placeholder: String = "")
 class HealthChecker
-data class HealthStatus(val placeholder: String = "")
 data class CheckResult(val placeholder: String = "")
 interface HealthCheck
 class AbstractHealthCheck

@@ -2,8 +2,6 @@ package com.apex.agent.services.optimization
 
 // STUBBED: had 11 errors
 data class MessageEnvelope(val placeholder: String = "")
-enum class MessageType { DEFAULT }
-enum class MessagePriority { DEFAULT }
 data class MessageBatch(val placeholder: String = "")
 data class MessageProcessingResult(val placeholder: String = "")
 data class MessageQueueMetrics(val placeholder: String = "")

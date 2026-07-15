@@ -11,7 +11,6 @@ data class TaskAssigned(val placeholder: String = "")
 data class MessageSent(val placeholder: String = "")
 data class MessageReceived(val placeholder: String = "")
 data class SessionCreated(val placeholder: String = "")
-data class Error(val placeholder: String = "")
 enum class ViewMode { DEFAULT }
 enum class CollaborationType { DEFAULT }
 data class SessionModel(val placeholder: String = "")

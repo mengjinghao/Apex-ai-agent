@@ -6,5 +6,4 @@ data class FeedbackRecord(val placeholder: String = "")
 data class FeedbackContext(val placeholder: String = "")
 data class FeedbackStats(val placeholder: String = "")
 data class FeedbackInsight(val placeholder: String = "")
-enum class InsightType { DEFAULT }
 class UserFeedbackLearningSystem

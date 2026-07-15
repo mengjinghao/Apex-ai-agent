@@ -3,7 +3,6 @@ package com.apex.agent.core.tools.skill
 // STUBBED: had 26 errors
 class DistributedSkillSupport
 data class NodeInfo(val placeholder: String = "")
-enum class NodeStatus { DEFAULT }
 data class ServiceRegistration(val placeholder: String = "")
 data class ServiceInstance(val placeholder: String = "")
 data class RemoteCallRequest(val placeholder: String = "")

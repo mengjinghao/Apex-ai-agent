@@ -6,5 +6,4 @@ enum class OptimizationDomain { DEFAULT }
 data class OptimizationAction(val placeholder: String = "")
 data class CoreMetrics(val placeholder: String = "")
 data class ResourceState(val placeholder: String = "")
-data class OptimizationRecommendation(val placeholder: String = "")
 class EngineCoreOptimizer

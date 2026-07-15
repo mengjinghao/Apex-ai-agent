@@ -7,5 +7,4 @@ data class ExecutionMetrics(val placeholder: String = "")
 data class ContextConfig(val placeholder: String = "")
 interface StateListener
 data class TaskMetrics(val placeholder: String = "")
-enum class TaskState { DEFAULT }
 class ContextBuilder

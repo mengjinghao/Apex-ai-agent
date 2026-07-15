@@ -2,7 +2,6 @@ package com.apex.agent.core.patterns
 
 // STUBBED: had 2 errors
 sealed class CommandResult
-data class Success(val placeholder: String = "")
 data class Failure(val placeholder: String = "")
 interface AgentCommand
 data class CommandEntry(val placeholder: String = "")

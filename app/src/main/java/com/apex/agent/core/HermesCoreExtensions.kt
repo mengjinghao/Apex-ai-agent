@@ -8,7 +8,6 @@ data class OperationStats(val placeholder: String = "")
 class TaskExecutionOptimizer
 data class TaskProfile(val placeholder: String = "")
 class MemoryOptimizer
-data class MemoryStats(val placeholder: String = "")
 data class MemoryPressureLevel(val placeholder: String = "")
 class CoroutineOptimizer
 data class CoroutineMetrics(val placeholder: String = "")

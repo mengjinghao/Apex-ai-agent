@@ -4,4 +4,3 @@ package com.apex.agent.core.models
 object ModelRegistry
 enum class QuantizationFormat { DEFAULT }
 data class LocalModelInfo(val placeholder: String = "")
-enum class TaskComplexity { DEFAULT }

@@ -1,8 +1,6 @@
 package com.apex.agent.core.kanban
 
 // STUBBED: original file had 109 compilation errors
-class WorkerRegistry
-interface Worker
 data class TaskExecutionContext(val placeholder: String = "")
 enum class RegistrationResult { DEFAULT }
 enum class ChangeType { DEFAULT }

@@ -7,7 +7,6 @@ data class Text(val placeholder: String = "")
 data class Command(val placeholder: String = "")
 data class Search(val placeholder: String = "")
 enum class CommandStatus { DEFAULT }
-data class ChatMessage(val placeholder: String = "")
 object CommandSafety
 enum class CommandRisk { DEFAULT }
 data class SkillItem(val placeholder: String = "")

@@ -1,7 +1,6 @@
 package com.apex.agent.core.kanban
 
 // STUBBED: had 76 errors
-class KanbanColumn
 sealed class ColumnCondition
 data class PriorityCondition(val placeholder: String = "")
 data class TagCondition(val placeholder: String = "")

@@ -7,7 +7,6 @@ enum class CodeLanguage { DEFAULT }
 data class CodeProject(val placeholder: String = "")
 data class ProjectStructure(val placeholder: String = "")
 data class CodeFile(val placeholder: String = "")
-data class CodeIssue(val placeholder: String = "")
 enum class IssueType { DEFAULT }
 enum class Severity { DEFAULT }
 data class Dependency(val placeholder: String = "")

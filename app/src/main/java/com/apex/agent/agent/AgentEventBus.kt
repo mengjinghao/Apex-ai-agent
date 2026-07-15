@@ -6,13 +6,8 @@ sealed class AgentEvent
 data class Registered(val placeholder: String = "")
 data class Unregistered(val placeholder: String = "")
 data class LifecycleStateChanged(val placeholder: String = "")
-data class TaskStarted(val placeholder: String = "")
-data class TaskProgress(val placeholder: String = "")
-data class TaskCompleted(val placeholder: String = "")
 data class HealthChanged(val placeholder: String = "")
 data class AgentMessageSent(val placeholder: String = "")
-data class ErrorOccurred(val placeholder: String = "")
 data class Custom(val placeholder: String = "")
-class EventSubscription
 class AgentEventBus
 object GlobalAgentEventBus

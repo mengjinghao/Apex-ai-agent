@@ -9,6 +9,5 @@ data class StreamConfig(val placeholder: String = "")
 data class AlertRule(val placeholder: String = "")
 data class ProcessingPipeline(val placeholder: String = "")
 data class ProcessingStep(val placeholder: String = "")
-enum class StepType { DEFAULT }
 class StreamJob
 data class TrendAnalysis(val placeholder: String = "")

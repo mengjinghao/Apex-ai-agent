@@ -3,7 +3,6 @@ package com.apex.agent.telemetry
 // STUBBED: had 9 errors
 data class TelemetryEvent(val placeholder: String = "")
 data class DeviceSnapshot(val placeholder: String = "")
-enum class EventType { DEFAULT }
 enum class EventCategory { DEFAULT }
 data class TelemetrySession(val placeholder: String = "")
 data class TelemetryReport(val placeholder: String = "")

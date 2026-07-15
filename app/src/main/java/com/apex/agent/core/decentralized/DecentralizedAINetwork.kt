@@ -2,7 +2,6 @@ package com.apex.agent.core.decentralized
 
 // STUBBED: had 3 errors
 class DecentralizedAINetwork
-enum class NodeType { DEFAULT }
 enum class ConnectionStatus { DEFAULT }
 enum class MessagePriority { DEFAULT }
 data class Node(val placeholder: String = "")

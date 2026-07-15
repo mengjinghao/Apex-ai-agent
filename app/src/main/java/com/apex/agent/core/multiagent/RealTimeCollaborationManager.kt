@@ -10,7 +10,6 @@ enum class OperationType { DEFAULT }
 enum class OpStatus { DEFAULT }
 data class ConnectionState(val placeholder: String = "")
 data class SyncProgress(val placeholder: String = "")
-data class CollaborationEvent(val placeholder: String = "")
 enum class EventType { DEFAULT }
 data class ConflictRecord(val placeholder: String = "")
 enum class ConflictResolution { DEFAULT }

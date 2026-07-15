@@ -6,4 +6,3 @@ data class UIData(val placeholder: String = "")
 data class UINodeShell(val placeholder: String = "")
 data class FocusInfoShell(val placeholder: String = "")
 data class MatchedNode(val placeholder: String = "")
-class name

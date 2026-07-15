@@ -4,7 +4,6 @@ package com.apex.agent.core.multiagent
 class CollaborationHistoryManager
 data class CollaborationHistory(val placeholder: String = "")
 data class HistoryEvent(val placeholder: String = "")
-enum class EventType { DEFAULT }
 data class DecisionPoint(val placeholder: String = "")
 data class DecisionOption(val placeholder: String = "")
 data class CollaborationMetrics(val placeholder: String = "")
