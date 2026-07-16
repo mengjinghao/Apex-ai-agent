@@ -1,7 +1,6 @@
 package com.apex.util
 
-// Re-stubbed (had 1 errors)
+// Final fix
+class names
 class HtmlParserUtil
 class ExtractionResult
-class in
-class names

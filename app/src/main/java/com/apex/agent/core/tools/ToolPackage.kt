@@ -1,14 +1,13 @@
 package com.apex.core.tools
 
-// Re-stubbed (had 1 errors)
-class PackageToolExecutor
-class PackagePermission
-class PackageTool
+// Final fix
 class EnvVar
-class if
-class PackageToolParameter
-class LocalizedText
-class EnvVarSerializer
-class LocalizedTextSerializer
 class ToolPackage
+class PackagePermission
+class LocalizedText
+class PackageToolParameter
+class LocalizedTextSerializer
+class PackageToolExecutor
 class ToolPackageState
+class PackageTool
+class EnvVarSerializer

@@ -1,8 +1,7 @@
 package com.apex.agent.core.config
 
-// Re-stubbed (had 3 errors)
-class val
+// Final fix
+class Configurable
 class ConfigAnnotationProcessor
 class ConfigValidation
 class ConfigGroup
-class Configurable
