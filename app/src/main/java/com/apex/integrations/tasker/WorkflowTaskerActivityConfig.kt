@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-/** Workflow Tasker 配置 Activity — 占位实现。 */
+/** Workflow Tasker 配置 — 占位实现。 */
 class WorkflowTaskerActivityConfig : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

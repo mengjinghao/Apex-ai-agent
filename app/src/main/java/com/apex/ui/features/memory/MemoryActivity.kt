@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-/** 记忆系统页面 — 占位实现。 */
+/** 记忆系统 — 占位实现。 */
 class MemoryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

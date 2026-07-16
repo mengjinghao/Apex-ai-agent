@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-/** 工具详情页面 — 占位实现。 */
+/** 工具详情 — 占位实现。 */
 class ToolDetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

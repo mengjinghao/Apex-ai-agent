@@ -7,5 +7,4 @@ class AIAgentActionUpdate
 class AIAgentActionOutput
 class AIAgentActionEventRunner
 class AIAgentActionHelper
-class ActivityConfigAIAgentAction
 fun Context() { }

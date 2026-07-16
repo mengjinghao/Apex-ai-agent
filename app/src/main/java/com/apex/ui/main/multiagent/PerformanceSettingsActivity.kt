@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-/** 性能优化设置页面 — 占位实现。 */
+/** 性能优化设置 — 占位实现。 */
 class PerformanceSettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
