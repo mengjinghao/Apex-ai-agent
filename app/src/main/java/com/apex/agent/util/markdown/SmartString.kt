@@ -3,26 +3,24 @@ package com.apex.util.markdown
 import androidx.compose.runtime.Stable
 
 /**
- * 智能字符串类 - 高性能的字符串构建器，带缓存优，* 
+ * 智能字符串类 - 高性能的字符串构建器，带缓存优�?* 
  * 特性：
  * 1. 重载 `+` 操作符为高效，append 操作
  * 2. 缓存 toString() 结果，只在内容变化时重新生成
  * 3. 避免频繁创建新的 String 对象
- * 4. 适用于流式内容构建场，*/
+ * 4. 适用于流式内容构建场�?*/
 class SmartString(initialContent: String = "") {
     private val builder = StringBuilder(initialContent)
-        private var cachedString: String? = if (initialContent.isEmpty()) "" else initialContent
+    private var cachedString: String? = if (initialContent.isEmpty()) "" else initialContent
     private var lastLength = initialContent.length
     
     /**
-     * 追加字符串内定
-    * @param content 要追加的内容
-     * @return 返回自身以支持链式调用
-    */
+     * 追加字符串内�?    * @param content 要追加的内容
+     * @return 返回自身以支持链式调�?    */
     operator fun plus(content: String): SmartString {
         if (content.isNotEmpty()) {
             builder.append(content)
-        cachedString = null // 标记缓存失效
+            cachedString = null // 标记缓存失效
         }
         return this
     }
@@ -30,30 +28,27 @@ class SmartString(initialContent: String = "") {
     /**
      * 追加字符内容
      * @param char 要追加的字符
-     * @return 返回自身以支持链式调用
-    */
+     * @return 返回自身以支持链式调�?    */
     operator fun plus(char: Char): SmartString {
         builder.append(char)
         cachedString = null // 标记缓存失效
-    return this
+        return this
     }
     
     /**
      * 智能 toString - 只在内容变化时重新生成字符串
-     * @return 字符串表，
-    */
+     * @return 字符串表�?    */
     override fun toString(): String {
         val currentLength = builder.length
         
-        // 如果长度没变且有缓存，直接返回缓字
-    if (currentLength == lastLength && cachedString != null) {
-            return requireNotNull(cachedString)
+        // 如果长度没变且有缓存，直接返回缓�?       if (currentLength == lastLength && cachedString != null) {
+            return cachedString!!
         }
         
         // 内容已变化，重新生成字符串并缓存
         lastLength = currentLength
         cachedString = builder.toString()
-        return requireNotNull(cachedString)
+        return cachedString!!
     }
     
     /**
@@ -82,8 +77,7 @@ class SmartString(initialContent: String = "") {
     }
     
     /**
-     * 截取字符为
-    */
+     * 截取字符�?    */
     fun take(n: Int): String {
         return if (n >= builder.length) {
             toString()
@@ -93,15 +87,13 @@ class SmartString(initialContent: String = "") {
     }
     
     /**
-     * 追加内容（兼，StringBuilder 风格，
-    */
+     * 追加内容（兼，StringBuilder 风格�?    */
     fun append(content: String): SmartString {
         return this + content
     }
     
     /**
-     * 追加字符（兼，StringBuilder 风格，
-    */
+     * 追加字符（兼，StringBuilder 风格�?    */
     fun append(char: Char): SmartString {
         return this + char
     }

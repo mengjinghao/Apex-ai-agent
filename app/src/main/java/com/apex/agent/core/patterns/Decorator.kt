@@ -45,7 +45,8 @@ class MetricsDecorator<T, R>(wrapped: Component<T, R>) : Decorator<T, R>(wrapped
         totalTime += elapsed
         return result
     }
-        fun getAverageTime(): Double = if (executionCount > 0) totalTime.toDouble() / executionCount else 0.0
+
+    fun getAverageTime(): Double = if (executionCount > 0) totalTime.toDouble() / executionCount else 0.0
     fun getExecutionCount(): Long = executionCount
 }
 
@@ -54,15 +55,17 @@ class CachingDecorator<T, R>(wrapped: Component<T, R>, private val maxSize: Int 
     : Decorator<T, R>(wrapped) {
 
     private val cache = LinkedHashMap<T, R>(maxSize, 0.75f, true)
-        override suspend fun execute(input: T): R {
+
+    override suspend fun execute(input: T): R {
         return cache.getOrPut(input) { wrapped.execute(input) }.also {
             if (cache.size > maxSize) {
                 cache.remove(cache.keys.first())
             }
         }
     }
-        fun clearCache() = cache.clear()
-        fun cacheSize(): Int = cache.size
+
+    fun clearCache() = cache.clear()
+    fun cacheSize(): Int = cache.size
 }
 
 /** 重试装饰器 */
@@ -103,7 +106,8 @@ class RateLimitingDecorator<T, R>(
 ) : Decorator<T, R>(wrapped) {
 
     private val timestamps = ArrayDeque<Long>()
-        override suspend fun execute(input: T): R {
+
+    override suspend fun execute(input: T): R {
         val now = System.currentTimeMillis()
         while (timestamps.isNotEmpty() && now - timestamps.first() > windowMs) {
             timestamps.removeFirst()

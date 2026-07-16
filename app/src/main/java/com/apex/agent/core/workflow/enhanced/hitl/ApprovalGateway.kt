@@ -39,9 +39,9 @@ data class InterruptPayload(
  */
 sealed class ResumeCommand {
     data class Approve(val reason: String? = null, val extra: Map<String, Any> = emptyMap()) : ResumeCommand()
-        data class Reject(val reason: String? = null) : ResumeCommand()
-        data class Provide(val value: Any, val resumeAll: Boolean = false) : ResumeCommand()
-        data class Timeout(val interruptId: String) : ResumeCommand()
+    data class Reject(val reason: String? = null) : ResumeCommand()
+    data class Provide(val value: Any, val resumeAll: Boolean = false) : ResumeCommand()
+    data class Timeout(val interruptId: String) : ResumeCommand()
 }
 
 /**
@@ -75,7 +75,7 @@ interface ApprovalGateway {
 class InMemoryApprovalGateway : ApprovalGateway {
 
     private val pendingInterrupts = ConcurrentHashMap<String, PendingInterrupt>()
-        private val listeners = mutableListOf<(InterruptPayload) -> Unit>()
+    private val listeners = mutableListOf<(InterruptPayload) -> Unit>()
 
     /**
      * 注册监听器（UI 层用于接收新审批请求）
@@ -83,10 +83,12 @@ class InMemoryApprovalGateway : ApprovalGateway {
     fun addListener(listener: (InterruptPayload) -> Unit) {
         listeners.add(listener)
     }
-        fun removeListener(listener: (InterruptPayload) -> Unit) {
+
+    fun removeListener(listener: (InterruptPayload) -> Unit) {
         listeners.remove(listener)
     }
-        override suspend fun awaitApproval(payload: InterruptPayload): ResumeCommand.Approve {
+
+    override suspend fun awaitApproval(payload: InterruptPayload): ResumeCommand.Approve {
         val deferred = CompletableDeferred<ResumeCommand>()
         pendingInterrupts[payload.interruptId] = PendingInterrupt(payload, deferred)
 
@@ -94,41 +96,47 @@ class InMemoryApprovalGateway : ApprovalGateway {
         listeners.forEach { it(payload) }
 
         // 等待响应（带超时）
-    val command = try {
+        val command = try {
             kotlinx.coroutines.withTimeout(payload.timeoutMs) {
                 deferred.await()
             }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
             pendingInterrupts.remove(payload.interruptId)
-        throw HumanApprovalTimeoutException(payload.interruptId, payload.timeoutMs)
+            throw HumanApprovalTimeoutException(payload.interruptId, payload.timeoutMs)
         }
+
         pendingInterrupts.remove(payload.interruptId)
+
         return when (command) {
             is ResumeCommand.Approve -> command
             is ResumeCommand.Reject -> throw HumanRejectedByUserException(payload.interruptId, command.reason)
-        is ResumeCommand.Provide -> throw IllegalArgumentException(
+            is ResumeCommand.Provide -> throw IllegalArgumentException(
                 "期望 Approve，收到 Provide。如需用户提供值，应使用其他节点类型。"
             )
-        is ResumeCommand.Timeout -> throw HumanApprovalTimeoutException(payload.interruptId, 0)
+            is ResumeCommand.Timeout -> throw HumanApprovalTimeoutException(payload.interruptId, 0)
         }
     }
-        override fun resume(interruptId: String, command: ResumeCommand): Boolean {
+
+    override fun resume(interruptId: String, command: ResumeCommand): Boolean {
         val pending = pendingInterrupts[interruptId] ?: return false
         return pending.deferred.complete(command)
     }
-        override fun pending(threadId: String?): List<InterruptPayload> {
+
+    override fun pending(threadId: String?): List<InterruptPayload> {
         return pendingInterrupts.values
             .map { it.payload }
             .filter { threadId == null || it.threadId == threadId }
             .sortedBy { it.createdAt }
     }
-        override fun cancel(interruptId: String, reason: String): Boolean {
+
+    override fun cancel(interruptId: String, reason: String): Boolean {
         val pending = pendingInterrupts.remove(interruptId) ?: return false
         return pending.deferred.complete(
             ResumeCommand.Reject(reason = "cancelled: $reason")
         )
     }
-        private data class PendingInterrupt(
+
+    private data class PendingInterrupt(
         val payload: InterruptPayload,
         val deferred: CompletableDeferred<ResumeCommand>
     )
@@ -153,7 +161,8 @@ class HumanApprovalTimeoutException(
 object ApprovalGatewayHolder {
     @Volatile
     private var instance: ApprovalGateway = InMemoryApprovalGateway()
-        fun get(): ApprovalGateway = instance
+
+    fun get(): ApprovalGateway = instance
 
     fun set(gateway: ApprovalGateway) {
         instance = gateway

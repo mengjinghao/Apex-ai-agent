@@ -23,13 +23,16 @@ public class Uuid(private val uuid: UUID) {
      * Returns the string representation of this UUID
      */
     override fun toString(): String = uuid.toString()
-        override fun equals(other: Any?): Boolean {
+    
+    override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Uuid) return false
         return uuid == other.uuid
     }
-        override fun hashCode(): Int = uuid.hashCode()
-        companion object {
+    
+    override fun hashCode(): Int = uuid.hashCode()
+    
+    companion object {
         /**
          * Creates a random UUID
          */

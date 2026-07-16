@@ -14,11 +14,13 @@ class ConditionNode(
     private val expression: String? = null
 ) : WorkflowNode {
     override val nodeType: String = "CONDITION"
-        override suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>> = flow {
+
+    override suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>> = flow {
         val result = evaluate(context)
         emit(Result.Success(NodeExecutionResult(success = true, nextNodeId = null, output = mapOf("conditionResult" to result))))
     }
-        private fun evaluate(context: WorkflowContext): Boolean {
+
+    private fun evaluate(context: WorkflowContext): Boolean {
         return expression?.let {
             context.variables[it]?.toString()?.toBooleanStrictOrNull() ?: true
         } ?: true

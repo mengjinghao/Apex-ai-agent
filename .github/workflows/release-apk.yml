@@ -218,7 +218,22 @@ jobs:
           path: artifacts/*.apk
           retention-days: 30
 
+      - name: Verify all 9 APKs built
+        id: verify_all
+        run: |
+          APK_COUNT=$(find artifacts -name "*.apk" 2>/dev/null | wc -l)
+          echo "APK count: $APK_COUNT"
+          if [ "$APK_COUNT" -lt 9 ]; then
+            echo "Only $APK_COUNT/9 APKs built - NOT creating release"
+            echo "all_built=false" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "All 9 APKs built successfully!"
+            echo "all_built=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create GitHub Release
+        if: steps.verify_all.outputs.all_built == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.buildtype.outputs.tag_name }}

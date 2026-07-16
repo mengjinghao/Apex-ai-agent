@@ -19,11 +19,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 enum class BattleMode {
     DEBATE,          // 辩论
-        RAP_BATTLE,      // 说唱对战
-        POETRY_DUEL,     // 诗词对决
-        STORYTELLING,    // 故事接龙对决
-        EXPLAIN_OFF,     // 解释大比拼
-        PERSUASION       // 说服力对决
+    RAP_BATTLE,      // 说唱对战
+    POETRY_DUEL,     // 诗词对决
+    STORYTELLING,    // 故事接龙对决
+    EXPLAIN_OFF,     // 解释大比拼
+    PERSUASION       // 说服力对决
 }
 
 data class BattleContestant(
@@ -75,12 +75,14 @@ data class BattleResult(
 class BattleModeSystem {
 
     private val sessions = ConcurrentHashMap<String, BattleSession>()
-        private val contestants = mutableListOf<BattleContestant>()
-        private val leaderboard = ConcurrentHashMap<String, Int>()  // contestantId -> wins
+    private val contestants = mutableListOf<BattleContestant>()
+    private val leaderboard = ConcurrentHashMap<String, Int>()  // contestantId -> wins
+
     init {
         registerBuiltinContestants()
     }
-        fun startBattle(
+
+    fun startBattle(
         mode: BattleMode,
         topic: String,
         contestantAId: String? = null,
@@ -88,6 +90,7 @@ class BattleModeSystem {
     ): BattleSession {
         val a = if (contestantAId != null) contestants.find { it.id == contestantAId }!! else contestants.random()
         val b = if (contestantBId != null) contestants.find { it.id == contestantBId }!! else contestants.filter { it.id != a.id }.random()
+
         val session = BattleSession(
             id = "battle_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}",
             mode = mode, topic = topic,
@@ -98,12 +101,14 @@ class BattleModeSystem {
         sessions[session.id] = session
         return session
     }
-        fun generateRound(sessionId: String): BattleRound? {
+
+    fun generateRound(sessionId: String): BattleRound? {
         val session = sessions[sessionId] ?: return null
         if (session.currentRound >= session.maxRounds) return null
 
         val roundNum = session.currentRound + 1
         val (respA, respB) = generateResponses(session, roundNum)
+
         val round = BattleRound(
             roundNum = roundNum,
             topic = session.topic,
@@ -112,6 +117,7 @@ class BattleModeSystem {
             responseA = respA,
             responseB = respB
         )
+
         val updated = session.copy(
             rounds = session.rounds + round,
             currentRound = roundNum
@@ -119,7 +125,8 @@ class BattleModeSystem {
         sessions[sessionId] = updated
         return round
     }
-        fun judgeRound(sessionId: String, roundNum: Int, winner: BattleSide, feedback: String? = null): BattleSession? {
+
+    fun judgeRound(sessionId: String, roundNum: Int, winner: BattleSide, feedback: String? = null): BattleSession? {
         val session = sessions[sessionId] ?: return null
         val rounds = session.rounds.map { r ->
             if (r.roundNum == roundNum) r.copy(winner = winner, userFeedback = feedback) else r
@@ -127,63 +134,73 @@ class BattleModeSystem {
         val newScoreA = session.scoreA + if (winner == BattleSide.A) 1 else 0
         val newScoreB = session.scoreB + if (winner == BattleSide.B) 1 else 0
         val newStatus = if (session.currentRound >= session.maxRounds) BattleStatus.FINISHED else BattleStatus.ONGOING
+
         val updated = session.copy(rounds = rounds, scoreA = newScoreA, scoreB = newScoreB, status = newStatus)
         sessions[sessionId] = updated
 
         // 更新排行榜
-    if (newStatus == BattleStatus.FINISHED) {
+        if (newStatus == BattleStatus.FINISHED) {
             val winnerId = when {
                 newScoreA > newScoreB -> session.contestantA.id
                 newScoreB > newScoreA -> session.contestantB.id
                 else -> null
             }
-        winnerId?.let { leaderboard[it] = (leaderboard[it] ?: 0) + 1 }
+            winnerId?.let { leaderboard[it] = (leaderboard[it] ?: 0) + 1 }
         }
+
         return updated
     }
-        fun getResults(sessionId: String): BattleResult? {
+
+    fun getResults(sessionId: String): BattleResult? {
         val session = sessions[sessionId] ?: return null
         val winner = when {
             session.scoreA > session.scoreB -> session.contestantA
             session.scoreB > session.scoreA -> session.contestantB
             else -> null
         }
+
         val highlights = session.rounds.mapNotNull { r ->
             when (r.winner) {
                 BattleSide.A -> "第${r.roundNum}轮: ${session.contestantA.name} 胜"
-        BattleSide.B -> "第${r.roundNum}轮: ${session.contestantB.name} 胜"
-        BattleSide.TIE -> "第${r.roundNum}轮: 平局"
-        null -> null
+                BattleSide.B -> "第${r.roundNum}轮: ${session.contestantB.name} 胜"
+                BattleSide.TIE -> "第${r.roundNum}轮: 平局"
+                null -> null
             }
         }
+
         val analysis = buildString {
             appendLine("对战分析:")
-        appendLine("模式: ${session.mode}")
-        appendLine("话题: ${session.topic}")
-        appendLine("总比分: ${session.contestantA.name} ${session.scoreA} : ${session.scoreB} ${session.contestantB.name}")
-        if (winner != null) appendLine("胜者: ${winner.name}")
-        else appendLine("结果: 平局")
+            appendLine("模式: ${session.mode}")
+            appendLine("话题: ${session.topic}")
+            appendLine("总比分: ${session.contestantA.name} ${session.scoreA} : ${session.scoreB} ${session.contestantB.name}")
+            if (winner != null) appendLine("胜者: ${winner.name}")
+            else appendLine("结果: 平局")
         }
+
         return BattleResult(session, winner, session.scoreA to session.scoreB, analysis, highlights)
     }
-        fun getLeaderboard(): List<Pair<BattleContestant, Int>> {
+
+    fun getLeaderboard(): List<Pair<BattleContestant, Int>> {
         return contestants.map { it to (leaderboard[it.id] ?: 0) }
             .sortedByDescending { it.second }
     }
-        fun listContestants(): List<BattleContestant> = contestants.toList()
-        private fun generateResponses(session: BattleSession, round: Int): Pair<String, String> {
+
+    fun listContestants(): List<BattleContestant> = contestants.toList()
+
+    private fun generateResponses(session: BattleSession, round: Int): Pair<String, String> {
         val templates = when (session.mode) {
             BattleMode.DEBATE -> listOf("关于${session.topic}，我认为...", "让我从另一个角度看...")
-        BattleMode.RAP_BATTLE -> listOf("Yo yo yo, 说起${session.topic}...", "听我说，${session.topic}这事儿...")
-        BattleMode.POETRY_DUEL -> listOf("${session.topic}如诗如画...", "且看${session.topic}另一番...")
-        BattleMode.STORYTELLING -> listOf("${session.topic}的故事，要从一个夜晚说起...", "另一版本里，${session.topic}...")
-        BattleMode.EXPLAIN_OFF -> listOf("简单来说，${session.topic}就是...", "${session.topic}的本质是...")
-        BattleMode.PERSUASION -> listOf("你应该相信，${session.topic}...", "为什么不试试${session.topic}呢？")
+            BattleMode.RAP_BATTLE -> listOf("Yo yo yo, 说起${session.topic}...", "听我说，${session.topic}这事儿...")
+            BattleMode.POETRY_DUEL -> listOf("${session.topic}如诗如画...", "且看${session.topic}另一番...")
+            BattleMode.STORYTELLING -> listOf("${session.topic}的故事，要从一个夜晚说起...", "另一版本里，${session.topic}...")
+            BattleMode.EXPLAIN_OFF -> listOf("简单来说，${session.topic}就是...", "${session.topic}的本质是...")
+            BattleMode.PERSUASION -> listOf("你应该相信，${session.topic}...", "为什么不试试${session.topic}呢？")
         }
         return templates[0].replace("...", "（${session.contestantA.style}风格，第${round}轮）") to
                templates[1].replace("...", "（${session.contestantB.style}风格，第${round}轮）")
     }
-        private fun registerBuiltinContestants() {
+
+    private fun registerBuiltinContestants() {
         contestants.addAll(listOf(
             BattleContestant("c1", "学者", "🎓", "严谨理性", "学术正式", "从学术角度来看"),
             BattleContestant("c2", "段子手", "🤣", "幽默风趣", "网络流行", "笑死，这题我会"),

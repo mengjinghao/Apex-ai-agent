@@ -7,14 +7,18 @@ import java.util.concurrent.CopyOnWriteArrayList
  */
 object InputMenuTogglePluginRegistry {
     private val plugins = CopyOnWriteArrayList<InputMenuTogglePlugin>()
-        fun register(plugin: InputMenuTogglePlugin) {
+
+    fun register(plugin: InputMenuTogglePlugin) {
         plugins.add(plugin)
     }
-        fun unregister(plugin: InputMenuTogglePlugin) {
+
+    fun unregister(plugin: InputMenuTogglePlugin) {
         plugins.remove(plugin)
     }
-        fun getPlugins(): List<InputMenuTogglePlugin> = plugins.toList()
-        fun getAllDefinitions(): List<InputMenuToggleDefinition> =
+
+    fun getPlugins(): List<InputMenuTogglePlugin> = plugins.toList()
+
+    fun getAllDefinitions(): List<InputMenuToggleDefinition> =
         plugins.flatMap { it.getDefinitions() }
 
     /**
@@ -30,7 +34,8 @@ object InputMenuTogglePluginRegistry {
             }
         }
     }
-        fun clear() {
+
+    fun clear() {
         plugins.clear()
     }
 }

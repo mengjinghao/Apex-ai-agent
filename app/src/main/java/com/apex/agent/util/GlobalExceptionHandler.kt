@@ -11,14 +11,16 @@ class GlobalExceptionHandler(private val context: Context) : Thread.UncaughtExce
 
     private val defaultUEH: Thread.UncaughtExceptionHandler? =
             Thread.getDefaultUncaughtExceptionHandler()
-        override fun uncaughtException(thread: Thread, ex: Throwable) {
+
+    override fun uncaughtException(thread: Thread, ex: Throwable) {
         val stackTrace = StringWriter()
         ex.printStackTrace(PrintWriter(stackTrace))
         CrashRecoveryState.markPendingCrashReportLaunch(context)
+
         val intent =
                 Intent(context, CrashReportActivity::class.java).apply {
                     putExtra(CrashReportActivity.EXTRA_STACK_TRACE, stackTrace.toString())
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 }
         context.startActivity(intent)
 

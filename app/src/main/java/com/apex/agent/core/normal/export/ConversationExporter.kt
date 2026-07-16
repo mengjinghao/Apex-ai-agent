@@ -103,16 +103,18 @@ class ConversationExporter {
         options: ExportOptions
     ): ExportResult {
         val filtered = applyFilter(messages, options.filter)
+
         return try {
             val content = when (options.format) {
                 ExportFormat.MARKDOWN -> exportToMarkdown(filtered, chatTitle, options)
-        ExportFormat.JSON -> exportToJson(filtered, chatTitle, options)
-        ExportFormat.HTML -> exportToHtml(filtered, chatTitle, options)
-        ExportFormat.PLAIN_TEXT -> exportToPlainText(filtered, chatTitle, options)
-        ExportFormat.CSV -> exportToCsv(filtered, options)
-        ExportFormat.PDF -> exportToPdfPlaceholder(filtered, chatTitle, options)
+                ExportFormat.JSON -> exportToJson(filtered, chatTitle, options)
+                ExportFormat.HTML -> exportToHtml(filtered, chatTitle, options)
+                ExportFormat.PLAIN_TEXT -> exportToPlainText(filtered, chatTitle, options)
+                ExportFormat.CSV -> exportToCsv(filtered, options)
+                ExportFormat.PDF -> exportToPdfPlaceholder(filtered, chatTitle, options)
             }
-        ExportResult(
+
+            ExportResult(
                 success = true,
                 format = options.format,
                 content = content,
@@ -143,12 +145,13 @@ class ConversationExporter {
         val result = export(messages, chatTitle, options)
         if (result.success) {
             stream.write(result.content.toByteArray())
-        stream.flush()
+            stream.flush()
         }
         return result
     }
 
     // ============ 格式实现 ============
+
     private fun exportToMarkdown(
         messages: List<ExportMessage>,
         title: String,
@@ -157,63 +160,72 @@ class ConversationExporter {
         val sb = StringBuilder()
         sb.appendLine("# $title")
         sb.appendLine()
+
         if (options.includeMetadata) {
             sb.appendLine("> **导出时间**: ${formatDate(System.currentTimeMillis(), options)}")
-        sb.appendLine("> **消息数**: ${messages.size}")
-        sb.appendLine("> **格式**: Markdown")
-        sb.appendLine()
+            sb.appendLine("> **消息数**: ${messages.size}")
+            sb.appendLine("> **格式**: Markdown")
+            sb.appendLine()
         }
+
         if (options.includeSummary) {
             sb.appendLine("## 摘要")
-        sb.appendLine(generateSummary(messages))
-        sb.appendLine()
+            sb.appendLine(generateSummary(messages))
+            sb.appendLine()
         }
+
         sb.appendLine("---")
         sb.appendLine()
+
         for (msg in messages) {
             val roleLabel = when (msg.role.lowercase()) {
                 "user" -> "👤 **用户**"
                 "assistant" -> "🤖 **助手**"
                 "system" -> "⚙️ **系统**"
-        else -> "**${msg.role}**"
+                else -> "**${msg.role}**"
             }
-        if (options.includeTimestamps) {
+
+            if (options.includeTimestamps) {
                 sb.appendLine("### $roleLabel · ${formatDate(msg.timestamp, options)}")
             } else {
                 sb.appendLine("### $roleLabel")
             }
-        sb.appendLine()
-        sb.appendLine(msg.content)
-        sb.appendLine()
-        if (options.includeThinking && msg.thinkingContent != null) {
+            sb.appendLine()
+            sb.appendLine(msg.content)
+            sb.appendLine()
+
+            if (options.includeThinking && msg.thinkingContent != null) {
                 sb.appendLine("<details>")
-        sb.appendLine("<summary>💭 思考过程</summary>")
-        sb.appendLine()
-        sb.appendLine(msg.thinkingContent)
-        sb.appendLine()
-        sb.appendLine("</details>")
-        sb.appendLine()
+                sb.appendLine("<summary>💭 思考过程</summary>")
+                sb.appendLine()
+                sb.appendLine(msg.thinkingContent)
+                sb.appendLine()
+                sb.appendLine("</details>")
+                sb.appendLine()
             }
-        if (options.includeToolCalls && msg.toolCalls.isNotEmpty()) {
+
+            if (options.includeToolCalls && msg.toolCalls.isNotEmpty()) {
                 sb.appendLine("<details>")
-        sb.appendLine("<summary>🔧 工具调用 (${msg.toolCalls.size})</summary>")
-        sb.appendLine()
-        for (tc in msg.toolCalls) {
+                sb.appendLine("<summary>🔧 工具调用 (${msg.toolCalls.size})</summary>")
+                sb.appendLine()
+                for (tc in msg.toolCalls) {
                     val status = if (tc.success) "✓" else "✗"
-        sb.appendLine("- $status **${tc.toolName}** (${tc.durationMs}ms)")
-        sb.appendLine("  - 参数: `${tc.arguments}`")
-        if (tc.result != null) {
+                    sb.appendLine("- $status **${tc.toolName}** (${tc.durationMs}ms)")
+                    sb.appendLine("  - 参数: `${tc.arguments}`")
+                    if (tc.result != null) {
                         sb.appendLine("  - 结果: `${tc.result.take(200)}`")
                     }
                 }
-        sb.appendLine()
-        sb.appendLine("</details>")
-        sb.appendLine()
+                sb.appendLine()
+                sb.appendLine("</details>")
+                sb.appendLine()
             }
         }
+
         return sb.toString()
     }
-        private fun exportToJson(
+
+    private fun exportToJson(
         messages: List<ExportMessage>,
         title: String,
         options: ExportOptions
@@ -225,44 +237,43 @@ class ConversationExporter {
         sb.appendLine("  \"messageCount\": ${messages.size},")
         if (options.includeMetadata) {
             sb.appendLine("  \"metadata\": {")
-        sb.appendLine("    \"format\": \"json\",")
-        sb.appendLine("    \"includeThinking\": ${options.includeThinking},")
-        sb.appendLine("    \"includeToolCalls\": ${options.includeToolCalls}")
-        sb.appendLine("  },")
+            sb.appendLine("    \"format\": \"json\",")
+            sb.appendLine("    \"includeThinking\": ${options.includeThinking},")
+            sb.appendLine("    \"includeToolCalls\": ${options.includeToolCalls}")
+            sb.appendLine("  },")
         }
         sb.appendLine("  \"messages\": [")
         messages.forEachIndexed { i, msg ->
             sb.appendLine("    {")
-        sb.appendLine("      \"id\": ${escapeJson(msg.id)},")
-        sb.appendLine("      \"role\": ${escapeJson(msg.role)},")
-        if (options.includeTimestamps) {
+            sb.appendLine("      \"id\": ${escapeJson(msg.id)},")
+            sb.appendLine("      \"role\": ${escapeJson(msg.role)},")
+            if (options.includeTimestamps) {
                 sb.appendLine("      \"timestamp\": ${msg.timestamp},")
-        sb.appendLine("      \"formattedTime\": ${escapeJson(formatDate(msg.timestamp, options))},")
+                sb.appendLine("      \"formattedTime\": ${escapeJson(formatDate(msg.timestamp, options))},")
             }
-        sb.appendLine("      \"content\": ${escapeJson(msg.content)}")
-        if (options.includeThinking && msg.thinkingContent != null) {
+            sb.appendLine("      \"content\": ${escapeJson(msg.content)}")
+            if (options.includeThinking && msg.thinkingContent != null) {
                 sb.appendLine("      ,\"thinking\": ${escapeJson(msg.thinkingContent)}")
             }
-        if (options.includeToolCalls && msg.toolCalls.isNotEmpty()) {
+            if (options.includeToolCalls && msg.toolCalls.isNotEmpty()) {
                 sb.appendLine("      ,\"toolCalls\": [")
-        msg.toolCalls.forEachIndexed { j, tc ->
+                msg.toolCalls.forEachIndexed { j, tc ->
                     sb.appendLine("        {")
-        sb.appendLine("          \"tool\": ${escapeJson(tc.toolName)},")
-        sb.appendLine("          \"success\": ${tc.success},")
-        sb.appendLine("          \"durationMs\": ${tc.durationMs}")
-        val _kaptFix14 = if (j < msg.toolCalls.size - 1) "," else ""
-        sb.appendLine("        }${_kaptFix14}")
+                    sb.appendLine("          \"tool\": ${escapeJson(tc.toolName)},")
+                    sb.appendLine("          \"success\": ${tc.success},")
+                    sb.appendLine("          \"durationMs\": ${tc.durationMs}")
+                    sb.appendLine("        }${if (j < msg.toolCalls.size - 1) "," else ""}")
                 }
-        sb.appendLine("      ]")
+                sb.appendLine("      ]")
             }
-        val _kaptFix13 = if (i < messages.size - 1) "," else ""
-        sb.appendLine("    }${_kaptFix13}")
+            sb.appendLine("    }${if (i < messages.size - 1) "," else ""}")
         }
         sb.appendLine("  ]")
         sb.appendLine("}")
         return sb.toString()
     }
-        private fun exportToHtml(
+
+    private fun exportToHtml(
         messages: List<ExportMessage>,
         title: String,
         options: ExportOptions
@@ -281,41 +292,46 @@ class ConversationExporter {
         sb.appendLine("<body>")
         sb.appendLine("<div class=\"container\">")
         sb.appendLine("<h1>${escapeHtml(title)}</h1>")
+
         if (options.includeMetadata) {
             sb.appendLine("<div class=\"metadata\">")
-        sb.appendLine("<p>导出时间: ${escapeHtml(formatDate(System.currentTimeMillis(), options))}</p>")
-        sb.appendLine("<p>消息数: ${messages.size}</p>")
-        sb.appendLine("</div>")
+            sb.appendLine("<p>导出时间: ${escapeHtml(formatDate(System.currentTimeMillis(), options))}</p>")
+            sb.appendLine("<p>消息数: ${messages.size}</p>")
+            sb.appendLine("</div>")
         }
+
         sb.appendLine("<div class=\"messages\">")
         for (msg in messages) {
             val roleClass = msg.role.lowercase()
-        sb.appendLine("<div class=\"message $roleClass\">")
-        sb.appendLine("<div class=\"header\">")
-        sb.appendLine("<span class=\"role\">${escapeHtml(roleLabel(msg.role))}</span>")
-        if (options.includeTimestamps) {
+            sb.appendLine("<div class=\"message $roleClass\">")
+            sb.appendLine("<div class=\"header\">")
+            sb.appendLine("<span class=\"role\">${escapeHtml(roleLabel(msg.role))}</span>")
+            if (options.includeTimestamps) {
                 sb.appendLine("<span class=\"time\">${escapeHtml(formatDate(msg.timestamp, options))}</span>")
             }
-        sb.appendLine("</div>")
-        sb.appendLine("<div class=\"content\">${markdownToHtml(msg.content)}</div>")
-        if (options.includeThinking && msg.thinkingContent != null) {
+            sb.appendLine("</div>")
+            sb.appendLine("<div class=\"content\">${markdownToHtml(msg.content)}</div>")
+
+            if (options.includeThinking && msg.thinkingContent != null) {
                 sb.appendLine("<details class=\"thinking\">")
-        sb.appendLine("<summary>💭 思考过程</summary>")
-        sb.appendLine("<div class=\"content\">${escapeHtml(msg.thinkingContent)}</div>")
-        sb.appendLine("</details>")
+                sb.appendLine("<summary>💭 思考过程</summary>")
+                sb.appendLine("<div class=\"content\">${escapeHtml(msg.thinkingContent)}</div>")
+                sb.appendLine("</details>")
             }
-        if (options.includeToolCalls && msg.toolCalls.isNotEmpty()) {
+
+            if (options.includeToolCalls && msg.toolCalls.isNotEmpty()) {
                 sb.appendLine("<details class=\"tool-calls\">")
-        sb.appendLine("<summary>🔧 工具调用 (${msg.toolCalls.size})</summary>")
-        sb.appendLine("<ul>")
-        for (tc in msg.toolCalls) {
+                sb.appendLine("<summary>🔧 工具调用 (${msg.toolCalls.size})</summary>")
+                sb.appendLine("<ul>")
+                for (tc in msg.toolCalls) {
                     val status = if (tc.success) "✓" else "✗"
-        sb.appendLine("<li>$status <strong>${escapeHtml(tc.toolName)}</strong> (${tc.durationMs}ms)</li>")
+                    sb.appendLine("<li>$status <strong>${escapeHtml(tc.toolName)}</strong> (${tc.durationMs}ms)</li>")
                 }
-        sb.appendLine("</ul>")
-        sb.appendLine("</details>")
+                sb.appendLine("</ul>")
+                sb.appendLine("</details>")
             }
-        sb.appendLine("</div>")
+
+            sb.appendLine("</div>")
         }
         sb.appendLine("</div>")
         sb.appendLine("</div>")
@@ -323,7 +339,8 @@ class ConversationExporter {
         sb.appendLine("</html>")
         return sb.toString()
     }
-        private fun exportToPlainText(
+
+    private fun exportToPlainText(
         messages: List<ExportMessage>,
         title: String,
         options: ExportOptions
@@ -337,12 +354,13 @@ class ConversationExporter {
             } else {
                 sb.appendLine("${roleLabel(msg.role)}:")
             }
-        sb.appendLine(msg.content)
-        sb.appendLine()
+            sb.appendLine(msg.content)
+            sb.appendLine()
         }
         return sb.toString()
     }
-        private fun exportToCsv(
+
+    private fun exportToCsv(
         messages: List<ExportMessage>,
         options: ExportOptions
     ): String {
@@ -350,22 +368,24 @@ class ConversationExporter {
         sb.appendLine("id,role,timestamp,content")
         for (msg in messages) {
             val time = if (options.includeTimestamps) formatDate(msg.timestamp, options) else ""
-        sb.appendLine("${escapeCsv(msg.id)},${escapeCsv(msg.role)},${escapeCsv(time)},${escapeCsv(msg.content)}")
+            sb.appendLine("${escapeCsv(msg.id)},${escapeCsv(msg.role)},${escapeCsv(time)},${escapeCsv(msg.content)}")
         }
         return sb.toString()
     }
-        private fun exportToPdfPlaceholder(
+
+    private fun exportToPdfPlaceholder(
         messages: List<ExportMessage>,
         title: String,
         options: ExportOptions
     ): String {
         // PDF 生成需要专门库（如 iText/PDFBox），这里返回 HTML 作为占位
-    return exportToHtml(messages, title, options).also {
+        return exportToHtml(messages, title, options).also {
             // 添加 PDF 提示
         }
     }
 
     // ============ 辅助方法 ============
+
     private fun applyFilter(messages: List<ExportMessage>, filter: ExportFilter): List<ExportMessage> {
         return messages.filter { msg ->
             (filter.startDate == null || msg.timestamp >= filter.startDate) &&
@@ -374,33 +394,40 @@ class ConversationExporter {
             (filter.searchQuery == null || msg.content.contains(filter.searchQuery, ignoreCase = true))
         }
     }
-        private fun formatDate(timestamp: Long, options: ExportOptions): String {
+
+    private fun formatDate(timestamp: Long, options: ExportOptions): String {
         val sdf = java.text.SimpleDateFormat(options.dateFormat)
         sdf.timeZone = java.util.TimeZone.getTimeZone(options.timeZone)
         return sdf.format(java.util.Date(timestamp))
     }
-        private fun roleLabel(role: String): String = when (role.lowercase()) {
+
+    private fun roleLabel(role: String): String = when (role.lowercase()) {
         "user" -> "用户"
         "assistant" -> "助手"
         "system" -> "系统"
         else -> role
     }
-        private fun generateSummary(messages: List<ExportMessage>): String {
+
+    private fun generateSummary(messages: List<ExportMessage>): String {
         val userMessages = messages.filter { it.role.equals("user", true) }
         if (userMessages.isEmpty()) return "空对话"
         val firstMsg = userMessages.first().content.take(100)
         return "本次对话共 ${messages.size} 条消息，用户提问 ${userMessages.size} 次，主要话题：$firstMsg"
     }
-        private fun escapeJson(s: String): String = "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"")
+
+    private fun escapeJson(s: String): String = "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"")
         .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\""
-        private fun escapeHtml(s: String): String = s.replace("&", "&amp;")
+
+    private fun escapeHtml(s: String): String = s.replace("&", "&amp;")
         .replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
-        private fun escapeCsv(s: String): String {
+
+    private fun escapeCsv(s: String): String {
         return if (s.contains(",") || s.contains("\"") || s.contains("\n")) {
             "\"" + s.replace("\"", "\"\"") + "\""
         } else s
     }
-        private fun markdownToHtml(md: String): String {
+
+    private fun markdownToHtml(md: String): String {
         var html = escapeHtml(md)
         // 代码块
         html = Regex("```(\\w*)\\n([\\s\\S]*?)```").replace(html) { m ->
@@ -425,11 +452,12 @@ class ConversationExporter {
         html = Regex("\n\n").replace(html, "</p><p>")
         return "<p>$html</p>"
     }
-        private fun StringBuilder.appendHTMLStyles(sb: StringBuilder) {
+
+    private fun StringBuilder.appendHTMLStyles(sb: StringBuilder) {
         sb.append("""
-        body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
+            body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
             .container { background: #fff; }
-        h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+            h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
             .metadata { background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 14px; color: #666; }
             .messages { margin-top: 20px; }
             .message { margin-bottom: 20px; padding: 15px; border-radius: 10px; }
@@ -441,8 +469,8 @@ class ConversationExporter {
             .content { line-height: 1.6; }
             .content pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
             .content code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
-        details { margin-top: 10px; }
-        summary { cursor: pointer; color: #666; }
+            details { margin-top: 10px; }
+            summary { cursor: pointer; color: #666; }
         """.trimIndent())
     }
 }

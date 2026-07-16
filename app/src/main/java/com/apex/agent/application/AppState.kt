@@ -9,7 +9,8 @@ object AppState {
 
     val context: Context
         get() = application?.applicationContext ?: throw IllegalStateException("AppState not initialized")
-        fun initialize(application: Application) {
+
+    fun initialize(application: Application) {
         this.application = application
     }
 }

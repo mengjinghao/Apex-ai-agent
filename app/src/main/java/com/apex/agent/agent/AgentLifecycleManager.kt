@@ -36,9 +36,9 @@ enum class AgentLifecycleState {
  */
 sealed class AgentLifecycleEvent {
     data class StateChanged(val agentId: String, val from: AgentLifecycleState, val to: AgentLifecycleState) : AgentLifecycleEvent()
-        data class HealthCheck(val agentId: String, val healthy: Boolean, val message: String?) : AgentLifecycleEvent()
-        data class Error(val agentId: String, val error: Throwable) : AgentLifecycleEvent()
-        data class MessageReceived(val fromAgentId: String, val toAgentId: String, val message: AgentMessage) : AgentLifecycleEvent()
+    data class HealthCheck(val agentId: String, val healthy: Boolean, val message: String?) : AgentLifecycleEvent()
+    data class Error(val agentId: String, val error: Throwable) : AgentLifecycleEvent()
+    data class MessageReceived(val fromAgentId: String, val toAgentId: String, val message: AgentMessage) : AgentLifecycleEvent()
 }
 
 /**
@@ -171,11 +171,13 @@ class AgentLifecycleManager(
 ) {
 
     private val _states = ConcurrentHashMap<String, MutableStateFlow<AgentLifecycleState>>()
-        private val _healths = ConcurrentHashMap<String, MutableStateFlow<AgentHealth>>()
-        private val _events = MutableSharedFlow<AgentLifecycleEvent>(extraBufferCapacity = 256)
-        val events: SharedFlow<AgentLifecycleEvent> = _events.asSharedFlow()
-        private val _messageBus = MutableSharedFlow<AgentMessage>(extraBufferCapacity = 512)
-        val messageBus: SharedFlow<AgentMessage> = _messageBus.asSharedFlow()
+    private val _healths = ConcurrentHashMap<String, MutableStateFlow<AgentHealth>>()
+
+    private val _events = MutableSharedFlow<AgentLifecycleEvent>(extraBufferCapacity = 256)
+    val events: SharedFlow<AgentLifecycleEvent> = _events.asSharedFlow()
+
+    private val _messageBus = MutableSharedFlow<AgentMessage>(extraBufferCapacity = 512)
+    val messageBus: SharedFlow<AgentMessage> = _messageBus.asSharedFlow()
 
     /** 已注册的 Agent（agentId -> SubAgent） */
     private val agents = ConcurrentHashMap<String, SubAgent>()
@@ -209,12 +211,13 @@ class AgentLifecycleManager(
         val currentState = _states[agentId]?.value ?: AgentLifecycleState.TERMINATED
 
         // 确保先停止
-    if (currentState == AgentLifecycleState.ACTIVE || currentState == AgentLifecycleState.PAUSED) {
+        if (currentState == AgentLifecycleState.ACTIVE || currentState == AgentLifecycleState.PAUSED) {
             stop(agentId)
         }
         if (currentState != AgentLifecycleState.TERMINATED) {
             destroy(agentId)
         }
+
         agents.remove(agentId)
         _states.remove(agentId)
         _healths.remove(agentId)
@@ -244,18 +247,20 @@ class AgentLifecycleManager(
         if (stateFlow.value != AgentLifecycleState.CREATED) {
             return false  // 状态不对
         }
+
         transitionState(agentId, AgentLifecycleState.CREATED, AgentLifecycleState.INITIALIZING)
+
         try {
             (agent as? AgentLifecycleCallbacks)?.onInitialize()
-        transitionState(agentId, AgentLifecycleState.INITIALIZING, AgentLifecycleState.ACTIVE)
+            transitionState(agentId, AgentLifecycleState.INITIALIZING, AgentLifecycleState.ACTIVE)
             (agent as? AgentLifecycleCallbacks)?.onStart()
-        updateHealth(agentId, healthy = true, "Initialized successfully")
-        return true
+            updateHealth(agentId, healthy = true, "Initialized successfully")
+            return true
         } catch (e: Exception) {
             transitionState(agentId, AgentLifecycleState.INITIALIZING, AgentLifecycleState.FAILED)
-        updateHealth(agentId, healthy = false, "Initialization failed: ${e.message}")
-        _events.tryEmit(AgentLifecycleEvent.Error(agentId, e))
-        return false
+            updateHealth(agentId, healthy = false, "Initialization failed: ${e.message}")
+            _events.tryEmit(AgentLifecycleEvent.Error(agentId, e))
+            return false
         }
     }
 
@@ -270,13 +275,14 @@ class AgentLifecycleManager(
         if (stateFlow.value != AgentLifecycleState.ACTIVE) {
             return false
         }
+
         try {
             (agent as? AgentLifecycleCallbacks)?.onPause()
-        transitionState(agentId, AgentLifecycleState.ACTIVE, AgentLifecycleState.PAUSED)
-        return true
+            transitionState(agentId, AgentLifecycleState.ACTIVE, AgentLifecycleState.PAUSED)
+            return true
         } catch (e: Exception) {
             _events.tryEmit(AgentLifecycleEvent.Error(agentId, e))
-        return false
+            return false
         }
     }
 
@@ -291,13 +297,14 @@ class AgentLifecycleManager(
         if (stateFlow.value != AgentLifecycleState.PAUSED) {
             return false
         }
+
         try {
             (agent as? AgentLifecycleCallbacks)?.onResume()
-        transitionState(agentId, AgentLifecycleState.PAUSED, AgentLifecycleState.ACTIVE)
-        return true
+            transitionState(agentId, AgentLifecycleState.PAUSED, AgentLifecycleState.ACTIVE)
+            return true
         } catch (e: Exception) {
             _events.tryEmit(AgentLifecycleEvent.Error(agentId, e))
-        return false
+            return false
         }
     }
 
@@ -313,16 +320,18 @@ class AgentLifecycleManager(
         if (currentState != AgentLifecycleState.ACTIVE && currentState != AgentLifecycleState.PAUSED) {
             return false
         }
+
         transitionState(agentId, currentState, AgentLifecycleState.STOPPING)
+
         try {
             (agent as? AgentLifecycleCallbacks)?.onStop()
-        transitionState(agentId, AgentLifecycleState.STOPPING, AgentLifecycleState.TERMINATED)
-        updateHealth(agentId, healthy = false, "Agent stopped")
-        return true
+            transitionState(agentId, AgentLifecycleState.STOPPING, AgentLifecycleState.TERMINATED)
+            updateHealth(agentId, healthy = false, "Agent stopped")
+            return true
         } catch (e: Exception) {
             transitionState(agentId, AgentLifecycleState.STOPPING, AgentLifecycleState.FAILED)
-        _events.tryEmit(AgentLifecycleEvent.Error(agentId, e))
-        return false
+            _events.tryEmit(AgentLifecycleEvent.Error(agentId, e))
+            return false
         }
     }
 
@@ -337,13 +346,14 @@ class AgentLifecycleManager(
         if (stateFlow.value == AgentLifecycleState.TERMINATED) {
             return true  // 已销毁
         }
+
         try {
             (agent as? AgentLifecycleCallbacks)?.onDestroy()
-        transitionState(agentId, stateFlow.value, AgentLifecycleState.TERMINATED)
-        return true
+            transitionState(agentId, stateFlow.value, AgentLifecycleState.TERMINATED)
+            return true
         } catch (e: Exception) {
             _events.tryEmit(AgentLifecycleEvent.Error(agentId, e))
-        return false
+            return false
         }
     }
 
@@ -359,6 +369,7 @@ class AgentLifecycleManager(
         } catch (e: Exception) {
             false
         }
+
         val health = AgentHealth(
             agentId = agentId,
             healthy = healthy,
@@ -394,12 +405,12 @@ class AgentLifecycleManager(
         )
 
         // 直接调用目标 Agent 的 onMessage
-    return try {
+        return try {
             (targetAgent as? AgentLifecycleCallbacks)?.onMessage(message)
-        true
+            true
         } catch (e: Exception) {
             _events.tryEmit(AgentLifecycleEvent.Error(message.toId, e))
-        false
+            false
         }
     }
 
@@ -412,7 +423,7 @@ class AgentLifecycleManager(
     suspend fun broadcast(fromId: String, type: String, payload: Map<String, Any> = emptyMap()) {
         for ((agentId, _) in agents) {
             if (agentId == fromId) continue  // 不发给自己
-    val state = _states[agentId]?.value
+            val state = _states[agentId]?.value
             if (state == AgentLifecycleState.ACTIVE) {
                 sendMessage(
                     AgentMessage(
@@ -472,7 +483,7 @@ class AgentLifecycleManager(
         for (agentId in agents.keys.toList()) {
             try {
                 stop(agentId)
-        destroy(agentId)
+                destroy(agentId)
             } catch (_: Exception) {
                 // 关闭阶段忽略单个 Agent 异常
             }
@@ -483,6 +494,7 @@ class AgentLifecycleManager(
     }
 
     // ===== 内部方法 =====
+
     private fun transitionState(
         agentId: String,
         expectedFrom: AgentLifecycleState,
@@ -493,7 +505,8 @@ class AgentLifecycleManager(
         stateFlow.value = to
         _events.tryEmit(AgentLifecycleEvent.StateChanged(agentId, from, to))
     }
-        private fun updateHealth(agentId: String, healthy: Boolean, message: String?) {
+
+    private fun updateHealth(agentId: String, healthy: Boolean, message: String?) {
         val stateFlow = _states[agentId] ?: return
         _healths[agentId]?.value = AgentHealth(
             agentId = agentId,

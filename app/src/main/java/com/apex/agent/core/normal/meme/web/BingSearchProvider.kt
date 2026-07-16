@@ -14,52 +14,58 @@ import kotlinx.coroutines.withContext
 class BingSearchProvider : WebSearchProvider {
 
     override val name = "Bing"
-        override val supported = true
+    override val supported = true
 
     private val suggestUrl = "https://www.bing.com/AS/Suggestions"
-        private val searchUrl = "https://www.bing.com/search"
+    private val searchUrl = "https://www.bing.com/search"
+
     override suspend fun searchMeme(query: String, num: Int): MemeSearchResult {
         val start = System.currentTimeMillis()
         val enhancedQuery = enhanceQuery(query)
+
         return withContext(Dispatchers.IO) {
             val url = "$searchUrl?q=${MemeHttpUtil.encode(enhancedQuery)}&count=$num&mkt=zh-CN"
-        val result = MemeHttpUtil.get(url)
-        if (!result.success) {
+            val result = MemeHttpUtil.get(url)
+
+            if (!result.success) {
                 return@withContext MemeSearchResult(
                     query = query, engine = name, items = emptyList(),
                     totalFound = 0, searchTimeMs = System.currentTimeMillis() - start,
                     success = false, error = result.error ?: "HTTP ${result.statusCode}"
                 )
             }
-        val items = parseBingResults(result.body, num)
-        MemeSearchResult(
+
+            val items = parseBingResults(result.body, num)
+            MemeSearchResult(
                 query = query, engine = name, items = items,
                 totalFound = items.size, searchTimeMs = System.currentTimeMillis() - start,
                 success = true
             )
         }
     }
-        override suspend fun suggest(query: String): List<String> {
+
+    override suspend fun suggest(query: String): List<String> {
         return withContext(Dispatchers.IO) {
             val url = "$suggestUrl?q=${MemeHttpUtil.encode(query)}&mkt=zh-CN&cvid=1"
-        val result = MemeHttpUtil.get(url)
-        if (!result.success) return@withContext emptyList()
+            val result = MemeHttpUtil.get(url)
+
+            if (!result.success) return@withContext emptyList()
 
             // Bing 建议返回 JSON 数组格式
             // [["query",["suggestion1","suggestion2",...]]]
-    val array = MemeJsonUtil.parseArray(result.body)
-        if (array != null && array.length() > 0) {
+            val array = MemeJsonUtil.parseArray(result.body)
+            if (array != null && array.length() > 0) {
                 val first = array.optJSONArray(0)
-        if (first != null && first.length() > 1) {
+                if (first != null && first.length() > 1) {
                     val suggestions = first.optJSONArray(1)
-        if (suggestions != null) {
+                    if (suggestions != null) {
                         return@withContext (0 until suggestions.length()).mapNotNull { i ->
                             suggestions.optString(i).takeIf { it.isNotBlank() }
                         }
                     }
                 }
             }
-        emptyList()
+            emptyList()
         }
     }
 
@@ -68,12 +74,12 @@ class BingSearchProvider : WebSearchProvider {
      */
     private fun enhanceQuery(query: String): String {
         // 如果查询词很短，添加"梗"后缀
-    val trimmed = query.trim()
+        val trimmed = query.trim()
         return when {
             trimmed.contains("是什么") || trimmed.contains("什么意思") -> "$trimmed 梗 网络用语"
-        trimmed.contains("梗") -> trimmed
+            trimmed.contains("梗") -> trimmed
             trimmed.length <= 6 -> "$trimmed 梗 什么意思"
-        else -> "$trimmed 网络梗 解释"
+            else -> "$trimmed 网络梗 解释"
         }
     }
 
@@ -85,15 +91,17 @@ class BingSearchProvider : WebSearchProvider {
 
         // 简化：用正则提取搜索结果
         // Bing 结果块: <li class="b_algo">...<h2><a href="...">标题</a></h2>...<p>摘要</p>...</li>
-    val resultPattern = Regex(
+        val resultPattern = Regex(
             """<li[^>]*class="b_algo"[^>]*>.*?<h2[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>.*?(?:<p[^>]*>|<div[^>]*class="b_caption"[^>]*>.*?<p[^>]*>)(.*?)</p>""",
             RegexOption.DOT_MATCHES_ALL
         )
+
         resultPattern.findAll(html).take(maxResults).forEach { match ->
             val url = match.groupValues[1]
-        val title = cleanHtml(match.groupValues[2])
-        val snippet = cleanHtml(match.groupValues[3])
-        if (title.isNotBlank() && url.isNotBlank()) {
+            val title = cleanHtml(match.groupValues[2])
+            val snippet = cleanHtml(match.groupValues[3])
+
+            if (title.isNotBlank() && url.isNotBlank()) {
                 items.add(MemeSearchResultItem(
                     title = title,
                     snippet = snippet.take(300),
@@ -104,9 +112,9 @@ class BingSearchProvider : WebSearchProvider {
         }
 
         // 如果正则没匹配到，尝试更宽松的解析
-    if (items.isEmpty()) {
+        if (items.isEmpty()) {
             val linkPattern = Regex("""<a[^>]*href="(https?://[^"]+)"[^>]*>(.*?)</a>""")
-        linkPattern.findAll(html)
+            linkPattern.findAll(html)
                 .filter { m ->
                     val href = m.groupValues[1]
                     href.startsWith("http") &&
@@ -117,7 +125,7 @@ class BingSearchProvider : WebSearchProvider {
                 .take(maxResults)
                 .forEach { match ->
                     val title = cleanHtml(match.groupValues[2])
-        if (title.length > 5) {
+                    if (title.length > 5) {
                         items.add(MemeSearchResultItem(
                             title = title,
                             snippet = "",
@@ -127,9 +135,11 @@ class BingSearchProvider : WebSearchProvider {
                     }
                 }
         }
+
         return items
     }
-        private fun cleanHtml(html: String): String {
+
+    private fun cleanHtml(html: String): String {
         return html
             .replace(Regex("<[^>]+>"), "")  // 去标签
             .replace("&amp;", "&")

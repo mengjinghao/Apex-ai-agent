@@ -48,7 +48,7 @@ class HandlerChain<T> {
             tail = handler
         } else {
             tail?.setNext(handler)
-        tail = handler
+            tail = handler
         }
         return this
     }
@@ -60,10 +60,10 @@ class HandlerChain<T> {
             if (current == after) {
                 handler.next = current.next
                 current.setNext(handler)
-        if (current == tail) tail = handler
+                if (current == tail) tail = handler
                 return true
             }
-        current = current.next
+            current = current.next
         }
         return false
     }
@@ -83,7 +83,7 @@ class HandlerChain<T> {
                 if (handler == tail) tail = current
                 return true
             }
-        current = current.next
+            current = current.next
         }
         return false
     }
@@ -92,7 +92,8 @@ class HandlerChain<T> {
     fun process(context: T): Boolean {
         return head?.handle(context) ?: true
     }
-        fun clear() {
+
+    fun clear() {
         head = null
         tail = null
     }
@@ -106,12 +107,12 @@ class ValidationHandler : Handler<MessageContext> {
         if (context.rawMessage.isBlank()) {
             context.isValid = false
             context.errorMessage = "Message cannot be empty"
-        return false
+            return false
         }
         if (context.rawMessage.length > 10000) {
             context.isValid = false
             context.errorMessage = "Message exceeds max length of 10000"
-        return false
+            return false
         }
         return next?.handle(context) ?: true
     }
@@ -151,9 +152,9 @@ class RoutingHandler : Handler<MessageContext> {
     override fun handle(context: MessageContext): Boolean {
         val routed = when {
             context.processedMessage.contains("/ai") -> "ai_agent"
-        context.processedMessage.contains("/tool") -> "tool_executor"
-        context.processedMessage.contains("/workflow") -> "workflow_engine"
-        else -> "default"
+            context.processedMessage.contains("/tool") -> "tool_executor"
+            context.processedMessage.contains("/workflow") -> "workflow_engine"
+            else -> "default"
         }
         context.metadata["route"] = routed
         return next?.handle(context) ?: true
@@ -163,11 +164,13 @@ class RoutingHandler : Handler<MessageContext> {
 /** 消息预处理器 - 组装完整职责链 */
 class MessagePreprocessor {
     private val chain = HandlerChain<MessageContext>()
-        init {
+
+    init {
         chain.add(ValidationHandler())
             .add(SanitizationHandler(listOf(Regex("<script>.*?</script>", RegexOption.IGNORE_CASE))))
             .add(EnrichmentHandler())
             .add(RoutingHandler())
     }
-        fun process(message: MessageContext): Boolean = chain.process(message)
+
+    fun process(message: MessageContext): Boolean = chain.process(message)
 }

@@ -12,7 +12,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
-class RealTimeCollaborationManager @Inject constructor(
+class RealTimeCollaborationManager constructor(
     private val context: Context
 ) {
 
@@ -23,7 +23,8 @@ class RealTimeCollaborationManager @Inject constructor(
         val state: MutableMap<String, Any> = mutableMapOf(),
         val createdAt: Long = System.currentTimeMillis()
     )
-        data class CollaborationEvent(
+
+    data class CollaborationEvent(
         val type: EventType,
         val sessionId: String,
         val agentId: String,
@@ -35,16 +36,19 @@ class RealTimeCollaborationManager @Inject constructor(
             CONFLICT_RESOLVED, SYNC_COMPLETED, CONNECTION_LOST
         }
     }
-        data class ConnectionState(
+
+    data class ConnectionState(
         val agentId: String,
         val connected: Boolean,
         val lastHeartbeat: Long
     )
-        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-        private val sessions = ConcurrentHashMap<String, CollaborationSession>()
-        private val connectionStates = MutableStateFlow<Map<String, ConnectionState>>(emptyMap())
-        private val _events = MutableSharedFlow<CollaborationEvent>()
-        val events: SharedFlow<CollaborationEvent> = _events
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val sessions = ConcurrentHashMap<String, CollaborationSession>()
+    private val connectionStates = MutableStateFlow<Map<String, ConnectionState>>(emptyMap())
+    private val _events = MutableSharedFlow<CollaborationEvent>()
+
+    val events: SharedFlow<CollaborationEvent> = _events
     val connections: StateFlow<Map<String, ConnectionState>> = connectionStates
 
     suspend fun createSession(taskId: String, participants: Set<String>): String {
@@ -58,20 +62,23 @@ class RealTimeCollaborationManager @Inject constructor(
         emitEvent(CollaborationEvent.EventType.AGENT_JOINED, sessionId, participants.firstOrNull() ?: "")
         return sessionId
     }
-        suspend fun joinSession(sessionId: String, agentId: String): Boolean {
+
+    suspend fun joinSession(sessionId: String, agentId: String): Boolean {
         val session = sessions[sessionId] ?: return false
         session.participants.add(agentId)
         updateConnection(agentId, true)
         emitEvent(CollaborationEvent.EventType.AGENT_JOINED, sessionId, agentId)
         return true
     }
-        suspend fun leaveSession(sessionId: String, agentId: String) {
+
+    suspend fun leaveSession(sessionId: String, agentId: String) {
         val session = sessions[sessionId] ?: return
         session.participants.remove(agentId)
         updateConnection(agentId, false)
         emitEvent(CollaborationEvent.EventType.AGENT_LEFT, sessionId, agentId)
     }
-        suspend fun updateState(sessionId: String, agentId: String, key: String, value: Any) {
+
+    suspend fun updateState(sessionId: String, agentId: String, key: String, value: Any) {
         val session = sessions[sessionId] ?: return
         session.state[key] = value
         emitEvent(
@@ -81,18 +88,22 @@ class RealTimeCollaborationManager @Inject constructor(
             mapOf("key" to key, "value" to value)
         )
     }
-        fun getSession(sessionId: String): CollaborationSession? = sessions[sessionId]
+
+    fun getSession(sessionId: String): CollaborationSession? = sessions[sessionId]
     fun getSessionState(sessionId: String): Map<String, Any>? = sessions[sessionId]?.state?.toMap()
-        fun shutdown() {
+
+    fun shutdown() {
         scope.cancel()
         sessions.clear()
     }
-        private fun updateConnection(agentId: String, connected: Boolean) {
+
+    private fun updateConnection(agentId: String, connected: Boolean) {
         connectionStates.value = connectionStates.value + (
             agentId to ConnectionState(agentId, connected, System.currentTimeMillis())
         )
     }
-        private suspend fun emitEvent(type: CollaborationEvent.EventType, sessionId: String, agentId: String, data: Map<String, Any> = emptyMap()) {
+
+    private suspend fun emitEvent(type: CollaborationEvent.EventType, sessionId: String, agentId: String, data: Map<String, Any> = emptyMap()) {
         _events.emit(CollaborationEvent(type, sessionId, agentId, data))
     }
 }

@@ -59,37 +59,37 @@ class AdaptiveResponseDepth {
         val q = question.trim().lowercase()
 
         // 闲聊型
-    if (q.length < 10 && q.matches(Regex("^(你好|hi|hello|hey|嗨|谢谢|thanks|ok|好的|再见).*"))) {
+        if (q.length < 10 && q.matches(Regex("^(你好|hi|hello|hey|嗨|谢谢|thanks|ok|好的|再见).*"))) {
             return QuestionType.CHITCHAT
         }
 
         // 创意型
-    if (q.containsAny("写", "创作", "编", "生成", "想象", "头脑风暴", "brainstorm", "write", "create", "compose", "imagine")) {
+        if (q.containsAny("写", "创作", "编", "生成", "想象", "头脑风暴", "brainstorm", "write", "create", "compose", "imagine")) {
             return QuestionType.CREATIVE
         }
 
         // 调试型
-    if (q.containsAny("报错", "错误", "bug", "异常", "失败", "不工作", "error", "exception", "fail", "crash", "debug")) {
+        if (q.containsAny("报错", "错误", "bug", "异常", "失败", "不工作", "error", "exception", "fail", "crash", "debug")) {
             return QuestionType.DEBUGGING
         }
 
         // 操作型
-    if (q.containsAny("怎么", "如何", "怎样", "步骤", "教程", "how", "how to", "steps", "tutorial", "guide")) {
+        if (q.containsAny("怎么", "如何", "怎样", "步骤", "教程", "how", "how to", "steps", "tutorial", "guide")) {
             return QuestionType.OPERATIONAL
         }
 
         // 对比型
-    if (q.containsAny("对比", "比较", "区别", "vs", "versus", "compare", "difference", "better")) {
+        if (q.containsAny("对比", "比较", "区别", "vs", "versus", "compare", "difference", "better")) {
             return QuestionType.COMPARATIVE
         }
 
         // 解释型
-    if (q.containsAny("为什么", "原因", "原理", "机制", "怎么回事", "为什么", "why", "reason", "principle", "mechanism", "explain")) {
+        if (q.containsAny("为什么", "原因", "原理", "机制", "怎么回事", "为什么", "why", "reason", "principle", "mechanism", "explain")) {
             return QuestionType.EXPLANATORY
         }
 
         // 事实型（默认）
-    return QuestionType.FACTUAL
+        return QuestionType.FACTUAL
     }
 
     /**
@@ -114,7 +114,7 @@ class AdaptiveResponseDepth {
      */
     fun resolveWithContext(ctx: DepthContext): ResponseDepth {
         // 用户历史偏好优先（除非问题类型强烈建议其他深度）
-    val typeBasedDepth = when (ctx.questionType) {
+        val typeBasedDepth = when (ctx.questionType) {
             QuestionType.CHITCHAT -> ResponseDepth.BRIEF
             QuestionType.FACTUAL -> if (ctx.questionLength > 50) ResponseDepth.STANDARD else ResponseDepth.BRIEF
             QuestionType.EXPLANATORY -> ResponseDepth.DETAILED
@@ -125,14 +125,14 @@ class AdaptiveResponseDepth {
         }
 
         // 追问场景降级
-    val adjusted = if (ctx.isFollowUp && typeBasedDepth == ResponseDepth.COMPREHENSIVE) {
+        val adjusted = if (ctx.isFollowUp && typeBasedDepth == ResponseDepth.COMPREHENSIVE) {
             ResponseDepth.DETAILED
         } else typeBasedDepth
 
         // 用户偏好微调
-    return ctx.userHistoryPreference?.let { pref ->
+        return ctx.userHistoryPreference?.let { pref ->
             // 偏好与类型建议取折中
-    when {
+            when {
                 pref.ordinal < adjusted.ordinal -> adjusted
                 pref.ordinal > adjusted.ordinal && ctx.questionType != QuestionType.CHITCHAT -> pref
                 else -> adjusted
@@ -146,15 +146,17 @@ class AdaptiveResponseDepth {
     fun generateDepthPrompt(depth: ResponseDepth): String {
         return when (depth) {
             ResponseDepth.BRIEF -> "[深度提示：请用一句话简洁回答，不超过30字]"
-        ResponseDepth.STANDARD -> "[深度提示：请用1-2个段落回答，要点清晰]"
-        ResponseDepth.DETAILED -> "[深度提示：请分点详细回答，包含示例和解释]"
-        ResponseDepth.COMPREHENSIVE -> "[深度提示：请深度分析，包含背景、原理、步骤、示例、注意事项、最佳实践]"
+            ResponseDepth.STANDARD -> "[深度提示：请用1-2个段落回答，要点清晰]"
+            ResponseDepth.DETAILED -> "[深度提示：请分点详细回答，包含示例和解释]"
+            ResponseDepth.COMPREHENSIVE -> "[深度提示：请深度分析，包含背景、原理、步骤、示例、注意事项、最佳实践]"
         }
     }
-        private fun String.containsAny(vararg keywords: String): Boolean {
+
+    private fun String.containsAny(vararg keywords: String): Boolean {
         return keywords.any { this.contains(it, ignoreCase = true) }
     }
-        private fun hasTechnicalTerms(text: String): Boolean {
+
+    private fun hasTechnicalTerms(text: String): Boolean {
         val techPatterns = listOf(
             Regex("\\b(api|http|json|sql|python|java|kotlin|android|ios|react|vue|docker|k8s)\\b", RegexOption.IGNORE_CASE),
             Regex("(函数|变量|类|接口|协议|算法|数据库|服务器|客户端)")

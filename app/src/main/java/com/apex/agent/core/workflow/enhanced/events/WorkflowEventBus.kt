@@ -73,21 +73,22 @@ class WorkflowEventBus(
     private val extraBufferCapacity: Int = 256
 ) {
     private val _events = MutableSharedFlow<WorkflowEvent>(extraBufferCapacity = extraBufferCapacity)
-        val events: SharedFlow<WorkflowEvent> = _events.asSharedFlow()
-        private val subscriptions = ConcurrentHashMap<String, EventSubscription>()
-        private val dedupStore = ConcurrentHashMap<String, Long>()
-        private val dedupTtlMs: Long = 5 * 60_000L
+    val events: SharedFlow<WorkflowEvent> = _events.asSharedFlow()
+
+    private val subscriptions = ConcurrentHashMap<String, EventSubscription>()
+    private val dedupStore = ConcurrentHashMap<String, Long>()
+    private val dedupTtlMs: Long = 5 * 60_000L
 
     /**
      * 发布事件
      */
     suspend fun publish(event: WorkflowEvent) {
         // 去重（基于 dedupKey）
-    if (event is WorkflowEvent.External) {
+        if (event is WorkflowEvent.External) {
             val dedupKey = event.payload.takeIf { it is String }?.toString()
-        if (dedupKey != null && dedupStore.containsKey(dedupKey)) {
+            if (dedupKey != null && dedupStore.containsKey(dedupKey)) {
                 val age = System.currentTimeMillis() - (dedupStore[dedupKey] ?: 0)
-        if (age < dedupTtlMs) return  // 跳过重复事件
+                if (age < dedupTtlMs) return  // 跳过重复事件
             }
         }
         _events.emit(event)
@@ -117,10 +118,12 @@ class WorkflowEventBus(
     fun registerSubscription(sub: EventSubscription) {
         subscriptions[sub.subscriptionId] = sub
     }
-        fun unregisterSubscription(subscriptionId: String) {
+
+    fun unregisterSubscription(subscriptionId: String) {
         subscriptions.remove(subscriptionId)
     }
-        fun activeSubscriptions(): List<EventSubscription> = subscriptions.values.toList()
+
+    fun activeSubscriptions(): List<EventSubscription> = subscriptions.values.toList()
 
     /**
      * 清理过期的去重记录
@@ -151,12 +154,14 @@ class WorkflowEventBus(
 object EventBusHolder {
     @Volatile
     private var instance: WorkflowEventBus = WorkflowEventBus()
-        fun get(): WorkflowEventBus = instance
+
+    fun get(): WorkflowEventBus = instance
 
     fun set(bus: WorkflowEventBus) {
         instance = bus
     }
-        fun reset() {
+
+    fun reset() {
         instance = WorkflowEventBus()
     }
 }

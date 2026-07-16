@@ -202,18 +202,20 @@ class NormalAgentMemory {
                 .coerceAtLeast(experienceStore.getAll().maxOfOrNull { it.timestamp } ?: 0L)
         )
     }
-        private fun trimConversations() {
+
+    private fun trimConversations() {
         val all = conversationStore.getByType(MemoryType.CONVERSATION)
         if (all.size > maxConversations) {
             // 删除最旧的
-        all.takeLast(all.size - maxConversations).forEach { conversationStore.remove(it.id) }
+            all.takeLast(all.size - maxConversations).forEach { conversationStore.remove(it.id) }
         }
     }
-        private fun trimExperiences() {
+
+    private fun trimExperiences() {
         val all = experienceStore.getAll()
         if (all.size > maxExperiences) {
             // 按重要性排序，删除最不重要的
-        all.sortedBy { it.importance }
+            all.sortedBy { it.importance }
                 .take(all.size - maxExperiences)
                 .forEach { experienceStore.remove(it.id) }
         }

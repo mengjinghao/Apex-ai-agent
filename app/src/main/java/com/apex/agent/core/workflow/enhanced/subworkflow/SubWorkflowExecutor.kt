@@ -34,9 +34,9 @@ enum class ParentChildLink {
  */
 sealed class SubWorkflowResult {
     data class Completed(val outputs: Map<String, Any>) : SubWorkflowResult()
-        data class TimedOut(val subThreadId: String) : SubWorkflowResult()
-        data class Failed(val error: Throwable) : SubWorkflowResult()
-        data class AsyncStarted(val subThreadId: String) : SubWorkflowResult()
+    data class TimedOut(val subThreadId: String) : SubWorkflowResult()
+    data class Failed(val error: Throwable) : SubWorkflowResult()
+    data class AsyncStarted(val subThreadId: String) : SubWorkflowResult()
 }
 
 /**
@@ -91,8 +91,10 @@ class DelegatingSubWorkflowExecutor(
 ) : SubWorkflowExecutor {
 
     private val executions = ConcurrentHashMap<String, SubWorkflowExecution>()
-        override suspend fun invoke(invocation: SubWorkflowInvocation): SubWorkflowResult {
+
+    override suspend fun invoke(invocation: SubWorkflowInvocation): SubWorkflowResult {
         val subThreadId = "sub_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
+
         val record = SubWorkflowExecution(
             subThreadId = subThreadId,
             subWorkflowId = invocation.subWorkflowId,
@@ -106,45 +108,48 @@ class DelegatingSubWorkflowExecutor(
 
         if (!invocation.waitForCompletion) {
             // Fire-and-forget: 异步启动后立即返回
-    return SubWorkflowResult.AsyncStarted(subThreadId)
+            return SubWorkflowResult.AsyncStarted(subThreadId)
         }
+
         return try {
             kotlinx.coroutines.withTimeout(invocation.timeoutMs) {
                 // 实际工作流需要从注册表加载，这里简化为占位
                 // 真实实现应调用 workflowRegistry.get(invocation.subWorkflowId) 加载定义
-    val mockWorkflow = EnhancedWorkflow(
+                val mockWorkflow = EnhancedWorkflow(
                     id = invocation.subWorkflowId,
                     name = "SubWorkflow_${invocation.subWorkflowId}",
                     nodes = emptyList(),
                     connections = emptyList()
                 )
-        val outputs = executeWorkflow(mockWorkflow, invocation.inputs, subThreadId)
-        executions[subThreadId] = record.copy(
+                val outputs = executeWorkflow(mockWorkflow, invocation.inputs, subThreadId)
+                executions[subThreadId] = record.copy(
                     status = SubWorkflowStatus.COMPLETED,
                     completedAt = System.currentTimeMillis(),
                     outputs = outputs
                 )
-        SubWorkflowResult.Completed(outputs)
+                SubWorkflowResult.Completed(outputs)
             }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
             executions[subThreadId] = record.copy(
                 status = SubWorkflowStatus.TIMED_OUT,
                 completedAt = System.currentTimeMillis()
             )
-        SubWorkflowResult.TimedOut(subThreadId)
+            SubWorkflowResult.TimedOut(subThreadId)
         } catch (e: Throwable) {
             executions[subThreadId] = record.copy(
                 status = SubWorkflowStatus.FAILED,
                 completedAt = System.currentTimeMillis()
             )
-        SubWorkflowResult.Failed(e)
+            SubWorkflowResult.Failed(e)
         }
     }
-        override fun children(parentThreadId: String): List<SubWorkflowExecution> {
+
+    override fun children(parentThreadId: String): List<SubWorkflowExecution> {
         return executions.values.filter { it.parentThreadId == parentThreadId }
             .sortedBy { it.startedAt }
     }
-        override suspend fun cancel(subThreadId: String): Boolean {
+
+    override suspend fun cancel(subThreadId: String): Boolean {
         val record = executions[subThreadId] ?: return false
         if (record.status != SubWorkflowStatus.RUNNING) return false
         executions[subThreadId] = record.copy(

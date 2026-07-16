@@ -28,8 +28,8 @@ class MemoryCacheStore<V>(
 ) : ICacheStore<String, V> {
 
     private val log = LoggerFactory.getLogger(MemoryCacheStore::class.java)
-        private val lock = ReentrantReadWriteLock()
-        private val store = ConcurrentHashMap<String, CacheEntry<V>>()
+    private val lock = ReentrantReadWriteLock()
+    private val store = ConcurrentHashMap<String, CacheEntry<V>>()
 
     @Volatile
     private var currentMemoryBytes: Long = 0L
@@ -46,48 +46,51 @@ class MemoryCacheStore<V>(
             val entry = store[key] ?: return null.also {
                 lock.write { misses++ }
             }
-        if (entry.isExpired()) {
+            if (entry.isExpired()) {
                 lock.write {
                     store.remove(key)
-        currentMemoryBytes -= entry.sizeBytes.coerceAtLeast(0)
-        misses++
+                    currentMemoryBytes -= entry.sizeBytes.coerceAtLeast(0)
+                    misses++
                 }
-        return null
+                return null
             }
-        val updated = entry.recordAccess()
-        store[key] = updated
+            val updated = entry.recordAccess()
+            store[key] = updated
             lock.write {
                 hits++
                 accessCount++
                 totalAccessTime += System.nanoTime() - start
             }
-        return updated
+            return updated
         }
     }
-        override fun put(entry: CacheEntry<V>) {
+
+    override fun put(entry: CacheEntry<V>) {
         lock.write {
             val oldEntry = store.put(entry.key, entry)
-        if (oldEntry != null) {
+            if (oldEntry != null) {
                 currentMemoryBytes -= oldEntry.sizeBytes.coerceAtLeast(0)
             }
-        currentMemoryBytes += entry.sizeBytes.coerceAtLeast(0)
-        evictIfNeeded()
+            currentMemoryBytes += entry.sizeBytes.coerceAtLeast(0)
+            evictIfNeeded()
         }
     }
-        override fun remove(key: String): Boolean {
+
+    override fun remove(key: String): Boolean {
         lock.write {
             val removed = store.remove(key)
-        if (removed != null) {
+            if (removed != null) {
                 currentMemoryBytes -= removed.sizeBytes.coerceAtLeast(0)
-        return true
+                return true
             }
-        return false
+            return false
         }
     }
-        override fun clear() {
+
+    override fun clear() {
         lock.write {
             store.clear()
-        currentMemoryBytes = 0L
+            currentMemoryBytes = 0L
             hits = 0L
             misses = 0L
             evictions = 0L
@@ -95,21 +98,24 @@ class MemoryCacheStore<V>(
             accessCount = 0L
         }
     }
-        override fun contains(key: String): Boolean {
+
+    override fun contains(key: String): Boolean {
         lock.read {
             val entry = store[key] ?: return false
             if (entry.isExpired()) {
                 lock.write {
                     store.remove(key)
-        currentMemoryBytes -= entry.sizeBytes.coerceAtLeast(0)
+                    currentMemoryBytes -= entry.sizeBytes.coerceAtLeast(0)
                 }
-        return false
+                return false
             }
-        return true
+            return true
         }
     }
-        override fun size(): Int = lock.read { store.size }
-        override fun stats(): CacheStats {
+
+    override fun size(): Int = lock.read { store.size }
+
+    override fun stats(): CacheStats {
         lock.read {
             return CacheStats(
                 hits = hits,
@@ -122,40 +128,42 @@ class MemoryCacheStore<V>(
             )
         }
     }
-        override fun evict(policy: CachePolicy): List<String> {
+
+    override fun evict(policy: CachePolicy): List<String> {
         lock.write {
             val evictedKeys = mutableListOf<String>()
-        val candidates = when (policy) {
+            val candidates = when (policy) {
                 is CachePolicy.TtlPolicy -> {
                     store.values.filter { it.isExpired() }.map { it.key }
                 }
-        is CachePolicy.LruPolicy -> {
+                is CachePolicy.LruPolicy -> {
                     policy.evictCandidates(store.values).map { it.key }
                 }
-        is CachePolicy.LfuPolicy -> {
+                is CachePolicy.LfuPolicy -> {
                     policy.evictCandidates(store.values).map { it.key }
                 }
-        is CachePolicy.FifoPolicy -> {
+                is CachePolicy.FifoPolicy -> {
                     policy.evictCandidates(store.values).map { it.key }
                 }
-        is CachePolicy.HybridPolicy -> {
+                is CachePolicy.HybridPolicy -> {
                     store.values.sortedByDescending { policy.evictionScore(it) }
                         .take((store.size * 0.25).toInt().coerceAtLeast(1))
                         .map { it.key }
                 }
             }
-        for (key in candidates) {
+            for (key in candidates) {
                 val removed = store.remove(key)
-        if (removed != null) {
+                if (removed != null) {
                     currentMemoryBytes -= removed.sizeBytes.coerceAtLeast(0)
-        evictedKeys.add(key)
+                    evictedKeys.add(key)
                 }
             }
-        evictions += evictedKeys.size
+            evictions += evictedKeys.size
             return evictedKeys
         }
     }
-        override fun warmUp(keys: Collection<String>): Int {
+
+    override fun warmUp(keys: Collection<String>): Int {
         var loaded = 0
         for (key in keys) {
             if (!contains(key)) {
@@ -196,25 +204,25 @@ class MemoryCacheStore<V>(
     private fun evictIfNeeded() {
         if (maxSize > 0 && store.size > maxSize) {
             val overage = store.size - maxSize
-        val entries = store.values.sortedBy { it.lastAccessedAt }
-        for (i in 0 until overage) {
+            val entries = store.values.sortedBy { it.lastAccessedAt }
+            for (i in 0 until overage) {
                 if (i >= entries.size) break
                 val key = entries[i].key
-        val removed = store.remove(key)
-        if (removed != null) {
+                val removed = store.remove(key)
+                if (removed != null) {
                     currentMemoryBytes -= removed.sizeBytes.coerceAtLeast(0)
-        evictions++
+                    evictions++
                 }
             }
         }
         if (maxMemory > 0 && currentMemoryBytes > maxMemory) {
             val entries = store.values.sortedBy { it.lastAccessedAt }
-        for (entry in entries) {
+            for (entry in entries) {
                 if (currentMemoryBytes <= maxMemory) break
                 val removed = store.remove(entry.key)
-        if (removed != null) {
+                if (removed != null) {
                     currentMemoryBytes -= removed.sizeBytes.coerceAtLeast(0)
-        evictions++
+                    evictions++
                 }
             }
         }

@@ -23,12 +23,12 @@ import java.util.concurrent.ConcurrentHashMap
  */
 enum class EasterEggType {
     HIDDEN_COMMAND,    // 隐藏命令
-        SPECIAL_DATE,      // 特殊日期
-        KEYWORD_TRIGGER,   // 关键词触发
-        SECRET_GAME,       // 隐藏游戏
-        DEVELOPER_MODE,    // 开发者模式
-        FUN_MODE,          // 趣味模式
-        RARE_RESPONSE      // 稀有回复
+    SPECIAL_DATE,      // 特殊日期
+    KEYWORD_TRIGGER,   // 关键词触发
+    SECRET_GAME,       // 隐藏游戏
+    DEVELOPER_MODE,    // 开发者模式
+    FUN_MODE,          // 趣味模式
+    RARE_RESPONSE      // 稀有回复
 }
 
 /**
@@ -49,10 +49,10 @@ data class EasterEgg(
 
 enum class TriggerType {
     EXACT_MATCH,      // 精确匹配
-        CONTAINS,         // 包含
-        STARTS_WITH,      // 开头
-        REGEX,            // 正则
-        COMMAND           // 命令（以 / 开头）
+    CONTAINS,         // 包含
+    STARTS_WITH,      // 开头
+    REGEX,            // 正则
+    COMMAND           // 命令（以 / 开头）
 }
 
 /**
@@ -71,8 +71,9 @@ data class EasterEggResult(
 class EasterEggSystem {
 
     private val eggs = mutableListOf<EasterEgg>()
-        private val discoveredEggs = ConcurrentHashMap<String, MutableSet<String>>()  // userId -> eggIds
+    private val discoveredEggs = ConcurrentHashMap<String, MutableSet<String>>()  // userId -> eggIds
     private val lastTriggered = ConcurrentHashMap<String, Long>()  // eggId -> 上次触发时间
+
     init {
         registerBuiltinEggs()
     }
@@ -83,20 +84,22 @@ class EasterEggSystem {
     fun check(input: String, userId: String): EasterEggResult? {
         val now = System.currentTimeMillis()
         val userDiscovered = discoveredEggs.getOrPut(userId) { mutableSetOf() }
+
         for (egg in eggs) {
             // 检查一次性彩蛋是否已发现
-    if (egg.oneTimeOnly && egg.id in userDiscovered) continue
+            if (egg.oneTimeOnly && egg.id in userDiscovered) continue
 
             // 检查冷却
-    val lastTime = lastTriggered[egg.id] ?: 0
+            val lastTime = lastTriggered[egg.id] ?: 0
             if (egg.cooldownMs > 0 && now - lastTime < egg.cooldownMs) continue
 
             // 检查触发
-    if (matchesTrigger(input, egg)) {
+            if (matchesTrigger(input, egg)) {
                 lastTriggered[egg.id] = now
                 val isNew = egg.id !in userDiscovered
                 if (isNew) userDiscovered.add(egg.id)
-        return EasterEggResult(
+
+                return EasterEggResult(
                     egg = egg,
                     message = egg.response,
                     specialEffect = generateEffect(egg),
@@ -135,7 +138,8 @@ class EasterEggSystem {
         val total = eggs.count { it.discoverable }
         return EggProgress(discovered, total, if (total > 0) discovered.toFloat() / total else 0f)
     }
-        data class EggProgress(val discovered: Int, val total: Int, val ratio: Float)
+
+    data class EggProgress(val discovered: Int, val total: Int, val ratio: Float)
 
     /**
      * 生成彩蛋提示
@@ -146,27 +150,30 @@ class EasterEggSystem {
     }
 
     // ============ 内部方法 ============
+
     private fun matchesTrigger(input: String, egg: EasterEgg): Boolean {
         val trimmed = input.trim()
         return when (egg.triggerType) {
             TriggerType.EXACT_MATCH -> trimmed.equals(egg.trigger, ignoreCase = true)
-        TriggerType.CONTAINS -> trimmed.contains(egg.trigger, ignoreCase = true)
-        TriggerType.STARTS_WITH -> trimmed.startsWith(egg.trigger, ignoreCase = true)
-        TriggerType.REGEX -> try { Regex(egg.trigger).containsMatchIn(trimmed) } catch (e: Exception) { false }
-        TriggerType.COMMAND -> trimmed.equals("/${egg.trigger}", ignoreCase = true) || trimmed.startsWith("/${egg.trigger} ", ignoreCase = true)
+            TriggerType.CONTAINS -> trimmed.contains(egg.trigger, ignoreCase = true)
+            TriggerType.STARTS_WITH -> trimmed.startsWith(egg.trigger, ignoreCase = true)
+            TriggerType.REGEX -> try { Regex(egg.trigger).containsMatchIn(trimmed) } catch (e: Exception) { false }
+            TriggerType.COMMAND -> trimmed.equals("/${egg.trigger}", ignoreCase = true) || trimmed.startsWith("/${egg.trigger} ", ignoreCase = true)
         }
     }
-        private fun generateEffect(egg: EasterEgg): String? {
+
+    private fun generateEffect(egg: EasterEgg): String? {
         return when (egg.type) {
             EasterEggType.SECRET_GAME -> "🎮 隐藏游戏解锁！"
-        EasterEggType.DEVELOPER_MODE -> "⚙️ 开发者模式已激活"
-        EasterEggType.FUN_MODE -> "🎪 趣味模式启动！"
-        EasterEggType.RARE_RESPONSE -> "✨ 稀有回复！"
-        else -> null
+            EasterEggType.DEVELOPER_MODE -> "⚙️ 开发者模式已激活"
+            EasterEggType.FUN_MODE -> "🎪 趣味模式启动！"
+            EasterEggType.RARE_RESPONSE -> "✨ 稀有回复！"
+            else -> null
         }
     }
 
     // ============ 预置彩蛋 ============
+
     private fun registerBuiltinEggs() {
         // 隐藏命令
         eggs.add(EasterEgg("egg_konami", EasterEggType.HIDDEN_COMMAND, "上上下下左右左右BA", TriggerType.EXACT_MATCH, "🎮 Konami Code 激活！你发现了经典彩蛋！", "🎮", 0.95f, cooldownMs = 60_000))

@@ -37,28 +37,34 @@ class LongTermMemory(
     private data class PersistenceData(
         val entries: List<MemoryEntry>
     )
-        companion object {
+
+    companion object {
         private const val TAG = "LongTermMemory"
         private const val FILE_NAME = "long_term_memory.json"
         private const val TMP_SUFFIX = ".tmp"
     }
-        private val lock = ReentrantReadWriteLock()
-        private val store = ConcurrentHashMap<String, MemoryEntry>()
-        private val accessOrder = object : LinkedHashMap<String, Long>(16, 0.75f, true) {
+
+    private val lock = ReentrantReadWriteLock()
+    private val store = ConcurrentHashMap<String, MemoryEntry>()
+    private val accessOrder = object : LinkedHashMap<String, Long>(16, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Long>): Boolean = false
     }
-        private val json = Json {
+
+    private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
         encodeDefaults = true
     }
-        private val persistenceFile: File
+
+    private val persistenceFile: File
         get() = File(storageDir, FILE_NAME)
-        init {
+
+    init {
         storageDir.mkdirs()
         loadFromDisk()
     }
-        override fun put(key: String, value: String, ttl: Long?) {
+
+    override fun put(key: String, value: String, ttl: Long?) {
         val now = System.currentTimeMillis()
         val entry = MemoryEntry(
             key = key,
@@ -70,70 +76,76 @@ class LongTermMemory(
             store[key] = entry
             accessOrder[key] = now
             evictIfNeeded()
-        syncToDisk()
+            syncToDisk()
         }
     }
-        override fun get(key: String): String? {
+
+    override fun get(key: String): String? {
         lock.read {
             val entry = store[key] ?: return null
             if (isExpired(entry)) {
                 lock.write {
                     store.remove(key)
-        accessOrder.remove(key)
-        syncToDisk()
+                    accessOrder.remove(key)
+                    syncToDisk()
                 }
-        return null
+                return null
             }
-        accessOrder[key] = System.currentTimeMillis()
-        return entry.value
+            accessOrder[key] = System.currentTimeMillis()
+            return entry.value
         }
     }
-        override fun remove(key: String): Boolean {
+
+    override fun remove(key: String): Boolean {
         lock.write {
             val removed = store.remove(key) != null
             accessOrder.remove(key)
-        if (removed) syncToDisk()
-        return removed
+            if (removed) syncToDisk()
+            return removed
         }
     }
-        override fun clear() {
+
+    override fun clear() {
         lock.write {
             store.clear()
-        accessOrder.clear()
-        syncToDisk()
+            accessOrder.clear()
+            syncToDisk()
         }
     }
-        override fun keys(): Set<String> {
+
+    override fun keys(): Set<String> {
         lock.read {
             val now = System.currentTimeMillis()
-        val expired = store.filterValues { isExpired(it, now) }.keys
+            val expired = store.filterValues { isExpired(it, now) }.keys
             if (expired.isNotEmpty()) {
                 lock.write {
                     expired.forEach { key ->
                         store.remove(key)
-        accessOrder.remove(key)
+                        accessOrder.remove(key)
                     }
-        if (expired.isNotEmpty()) syncToDisk()
+                    if (expired.isNotEmpty()) syncToDisk()
                 }
             }
-        return store.keys.toSet()
+            return store.keys.toSet()
         }
     }
-        override fun size(): Int {
+
+    override fun size(): Int {
         lock.read { return store.size }
     }
-        override fun contains(key: String): Boolean {
+
+    override fun contains(key: String): Boolean {
         lock.read {
             val entry = store[key] ?: return false
             if (isExpired(entry)) {
                 lock.write {
                     store.remove(key)
-        accessOrder.remove(key)
-        syncToDisk()
+                    accessOrder.remove(key)
+                    syncToDisk()
                 }
-        return false
+                return false
             }
-        return true
+            return true
         }
     }
 
@@ -148,7 +160,7 @@ class LongTermMemory(
         while (store.size > maxEntries) {
             val eldest = accessOrder.entries.firstOrNull() ?: break
             store.remove(eldest.key)
-        accessOrder.remove(eldest.key)
+            accessOrder.remove(eldest.key)
         }
     }
 
@@ -156,10 +168,10 @@ class LongTermMemory(
     private fun syncToDisk() {
         try {
             val data = PersistenceData(store.values.toList())
-        val content = json.encodeToString(data)
-        val tmpFile = File(storageDir, "$FILE_NAME$TMP_SUFFIX")
-        tmpFile.writeText(content, Charsets.UTF_8)
-        tmpFile.renameTo(persistenceFile)
+            val content = json.encodeToString(data)
+            val tmpFile = File(storageDir, "$FILE_NAME$TMP_SUFFIX")
+            tmpFile.writeText(content, Charsets.UTF_8)
+            tmpFile.renameTo(persistenceFile)
         } catch (e: Exception) {
             android.util.Log.w(TAG, "持久化写入失败", e)
         }
@@ -171,9 +183,9 @@ class LongTermMemory(
             val file = persistenceFile
             if (!file.exists()) return
             val content = file.readText(Charsets.UTF_8)
-        val data = json.decodeFromString<PersistenceData>(content)
-        val now = System.currentTimeMillis()
-        data.entries.forEach { entry ->
+            val data = json.decodeFromString<PersistenceData>(content)
+            val now = System.currentTimeMillis()
+            data.entries.forEach { entry ->
                 if (!isExpired(entry, now)) {
                     store[entry.key] = entry
                     accessOrder[entry.key] = entry.timestamp
@@ -181,9 +193,9 @@ class LongTermMemory(
             }
         } catch (e: Exception) {
             android.util.Log.w(TAG, "加载持久化数据失败，使用空存储", e)
-        store.clear()
-        accessOrder.clear()
-        persistenceFile.delete()
+            store.clear()
+            accessOrder.clear()
+            persistenceFile.delete()
         }
     }
 

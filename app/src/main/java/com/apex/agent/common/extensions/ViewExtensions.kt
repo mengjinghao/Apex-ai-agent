@@ -40,7 +40,7 @@ val View.isVisible: Boolean
  */
 fun View.showKeyboard() {
     requestFocus()
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
     imm?.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
 }
 
@@ -49,7 +49,7 @@ fun View.showKeyboard() {
  */
 fun View.hideKeyboard() {
     clearFocus()
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
     imm?.hideSoftInputFromWindow(windowToken, 0)
 }
 

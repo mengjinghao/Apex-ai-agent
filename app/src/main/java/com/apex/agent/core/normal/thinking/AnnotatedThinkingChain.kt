@@ -30,13 +30,13 @@ data class ThinkingStep(
 
 enum class StepType {
     OBSERVATION,    // 观察
-        HYPOTHESIS,     // 假设
-        DEDUCTION,      // 演绎
-        INDUCTION,      // 归纳
-        ABDUCTION,      // 溯因
-        EVALUATION,     // 评估
-        DECISION,       // 决策
-        VERIFICATION    // 验证
+    HYPOTHESIS,     // 假设
+    DEDUCTION,      // 演绎
+    INDUCTION,      // 归纳
+    ABDUCTION,      // 溯因
+    EVALUATION,     // 评估
+    DECISION,       // 决策
+    VERIFICATION    // 验证
 }
 
 /**
@@ -59,20 +59,20 @@ data class ThinkingChain(
         sb.appendLine("═══ 思考链：$topic ═══")
         steps.forEach { step ->
             sb.appendLine()
-        sb.appendLine("【步骤 ${step.index + 1}: ${step.type}】")
-        if (step.premise.isNotBlank()) sb.appendLine("  前提: ${step.premise}")
-        sb.appendLine("  推理: ${step.reasoning}")
-        sb.appendLine("  结论: ${step.conclusion}")
-        if (step.confidence < 1.0f) {
+            sb.appendLine("【步骤 ${step.index + 1}: ${step.type}】")
+            if (step.premise.isNotBlank()) sb.appendLine("  前提: ${step.premise}")
+            sb.appendLine("  推理: ${step.reasoning}")
+            sb.appendLine("  结论: ${step.conclusion}")
+            if (step.confidence < 1.0f) {
                 sb.appendLine("  置信度: ${(step.confidence * 100).toInt()}%")
             }
-        if (step.evidence.isNotEmpty()) {
+            if (step.evidence.isNotEmpty()) {
                 sb.appendLine("  证据: ${step.evidence.joinToString("; ")}")
             }
-        if (step.assumptions.isNotEmpty()) {
+            if (step.assumptions.isNotEmpty()) {
                 sb.appendLine("  假设: ${step.assumptions.joinToString("; ")}")
             }
-        if (step.subQuestions.isNotEmpty()) {
+            if (step.subQuestions.isNotEmpty()) {
                 sb.appendLine("  待解问题: ${step.subQuestions.joinToString("; ")}")
             }
         }
@@ -91,13 +91,13 @@ data class ThinkingChain(
         sb.appendLine("## 思考链：$topic\n")
         steps.forEach { step ->
             sb.appendLine("### 步骤 ${step.index + 1}: ${step.type}")
-        sb.appendLine("- **前提**: ${step.premise}")
-        sb.appendLine("- **推理**: ${step.reasoning}")
-        sb.appendLine("- **结论**: ${step.conclusion}")
-        if (step.confidence < 1.0f) {
+            sb.appendLine("- **前提**: ${step.premise}")
+            sb.appendLine("- **推理**: ${step.reasoning}")
+            sb.appendLine("- **结论**: ${step.conclusion}")
+            if (step.confidence < 1.0f) {
                 sb.appendLine("- **置信度**: ${(step.confidence * 100).toInt()}%")
             }
-        sb.appendLine()
+            sb.appendLine()
         }
         sb.appendLine("### 最终结论")
         sb.appendLine(finalConclusion)
@@ -119,18 +119,20 @@ class ThinkingChainParser {
             .removePrefix("<think>").removePrefix("<thinking>")
             .removeSuffix("</think>").removeSuffix("</thinking>")
             .trim()
+
         val steps = mutableListOf<ThinkingStep>()
 
         // 按步骤分隔符切分
-    val stepPattern = Regex("(?m)^(?:步骤\\s*\\d+[：:.]?|Step\\s*\\d+[:.]?|#\\s*\\d+|\\d+[.、)）])\\s*(.*)")
+        val stepPattern = Regex("(?m)^(?:步骤\\s*\\d+[：:.]?|Step\\s*\\d+[:.]?|#\\s*\\d+|\\d+[.、)）])\\s*(.*)")
         val chunks = splitIntoChunks(content, stepPattern)
+
         chunks.forEachIndexed { index, chunk ->
             val step = parseStep(chunk, index)
-        steps.add(step)
+            steps.add(step)
         }
 
         // 如果没有识别出步骤，把整个内容作为单步
-    if (steps.isEmpty() && content.isNotBlank()) {
+        if (steps.isEmpty() && content.isNotBlank()) {
             steps.add(ThinkingStep(
                 id = "step_0",
                 index = 0,
@@ -140,8 +142,10 @@ class ThinkingChainParser {
                 conclusion = content.take(100)
             ))
         }
+
         val finalConclusion = extractFinalConclusion(content, steps)
         val overallConfidence = steps.map { it.confidence }.average().toFloat()
+
         return ThinkingChain(
             id = "chain_${System.currentTimeMillis()}",
             topic = topic.ifBlank { extractTopic(content) },
@@ -162,21 +166,25 @@ class ThinkingChainParser {
     }
 
     // ============ 内部方法 ============
+
     private fun splitIntoChunks(content: String, stepPattern: Regex): List<String> {
         val lines = content.lines()
         val chunks = mutableListOf<String>()
         var current = StringBuilder()
+
         for (line in lines) {
             if (stepPattern.containsMatchIn(line) && current.isNotEmpty()) {
                 chunks.add(current.toString().trim())
-        current = StringBuilder()
+                current = StringBuilder()
             }
-        current.appendLine(line)
+            current.appendLine(line)
         }
         if (current.isNotEmpty()) chunks.add(current.toString().trim())
+
         return chunks
     }
-        private fun parseStep(chunk: String, index: Int): ThinkingStep {
+
+    private fun parseStep(chunk: String, index: Int): ThinkingStep {
         val type = detectStepType(chunk)
         val premise = extractSection(chunk, listOf("前提", "premise", "given", "已知"))
         val reasoning = extractSection(chunk, listOf("推理", "reasoning", "process", "分析", "思考"))
@@ -187,6 +195,7 @@ class ThinkingChainParser {
         val evidence = extractList(chunk, listOf("证据", "evidence"))
         val assumptions = extractList(chunk, listOf("假设", "assumption"))
         val subQuestions = extractList(chunk, listOf("待解", "疑问", "question"))
+
         return ThinkingStep(
             id = "step_$index",
             index = index,
@@ -200,7 +209,8 @@ class ThinkingChainParser {
             subQuestions = subQuestions
         )
     }
-        private fun detectStepType(text: String): StepType {
+
+    private fun detectStepType(text: String): StepType {
         val t = text.lowercase()
         return when {
             t.containsAny("观察", "observe", "看到", "注意到") -> StepType.OBSERVATION
@@ -214,14 +224,16 @@ class ThinkingChainParser {
             else -> StepType.DEDUCTION
         }
     }
-        private fun extractSection(text: String, keywords: List<String>): String {
+
+    private fun extractSection(text: String, keywords: List<String>): String {
         for (kw in keywords) {
             val pattern = Regex("$kw[：:]\\s*(.*?)(?=\\n[\\u4e00-\\u9fa5a-zA-Z]+[：:]|$)", RegexOption.DOT_MATCHES_ALL)
-        pattern.find(text)?.let { return it.groupValues[1].trim() }
+            pattern.find(text)?.let { return it.groupValues[1].trim() }
         }
         return ""
     }
-        private fun extractConfidence(text: String): Float {
+
+    private fun extractConfidence(text: String): Float {
         val patterns = listOf(
             Regex("(\\d+)%\\s*(?:置信|确信|confidence|sure)"),
             Regex("(?:置信|确信|confidence|sure)(?:度)?[：:]?\\s*(\\d+)%?"),
@@ -235,10 +247,11 @@ class ThinkingChainParser {
         }
         return 1.0f
     }
-        private fun extractList(text: String, keywords: List<String>): List<String> {
+
+    private fun extractList(text: String, keywords: List<String>): List<String> {
         for (kw in keywords) {
             val pattern = Regex("$kw[：:]\\s*(.*?)(?=\\n[\\u4e00-\\u9fa5a-zA-Z]+[：:]|$)", RegexOption.DOT_MATCHES_ALL)
-        pattern.find(text)?.let { m ->
+            pattern.find(text)?.let { m ->
                 return m.groupValues[1].split(Regex("[;；\\n]|\\d+[.、)]"))
                     .map { it.trim() }
                     .filter { it.isNotBlank() }
@@ -246,22 +259,25 @@ class ThinkingChainParser {
         }
         return emptyList()
     }
-        private fun extractFinalConclusion(content: String, steps: List<ThinkingStep>): String {
+
+    private fun extractFinalConclusion(content: String, steps: List<ThinkingStep>): String {
         // 尝试找"最终结论"标记
-    val patterns = listOf("最终结论", "final conclusion", "结论", "conclusion")
+        val patterns = listOf("最终结论", "final conclusion", "结论", "conclusion")
         for (kw in patterns) {
             val pattern = Regex("$kw[：:]\\s*(.*?)$", RegexOption.DOT_MATCHES_ALL)
-        pattern.find(content)?.let { return it.groupValues[1].trim().take(300) }
+            pattern.find(content)?.let { return it.groupValues[1].trim().take(300) }
         }
         // 否则取最后一步的结论
-    return steps.lastOrNull()?.conclusion ?: ""
+        return steps.lastOrNull()?.conclusion ?: ""
     }
-        private fun extractTopic(content: String): String {
+
+    private fun extractTopic(content: String): String {
         val firstLine = content.lines().firstOrNull()?.take(50) ?: ""
         return firstLine.replace(Regex("^(步骤\\s*\\d+[：:.]?|Step\\s*\\d+[:.]?|#\\s*\\d+|\\d+[.、)）])\\s*"), "")
             .ifBlank { "分析" }
     }
-        private fun String.containsAny(vararg keywords: String): Boolean =
+
+    private fun String.containsAny(vararg keywords: String): Boolean =
         keywords.any { this.contains(it, ignoreCase = true) }
 }
 
@@ -279,12 +295,12 @@ class ThinkingChainInquirer {
         val step = chain.steps.getOrNull(stepIndex) ?: return ""
         return buildString {
             appendLine("关于以下思考步骤的追问：")
-        appendLine("步骤 ${step.index + 1} (${step.type})")
-        appendLine("前提: ${step.premise}")
-        appendLine("推理: ${step.reasoning}")
-        appendLine("结论: ${step.conclusion}")
-        appendLine()
-        appendLine("请解释：为什么这一步的推理是合理的？有没有其他可能性？")
+            appendLine("步骤 ${step.index + 1} (${step.type})")
+            appendLine("前提: ${step.premise}")
+            appendLine("推理: ${step.reasoning}")
+            appendLine("结论: ${step.conclusion}")
+            appendLine()
+            appendLine("请解释：为什么这一步的推理是合理的？有没有其他可能性？")
         }
     }
 
@@ -294,15 +310,15 @@ class ThinkingChainInquirer {
     fun generateCritiquePrompt(chain: ThinkingChain): String {
         return buildString {
             appendLine("请批判性审视以下思考链，指出可能的逻辑漏洞或未考虑的因素：")
-        appendLine()
-        appendLine(chain.toReadableText())
-        appendLine()
-        appendLine("请从以下角度分析：")
-        appendLine("1. 前提是否成立？")
-        appendLine("2. 推理过程是否有跳跃？")
-        appendLine("3. 是否有遗漏的证据？")
-        appendLine("4. 结论是否过度泛化？")
-        appendLine("5. 有无替代解释？")
+            appendLine()
+            appendLine(chain.toReadableText())
+            appendLine()
+            appendLine("请从以下角度分析：")
+            appendLine("1. 前提是否成立？")
+            appendLine("2. 推理过程是否有跳跃？")
+            appendLine("3. 是否有遗漏的证据？")
+            appendLine("4. 结论是否过度泛化？")
+            appendLine("5. 有无替代解释？")
         }
     }
 }

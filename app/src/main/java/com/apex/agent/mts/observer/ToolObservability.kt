@@ -47,10 +47,11 @@ class ToolObservability(
     private val maxHistoryPerTool: Int = 1000
 ) {
     private val history = ConcurrentHashMap<String, ConcurrentLinkedDeque<ToolCallRecord>>()
-        private val totalCalls = AtomicLong(0)
-        private val totalFailures = AtomicLong(0)
-        private val listeners = mutableListOf<ToolObservabilityListener>()
-        fun recordCall(record: ToolCallRecord) {
+    private val totalCalls = AtomicLong(0)
+    private val totalFailures = AtomicLong(0)
+    private val listeners = mutableListOf<ToolObservabilityListener>()
+
+    fun recordCall(record: ToolCallRecord) {
         val deque = history.getOrPut(record.toolName) {
             ConcurrentLinkedDeque()
         }
@@ -64,10 +65,12 @@ class ToolObservability(
         }
         listeners.forEach { it.onToolCallRecorded(record) }
     }
-        fun recordBatch(records: List<ToolCallRecord>) {
+
+    fun recordBatch(records: List<ToolCallRecord>) {
         records.forEach { recordCall(it) }
     }
-        fun getMetrics(toolName: String): ToolMetrics? {
+
+    fun getMetrics(toolName: String): ToolMetrics? {
         val records = history[toolName] ?: return null
         val list = records.toList()
         if (list.isEmpty()) return null
@@ -78,11 +81,14 @@ class ToolObservability(
         val latencies = list.map { it.durationMs }.sorted()
         val totalDuration = list.sumOf { it.durationMs }
         val lastCalled = list.maxOf { it.timestamp }
+
         val errorDist = list.filter { it.success.not() }
             .groupBy { it.errorCode ?: "UNKNOWN" }
             .mapValues { it.value.size }
+
         val now = System.currentTimeMillis()
         val lastMinCalls = list.count { now - it.timestamp < 60000 }
+
         return ToolMetrics(
             toolName = toolName,
             callCount = callCount,
@@ -99,10 +105,12 @@ class ToolObservability(
             callsPerMinute = lastMinCalls.toDouble()
         )
     }
-        fun getAllMetrics(): List<ToolMetrics> {
+
+    fun getAllMetrics(): List<ToolMetrics> {
         return history.keys.mapNotNull { getMetrics(it) }.sortedByDescending { it.callCount }
     }
-        fun getInsights(): ToolInsights {
+
+    fun getInsights(): ToolInsights {
         val all = getAllMetrics()
         return ToolInsights(
             mostUsed = all.sortedByDescending { it.callCount }.take(10),
@@ -113,24 +121,28 @@ class ToolObservability(
             recommendations = generateRecommendations(all)
         )
     }
-        fun getRecentCalls(toolName: String, limit: Int = 20): List<ToolCallRecord> {
+
+    fun getRecentCalls(toolName: String, limit: Int = 20): List<ToolCallRecord> {
         return history[toolName]?.toList()?.take(limit) ?: emptyList()
     }
-        fun getRecentCalls(limit: Int = 100): List<ToolCallRecord> {
+
+    fun getRecentCalls(limit: Int = 100): List<ToolCallRecord> {
         return history.values.flatMap { it.toList() }
             .sortedByDescending { it.timestamp }
             .take(limit)
     }
-        fun getTrend(toolName: String): ToolTrend? {
+
+    fun getTrend(toolName: String): ToolTrend? {
         val records = history[toolName]?.toList()?.sortedBy { it.timestamp } ?: return null
         if (records.size < 2) return null
 
         val now = System.currentTimeMillis()
         val hourlyBuckets = (0..23).map { hour ->
             val start = now - (23 - hour) * 3600000L
-        val end = start + 3600000L
+            val end = start + 3600000L
             records.count { it.timestamp in start until end }
         }
+
         val mid = records.size / 2
         val firstHalf = records.take(mid)
         val secondHalf = records.drop(mid)
@@ -149,24 +161,28 @@ class ToolObservability(
             latencyTrend = latencyTrend
         )
     }
-        fun addListener(listener: ToolObservabilityListener) {
+
+    fun addListener(listener: ToolObservabilityListener) {
         listeners.add(listener)
     }
-        fun removeListener(listener: ToolObservabilityListener) {
+
+    fun removeListener(listener: ToolObservabilityListener) {
         listeners.remove(listener)
     }
-        fun reset() {
+
+    fun reset() {
         history.clear()
         totalCalls.set(0)
         totalFailures.set(0)
     }
-        val summary: String
+
+    val summary: String
         get() {
             val metrics = getAllMetrics()
-        val total = totalCalls.get()
-        val failed = totalFailures.get()
-        val successRate = if (total > 0) "%.1f%%".format((total - failed).toDouble() / total * 100) else "N/A"
-        return """
+            val total = totalCalls.get()
+            val failed = totalFailures.get()
+            val successRate = if (total > 0) "%.1f%%".format((total - failed).toDouble() / total * 100) else "N/A"
+            return """
 Tool Observability Summary
 ==========================
 Total calls: $total
@@ -177,23 +193,25 @@ Most used: ${metrics.take(3).joinToString(", ") { "${it.toolName}(${it.callCount
 Most failed: ${metrics.filter { it.failureCount > 0 }.take(3).joinToString(", ") { "${it.toolName}(${it.failureCount})" }}
             """.trimIndent()
         }
-        private fun generateRecommendations(metrics: List<ToolMetrics>): List<String> {
+
+    private fun generateRecommendations(metrics: List<ToolMetrics>): List<String> {
         val recs = mutableListOf<String>()
         for (m in metrics) {
             if (m.successRate < 0.5 && m.failureCount > 5) {
                 recs.add("Consider deprecating or fixing '${m.toolName}' (${m.successRate.formatPercent()} success rate)")
             }
-        if (m.p95LatencyMs > 10000 && m.callCount > 10) {
+            if (m.p95LatencyMs > 10000 && m.callCount > 10) {
                 recs.add("'${m.toolName}' has high P95 latency (${m.p95LatencyMs}ms), consider optimization")
             }
-        if (m.callsPerMinute > 30) {
+            if (m.callsPerMinute > 30) {
                 recs.add("'${m.toolName}' is called ${m.callsPerMinute.formatDecimal()}/min, may need rate limiting")
             }
         }
         return recs
     }
-        private fun Double.formatPercent(): String = "%.1f%%".format(this * 100)
-        private fun Double.formatDecimal(): String = "%.1f".format(this)
+
+    private fun Double.formatPercent(): String = "%.1f%%".format(this * 100)
+    private fun Double.formatDecimal(): String = "%.1f".format(this)
 }
 
 interface ToolObservabilityListener {

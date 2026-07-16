@@ -1,7 +1,7 @@
 package com.apex.agent.core.behavior
 
 /**
- * 用户行为分析结果数据，*/
+ * 用户行为分析结果数据�?*/
 data class UserBehaviorProfile(
     // 对话模式
     var messageCount: Int = 0,
@@ -25,7 +25,7 @@ data class UserBehaviorProfile(
     var commandCount: Int = 0,
     var formalMessageCount: Int = 0,
     var casualMessageCount: Int = 0,
-    var dominantStyle: String = "中，",
+    var dominantStyle: String = "中，,
     
     // 交互模式
     var avgTurnLength: Double = 0.0,

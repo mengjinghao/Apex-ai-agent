@@ -165,7 +165,7 @@ fun Context.vibrate(millis: Long = 50) {
         @Suppress("DEPRECATION")
         getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         vibrator.vibrate(
             VibrationEffect.createOneShot(millis, VibrationEffect.DEFAULT_AMPLITUDE)
         )
@@ -192,7 +192,7 @@ fun Context.hideKeyboard(view: View) {
  */
 fun Context.showKeyboard(view: View) {
     view.requestFocus()
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
     imm?.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
 }
 

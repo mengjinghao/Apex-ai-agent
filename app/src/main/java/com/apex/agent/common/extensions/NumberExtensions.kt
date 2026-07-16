@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
  */
 fun Int.clamp(min: Int, max: Int): Int {
     require(min <= max) { "最小值 $min 不能大于最大值 $max" }
-        return when {
+    return when {
         this < min -> min
         this > max -> max
         else -> this
@@ -32,7 +32,7 @@ fun Int.clamp(min: Int, max: Int): Int {
  */
 fun Float.clamp(min: Float, max: Float): Float {
     require(min <= max) { "最小值 $min 不能大于最大值 $max" }
-        return when {
+    return when {
         this < min -> min
         this > max -> max
         else -> this
@@ -48,7 +48,7 @@ fun Float.clamp(min: Float, max: Float): Float {
  */
 fun Double.clamp(min: Double, max: Double): Double {
     require(min <= max) { "最小值 $min 不能大于最大值 $max" }
-        return when {
+    return when {
         this < min -> min
         this > max -> max
         else -> this
@@ -92,7 +92,7 @@ fun Int.percentOf(total: Int): Float {
  */
 fun Float.roundTo(decimals: Int): Float {
     val factor = 10.0.pow(decimals).toFloat()
-        return (this * factor).roundToInt() / factor
+    return (this * factor).roundToInt() / factor
 }
 
 /**
@@ -103,5 +103,5 @@ fun Float.roundTo(decimals: Int): Float {
  */
 fun Double.roundTo(decimals: Int): Double {
     val factor = 10.0.pow(decimals)
-        return (this * factor).roundToInt() / factor
+    return (this * factor).roundToInt() / factor
 }

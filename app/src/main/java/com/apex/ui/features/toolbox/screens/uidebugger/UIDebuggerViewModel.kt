@@ -16,8 +16,9 @@ class UIDebuggerViewModel private constructor() {
             }
         }
     }
-        fun start() {}
-        fun stop() {}
-        fun captureHierarchy(): String = ""
-        fun clear() {}
+
+    fun start() {}
+    fun stop() {}
+    fun captureHierarchy(): String = ""
+    fun clear() {}
 }

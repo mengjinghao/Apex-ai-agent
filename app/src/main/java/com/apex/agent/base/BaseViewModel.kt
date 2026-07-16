@@ -33,11 +33,11 @@ abstract class BaseViewModel : ViewModel() {
 
     /** 加载状态 - 是否正在加载中 */
     private val _loadingState = MutableStateFlow(false)
-        val loadingState: StateFlow<Boolean> = _loadingState.asStateFlow()
+    val loadingState: StateFlow<Boolean> = _loadingState.asStateFlow()
 
     /** 错误事件流 - 一次性错误消息 */
     private val _errorState = MutableSharedFlow<String>(replay = 0)
-        val errorState: SharedFlow<String> = _errorState.asSharedFlow()
+    val errorState: SharedFlow<String> = _errorState.asSharedFlow()
 
     /** 显示加载状态 */
     protected fun showLoading() {

@@ -27,26 +27,28 @@ data class SemVer(
             else -> this.preRelease!!.compareTo(other.preRelease!!)
         }
     }
-        override fun toString(): String {
+
+    override fun toString(): String {
         val base = "$major.$minor.$patch"
         return if (preRelease != null) "$base-$preRelease" else base
     }
-        companion object {
+
+    companion object {
         /**
          * 解析版本字符串为SemVer实例
          * @param version 版本字符串，如 "1.2.3" 或 "1.2.3-beta"
          */
         fun parse(version: String): SemVer? {
             val cleaned = version.trim().trimStart('v', 'V')
-        val parts = cleaned.split("-", limit = 2)
-        val numeric = parts[0]
-        val pre = if (parts.size > 1) parts[1] else null
+            val parts = cleaned.split("-", limit = 2)
+            val numeric = parts[0]
+            val pre = if (parts.size > 1) parts[1] else null
 
             val numParts = numeric.split(".")
-        if (numParts.size !in 1..3) return null
+            if (numParts.size !in 1..3) return null
 
             val major = numParts[0].toIntOrNull() ?: return null
-        val minor = if (numParts.size > 1) numParts[1].toIntOrNull() ?: 0 else 0
+            val minor = if (numParts.size > 1) numParts[1].toIntOrNull() ?: 0 else 0
             val patch = if (numParts.size > 2) numParts[2].toIntOrNull() ?: 0 else 0
 
             if (major < 0 || minor < 0 || patch < 0) return null
@@ -60,7 +62,7 @@ data class SemVer(
          */
         fun compare(v1: String, v2: String): Int {
             val sv1 = parse(v1) ?: return 0
-        val sv2 = parse(v2) ?: return 0
+            val sv2 = parse(v2) ?: return 0
             return sv1.compareTo(sv2)
         }
 
@@ -70,18 +72,19 @@ data class SemVer(
          */
         fun satisfies(constraint: String, version: String): Boolean {
             val cleaned = constraint.trim()
-        val operator = when {
+            val operator = when {
                 cleaned.startsWith(">=") -> ">="
-        cleaned.startsWith("<=") -> "<="
-        cleaned.startsWith(">") -> ">"
-        cleaned.startsWith("<") -> "<"
-        cleaned.startsWith("=") -> "="
-        cleaned.startsWith("~>") -> "~>"
-        cleaned.startsWith("^") -> "^"
-        else -> "="
+                cleaned.startsWith("<=") -> "<="
+                cleaned.startsWith(">") -> ">"
+                cleaned.startsWith("<") -> "<"
+                cleaned.startsWith("=") -> "="
+                cleaned.startsWith("~>") -> "~>"
+                cleaned.startsWith("^") -> "^"
+                else -> "="
             }
-        val target = cleaned.removePrefix(operator).trim()
-        val semVer = parse(version) ?: return false
+
+            val target = cleaned.removePrefix(operator).trim()
+            val semVer = parse(version) ?: return false
             val targetVer = parse(target) ?: return false
 
             return when (operator) {

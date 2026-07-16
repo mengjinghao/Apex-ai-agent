@@ -146,7 +146,7 @@ object DeviceUtils {
                 Build.getSerial()
             } else {
                 @Suppress("DEPRECATION")
-        Build.SERIAL
+                Build.SERIAL
             }
         } catch (e: SecurityException) {
             ""
@@ -283,10 +283,10 @@ object DeviceUtils {
     fun getTotalRam(): Long {
         return try {
             val reader = BufferedReader(FileReader("/proc/meminfo"))
-        val firstLine = reader.readLine()
-        reader.close()
-        val memInfo = firstLine.replace(Regex("[^0-9]"), "")
-        memInfo.toLongOrNull()?.times(1024) ?: 0L
+            val firstLine = reader.readLine()
+            reader.close()
+            val memInfo = firstLine.replace(Regex("[^0-9]"), "")
+            memInfo.toLongOrNull()?.times(1024) ?: 0L
         } catch (e: Exception) {
             0L
         }
@@ -303,9 +303,9 @@ object DeviceUtils {
     fun getAvailableRam(context: Context): Long {
         return try {
             val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val memoryInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfo)
-        memoryInfo.availMem
+            val memoryInfo = ActivityManager.MemoryInfo()
+            activityManager.getMemoryInfo(memoryInfo)
+            memoryInfo.availMem
         } catch (e: Exception) {
             0L
         }
@@ -321,7 +321,7 @@ object DeviceUtils {
     fun getTotalStorage(): Long {
         return try {
             val stat = StatFs(Environment.getDataDirectory().absolutePath)
-        stat.blockCountLong * stat.blockSizeLong
+            stat.blockCountLong * stat.blockSizeLong
         } catch (e: Exception) {
             0L
         }
@@ -337,7 +337,7 @@ object DeviceUtils {
     fun getAvailableStorage(): Long {
         return try {
             val stat = StatFs(Environment.getDataDirectory().absolutePath)
-        stat.availableBlocksLong * stat.blockSizeLong
+            stat.availableBlocksLong * stat.blockSizeLong
         } catch (e: Exception) {
             0L
         }
@@ -355,7 +355,7 @@ object DeviceUtils {
             Build.SUPPORTED_ABIS.toList()
         } else {
             @Suppress("DEPRECATION")
-        listOf(Build.CPU_ABI, Build.CPU_ABI2).filter { it.isNotBlank() }
+            listOf(Build.CPU_ABI, Build.CPU_ABI2).filter { it.isNotBlank() }
         }
     }
 }

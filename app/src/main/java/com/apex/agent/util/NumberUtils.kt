@@ -21,12 +21,15 @@ object NumberUtils {
         "C" to 100, "XC" to 90, "L" to 50, "XL" to 40,
         "X" to 10, "IX" to 9, "V" to 5, "IV" to 4, "I" to 1
     )
-        private val ROMAN_MAP = mapOf(
+
+    private val ROMAN_MAP = mapOf(
         'I' to 1, 'V' to 5, 'X' to 10, 'L' to 50,
         'C' to 100, 'D' to 500, 'M' to 1000
     )
-        private val UNITS = arrayOf("", "K", "M", "B", "T", "Q")
-        private val ORDINAL_SUFFIXES = arrayOf("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th")
+
+    private val UNITS = arrayOf("", "K", "M", "B", "T", "Q")
+
+    private val ORDINAL_SUFFIXES = arrayOf("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th")
 
     /**
      * 将整数值限制在指定范围内
@@ -293,9 +296,9 @@ object NumberUtils {
         while (remaining > 1 && divisor * divisor <= remaining) {
             while (remaining % divisor == 0) {
                 factors.add(divisor)
-        remaining /= divisor
+                remaining /= divisor
             }
-        divisor++
+            divisor++
         }
         if (remaining > 1) factors.add(remaining)
         return factors
@@ -651,7 +654,7 @@ object NumberUtils {
         for ((numeral, value) in ROMAN_NUMERALS) {
             while (remaining >= value) {
                 result.append(numeral)
-        remaining -= value
+                remaining -= value
             }
         }
         return result.toString()
@@ -668,7 +671,7 @@ object NumberUtils {
         var prev = 0
         for (ch in s.reversed()) {
             val value = ROMAN_MAP[ch] ?: throw IllegalArgumentException("Invalid Roman numeral: $ch")
-        if (value < prev) result -= value else result += value
+            if (value < prev) result -= value else result += value
             prev = value
         }
         return result
@@ -695,12 +698,12 @@ object NumberUtils {
             } else {
                 if (needZero) {
                     result.insert(0, digits[0])
-        needZero = false
+                    needZero = false
                 }
-        result.insert(0, units[unitIndex])
-        result.insert(0, digits[digit])
+                result.insert(0, units[unitIndex])
+                result.insert(0, digits[digit])
             }
-        num /= 10
+            num /= 10
             unitIndex++
         }
         return result.toString()
@@ -718,17 +721,19 @@ object NumberUtils {
             "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
         val tens = arrayOf("", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
         val scales = arrayOf("", "thousand", "million", "billion", "trillion")
+
         fun convertHundreds(num: Int): String {
             val result = StringBuilder()
-        val h = num / 100
+            val h = num / 100
             val remainder = num % 100
             if (h > 0) result.append("${ones[h]} hundred ")
-        if (remainder > 0) {
+            if (remainder > 0) {
                 if (remainder < 20) result.append(ones[remainder])
-        else result.append("${tens[remainder / 10]} ${ones[remainder % 10]}")
+                else result.append("${tens[remainder / 10]} ${ones[remainder % 10]}")
             }
-        return result.toString().trim()
+            return result.toString().trim()
         }
+
         var num = n
         val result = mutableListOf<String>()
         var scaleIndex = 0
@@ -736,10 +741,10 @@ object NumberUtils {
             val chunk = num % 1000
             if (chunk > 0) {
                 val chunkStr = convertHundreds(chunk)
-        val scale = scales[scaleIndex]
+                val scale = scales[scaleIndex]
                 result.add(if (scale.isNotEmpty()) "$chunkStr $scale" else chunkStr)
             }
-        num /= 1000
+            num /= 1000
             scaleIndex++
         }
         return result.reversed().joinToString(" ")
@@ -755,7 +760,7 @@ object NumberUtils {
         val mod100 = n % 100
         val suffix = when {
             mod100 in 11..13 -> "th"
-        else -> ORDINAL_SUFFIXES[n % 10]
+            else -> ORDINAL_SUFFIXES[n % 10]
         }
         return "$n$suffix"
     }

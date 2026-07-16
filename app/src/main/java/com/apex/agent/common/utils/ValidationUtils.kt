@@ -68,7 +68,7 @@ object ValidationUtils {
         if (parts.size != 4) return false
         return parts.all { part ->
             val num = part.toIntOrNull()
-        num != null && num in 0..255 && part == num.toString()
+            num != null && num in 0..255 && part == num.toString()
         }
     }
 

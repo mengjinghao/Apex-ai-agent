@@ -23,10 +23,10 @@ import java.util.concurrent.ConcurrentHashMap
  */
 enum class AchievementType {
     BADGE,       // 徽章
-        LEVEL,       // 等级
-        STREAK,      // 连击
-        CHALLENGE,   // 挑战
-        MILESTONE    // 里程碑
+    LEVEL,       // 等级
+    STREAK,      // 连击
+    CHALLENGE,   // 挑战
+    MILESTONE    // 里程碑
 }
 
 /**
@@ -46,20 +46,20 @@ data class Badge(
 
 enum class BadgeRarity {
     COMMON,      // 普通
-        UNCOMMON,    // 不常见
-        RARE,        // 稀有
-        EPIC,        // 史诗
-        LEGENDARY    // 传说
+    UNCOMMON,    // 不常见
+    RARE,        // 稀有
+    EPIC,        // 史诗
+    LEGENDARY    // 传说
 }
 
 enum class BadgeCategory {
     CONVERSATION,   // 对话类
-        TOOL,            // 工具使用
-        LEARNING,        // 学习类
-        CREATIVE,        // 创意类
-        SOCIAL,          // 社交类
-        EXPLORATION,     // 探索类
-        SPECIAL          // 特殊
+    TOOL,            // 工具使用
+    LEARNING,        // 学习类
+    CREATIVE,        // 创意类
+    SOCIAL,          // 社交类
+    EXPLORATION,     // 探索类
+    SPECIAL          // 特殊
 }
 
 /**
@@ -67,9 +67,9 @@ enum class BadgeCategory {
  */
 sealed class AchievementRequirement {
     data class Count(val metric: String, val target: Int) : AchievementRequirement()
-        data class Streak(val metric: String, val target: Int) : AchievementRequirement()
-        data class Composite(val requirements: List<AchievementRequirement>, val allRequired: Boolean = true) : AchievementRequirement()
-        data class Specific(val condition: String) : AchievementRequirement()
+    data class Streak(val metric: String, val target: Int) : AchievementRequirement()
+    data class Composite(val requirements: List<AchievementRequirement>, val allRequired: Boolean = true) : AchievementRequirement()
+    data class Specific(val condition: String) : AchievementRequirement()
 }
 
 /**
@@ -118,9 +118,9 @@ data class Challenge(
 
 enum class ChallengeType {
     DAILY,      // 每日
-        WEEKLY,     // 每周
-        ONE_TIME,   // 一次性
-        EVENT       // 活动
+    WEEKLY,     // 每周
+    ONE_TIME,   // 一次性
+    EVENT       // 活动
 }
 
 /**
@@ -128,10 +128,10 @@ enum class ChallengeType {
  */
 sealed class AchievementEvent {
     data class BadgeEarned(val badge: Badge) : AchievementEvent()
-        data class LevelUp(val newLevel: Int) : AchievementEvent()
-        data class StreakExtended(val metric: String, val count: Int) : AchievementEvent()
-        data class StreakBroken(val metric: String, val was: Int) : AchievementEvent()
-        data class ChallengeCompleted(val challenge: Challenge) : AchievementEvent()
+    data class LevelUp(val newLevel: Int) : AchievementEvent()
+    data class StreakExtended(val metric: String, val count: Int) : AchievementEvent()
+    data class StreakBroken(val metric: String, val was: Int) : AchievementEvent()
+    data class ChallengeCompleted(val challenge: Challenge) : AchievementEvent()
 }
 
 /**
@@ -140,9 +140,10 @@ sealed class AchievementEvent {
 class AchievementSystem {
 
     private val userStates = ConcurrentHashMap<String, UserAchievement>()
-        private val badges = ConcurrentHashMap<String, Badge>()
-        private val challenges = ConcurrentHashMap<String, Challenge>()
-        private val metrics = ConcurrentHashMap<String, ConcurrentHashMap<String, Long>>()  // userId -> (metric -> value)
+    private val badges = ConcurrentHashMap<String, Badge>()
+    private val challenges = ConcurrentHashMap<String, Challenge>()
+    private val metrics = ConcurrentHashMap<String, ConcurrentHashMap<String, Long>>()  // userId -> (metric -> value)
+
     init {
         registerBuiltinBadges()
         registerBuiltinChallenges()
@@ -213,7 +214,8 @@ class AchievementSystem {
             }
             .sortedByDescending { it.progress }
     }
-        data class BadgeProgress(
+
+    data class BadgeProgress(
         val badge: Badge,
         val progress: Float,
         val earned: Boolean
@@ -232,39 +234,41 @@ class AchievementSystem {
         sb.appendLine()
 
         // 徽章展示
-    if (state.badges.isNotEmpty()) {
+        if (state.badges.isNotEmpty()) {
             sb.appendLine("已获得徽章:")
-        state.badges.take(10).forEach { eb ->
+            state.badges.take(10).forEach { eb ->
                 val badge = badges[eb.badgeId]
                 if (badge != null) {
                     sb.appendLine("  ${badge.icon} ${badge.displayName} [${badge.rarity}]")
                 }
             }
-        sb.appendLine()
+            sb.appendLine()
         }
 
         // 连击
-    if (state.activeStreaks.isNotEmpty()) {
+        if (state.activeStreaks.isNotEmpty()) {
             sb.appendLine("连击:")
-        state.activeStreaks.forEach { (metric, info) ->
+            state.activeStreaks.forEach { (metric, info) ->
                 sb.appendLine("  $metric: ${info.current} 连击 (最高 ${info.best})")
             }
-        sb.appendLine()
+            sb.appendLine()
         }
 
         // 进度最高的未获得徽章
-    val progress = getBadgeProgress(userId).take(3)
+        val progress = getBadgeProgress(userId).take(3)
         if (progress.isNotEmpty()) {
             sb.appendLine("即将获得:")
-        progress.forEach { p ->
+            progress.forEach { p ->
                 sb.appendLine("  ${p.badge.icon} ${p.badge.displayName}: ${(p.progress * 100).toInt()}%")
             }
         }
+
         sb.appendLine("═══════════════")
         return sb.toString()
     }
 
     // ============ 内部方法 ============
+
     private fun initUser(userId: String): UserAchievement {
         val state = UserAchievement(
             userId = userId,
@@ -279,7 +283,8 @@ class AchievementSystem {
         userStates[userId] = state
         return state
     }
-        private fun addXP(userId: String, xp: Int) {
+
+    private fun addXP(userId: String, xp: Int) {
         val state = userStates[userId] ?: initUser(userId)
         var newTotal = state.totalXP + xp
         var newCurrent = state.currentLevelXP + xp
@@ -291,6 +296,7 @@ class AchievementSystem {
             newLevel++
             nextXP = (nextXP * 1.5).toLong()
         }
+
         userStates[userId] = state.copy(
             totalXP = newTotal,
             currentLevelXP = newCurrent,
@@ -298,77 +304,87 @@ class AchievementSystem {
             level = newLevel
         )
     }
-        private fun updateStreak(userId: String, metric: String) {
+
+    private fun updateStreak(userId: String, metric: String) {
         val state = userStates[userId] ?: initUser(userId)
         val now = System.currentTimeMillis()
         val dayMs = 24 * 60 * 60_000L
+
         val current = state.activeStreaks[metric]
         val updated = if (current != null) {
             if (now - current.lastUpdate < dayMs) {
                 // 同一天，不增加
-        current
+                current
             } else if (now - current.lastUpdate < 2 * dayMs) {
                 // 连续，+1
-        current.copy(current = current.current + 1, best = maxOf(current.best, current.current + 1), lastUpdate = now)
+                current.copy(current = current.current + 1, best = maxOf(current.best, current.current + 1), lastUpdate = now)
             } else {
                 // 断了，重置
-        current.copy(current = 1, lastUpdate = now)
+                current.copy(current = 1, lastUpdate = now)
             }
         } else {
             StreakInfo(metric, 1, 1, now)
         }
+
         userStates[userId] = state.copy(activeStreaks = state.activeStreaks + (metric to updated))
     }
-        private fun checkBadges(userId: String) {
+
+    private fun checkBadges(userId: String) {
         val state = userStates[userId] ?: return
         val earned = state.badges.map { it.badgeId }.toSet()
+
         for (badge in badges.values) {
             if (badge.id in earned) continue
             if (computeProgress(userId, badge.requirement) >= 1.0f) {
                 val newBadge = EarnedBadge(badge.id, System.currentTimeMillis())
-        userStates[userId] = state.copy(
+                userStates[userId] = state.copy(
                     badges = state.badges + newBadge
                 )
-        addXP(userId, badge.points)
+                addXP(userId, badge.points)
             }
         }
     }
-        private fun checkChallenges(userId: String) {
+
+    private fun checkChallenges(userId: String) {
         val state = userStates[userId] ?: return
         val completed = state.completedChallenges.toMutableList()
+
         for (challenge in challenges.values) {
             if (challenge.id in completed) continue
             if (challenge.deadline != null && challenge.deadline < System.currentTimeMillis()) continue
 
             if (computeProgress(userId, challenge.requirement) >= 1.0f) {
                 completed.add(challenge.id)
-        addXP(userId, challenge.rewardXP)
+                addXP(userId, challenge.rewardXP)
             }
         }
+
         userStates[userId] = state.copy(completedChallenges = completed)
     }
-        private fun computeProgress(userId: String, req: AchievementRequirement): Float {
+
+    private fun computeProgress(userId: String, req: AchievementRequirement): Float {
         val userMetrics = metrics[userId] ?: return 0f
         return when (req) {
             is AchievementRequirement.Count -> {
                 val current = userMetrics[req.metric] ?: 0
                 (current.toFloat() / req.target).coerceIn(0f, 1f)
             }
-        is AchievementRequirement.Streak -> {
+            is AchievementRequirement.Streak -> {
                 val state = userStates[userId]
-        val streak = state?.activeStreaks?.get(req.metric)
-        if (streak != null) (streak.current.toFloat() / req.target).coerceIn(0f, 1f) else 0f
+                val streak = state?.activeStreaks?.get(req.metric)
+                if (streak != null) (streak.current.toFloat() / req.target).coerceIn(0f, 1f) else 0f
             }
-        is AchievementRequirement.Composite -> {
+            is AchievementRequirement.Composite -> {
                 val progresses = req.requirements.map { computeProgress(userId, it) }
-        if (req.allRequired) progresses.minOrNull() ?: 0f
+                if (req.allRequired) progresses.minOrNull() ?: 0f
                 else progresses.maxOrNull() ?: 0f
             }
-        is AchievementRequirement.Specific -> 0f  // 需手动触发
+            is AchievementRequirement.Specific -> 0f  // 需手动触发
         }
     }
 
     // ============ 预置徽章 ============
+
     private fun registerBuiltinBadges() {
         // 对话类
         badges["badge_first_chat"] = Badge("badge_first_chat", "first_chat", "初次对话", "完成第一次对话", "💬", BadgeRarity.COMMON, BadgeCategory.CONVERSATION, AchievementRequirement.Count("messages", 1), 10)
@@ -405,7 +421,8 @@ class AchievementSystem {
         badges["badge_night_owl"] = Badge("badge_night_owl", "night_owl", "夜猫子", "凌晨 2 点后对话", "🦉", BadgeRarity.RARE, BadgeCategory.SPECIAL, AchievementRequirement.Specific("after_2am"), 100)
         badges["badge_early_bird"] = Badge("badge_early_bird", "early_bird", "早起鸟", "早上 6 点前对话", "🐦", BadgeRarity.RARE, BadgeCategory.SPECIAL, AchievementRequirement.Specific("before_6am"), 100)
     }
-        private fun registerBuiltinChallenges() {
+
+    private fun registerBuiltinChallenges() {
         challenges["challenge_daily_10"] = Challenge(
             "challenge_daily_10", "今日十连", "今天发送 10 条消息", "📅",
             ChallengeType.DAILY, AchievementRequirement.Count("daily_messages", 10), 50, "badge_chatter"

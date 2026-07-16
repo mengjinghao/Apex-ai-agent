@@ -160,13 +160,15 @@ object AppConfigKeys {
         type = ConfigType.STRING,
         required = true
     )
-        val API_TIMEOUT = ConfigKey(
+
+    val API_TIMEOUT = ConfigKey(
         path = "api.timeout",
         defaultValue = "30s",
         description = "API 请求超时时间",
         type = ConfigType.DURATION
     )
-        val API_RETRY_COUNT = ConfigKey(
+
+    val API_RETRY_COUNT = ConfigKey(
         path = "api.retryCount",
         defaultValue = "3",
         description = "API 请求重试次数",
@@ -181,13 +183,15 @@ object AppConfigKeys {
         type = ConfigType.DOUBLE,
         validator = { v -> v.toDoubleOrNull()?.let { it in 0.0..2.0 } ?: false }
     )
-        val MAX_TOKENS = ConfigKey(
+
+    val MAX_TOKENS = ConfigKey(
         path = "model.maxTokens",
         defaultValue = "2048",
         description = "模型最大生成 Token 数",
         type = ConfigType.INT
     )
-        val MODEL_TOP_P = ConfigKey(
+
+    val MODEL_TOP_P = ConfigKey(
         path = "model.topP",
         defaultValue = "1.0",
         description = "模型 Top-P 采样参数",
@@ -201,7 +205,8 @@ object AppConfigKeys {
         description = "日志级别 (DEBUG, INFO, WARN, ERROR)",
         type = ConfigType.STRING
     )
-        val LOG_DIR = ConfigKey(
+
+    val LOG_DIR = ConfigKey(
         path = "logging.dir",
         defaultValue = "./logs",
         description = "日志文件输出目录",
@@ -215,13 +220,15 @@ object AppConfigKeys {
         description = "缓存默认过期时间",
         type = ConfigType.DURATION
     )
-        val CACHE_ENABLED = ConfigKey(
+
+    val CACHE_ENABLED = ConfigKey(
         path = "cache.enabled",
         defaultValue = "true",
         description = "是否启用缓存",
         type = ConfigType.BOOLEAN
     )
-        val CACHE_MEMORY_SIZE = ConfigKey(
+
+    val CACHE_MEMORY_SIZE = ConfigKey(
         path = "cache.memorySize",
         defaultValue = "100MB",
         description = "内存缓存大小限制",
@@ -236,7 +243,8 @@ object AppConfigKeys {
         type = ConfigType.BOOLEAN,
         secret = true
     )
-        val API_KEY = ConfigKey(
+
+    val API_KEY = ConfigKey(
         path = "security.apiKey",
         defaultValue = null,
         description = "API 密钥",
@@ -252,7 +260,8 @@ object AppConfigKeys {
         description = "连接超时时间",
         type = ConfigType.DURATION
     )
-        val MAX_CONNECTIONS = ConfigKey(
+
+    val MAX_CONNECTIONS = ConfigKey(
         path = "network.maxConnections",
         defaultValue = "100",
         description = "最大连接数",
@@ -266,7 +275,8 @@ object AppConfigKeys {
         description = "调试模式开关",
         type = ConfigType.BOOLEAN
     )
-        val EXPERIMENTAL_FEATURES = ConfigKey(
+
+    val EXPERIMENTAL_FEATURES = ConfigKey(
         path = "features.experimental",
         defaultValue = "false",
         description = "实验性功能开关",
@@ -280,7 +290,8 @@ object AppConfigKeys {
         description = "推理默认策略",
         type = ConfigType.STRING
     )
-        val MAX_ITERATIONS = ConfigKey(
+
+    val MAX_ITERATIONS = ConfigKey(
         path = "reasoning.maxIterations",
         defaultValue = "10",
         description = "推理最大迭代次数",
@@ -294,7 +305,8 @@ object AppConfigKeys {
         description = "向量维度",
         type = ConfigType.INT
     )
-        val SIMILARITY_THRESHOLD = ConfigKey(
+
+    val SIMILARITY_THRESHOLD = ConfigKey(
         path = "memory.similarityThreshold",
         defaultValue = "0.75",
         description = "相似度阈值",
@@ -315,7 +327,8 @@ object AppConfigKeys {
         REASONING_STRATEGY, MAX_ITERATIONS,
         VECTOR_DIMENSION, SIMILARITY_THRESHOLD
     )
-        val allKeysByPath: Map<String, ConfigKey> by lazy {
+
+    val allKeysByPath: Map<String, ConfigKey> by lazy {
         allKeys().associateBy { it.path }
     }
 }

@@ -15,7 +15,8 @@ class CrashReportActivity : Activity() {
         const val EXTRA_STACK_TRACE = "stack_trace"
         const val EXTRA_ERROR_MESSAGE = "error_message"
     }
-        override fun onResume() {
+
+    override fun onResume() {
         super.onResume()
         // Stub: 原 UI 展示崩溃详情并允许复制/分享，已移除
         // 直接 finish() 让用户回到上一个非崩溃状态

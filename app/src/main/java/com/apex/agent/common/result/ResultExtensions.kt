@@ -29,7 +29,7 @@ fun <T, R> Result<T>.mapCatching(transform: (T) -> R): Result<R> = when (this) {
             Result.Failure(e)
         }
     }
-        is Result.Failure -> this
+    is Result.Failure -> this
 }
 
 /**
@@ -39,7 +39,7 @@ fun <T, R> Result<T>.mapCatching(transform: (T) -> R): Result<R> = when (this) {
  */
 fun <T> Result<T>.asFlow(): Flow<T> = when (this) {
     is Result.Success -> flowOf(data)
-        is Result.Failure -> kotlinx.coroutines.flow.flow { throw error }
+    is Result.Failure -> kotlinx.coroutines.flow.flow { throw error }
 }
 
 /**

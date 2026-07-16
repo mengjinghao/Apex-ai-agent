@@ -94,7 +94,8 @@ fun ApexTheme(
         darkTheme -> ApexDarkColors
         else -> ApexLightColors
     }
-        MaterialTheme(
+
+    MaterialTheme(
         colorScheme = colorScheme,
         typography = ApexTypography,
         shapes = ApexShapes,

@@ -36,7 +36,8 @@ enum class CacheLevel(
         speed = "网络级",
         capacity = "大（可水平扩展）"
     );
-        companion object {
+
+    companion object {
         /** 根据优先级数值查找对应的缓存层级 */
         fun fromPriority(priority: Int): CacheLevel? =
             entries.find { it.priority == priority }

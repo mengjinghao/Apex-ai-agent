@@ -95,7 +95,8 @@ object ThreadUtils {
     fun newScheduledThreadPool(corePoolSize: Int, namePrefix: String): ScheduledExecutorService {
         return Executors.newScheduledThreadPool(corePoolSize, newNamedThreadFactory(namePrefix))
     }
-        private val cachedPool by lazy { newCachedThreadPool("Background") }
+
+    private val cachedPool by lazy { newCachedThreadPool("Background") }
 
     /**
      * 在后台线程上执行 Runnable 任务（使用缓存的线程池）

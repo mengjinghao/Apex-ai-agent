@@ -22,10 +22,10 @@ import java.util.concurrent.ConcurrentHashMap
  */
 enum class StickerType {
     EMOJI,           // 基础 emoji
-        EMOTICON,        // 颜文字 (´｡• ω •｡`)
-        ASCII_ART,       // ASCII 艺术
-        MEME_TEXT,       // 文字梗表情
-        KAOMOJI          // 日本颜文字
+    EMOTICON,        // 颜文字 (´｡• ω •｡`)
+    ASCII_ART,       // ASCII 艺术
+    MEME_TEXT,       // 文字梗表情
+    KAOMOJI          // 日本颜文字
 }
 
 /**
@@ -69,7 +69,8 @@ enum class StickerPosition { START, END, REPLACE, INLINE }
 class StickerSuggestionSystem {
 
     private val stickers = ConcurrentHashMap<String, Sticker>()
-        init {
+
+    init {
         registerBuiltinStickers()
     }
 
@@ -86,32 +87,34 @@ class StickerSuggestionSystem {
     fun suggest(text: String, emotion: String? = null): List<StickerSuggestion> {
         val suggestions = mutableListOf<StickerSuggestion>()
         val textLower = text.lowercase()
+
         for (sticker in stickers.values) {
             var score = 0f
             var reason = ""
 
             // 情感匹配
-    if (emotion != null && sticker.emotion.equals(emotion, ignoreCase = true)) {
+            if (emotion != null && sticker.emotion.equals(emotion, ignoreCase = true)) {
                 score += 0.4f
                 reason = "情感匹配: $emotion"
             }
 
             // 关键词匹配
-    val matchedKeywords = sticker.keywords.count { textLower.contains(it, ignoreCase = true) }
-        if (matchedKeywords > 0) {
+            val matchedKeywords = sticker.keywords.count { textLower.contains(it, ignoreCase = true) }
+            if (matchedKeywords > 0) {
                 score += matchedKeywords * 0.2f
                 reason = if (reason.isEmpty()) "关键词匹配" else "$reason + 关键词"
             }
 
             // 上下文匹配
-    val matchedContext = sticker.contexts.any { ctx ->
+            val matchedContext = sticker.contexts.any { ctx ->
                 textLower.contains(ctx, ignoreCase = true)
             }
-        if (matchedContext) {
+            if (matchedContext) {
                 score += 0.2f
                 reason = if (reason.isEmpty()) "语境匹配" else "$reason + 语境"
             }
-        if (score > 0.3f) {
+
+            if (score > 0.3f) {
                 suggestions.add(StickerSuggestion(
                     sticker = sticker,
                     reason = reason,
@@ -119,6 +122,7 @@ class StickerSuggestionSystem {
                 ))
             }
         }
+
         return suggestions.sortedByDescending { it.confidence }.take(5)
     }
 
@@ -154,8 +158,8 @@ class StickerSuggestionSystem {
     fun insertSticker(text: String, sticker: Sticker, position: StickerPosition = StickerPosition.END): String {
         return when (position) {
             StickerPosition.START -> "${sticker.content} $text"
-        StickerPosition.END -> "$text ${sticker.content}"
-        StickerPosition.REPLACE -> sticker.content
+            StickerPosition.END -> "$text ${sticker.content}"
+            StickerPosition.REPLACE -> sticker.content
             StickerPosition.INLINE -> "$text ${sticker.content}"
         }
     }
@@ -166,6 +170,7 @@ class StickerSuggestionSystem {
     fun generateStickerPrompt(text: String, emotion: String? = null): String {
         val suggestions = suggest(text, emotion)
         if (suggestions.isEmpty()) return ""
+
         val sb = StringBuilder()
         sb.append("[建议表情]")
         suggestions.take(3).forEach { s ->
@@ -175,6 +180,7 @@ class StickerSuggestionSystem {
     }
 
     // ============ 预置表情 ============
+
     private fun registerBuiltinStickers() {
         // 开心
         stickers["s_happy_1"] = Sticker("s_happy_1", StickerType.EMOJI, "😄", "开心", "笑脸", "happy", listOf("开心", "高兴"), listOf("哈哈", "开心", "好棒"), 0.9f, StickerCategory.HAPPY)

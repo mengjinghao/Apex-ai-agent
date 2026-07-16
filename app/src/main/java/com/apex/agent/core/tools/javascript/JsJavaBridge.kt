@@ -10,29 +10,31 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     typeof NativeInterface[methodName] === 'function'
                 );
             }
-        function normalizeBridgeBoolean(value) {
+
+            function normalizeBridgeBoolean(value) {
                 if (value === true || value === false) {
                     return value;
                 }
-        if (typeof value === 'string') {
+                if (typeof value === 'string') {
                     var normalized = value.trim().toLowerCase();
-        if (normalized === 'true') {
+                    if (normalized === 'true') {
                         return true;
                     }
-        if (normalized === 'false' || normalized === '') {
+                    if (normalized === 'false' || normalized === '') {
                         return false;
                     }
                 }
-        if (typeof value === 'number') {
+                if (typeof value === 'number') {
                     return value !== 0;
                 }
-        return !!value;
+                return !!value;
             }
-        function classExistsRaw(className) {
+
+            function classExistsRaw(className) {
                 if (!hasNative('javaClassExists')) {
                     return false;
                 }
-        try {
+                try {
                     return normalizeBridgeBoolean(
                         NativeInterface.javaClassExists(String(className || ''))
                     );
@@ -40,48 +42,56 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     return false;
                 }
             }
-        function isPropertyKeyName(value) {
+
+            function isPropertyKeyName(value) {
                 return typeof value === 'string' && value.length > 0;
             }
-        var __javaBridgeJsObjectStore = Object.create(null);
-        var __javaBridgeJsObjectCounter = 0;
-        var __javaHandleRegistrations = new Map();
-        var __javaInstanceFinalizer = new FinalizationRegistry(function(heldValue) {
+
+            var __javaBridgeJsObjectStore = Object.create(null);
+            var __javaBridgeJsObjectCounter = 0;
+            var __javaHandleRegistrations = new Map();
+            var __javaInstanceFinalizer = new FinalizationRegistry(function(heldValue) {
                 finalizeInstanceProxy(heldValue);
             });
-        function registerJsObject(value) {
+
+            function registerJsObject(value) {
                 __javaBridgeJsObjectCounter += 1;
-        var id = '__java_js_obj_' + __javaBridgeJsObjectCounter;
-        __javaBridgeJsObjectStore[id] = value;
-        return id;
+                var id = '__java_js_obj_' + __javaBridgeJsObjectCounter;
+                __javaBridgeJsObjectStore[id] = value;
+                return id;
             }
-        function releaseJsObject(objectId) {
+
+            function releaseJsObject(objectId) {
                 var normalized = String(objectId || '').trim();
-        if (!normalized) {
+                if (!normalized) {
                     return false;
                 }
-        if (Object.prototype.hasOwnProperty.call(__javaBridgeJsObjectStore, normalized)) {
+                if (Object.prototype.hasOwnProperty.call(__javaBridgeJsObjectStore, normalized)) {
                     delete __javaBridgeJsObjectStore[normalized];
-        return true;
+                    return true;
                 }
-        return false;
+                return false;
             }
-        function normalizeHandleValue(value) {
+
+            function normalizeHandleValue(value) {
                 return String(value || '').trim();
             }
-        function registerInstanceProxy(handle, proxyObject) {
+
+            function registerInstanceProxy(handle, proxyObject) {
                 var normalized = normalizeHandleValue(handle);
-        if (!normalized || !proxyObject || typeof proxyObject !== 'object') {
+                if (!normalized || !proxyObject || typeof proxyObject !== 'object') {
                     return;
                 }
-        var token = {};
-        var tokenSet = __javaHandleRegistrations.get(normalized);
-        if (!tokenSet) {
+
+                var token = {};
+                var tokenSet = __javaHandleRegistrations.get(normalized);
+                if (!tokenSet) {
                     tokenSet = new Set();
-        __javaHandleRegistrations.set(normalized, tokenSet);
+                    __javaHandleRegistrations.set(normalized, tokenSet);
                 }
-        tokenSet.add(token);
-        __javaInstanceFinalizer.register(
+                tokenSet.add(token);
+
+                __javaInstanceFinalizer.register(
                     proxyObject,
                     {
                         handle: normalized,
@@ -90,96 +100,111 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     token
                 );
             }
-        function clearInstanceHandleRegistrations(handle) {
+
+            function clearInstanceHandleRegistrations(handle) {
                 var normalized = normalizeHandleValue(handle);
-        if (!normalized) {
+                if (!normalized) {
                     return;
                 }
-        var tokenSet = __javaHandleRegistrations.get(normalized);
-        if (!tokenSet) {
+
+                var tokenSet = __javaHandleRegistrations.get(normalized);
+                if (!tokenSet) {
                     return;
                 }
-        tokenSet.forEach(function(token) {
+
+                tokenSet.forEach(function(token) {
                     __javaInstanceFinalizer.unregister(token);
                 });
-        __javaHandleRegistrations.delete(normalized);
+                __javaHandleRegistrations.delete(normalized);
             }
-        function releaseInstanceHandle(handle, ignoreErrors) {
+
+            function releaseInstanceHandle(handle, ignoreErrors) {
                 var normalized = normalizeHandleValue(handle);
-        if (!normalized) {
+                if (!normalized) {
                     return false;
                 }
-        try {
+
+                try {
                     var released = !!invokeBridge('__javaReleaseInstanceInternal', [normalized]);
-        clearInstanceHandleRegistrations(normalized);
-        return released;
+                    clearInstanceHandleRegistrations(normalized);
+                    return released;
                 } catch (error) {
                     if (ignoreErrors) {
                         clearInstanceHandleRegistrations(normalized);
-        return false;
+                        return false;
                     }
-        throw error;
+                    throw error;
                 }
             }
-        function finalizeInstanceProxy(heldValue) {
+
+            function finalizeInstanceProxy(heldValue) {
                 if (!heldValue || typeof heldValue !== 'object') {
                     return;
                 }
-        var normalized = normalizeHandleValue(heldValue.handle);
-        if (!normalized) {
+
+                var normalized = normalizeHandleValue(heldValue.handle);
+                if (!normalized) {
                     return;
                 }
-        var tokenSet = __javaHandleRegistrations.get(normalized);
-        if (!tokenSet) {
+
+                var tokenSet = __javaHandleRegistrations.get(normalized);
+                if (!tokenSet) {
                     return;
                 }
-        tokenSet.delete(heldValue.token);
-        if (tokenSet.size > 0) {
+
+                tokenSet.delete(heldValue.token);
+                if (tokenSet.size > 0) {
                     return;
                 }
-        __javaHandleRegistrations.delete(normalized);
-        releaseInstanceHandle(normalized, true);
+
+                __javaHandleRegistrations.delete(normalized);
+                releaseInstanceHandle(normalized, true);
             }
-        function normalizeInterfaceName(value) {
+
+            function normalizeInterfaceName(value) {
                 if (value === null || value === undefined) {
                     return '';
                 }
-        if (typeof value === 'function' || typeof value === 'object') {
+
+                if (typeof value === 'function' || typeof value === 'object') {
                     try {
                         if (
                             Object.prototype.hasOwnProperty.call(value, 'className') &&
                             typeof value.className === 'string'
                         ) {
                             var classNameValue = String(value.className || '').trim();
-        if (classNameValue) {
+                            if (classNameValue) {
                                 return classNameValue;
                             }
                         }
                     } catch (_error) {
                     }
-        try {
+
+                    try {
                         if (
                             Object.prototype.hasOwnProperty.call(value, '__javaClass') &&
                             typeof value.__javaClass === 'string'
                         ) {
                             var javaClassValue = String(value.__javaClass || '').trim();
-        if (javaClassValue) {
+                            if (javaClassValue) {
                                 return javaClassValue;
                             }
                         }
                     } catch (_error2) {
                     }
                 }
-        if (typeof value === 'function' || typeof value === 'object') {
+
+                if (typeof value === 'function' || typeof value === 'object') {
                     return '';
                 }
-        return String(value || '').trim();
+                return String(value || '').trim();
             }
-        function isJavaClassReference(value) {
+
+            function isJavaClassReference(value) {
                 if (!value || (typeof value !== 'function' && typeof value !== 'object')) {
                     return false;
                 }
-        try {
+                try {
                     if (
                         Object.prototype.hasOwnProperty.call(value, 'className') &&
                         typeof value.className === 'string' &&
@@ -189,7 +214,7 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     }
                 } catch (_error) {
                 }
-        try {
+                try {
                     if (
                         Object.prototype.hasOwnProperty.call(value, '__javaClass') &&
                         typeof value.__javaClass === 'string' &&
@@ -199,9 +224,10 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     }
                 } catch (_error2) {
                 }
-        return false;
+                return false;
             }
-        function normalizeInterfaceNames(interfaceNameOrNames) {
+
+            function normalizeInterfaceNames(interfaceNameOrNames) {
                 if (Array.isArray(interfaceNameOrNames)) {
                     return interfaceNameOrNames
                         .map(function(item) {
@@ -209,17 +235,18 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         })
                         .filter(Boolean);
                 }
-        var single = normalizeInterfaceName(interfaceNameOrNames);
-        if (!single) {
+                var single = normalizeInterfaceName(interfaceNameOrNames);
+                if (!single) {
                     return [];
                 }
-        return [single];
+                return [single];
             }
-        function attachJsInterfaceValue(marker, jsValue) {
+
+            function attachJsInterfaceValue(marker, jsValue) {
                 if (!marker || typeof marker !== 'object' || jsValue === undefined) {
                     return marker;
                 }
-        try {
+                try {
                     Object.defineProperty(marker, '__javaJsValue', {
                         value: jsValue,
                         writable: true,
@@ -229,95 +256,109 @@ internal fun buildJavaClassBridgeDefinition(): String {
                 } catch (_error) {
                     marker.__javaJsValue = jsValue;
                 }
-        return marker;
+                return marker;
             }
-        function getJsInterfaceValue(marker) {
+
+            function getJsInterfaceValue(marker) {
                 if (!marker || typeof marker !== 'object') {
                     return undefined;
                 }
-        try {
+                try {
                     return marker.__javaJsValue;
                 } catch (_error) {
                     return undefined;
                 }
             }
-        function ensureJsInterfaceMarkerRegistered(marker) {
+
+            function ensureJsInterfaceMarkerRegistered(marker) {
                 if (!marker || typeof marker !== 'object') {
                     throw new Error('js interface marker is required');
                 }
-        var currentId = String(marker.__javaJsObjectId || '').trim();
-        if (
+
+                var currentId = String(marker.__javaJsObjectId || '').trim();
+                if (
                     currentId &&
                     Object.prototype.hasOwnProperty.call(__javaBridgeJsObjectStore, currentId)
                 ) {
                     marker.__javaJsObjectId = currentId;
-        return marker;
+                    return marker;
                 }
-        var jsValue = getJsInterfaceValue(marker);
-        if (jsValue === undefined) {
+
+                var jsValue = getJsInterfaceValue(marker);
+                if (jsValue === undefined) {
                     throw new Error(
                         currentId
                             ? ('js interface implementation is unavailable: ' + currentId)
                             : 'js interface implementation is unavailable'
                     );
                 }
-        var nextId = registerJsObject(jsValue);
-        marker.__javaJsObjectId = nextId;
-        return marker;
+
+                var nextId = registerJsObject(jsValue);
+                marker.__javaJsObjectId = nextId;
+                return marker;
             }
-        function buildJsInterfaceMarker(objectId, interfaceNames, jsValue) {
+
+            function buildJsInterfaceMarker(objectId, interfaceNames, jsValue) {
                 var marker = {
                     __javaJsInterface: true,
                     __javaJsObjectId: String(objectId || ''),
                     __javaInterfaces: normalizeInterfaceNames(interfaceNames)
                 };
-        return attachJsInterfaceValue(marker, jsValue);
+                return attachJsInterfaceValue(marker, jsValue);
             }
-        function invokeRegisteredJsObject(objectId, methodName, args) {
+
+            function invokeRegisteredJsObject(objectId, methodName, args) {
                 var id = String(objectId || '').trim();
-        if (!id) {
+                if (!id) {
                     throw new Error('jsObjectId is required');
                 }
-        if (!Object.prototype.hasOwnProperty.call(__javaBridgeJsObjectStore, id)) {
+                if (!Object.prototype.hasOwnProperty.call(__javaBridgeJsObjectStore, id)) {
                     throw new Error('js object not found: ' + id);
                 }
-        var target = __javaBridgeJsObjectStore[id];
-        var normalizedMethod = String(methodName || '').trim();
-        var normalizedArgs = Array.isArray(args)
+
+                var target = __javaBridgeJsObjectStore[id];
+                var normalizedMethod = String(methodName || '').trim();
+                var normalizedArgs = Array.isArray(args)
                     ? args.map(function(item) {
                         return wrapValue(item);
                     })
                     : [];
-        if (typeof target === 'function') {
+
+                if (typeof target === 'function') {
                     return target.apply(null, normalizedArgs);
                 }
-        if (!target || typeof target !== 'object') {
+
+                if (!target || typeof target !== 'object') {
                     throw new Error('js object is not callable: ' + id);
                 }
-        if (
+
+                if (
                     normalizedMethod &&
                     typeof target[normalizedMethod] === 'function'
                 ) {
                     return target[normalizedMethod].apply(target, normalizedArgs);
                 }
-        if (normalizedMethod && normalizedArgs.length === 0 && normalizedMethod in target) {
+
+                if (normalizedMethod && normalizedArgs.length === 0 && normalizedMethod in target) {
                     return target[normalizedMethod];
                 }
-        throw new Error(
+
+                throw new Error(
                     'method not found on js interface object: ' +
                         (normalizedMethod || '<empty>')
                 );
             }
-        function unwrapValue(value) {
+
+            function unwrapValue(value) {
                 if (typeof value === 'function') {
                     return ensureJsInterfaceMarkerRegistered(
                         buildJsInterfaceMarker('', [], value)
                     );
                 }
-        if (!value || typeof value !== 'object') {
+                if (!value || typeof value !== 'object') {
                     return value;
                 }
-        if (
+                if (
                     Object.prototype.hasOwnProperty.call(value, '__javaHandle') &&
                     Object.prototype.hasOwnProperty.call(value, '__javaClass')
                 ) {
@@ -326,7 +367,7 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         __javaClass: String(value.__javaClass)
                     };
                 }
-        if (
+                if (
                     Object.prototype.hasOwnProperty.call(value, '__javaJsInterface') &&
                     Object.prototype.hasOwnProperty.call(value, '__javaJsObjectId')
                 ) {
@@ -338,24 +379,25 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         )
                     );
                 }
-        if (Array.isArray(value)) {
+                if (Array.isArray(value)) {
                     return value.map(function(item) {
                         return unwrapValue(item);
                     });
                 }
-        var out = {};
-        for (var key in value) {
+                var out = {};
+                for (var key in value) {
                     if (Object.prototype.hasOwnProperty.call(value, key)) {
                         out[key] = unwrapValue(value[key]);
                     }
                 }
-        return out;
+                return out;
             }
-        function wrapValue(value) {
+
+            function wrapValue(value) {
                 if (!value || typeof value !== 'object') {
                     return value;
                 }
-        if (
+                if (
                     Object.prototype.hasOwnProperty.call(value, '__javaHandle') &&
                     Object.prototype.hasOwnProperty.call(value, '__javaClass')
                 ) {
@@ -364,40 +406,42 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         String(value.__javaHandle)
                     );
                 }
-        if (Array.isArray(value)) {
+                if (Array.isArray(value)) {
                     return value.map(function(item) {
                         return wrapValue(item);
                     });
                 }
-        var out = {};
-        for (var key in value) {
+                var out = {};
+                for (var key in value) {
                     if (Object.prototype.hasOwnProperty.call(value, key)) {
                         out[key] = wrapValue(value[key]);
                     }
                 }
-        return out;
+                return out;
             }
-        function normalizeArgs(argsLike) {
+
+            function normalizeArgs(argsLike) {
                 var args = [];
-        for (var index = 0; index < argsLike.length; index += 1) {
+                for (var index = 0; index < argsLike.length; index += 1) {
                     args.push(unwrapValue(argsLike[index]));
                 }
-        return args;
+                return args;
             }
-        function scheduleSuspendCall(invoker, args) {
+
+            function scheduleSuspendCall(invoker, args) {
                 var argList = Array.isArray(args) ? args.slice() : [];
-        if (typeof Promise !== 'function') {
+                if (typeof Promise !== 'function') {
                     throw new Error('Promise is required for suspend call');
                 }
-        return new Promise(function(resolve, reject) {
+                return new Promise(function(resolve, reject) {
                     var callbackId = '';
-        var settled = false;
-        var promiseCallback = function(error, value) {
+                    var settled = false;
+                    var promiseCallback = function(error, value) {
                         if (settled) {
                             return;
                         }
-        settled = true;
-        try {
+                        settled = true;
+                        try {
                             if (error) {
                                 reject(new Error(error));
                             } else {
@@ -406,68 +450,75 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         } finally {
                             if (callbackId) {
                                 releaseJsObject(callbackId);
-        callbackId = '';
+                                callbackId = '';
                             }
                         }
                     };
-        callbackId = registerJsObject(promiseCallback);
-        try {
+                    callbackId = registerJsObject(promiseCallback);
+                    try {
                         invoker(callbackId, argList);
                     } catch (error) {
                         if (callbackId) {
                             releaseJsObject(callbackId);
-        callbackId = '';
+                            callbackId = '';
                         }
-        throw error;
+                        throw error;
                     }
                 });
             }
-        function invokeBridge(methodName, args) {
+
+            function invokeBridge(methodName, args) {
                 if (!hasNative(methodName)) {
                     throw new Error('NativeInterface.' + methodName + ' is unavailable');
                 }
-        var raw = NativeInterface[methodName].apply(NativeInterface, args || []);
-        var parsed;
-        try {
+
+                var raw = NativeInterface[methodName].apply(NativeInterface, args || []);
+                var parsed;
+                try {
                     parsed = JSON.parse(String(raw || ''));
                 } catch (e) {
                     throw new Error('Invalid bridge result from ' + methodName + ': ' + String(raw));
                 }
-        if (!parsed || parsed.success !== true) {
+
+                if (!parsed || parsed.success !== true) {
                     var message =
                         parsed && typeof parsed.error === 'string' && parsed.error.length > 0
                             ? parsed.error
                             : ('Bridge call failed: ' + methodName);
-        throw new Error(message);
+                    throw new Error(message);
                 }
-        return wrapValue(parsed.data);
+
+                return wrapValue(parsed.data);
             }
-        function invokeNativeSuspend(methodName, args) {
+
+            function invokeNativeSuspend(methodName, args) {
                 if (!hasNative(methodName)) {
                     throw new Error('NativeInterface.' + methodName + ' is unavailable');
                 }
-        NativeInterface[methodName].apply(NativeInterface, args || []);
+                NativeInterface[methodName].apply(NativeInterface, args || []);
             }
-        function normalizeExternalCodeLoadOptions(options) {
+
+            function normalizeExternalCodeLoadOptions(options) {
                 if (options === undefined || options === null) {
                     return {};
                 }
-        if (typeof options === 'string') {
+                if (typeof options === 'string') {
                     return {
                         nativeLibraryDir: String(options || '').trim()
                     };
                 }
-        if (typeof options !== 'object' || Array.isArray(options)) {
+                if (typeof options !== 'object' || Array.isArray(options)) {
                     throw new Error('load options must be an object or native library dir string');
                 }
-        var normalized = {};
-        if (
+
+                var normalized = {};
+                if (
                     typeof options.nativeLibraryDir === 'string' &&
                     options.nativeLibraryDir.trim().length > 0
                 ) {
                     normalized.nativeLibraryDir = options.nativeLibraryDir.trim();
                 }
-        if (Array.isArray(options.childFirstPrefixes)) {
+                if (Array.isArray(options.childFirstPrefixes)) {
                     var childFirstPrefixes = options.childFirstPrefixes
                         .map(function(prefix) {
                             return String(prefix || '').trim();
@@ -475,23 +526,25 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         .filter(function(prefix) {
                             return prefix.length > 0;
                         });
-        if (childFirstPrefixes.length > 0) {
+                    if (childFirstPrefixes.length > 0) {
                         normalized.childFirstPrefixes = Array.from(new Set(childFirstPrefixes));
                     }
                 }
-        return normalized;
+                return normalized;
             }
-        function loadExternalCode(methodName, path, options) {
+
+            function loadExternalCode(methodName, path, options) {
                 var normalizedPath = String(path || '').trim();
-        if (!normalizedPath) {
+                if (!normalizedPath) {
                     throw new Error('external code path is required');
                 }
-        return invokeBridge(methodName, [
+                return invokeBridge(methodName, [
                     normalizedPath,
                     JSON.stringify(normalizeExternalCodeLoadOptions(options))
                 ]);
             }
-        function createInstanceProxy(className, handle) {
+
+            function createInstanceProxy(className, handle) {
                 var target = {
                     __javaClass: className,
                     __javaHandle: handle,
@@ -499,7 +552,7 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     handle: handle,
                     call: function(methodName) {
                         var args = Array.prototype.slice.call(arguments, 1);
-        return invokeBridge('javaCallInstance', [
+                        return invokeBridge('javaCallInstance', [
                             handle,
                             String(methodName || ''),
                             JSON.stringify(normalizeArgs(args))
@@ -507,7 +560,7 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     },
                     callSuspend: function(methodName) {
                         var args = Array.prototype.slice.call(arguments, 1);
-        return scheduleSuspendCall(
+                        return scheduleSuspendCall(
                             function(callbackId, payloadArgs) {
                                 invokeNativeSuspend('javaCallInstanceSuspend', [
                                     handle,
@@ -527,7 +580,7 @@ internal fun buildJavaClassBridgeDefinition(): String {
                                 '[]'
                             ]);
                         }
-        return invokeBridge('javaGetInstanceField', [
+                        return invokeBridge('javaGetInstanceField', [
                             handle,
                             String(fieldName || '')
                         ]);
@@ -540,7 +593,7 @@ internal fun buildJavaClassBridgeDefinition(): String {
                                 JSON.stringify(normalizeArgs([fieldName]))
                             ]);
                         }
-        return invokeBridge('javaSetInstanceField', [
+                        return invokeBridge('javaSetInstanceField', [
                             handle,
                             String(fieldName || ''),
                             JSON.stringify(unwrapValue(value))
@@ -556,30 +609,31 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         return '[JavaObject ' + className + '#' + handle + ']';
                     }
                 };
-        var proxy = new Proxy(target, {
+
+                var proxy = new Proxy(target, {
                     get: function(obj, prop) {
                         if (prop in obj) {
                             return obj[prop];
                         }
-        if (prop === Symbol.toStringTag) {
+                        if (prop === Symbol.toStringTag) {
                             return 'JavaObject';
                         }
-        if (prop === 'then') {
+                        if (prop === 'then') {
                             return undefined;
                         }
-        if (typeof prop !== 'string') {
+                        if (typeof prop !== 'string') {
                             return undefined;
                         }
-        try {
+                        try {
                             return invokeBridge('javaGetInstanceField', [
                                 handle,
                                 prop
                             ]);
                         } catch (_fieldError) {
                         }
-        return function() {
+                        return function() {
                             var args = Array.prototype.slice.call(arguments);
-        return invokeBridge('javaCallInstance', [
+                            return invokeBridge('javaCallInstance', [
                                 handle,
                                 prop,
                                 JSON.stringify(normalizeArgs(args))
@@ -589,39 +643,42 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     set: function(obj, prop, value) {
                         if (prop in obj) {
                             obj[prop] = value;
-        return true;
+                            return true;
                         }
-        if (typeof prop !== 'string') {
+                        if (typeof prop !== 'string') {
                             return false;
                         }
-        invokeBridge('javaSetInstanceField', [
+                        invokeBridge('javaSetInstanceField', [
                             handle,
                             prop,
                             JSON.stringify(unwrapValue(value))
                         ]);
-        return true;
+                        return true;
                     }
                 });
-        registerInstanceProxy(handle, proxy);
-        return proxy;
+
+                registerInstanceProxy(handle, proxy);
+                return proxy;
             }
-        function shouldFallbackToCompanion(message) {
+
+            function shouldFallbackToCompanion(message) {
                 if (!message) {
                     return false;
                 }
-        var text = String(message);
-        return (
+                var text = String(message);
+                return (
                     text.indexOf("method '") >= 0 &&
                     text.indexOf(" not found on ") >= 0
                 ) || (text.indexOf("no method '") >= 0 && text.indexOf(" matched on ") >= 0);
             }
-        function callCompanionInstanceMethod(className, methodName, args) {
+
+            function callCompanionInstanceMethod(className, methodName, args) {
                 try {
                     var companionInstance = invokeBridge('javaGetStaticField', [
                         className,
                         'Companion'
                     ]);
-        if (
+                    if (
                         companionInstance &&
                         typeof companionInstance[methodName] === 'function'
                     ) {
@@ -629,9 +686,10 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     }
                 } catch (_e) {
                 }
-        return { hit: false };
+                return { hit: false };
             }
-        function callStaticWithCompanionFallback(className, methodName, args) {
+
+            function callStaticWithCompanionFallback(className, methodName, args) {
                 try {
                     return invokeBridge('javaCallStatic', [
                         className,
@@ -642,12 +700,12 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     if (!shouldFallbackToCompanion(e && e.message)) {
                         throw e;
                     }
-        var instanceAttempt = callCompanionInstanceMethod(className, methodName, args);
-        if (instanceAttempt && instanceAttempt.hit) {
+                    var instanceAttempt = callCompanionInstanceMethod(className, methodName, args);
+                    if (instanceAttempt && instanceAttempt.hit) {
                         return instanceAttempt.value;
                     }
-        var companionClassName = className + '${'$'}Companion';
-        if (classExistsRaw(companionClassName)) {
+                    var companionClassName = className + '${'$'}Companion';
+                    if (classExistsRaw(companionClassName)) {
                         try {
                             return invokeBridge('javaCallStatic', [
                                 companionClassName,
@@ -658,36 +716,38 @@ internal fun buildJavaClassBridgeDefinition(): String {
                             if (!shouldFallbackToCompanion(e2 && e2.message)) {
                                 throw e2;
                             }
-        var retryInstance = callCompanionInstanceMethod(className, methodName, args);
-        if (retryInstance && retryInstance.hit) {
+                            var retryInstance = callCompanionInstanceMethod(className, methodName, args);
+                            if (retryInstance && retryInstance.hit) {
                                 return retryInstance.value;
                             }
-        throw e2;
+                            throw e2;
                         }
                     }
-        throw e;
+                    throw e;
                 }
             }
-        function createClassProxy(className) {
+
+            function createClassProxy(className) {
                 var target = function() {
                     return target.newInstance.apply(target, arguments);
                 };
-        target.className = className;
-        target.exists = function() {
+
+                target.className = className;
+                target.exists = function() {
                     return hasNative('javaClassExists') &&
                         normalizeBridgeBoolean(NativeInterface.javaClassExists(className));
                 };
-        target.newInstance = function() {
+                target.newInstance = function() {
                     var args = normalizeArgs(arguments);
-        return invokeBridge('javaNewInstance', [className, JSON.stringify(args)]);
+                    return invokeBridge('javaNewInstance', [className, JSON.stringify(args)]);
                 };
-        target.callStatic = function(methodName) {
+                target.callStatic = function(methodName) {
                     var args = Array.prototype.slice.call(arguments, 1);
-        return callStaticWithCompanionFallback(className, methodName, args);
+                    return callStaticWithCompanionFallback(className, methodName, args);
                 };
-        target.callSuspend = function(methodName) {
+                target.callSuspend = function(methodName) {
                     var args = Array.prototype.slice.call(arguments, 1);
-        return scheduleSuspendCall(
+                    return scheduleSuspendCall(
                         function(callbackId, payloadArgs) {
                             invokeNativeSuspend('javaCallStaticSuspend', [
                                 className,
@@ -699,57 +759,58 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         args
                     );
                 };
-        target.getStatic = function(fieldName) {
+                target.getStatic = function(fieldName) {
                     return invokeBridge('javaGetStaticField', [
                         className,
                         String(fieldName || '')
                     ]);
                 };
-        target.setStatic = function(fieldName, value) {
+                target.setStatic = function(fieldName, value) {
                     return invokeBridge('javaSetStaticField', [
                         className,
                         String(fieldName || ''),
                         JSON.stringify(unwrapValue(value))
                     ]);
                 };
-        target.toString = function() {
+                target.toString = function() {
                     return '[JavaClass ' + className + ']';
                 };
-        return new Proxy(target, {
+
+                return new Proxy(target, {
                     get: function(obj, prop) {
                         if (prop in obj) {
                             return obj[prop];
                         }
-        if (prop === Symbol.toStringTag) {
+                        if (prop === Symbol.toStringTag) {
                             return 'JavaClass';
                         }
-        if (prop === 'then') {
+                        if (prop === 'then') {
                             return undefined;
                         }
-        if (typeof prop !== 'string') {
+                        if (typeof prop !== 'string') {
                             return undefined;
                         }
-        try {
+                        try {
                             return invokeBridge('javaGetStaticField', [
                                 className,
                                 prop
                             ]);
                         } catch (_fieldError) {
                         }
-        var nestedClassName = className + '$' + prop;
-        if (classExistsRaw(nestedClassName)) {
+                        var nestedClassName = className + '$' + prop;
+                        if (classExistsRaw(nestedClassName)) {
                             return createClassProxy(nestedClassName);
                         }
-        var nestedUpperClassName = className + '$' + prop.toUpperCase();
-        if (
+                        var nestedUpperClassName = className + '$' + prop.toUpperCase();
+                        if (
                             nestedUpperClassName !== nestedClassName &&
                             classExistsRaw(nestedUpperClassName)
                         ) {
                             return createClassProxy(nestedUpperClassName);
                         }
-        return function() {
+                        return function() {
                             var args = Array.prototype.slice.call(arguments);
-        return callStaticWithCompanionFallback(className, prop, args);
+                            return callStaticWithCompanionFallback(className, prop, args);
                         };
                     },
                     apply: function(obj, _thisArg, args) {
@@ -761,89 +822,94 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     set: function(obj, prop, value) {
                         if (prop in obj) {
                             obj[prop] = value;
-        return true;
+                            return true;
                         }
-        if (typeof prop !== 'string') {
+                        if (typeof prop !== 'string') {
                             return false;
                         }
-        invokeBridge('javaSetStaticField', [
+                        invokeBridge('javaSetStaticField', [
                             className,
                             prop,
                             JSON.stringify(unwrapValue(value))
                         ]);
-        return true;
+                        return true;
                     }
                 });
             }
-        function createPackageProxy(parts) {
+
+            function createPackageProxy(parts) {
                 var pathParts = Array.isArray(parts) ? parts.slice() : [];
-        var target = function() {
+                var target = function() {
                     var fullName = pathParts.join('.');
-        if (!fullName) {
+                    if (!fullName) {
                         throw new Error('cannot instantiate empty package path');
                     }
-        if (!classExistsRaw(fullName)) {
+                    if (!classExistsRaw(fullName)) {
                         throw new Error('class not found: ' + fullName);
                     }
-        var cls = createClassProxy(fullName);
-        return cls.newInstance.apply(cls, arguments);
+                    var cls = createClassProxy(fullName);
+                    return cls.newInstance.apply(cls, arguments);
                 };
-        target.path = pathParts.join('.');
-        target.toString = function() {
+
+                target.path = pathParts.join('.');
+                target.toString = function() {
                     return '[JavaPackage ' + target.path + ']';
                 };
-        return new Proxy(target, {
+
+                return new Proxy(target, {
                     get: function(obj, prop) {
                         if (prop in obj) {
                             return obj[prop];
                         }
-        if (prop === Symbol.toStringTag) {
+                        if (prop === Symbol.toStringTag) {
                             return 'JavaPackage';
                         }
-        if (prop === 'then') {
+                        if (prop === 'then') {
                             return undefined;
                         }
-        if (!isPropertyKeyName(prop)) {
+                        if (!isPropertyKeyName(prop)) {
                             return undefined;
                         }
-        var nextParts = pathParts.concat([prop]);
-        var candidate = nextParts.join('.');
-        if (classExistsRaw(candidate)) {
+
+                        var nextParts = pathParts.concat([prop]);
+                        var candidate = nextParts.join('.');
+                        if (classExistsRaw(candidate)) {
                             return createClassProxy(candidate);
                         }
-        return createPackageProxy(nextParts);
+                        return createPackageProxy(nextParts);
                     },
                     apply: function(_obj, _thisArg, args) {
                         var fullName = pathParts.join('.');
-        if (!fullName) {
+                        if (!fullName) {
                             throw new Error('cannot call empty package path');
                         }
-        if (!classExistsRaw(fullName)) {
+                        if (!classExistsRaw(fullName)) {
                             throw new Error('class not found: ' + fullName);
                         }
-        var cls = createClassProxy(fullName);
-        return cls.newInstance.apply(cls, args || []);
+                        var cls = createClassProxy(fullName);
+                        return cls.newInstance.apply(cls, args || []);
                     },
                     construct: function(_obj, args) {
                         var fullName = pathParts.join('.');
-        if (!fullName) {
+                        if (!fullName) {
                             throw new Error('cannot construct empty package path');
                         }
-        if (!classExistsRaw(fullName)) {
+                        if (!classExistsRaw(fullName)) {
                             throw new Error('class not found: ' + fullName);
                         }
-        var cls = createClassProxy(fullName);
-        return cls.newInstance.apply(cls, args || []);
+                        var cls = createClassProxy(fullName);
+                        return cls.newInstance.apply(cls, args || []);
                     }
                 });
             }
-        var JavaApi = {
+
+            var JavaApi = {
                 type: function(className) {
                     var normalized = String(className || '').trim();
-        if (!normalized) {
+                    if (!normalized) {
                         throw new Error('class name is required');
                     }
-        return createClassProxy(normalized);
+                    return createClassProxy(normalized);
                 },
                 use: function(className) {
                     return this.type(className);
@@ -853,15 +919,15 @@ internal fun buildJavaClassBridgeDefinition(): String {
                 },
                 package: function(packageName) {
                     var normalized = String(packageName || '').trim();
-        if (!normalized) {
+                    if (!normalized) {
                         throw new Error('package name is required');
                     }
-        return createPackageProxy(normalized.split('.').filter(Boolean));
+                    return createPackageProxy(normalized.split('.').filter(Boolean));
                 },
                 implement: function(interfaceNameOrNames, impl) {
                     var actualImpl = impl;
-        var interfaceNamesInput = interfaceNameOrNames;
-        if (
+                    var interfaceNamesInput = interfaceNameOrNames;
+                    if (
                         actualImpl === undefined &&
                         (typeof interfaceNameOrNames === 'function' ||
                             (interfaceNameOrNames &&
@@ -870,26 +936,27 @@ internal fun buildJavaClassBridgeDefinition(): String {
                         !isJavaClassReference(interfaceNameOrNames)
                     ) {
                         actualImpl = interfaceNameOrNames;
-        interfaceNamesInput = [];
+                        interfaceNamesInput = [];
                     }
-        if (actualImpl === null || actualImpl === undefined) {
+
+                    if (actualImpl === null || actualImpl === undefined) {
                         throw new Error('implement target is required');
                     }
-        if (typeof actualImpl !== 'function' && typeof actualImpl !== 'object') {
+                    if (typeof actualImpl !== 'function' && typeof actualImpl !== 'object') {
                         throw new Error('implement target must be a function or object');
                     }
-        var interfaceNames = normalizeInterfaceNames(interfaceNamesInput);
-        return buildJsInterfaceMarker('', interfaceNames, actualImpl);
+                    var interfaceNames = normalizeInterfaceNames(interfaceNamesInput);
+                    return buildJsInterfaceMarker('', interfaceNames, actualImpl);
                 },
                 proxy: function(interfaceNameOrNames, impl) {
                     return this.implement(interfaceNameOrNames, impl);
                 },
                 classExists: function(className) {
                     var normalized = String(className || '').trim();
-        if (!normalized) {
+                    if (!normalized) {
                         return false;
                     }
-        return classExistsRaw(normalized);
+                    return classExistsRaw(normalized);
                 },
                 loadDex: function(path, options) {
                     return loadExternalCode('javaLoadDex', path, options);
@@ -902,9 +969,9 @@ internal fun buildJavaClassBridgeDefinition(): String {
                 },
                 callStatic: function(className, methodName) {
                     var normalizedClass = String(className || '').trim();
-        var normalizedMethod = String(methodName || '').trim();
-        var args = Array.prototype.slice.call(arguments, 2);
-        return invokeBridge('javaCallStatic', [
+                    var normalizedMethod = String(methodName || '').trim();
+                    var args = Array.prototype.slice.call(arguments, 2);
+                    return invokeBridge('javaCallStatic', [
                         normalizedClass,
                         normalizedMethod,
                         JSON.stringify(normalizeArgs(args))
@@ -912,9 +979,9 @@ internal fun buildJavaClassBridgeDefinition(): String {
                 },
                 callSuspend: function(className, methodName) {
                     var normalizedClass = String(className || '').trim();
-        var normalizedMethod = String(methodName || '').trim();
-        var args = Array.prototype.slice.call(arguments, 2);
-        return scheduleSuspendCall(
+                    var normalizedMethod = String(methodName || '').trim();
+                    var args = Array.prototype.slice.call(arguments, 2);
+                    return scheduleSuspendCall(
                         function(callbackId, payloadArgs) {
                             invokeNativeSuspend('javaCallStaticSuspend', [
                                 normalizedClass,
@@ -928,8 +995,8 @@ internal fun buildJavaClassBridgeDefinition(): String {
                 },
                 newInstance: function(className) {
                     var normalizedClass = String(className || '').trim();
-        var args = Array.prototype.slice.call(arguments, 1);
-        return invokeBridge('javaNewInstance', [
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    return invokeBridge('javaNewInstance', [
                         normalizedClass,
                         JSON.stringify(normalizeArgs(args))
                     ]);
@@ -950,41 +1017,45 @@ internal fun buildJavaClassBridgeDefinition(): String {
                     return '[JavaBridge]';
                 }
             };
-        var Java = new Proxy(JavaApi, {
+
+            var Java = new Proxy(JavaApi, {
                 get: function(obj, prop) {
                     if (prop in obj) {
                         return obj[prop];
                     }
-        if (prop === Symbol.toStringTag) {
+                    if (prop === Symbol.toStringTag) {
                         return 'JavaBridge';
                     }
-        if (prop === 'then') {
+                    if (prop === 'then') {
                         return undefined;
                     }
-        if (!isPropertyKeyName(prop)) {
+                    if (!isPropertyKeyName(prop)) {
                         return undefined;
                     }
-        if (classExistsRaw(prop)) {
+
+                    if (classExistsRaw(prop)) {
                         return createClassProxy(prop);
                     }
-        return createPackageProxy([prop]);
+                    return createPackageProxy([prop]);
                 }
             });
-        if (typeof globalThis !== 'undefined') {
+
+            if (typeof globalThis !== 'undefined') {
                 globalThis.__ApexJavaBridgeInvokeJsObject = function(jsObjectId, methodName, args) {
                     return invokeRegisteredJsObject(jsObjectId, methodName, args);
                 };
-        globalThis.__ApexJavaBridgeReleaseJsObject = function(jsObjectId) {
+                globalThis.__ApexJavaBridgeReleaseJsObject = function(jsObjectId) {
                     return releaseJsObject(jsObjectId);
                 };
             }
-        if (typeof globalThis !== 'undefined') {
+
+            if (typeof globalThis !== 'undefined') {
                 globalThis.Java = Java;
-        globalThis.Kotlin = Java;
+                globalThis.Kotlin = Java;
             }
-        if (typeof window !== 'undefined') {
+            if (typeof window !== 'undefined') {
                 window.Java = Java;
-        window.Kotlin = Java;
+                window.Kotlin = Java;
             }
         })();
         """.trimIndent()

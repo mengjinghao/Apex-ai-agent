@@ -78,10 +78,10 @@ data class ConversationHealth(
 
 enum class HealthLevel {
     EXCELLENT,  // 90-100
-        GOOD,       // 75-89
-        FAIR,       // 60-74
-        POOR,       // 40-59
-        CRITICAL    // 0-39
+    GOOD,       // 75-89
+    FAIR,       // 60-74
+    POOR,       // 40-59
+    CRITICAL    // 0-39
 }
 
 /**
@@ -90,10 +90,11 @@ enum class HealthLevel {
 class ConversationHealthCollector {
 
     private val chatStats = ConcurrentHashMap<String, ChatStats>()
-        private val latencyHistory = ConcurrentHashMap<String, MutableList<Long>>()
-        private val _currentHealth = MutableStateFlow<ConversationHealth?>(null)
-        val currentHealth: StateFlow<ConversationHealth?> = _currentHealth.asStateFlow()
-        private data class ChatStats(
+    private val latencyHistory = ConcurrentHashMap<String, MutableList<Long>>()
+    private val _currentHealth = MutableStateFlow<ConversationHealth?>(null)
+    val currentHealth: StateFlow<ConversationHealth?> = _currentHealth.asStateFlow()
+
+    private data class ChatStats(
         val chatId: String,
         var totalResponses: Int = 0,
         var userEditedResponses: Int = 0,
@@ -131,8 +132,9 @@ class ConversationHealthCollector {
 
         latencyHistory.computeIfAbsent(chatId) { mutableListOf() }.apply {
             add(latencyMs)
-        if (size > 100) removeAt(0)
+            if (size > 100) removeAt(0)
         }
+
         refreshHealth(chatId)
     }
 
@@ -188,66 +190,69 @@ class ConversationHealthCollector {
         chatStats.remove(chatId)
         latencyHistory.remove(chatId)
     }
-        fun resetAll() {
+
+    fun resetAll() {
         chatStats.clear()
         latencyHistory.clear()
     }
 
     // ============ 内部方法 ============
+
     private fun refreshHealth(chatId: String) {
         val stats = chatStats[chatId] ?: return
         val health = computeHealth(stats)
         _currentHealth.value = health
     }
-        private fun computeHealth(stats: ChatStats): ConversationHealth {
+
+    private fun computeHealth(stats: ChatStats): ConversationHealth {
         // 上下文利用率
-    val contextUsage = if (stats.contextTokensMax > 0) {
+        val contextUsage = if (stats.contextTokensMax > 0) {
             stats.contextTokensUsed.toFloat() / stats.contextTokensMax
         } else 0f
 
         // 工具调用成功率
-    val toolSuccessRate = if (stats.toolCallsTotal > 0) {
+        val toolSuccessRate = if (stats.toolCallsTotal > 0) {
             stats.toolCallsSuccess.toFloat() / stats.toolCallsTotal
         } else 1f
 
         // 用户采纳率
-    val userAcceptanceRate = if (stats.totalResponses > 0) {
+        val userAcceptanceRate = if (stats.totalResponses > 0) {
             1f - (stats.userEditedResponses.toFloat() / stats.totalResponses)
         } else 1f
 
         // 平均时延
-    val avgLatency = if (stats.totalResponses > 0) {
+        val avgLatency = if (stats.totalResponses > 0) {
             stats.totalLatencyMs / stats.totalResponses
         } else 0L
 
         // P95 时延
-    val latencies = latencyHistory[stats.chatId]?.sorted() ?: emptyList()
+        val latencies = latencyHistory[stats.chatId]?.sorted() ?: emptyList()
         val p95 = if (latencies.isNotEmpty()) {
             latencies[(latencies.size * 0.95).toInt().coerceAtMost(latencies.size - 1)]
         } else 0L
 
         // 各维度评分（0-100）
-    val dimensionScores = mutableMapOf<String, Int>()
+        val dimensionScores = mutableMapOf<String, Int>()
 
         // 上下文维度（利用率越低越好，但太低说明没用）
-    val contextScore = when {
+        val contextScore = when {
             contextUsage > 0.9f -> 30  // 快超限了
-        contextUsage > 0.7f -> 60
+            contextUsage > 0.7f -> 60
             contextUsage > 0.3f -> 90
             else -> 75  // 利用率太低可能上下文不够
         }
         dimensionScores["context"] = contextScore
 
         // 工具成功率维度
-    val toolScore = (toolSuccessRate * 100).roundToInt()
+        val toolScore = (toolSuccessRate * 100).roundToInt()
         dimensionScores["tools"] = toolScore
 
         // 用户采纳维度
-    val acceptanceScore = (userAcceptanceRate * 100).roundToInt()
+        val acceptanceScore = (userAcceptanceRate * 100).roundToInt()
         dimensionScores["acceptance"] = acceptanceScore
 
         // 时延维度
-    val latencyScore = when {
+        val latencyScore = when {
             avgLatency < 1000 -> 100
             avgLatency < 3000 -> 85
             avgLatency < 5000 -> 70
@@ -257,7 +262,7 @@ class ConversationHealthCollector {
         dimensionScores["latency"] = latencyScore
 
         // 澄清次数维度（过多说明理解有问题）
-    val clarificationScore = when {
+        val clarificationScore = when {
             stats.clarificationCount == 0 -> 100
             stats.clarificationCount <= 2 -> 80
             stats.clarificationCount <= 5 -> 60
@@ -266,13 +271,14 @@ class ConversationHealthCollector {
         dimensionScores["clarification"] = clarificationScore
 
         // 综合评分（加权平均）
-    val healthScore = (
+        val healthScore = (
             contextScore * 0.15 +
             toolScore * 0.20 +
             acceptanceScore * 0.25 +
             latencyScore * 0.25 +
             clarificationScore * 0.15
         ).roundToInt()
+
         val healthLevel = when {
             healthScore >= 90 -> HealthLevel.EXCELLENT
             healthScore >= 75 -> HealthLevel.GOOD
@@ -282,7 +288,7 @@ class ConversationHealthCollector {
         }
 
         // 生成建议
-    val recommendations = mutableListOf<String>()
+        val recommendations = mutableListOf<String>()
         if (contextUsage > 0.8f) {
             recommendations.add("上下文即将超限，建议总结历史或开启新对话")
         }
@@ -301,6 +307,7 @@ class ConversationHealthCollector {
         if (recommendations.isEmpty()) {
             recommendations.add("对话状态良好，继续保持")
         }
+
         return ConversationHealth(
             chatId = stats.chatId,
             contextUsage = contextUsage,
@@ -327,27 +334,27 @@ class ConversationHealthCollector {
  */
 fun ConversationHealth.format(): String {
     val sb = StringBuilder()
-        sb.appendLine("═══ 对话健康度 ═══")
-        sb.appendLine("总评分: $healthScore/100 (${healthLevel})")
-        sb.appendLine()
-        sb.appendLine("维度评分:")
-        dimensionScores.forEach { (dim, score) ->
+    sb.appendLine("═══ 对话健康度 ═══")
+    sb.appendLine("总评分: $healthScore/100 (${healthLevel})")
+    sb.appendLine()
+    sb.appendLine("维度评分:")
+    dimensionScores.forEach { (dim, score) ->
         val bar = "█".repeat(score / 10) + "░".repeat(10 - score / 10)
         sb.appendLine("  $dim: $bar $score")
     }
-        sb.appendLine()
-        sb.appendLine("指标:")
-        sb.appendLine("  上下文利用率: ${(contextUsage * 100).roundToInt()}%")
-        sb.appendLine("  工具成功率: ${(toolSuccessRate * 100).roundToInt()}%")
-        sb.appendLine("  用户采纳率: ${(userAcceptanceRate * 100).roundToInt()}%")
-        sb.appendLine("  平均时延: ${avgLatencyMs}ms (P95: ${p95LatencyMs}ms)")
-        sb.appendLine("  Token: 输入 $inputTokens / 输出 $outputTokens")
-        sb.appendLine("  对话轮次: $conversationRounds")
-        sb.appendLine("  澄清次数: $clarificationCount")
-        sb.appendLine("  分支次数: $branchCount")
-        sb.appendLine()
-        sb.appendLine("建议:")
-        recommendations.forEach { sb.appendLine("  • $it") }
-        sb.appendLine("═════════════════")
-        return sb.toString()
+    sb.appendLine()
+    sb.appendLine("指标:")
+    sb.appendLine("  上下文利用率: ${(contextUsage * 100).roundToInt()}%")
+    sb.appendLine("  工具成功率: ${(toolSuccessRate * 100).roundToInt()}%")
+    sb.appendLine("  用户采纳率: ${(userAcceptanceRate * 100).roundToInt()}%")
+    sb.appendLine("  平均时延: ${avgLatencyMs}ms (P95: ${p95LatencyMs}ms)")
+    sb.appendLine("  Token: 输入 $inputTokens / 输出 $outputTokens")
+    sb.appendLine("  对话轮次: $conversationRounds")
+    sb.appendLine("  澄清次数: $clarificationCount")
+    sb.appendLine("  分支次数: $branchCount")
+    sb.appendLine()
+    sb.appendLine("建议:")
+    recommendations.forEach { sb.appendLine("  • $it") }
+    sb.appendLine("═════════════════")
+    return sb.toString()
 }

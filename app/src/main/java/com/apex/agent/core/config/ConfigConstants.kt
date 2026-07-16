@@ -15,7 +15,7 @@ object ConfigConstants {
         val baseUrl = ConfigKey(
             path = "api.baseUrl",
             defaultValue = "http://localhost:8080",
-        description = "API 基础地址",
+            description = "API 基础地址",
             type = ConfigType.STRING,
             required = true
         )
@@ -40,7 +40,7 @@ object ConfigConstants {
         val websocketUrl = ConfigKey(
             path = "api.websocketUrl",
             defaultValue = "ws://localhost:8080/ws",
-        description = "WebSocket 连接地址",
+            description = "WebSocket 连接地址",
             type = ConfigType.STRING
         )
         val sslEnabled = ConfigKey(
@@ -326,7 +326,8 @@ object ConfigConstants {
             FeatureKeys.maintenanceMode
         )
     }
-        val allKeysByPath: Map<String, ConfigKey> by lazy {
+
+    val allKeysByPath: Map<String, ConfigKey> by lazy {
         allKeys().associateBy { it.path }
     }
 }

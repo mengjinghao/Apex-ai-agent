@@ -33,28 +33,30 @@ data class MacroStep(
  */
 sealed class MacroValue {
     data class Literal(val value: String) : MacroValue()
-        data class Reference(val stepId: String, val jsonPath: String? = null) : MacroValue()
-        data class InputParam(val paramName: String) : MacroValue()
-        data class Template(val template: String) : MacroValue()  // 支持 ${param} 和 ${step.output}
-        fun resolve(inputs: Map<String, String>, stepOutputs: Map<String, Any>): String = when (this) {
+    data class Reference(val stepId: String, val jsonPath: String? = null) : MacroValue()
+    data class InputParam(val paramName: String) : MacroValue()
+    data class Template(val template: String) : MacroValue()  // 支持 ${param} 和 ${step.output}
+
+    fun resolve(inputs: Map<String, String>, stepOutputs: Map<String, Any>): String = when (this) {
         is Literal -> value
         is Reference -> {
             val output = stepOutputs[stepId]
             if (jsonPath.isNullOrBlank()) output?.toString() ?: ""
-        else resolveJsonPath(output, jsonPath)
+            else resolveJsonPath(output, jsonPath)
         }
         is InputParam -> inputs[paramName] ?: ""
         is Template -> {
             var result = template
             inputs.forEach { (k, v) -> result = result.replace("\${$k}", v) }
-        stepOutputs.forEach { (k, v) ->
+            stepOutputs.forEach { (k, v) ->
                 result = result.replace("\${$k.output}", v?.toString() ?: "")
-        result = result.replace("\${$k}", v?.toString() ?: "")
+                result = result.replace("\${$k}", v?.toString() ?: "")
             }
-        result
+            result
         }
     }
-        private fun resolveJsonPath(obj: Any?, path: String): String {
+
+    private fun resolveJsonPath(obj: Any?, path: String): String {
         var current: Any? = obj
         for (seg in path.split(".")) {
             current = when (current) {
@@ -126,10 +128,10 @@ class ToolMacroExecutor(
 
         try {
             // 校验必填参数
-    val missingParams = macro.inputParams.filter { param ->
+            val missingParams = macro.inputParams.filter { param ->
                 param.required && inputs[param.name].isNullOrBlank() && param.defaultValue.isNullOrBlank()
             }
-        if (missingParams.isNotEmpty()) {
+            if (missingParams.isNotEmpty()) {
                 return MacroExecutionResult(
                     macroId = macro.id,
                     success = false,
@@ -141,50 +143,52 @@ class ToolMacroExecutor(
             }
 
             // 合并默认值
-    val effectiveInputs = macro.inputParams.associate { param ->
+            val effectiveInputs = macro.inputParams.associate { param ->
                 param.name to (inputs[param.name] ?: param.defaultValue ?: "")
             } + inputs
 
             // 按顺序执行步骤
-    for (step in macro.steps) {
+            for (step in macro.steps) {
                 // 检查条件
-    if (step.condition != null && !evaluateCondition(step.condition, effectiveInputs, stepOutputs)) {
+                if (step.condition != null && !evaluateCondition(step.condition, effectiveInputs, stepOutputs)) {
                     continue
                 }
 
                 // 解析参数
-    val resolvedArgs = step.arguments.mapValues { (_, v) ->
+                val resolvedArgs = step.arguments.mapValues { (_, v) ->
                     v.resolve(effectiveInputs, stepOutputs)
                 }
 
                 // 执行工具
-    val result = try {
+                val result = try {
                     toolExecutor(step.toolName, resolvedArgs)
                 } catch (e: Exception) {
                     when (step.onFailure ?: "stop") {
                         "continue" -> {
                             stepOutputs[step.id] = mapOf("error" to (e.message ?: ""))
-        executedSteps++
+                            executedSteps++
                             continue
                         }
                         "retry" -> {
                             // 简化：重试一次
-        toolExecutor(step.toolName, resolvedArgs)
+                            toolExecutor(step.toolName, resolvedArgs)
                         }
-        else -> throw e  // stop
+                        else -> throw e  // stop
                     }
                 }
-        stepOutputs[step.id] = result
+
+                stepOutputs[step.id] = result
                 executedSteps++
 
                 // 检查成功后动作
-    when (step.onSuccess) {
+                when (step.onSuccess) {
                     "stop" -> break
                     "skip_next" -> continue  // 跳过下一个
-        else -> { /* continue 正常 */ }
+                    else -> { /* continue 正常 */ }
                 }
             }
-        val finalOutput = stepOutputs[macro.steps.last().id]
+
+            val finalOutput = stepOutputs[macro.steps.last().id]
 
             return MacroExecutionResult(
                 macroId = macro.id,
@@ -205,13 +209,14 @@ class ToolMacroExecutor(
             )
         }
     }
-        private fun evaluateCondition(
+
+    private fun evaluateCondition(
         condition: String,
         inputs: Map<String, String>,
         outputs: Map<String, Any>
     ): Boolean {
         // 简化条件求值：支持 ${param} == 'value' 格式
-    val regex = Regex("\\$\\{([^}]+)}\\s*(==|!=)\\s*'([^']+)'")
+        val regex = Regex("\\$\\{([^}]+)}\\s*(==|!=)\\s*'([^']+)'")
         val match = regex.find(condition) ?: return true
         val (ref, op, value) = match.destructured
         val parts = ref.split(".")
@@ -226,7 +231,8 @@ class ToolMacroExecutor(
             else -> true
         }
     }
-        private fun resolveJsonPath(obj: Any?, path: String): String {
+
+    private fun resolveJsonPath(obj: Any?, path: String): String {
         var current: Any? = obj
         for (seg in path.split(".")) {
             current = when (current) {

@@ -57,7 +57,7 @@ object DateUtils {
     fun parseDate(dateString: String, pattern: String = "yyyy-MM-dd"): LocalDate? {
         return try {
             val formatter = DateTimeFormatter.ofPattern(pattern)
-        LocalDate.parse(dateString, formatter)
+            LocalDate.parse(dateString, formatter)
         } catch (e: Exception) {
             null
         }
@@ -73,7 +73,7 @@ object DateUtils {
     fun parseDateTime(dateTimeString: String, pattern: String = "yyyy-MM-dd HH:mm:ss"): LocalDateTime? {
         return try {
             val formatter = DateTimeFormatter.ofPattern(pattern)
-        LocalDateTime.parse(dateTimeString, formatter)
+            LocalDateTime.parse(dateTimeString, formatter)
         } catch (e: Exception) {
             null
         }
@@ -252,7 +252,9 @@ object DateUtils {
     fun toRelativeTime(dateTime: LocalDateTime): String {
         val now = LocalDateTime.now()
         val duration = Duration.between(dateTime, now)
+
         if (duration.isNegative) return "刚刚"
+
         val seconds = duration.seconds
         val minutes = seconds / 60
         val hours = minutes / 60
@@ -260,14 +262,14 @@ object DateUtils {
 
         return when {
             seconds < 60 -> "刚刚"
-        minutes < 60 -> "${minutes}分钟前"
-        hours < 24 -> "${hours}小时前"
-        days == 1L -> "昨天"
-        days == 2L -> "前天"
-        days < 7 -> "${days}天前"
-        days < 30 -> "${days / 7}周前"
-        days < 365 -> "${days / 30}个月前"
-        else -> "${days / 365}年前"
+            minutes < 60 -> "${minutes}分钟前"
+            hours < 24 -> "${hours}小时前"
+            days == 1L -> "昨天"
+            days == 2L -> "前天"
+            days < 7 -> "${days}天前"
+            days < 30 -> "${days / 7}周前"
+            days < 365 -> "${days / 30}个月前"
+            else -> "${days / 365}年前"
         }
     }
 
@@ -428,7 +430,7 @@ object DateUtils {
 
         while (remaining > 0) {
             result = result.plusDays(step.toLong())
-        if (result.dayOfWeek != DayOfWeek.SATURDAY && result.dayOfWeek != DayOfWeek.SUNDAY) {
+            if (result.dayOfWeek != DayOfWeek.SATURDAY && result.dayOfWeek != DayOfWeek.SUNDAY) {
                 remaining--
             }
         }
@@ -572,7 +574,7 @@ object DateUtils {
     fun fromRfc1123(s: String): LocalDateTime? {
         return try {
             val zdt = ZonedDateTime.parse(s, DateTimeFormatter.RFC_1123_DATE_TIME)
-        zdt.toLocalDateTime()
+            zdt.toLocalDateTime()
         } catch (e: Exception) {
             null
         }
@@ -758,7 +760,7 @@ object DateUtils {
     fun sortDateFormats(dateString: String, patterns: List<String>): LocalDate? {
         for (pattern in patterns) {
             val result = parseDate(dateString, pattern)
-        if (result != null) return result
+            if (result != null) return result
         }
         return null
     }

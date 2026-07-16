@@ -13,7 +13,7 @@ import javax.inject.Singleton
 /**
  * Hilt Module — 提供 Agent 终端工具的依赖注入
  *
- * Agent 系统可通过 @Inject 直接获取 [AgentTerminalExecutor] 和 [AgentTerminalToolProvider],
+ * Agent 系统可通过 直接获取 [AgentTerminalExecutor] 和 [AgentTerminalToolProvider],
  * 无需手动创建。
  */
 @Module

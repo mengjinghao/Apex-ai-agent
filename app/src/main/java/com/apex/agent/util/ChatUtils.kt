@@ -85,11 +85,14 @@ object ChatUtils {
     fun extractThinkingContent(content: String): Pair<String, String> {
         val thinkPattern = "<think(?:ing)?>([\\s\\S]*)</think(?:ing)?>".toRegex(RegexOption.DOT_MATCHES_ALL)
         val thinkMatches = thinkPattern.findAll(content)
+
         val thinkingContent = thinkMatches.joinToString("\n") { it.groupValues[1].trim() }
+
         val contentWithoutThink = content
             .replace(thinkPattern, "")
             .replace("<search>.*?(</search>|\\z)".toRegex(RegexOption.DOT_MATCHES_ALL), "")
             .trim()
+
         return Pair(contentWithoutThink, thinkingContent)
     }
 
@@ -118,12 +121,15 @@ object ChatUtils {
      */
     fun extractJson(response: String): String {
         var text = response.trim()
+
         if (text.startsWith("```")) {
             val lines = text.lines()
-        text = lines.drop(1).dropLast(1).joinToString("\n").trim()
+            text = lines.drop(1).dropLast(1).joinToString("\n").trim()
         }
+
         val firstBrace = text.indexOf('{')
         val lastBrace = text.lastIndexOf('}')
+
         return if (firstBrace != -1 && lastBrace != -1 && firstBrace < lastBrace) {
             text.substring(firstBrace, lastBrace + 1)
         } else {
@@ -142,12 +148,15 @@ object ChatUtils {
      */
     fun extractJsonArray(response: String): String {
         var text = response.trim()
+
         if (text.startsWith("```")) {
             val lines = text.lines()
-        text = lines.drop(1).dropLast(1).joinToString("\n").trim()
+            text = lines.drop(1).dropLast(1).joinToString("\n").trim()
         }
+
         val firstBracket = text.indexOf('[')
         val lastBracket = text.lastIndexOf(']')
+
         return if (firstBracket != -1 && lastBracket != -1 && firstBracket < lastBracket) {
             text.substring(firstBracket, lastBracket + 1)
         } else {

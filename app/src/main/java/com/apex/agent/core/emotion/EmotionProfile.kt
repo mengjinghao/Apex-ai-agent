@@ -1,11 +1,10 @@
 package com.apex.agent.core.emotion
 
 /**
- * 情绪分析结果数据，*/
+ * 情绪分析结果数据�?*/
 data class EmotionProfile(
-    // 情绪状态
-    var dominantEmotion: String = "中，",
-                var emotionScores: Map<String, Int> = emptyMap(),
+    // 情绪状�?   var dominantEmotion: String = "中，,
+    var emotionScores: Map<String, Int> = emptyMap(),
     
     // 情绪强度
     var avgEmotionIntensity: Double = 0.0,

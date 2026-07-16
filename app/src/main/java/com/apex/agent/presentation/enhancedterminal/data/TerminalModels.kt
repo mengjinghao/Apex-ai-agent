@@ -64,10 +64,10 @@ data class Snippet(
 
 sealed class CommandPaletteItem {
     data class HistoryItem(val command: String, val timestamp: Long) : CommandPaletteItem()
-        data class QuickCommandItem(val cmd: QuickCommand) : CommandPaletteItem()
-        data class SnippetItem(val snippet: Snippet) : CommandPaletteItem()
-        data class AliasItem(val alias: CommandAlias) : CommandPaletteItem()
-        data class BuiltInItem(val name: String, val description: String, val action: String) : CommandPaletteItem()
+    data class QuickCommandItem(val cmd: QuickCommand) : CommandPaletteItem()
+    data class SnippetItem(val snippet: Snippet) : CommandPaletteItem()
+    data class AliasItem(val alias: CommandAlias) : CommandPaletteItem()
+    data class BuiltInItem(val name: String, val description: String, val action: String) : CommandPaletteItem()
 }
 
 object DefaultQuickCommands {

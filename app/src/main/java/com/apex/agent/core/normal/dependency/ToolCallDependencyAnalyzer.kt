@@ -37,12 +37,12 @@ data class ToolInvocationRecord(
 
 enum class TriggerSource {
     USER_REQUEST,       // 用户请求触发
-        AI_DECISION,        // AI 决策调用
-        CHAIN_DEPENDENCY,   // 链式依赖触发
-        MACRO_EXECUTION,    // 宏执行
-        AUTOMATION,         // 自动化
-        RETRY,              // 重试
-        COMPENSATION        // 补偿
+    AI_DECISION,        // AI 决策调用
+    CHAIN_DEPENDENCY,   // 链式依赖触发
+    MACRO_EXECUTION,    // 宏执行
+    AUTOMATION,         // 自动化
+    RETRY,              // 重试
+    COMPENSATION        // 补偿
 }
 
 /**
@@ -82,9 +82,9 @@ data class DependencyEdge(val from: String, val to: String, val type: Dependency
 
 enum class DependencyType {
     DATA_FLOW,       // 数据流依赖（A 的输出是 B 的输入）
-        TEMPORAL,        // 时序依赖（A 必须在 B 之前）
-        CONDITIONAL,     // 条件依赖（A 的结果决定 B 是否执行）
-        RESOURCE         // 资源依赖（A 和 B 共享资源）
+    TEMPORAL,        // 时序依赖（A 必须在 B 之前）
+    CONDITIONAL,     // 条件依赖（A 的结果决定 B 是否执行）
+    RESOURCE         // 资源依赖（A 和 B 共享资源）
 }
 
 /**
@@ -136,25 +136,28 @@ class ToolCallDependencyAnalyzer {
         val root = chatInvocations.find { it.id == rootId } ?: return null
 
         // BFS 收集所有相关调用
-    val chain = mutableListOf<ToolInvocationRecord>()
+        val chain = mutableListOf<ToolInvocationRecord>()
         val queue = ArrayDeque<String>()
         queue.add(rootId)
         val visited = mutableSetOf<String>()
+
         while (queue.isNotEmpty()) {
             val id = queue.removeFirst()
-        if (id in visited) continue
+            if (id in visited) continue
             visited.add(id)
-        val inv = chatInvocations.find { it.id == id } ?: continue
+            val inv = chatInvocations.find { it.id == id } ?: continue
             chain.add(inv)
             // 查找子调用（parentInvocationId == id）
-        chatInvocations.filter { it.parentInvocationId == id }.forEach {
+            chatInvocations.filter { it.parentInvocationId == id }.forEach {
                 queue.add(it.id)
             }
         }
+
         val depth = computeDepth(chain, rootId)
         val totalDuration = chain.sumOf { it.durationMs }
         val criticalPath = findCriticalPath(chain, rootId)
         val bottleneck = chain.maxByOrNull { it.durationMs }
+
         return ToolCallChain(rootId, chain, depth, totalDuration, criticalPath, bottleneck)
     }
 
@@ -165,11 +168,12 @@ class ToolCallDependencyAnalyzer {
         val chatInvocations = invocations[chatId] ?: return DependencyGraph(emptySet(), emptySet(), emptyList(), emptyList())
         val nodes = mutableSetOf<String>()
         val edges = mutableSetOf<DependencyEdge>()
+
         for (inv in chatInvocations) {
             nodes.add(inv.toolName)
 
             // 数据流依赖：如果 A 的输出被 B 的参数引用
-    for (other in chatInvocations) {
+            for (other in chatInvocations) {
                 if (inv.id == other.id) continue
                 if (hasDataDependency(inv, other)) {
                     edges.add(DependencyEdge(inv.toolName, other.toolName, DependencyType.DATA_FLOW))
@@ -177,15 +181,17 @@ class ToolCallDependencyAnalyzer {
             }
 
             // 时序依赖：A 在 B 之前完成，且时间接近
-    for (other in chatInvocations) {
+            for (other in chatInvocations) {
                 if (inv.id == other.id) continue
                 if (inv.endTime < other.startTime && other.startTime - inv.endTime < 5000) {
                     edges.add(DependencyEdge(inv.toolName, other.toolName, DependencyType.TEMPORAL))
                 }
             }
         }
+
         val cycles = detectCycles(nodes, edges)
         val topoOrder = topologicalSort(nodes, edges)
+
         return DependencyGraph(nodes, edges, cycles, topoOrder)
     }
 
@@ -194,11 +200,12 @@ class ToolCallDependencyAnalyzer {
      */
     fun analyzePerformance(chatId: String): ToolPerformanceAnalysis {
         val chatInvocations = invocations[chatId] ?: return ToolPerformanceAnalysis(emptyMap(), emptyMap(), emptyMap(), emptyMap(), null, emptyList(), emptyList())
+
         val byTool = chatInvocations.groupBy { it.toolName }
         val stats = byTool.mapValues { (name, invs) ->
-        val durations = invs.map { it.durationMs }.sorted()
-        val successCount = invs.count { it.success }
-        ToolStats(
+            val durations = invs.map { it.durationMs }.sorted()
+            val successCount = invs.count { it.success }
+            ToolStats(
                 name = name,
                 totalCalls = invs.size,
                 successCount = successCount,
@@ -212,12 +219,15 @@ class ToolCallDependencyAnalyzer {
                 p99DurationMs = percentile(durations, 99)
             )
         }
+
         val frequency = byTool.mapValues { it.value.size }
         val avgDuration = stats.mapValues { it.value.avgDurationMs }
         val successRate = stats.mapValues { if (it.value.totalCalls > 0) it.value.successCount.toFloat() / it.value.totalCalls else 0f }
+
         val bottleneck = stats.maxByOrNull { it.value.avgDurationMs }?.key
         val slowest = chatInvocations.sortedByDescending { it.durationMs }.take(5)
         val failures = chatInvocations.filter { !it.success }.take(10)
+
         return ToolPerformanceAnalysis(stats, frequency, avgDuration, successRate, bottleneck, slowest, failures)
     }
 
@@ -229,25 +239,28 @@ class ToolCallDependencyAnalyzer {
         val failed = chatInvocations.find { it.id == failedInvocationId } ?: return FailureImpact(emptyList(), emptyList())
 
         // 找到所有依赖失败调用的后续调用
-    val affected = mutableListOf<ToolInvocationRecord>()
+        val affected = mutableListOf<ToolInvocationRecord>()
         val queue = ArrayDeque<String>()
         queue.add(failedInvocationId)
         val visited = mutableSetOf<String>()
+
         while (queue.isNotEmpty()) {
             val id = queue.removeFirst()
-        if (id in visited) continue
+            if (id in visited) continue
             visited.add(id)
-        for (inv in chatInvocations) {
+            for (inv in chatInvocations) {
                 if (inv.parentInvocationId == id || hasDataDependency(chatInvocations.find { it.id == id }!!, inv)) {
                     affected.add(inv)
-        queue.add(inv.id)
+                    queue.add(inv.id)
                 }
             }
         }
+
         val recommendations = generateFailureRecommendations(failed, affected)
         return FailureImpact(affected, recommendations)
     }
-        data class FailureImpact(
+
+    data class FailureImpact(
         val affectedInvocations: List<ToolInvocationRecord>,
         val recommendations: List<String>
     )
@@ -262,15 +275,17 @@ class ToolCallDependencyAnalyzer {
         sb.appendLine("深度: ${chain.depth}")
         sb.appendLine("总耗时: ${chain.totalDurationMs}ms")
         sb.appendLine()
+
         sb.appendLine("调用序列:")
         chain.invocations.forEach { inv ->
             val indent = "  ".repeat(getDepth(chain, inv.id))
-        val status = if (inv.success) "✓" else "✗"
-        sb.appendLine("$indent$status ${inv.toolName} (${inv.durationMs}ms)")
-        if (!inv.success && inv.errorMessage != null) {
+            val status = if (inv.success) "✓" else "✗"
+            sb.appendLine("$indent$status ${inv.toolName} (${inv.durationMs}ms)")
+            if (!inv.success && inv.errorMessage != null) {
                 sb.appendLine("$indent  错误: ${inv.errorMessage}")
             }
         }
+
         sb.appendLine()
         sb.appendLine("关键路径: ${chain.criticalPath.joinToString(" → ")}")
         chain.bottleneck?.let {
@@ -281,6 +296,7 @@ class ToolCallDependencyAnalyzer {
     }
 
     // ============ 内部方法 ============
+
     private fun computeDepth(chain: List<ToolInvocationRecord>, rootId: String): Int {
         var maxDepth = 0
         fun dfs(id: String, depth: Int) {
@@ -290,7 +306,8 @@ class ToolCallDependencyAnalyzer {
         dfs(rootId, 0)
         return maxDepth
     }
-        private fun getDepth(chain: ToolCallChain, invocationId: String): Int {
+
+    private fun getDepth(chain: ToolCallChain, invocationId: String): Int {
         var depth = 0
         var current = chain.invocations.find { it.id == invocationId }
         while (current?.parentInvocationId != null) {
@@ -299,12 +316,13 @@ class ToolCallDependencyAnalyzer {
         }
         return depth
     }
-        private fun findCriticalPath(chain: List<ToolInvocationRecord>, rootId: String): List<String> {
+
+    private fun findCriticalPath(chain: List<ToolInvocationRecord>, rootId: String): List<String> {
         // 找到从根到叶子的最长路径
-    var longestPath = listOf<String>()
+        var longestPath = listOf<String>()
         fun dfs(id: String, path: List<String>) {
             val children = chain.filter { it.parentInvocationId == id }
-        if (children.isEmpty()) {
+            if (children.isEmpty()) {
                 if (path.size > longestPath.size) longestPath = path
             } else {
                 children.forEach { dfs(it.id, path + it.id) }
@@ -313,65 +331,78 @@ class ToolCallDependencyAnalyzer {
         dfs(rootId, listOf(rootId))
         return longestPath
     }
-        private fun hasDataDependency(a: ToolInvocationRecord, b: ToolInvocationRecord): Boolean {
+
+    private fun hasDataDependency(a: ToolInvocationRecord, b: ToolInvocationRecord): Boolean {
         // 简化：检查 B 的参数是否包含 A 的 ID 或 A 产出的数据
-    val aResult = a.result?.toString() ?: ""
+        val aResult = a.result?.toString() ?: ""
         return b.arguments.values.any { arg ->
             arg?.toString()?.contains(a.id) == true ||
             (aResult.length > 10 && arg?.toString()?.contains(aResult.take(20)) == true)
         }
     }
-        private fun detectCycles(nodes: Set<String>, edges: Set<DependencyEdge>): List<List<String>> {
+
+    private fun detectCycles(nodes: Set<String>, edges: Set<DependencyEdge>): List<List<String>> {
         val adj = edges.groupBy { it.from }.mapValues { it.value.map { e -> e.to } }
         val cycles = mutableListOf<List<String>>()
         val visited = mutableSetOf<String>()
         val recursionStack = mutableSetOf<String>()
         val path = mutableListOf<String>()
+
         fun dfs(node: String) {
             if (node in recursionStack) {
                 // 找到环
-    val cycleStart = path.indexOf(node)
-        if (cycleStart >= 0) {
+                val cycleStart = path.indexOf(node)
+                if (cycleStart >= 0) {
                     cycles.add(path.subList(cycleStart, path.size) + node)
                 }
-        return
+                return
             }
-        if (node in visited) return
+            if (node in visited) return
 
             visited.add(node)
-        recursionStack.add(node)
-        path.add(node)
-        adj[node]?.forEach { dfs(it) }
-        path.removeAt(path.size - 1)
-        recursionStack.remove(node)
+            recursionStack.add(node)
+            path.add(node)
+
+            adj[node]?.forEach { dfs(it) }
+
+            path.removeAt(path.size - 1)
+            recursionStack.remove(node)
         }
+
         nodes.forEach { if (it !in visited) dfs(it) }
         return cycles
     }
-        private fun topologicalSort(nodes: Set<String>, edges: Set<DependencyEdge>): List<String> {
+
+    private fun topologicalSort(nodes: Set<String>, edges: Set<DependencyEdge>): List<String> {
         val inDegree = nodes.associateWith { 0 }.toMutableMap()
         val adj = edges.groupBy { it.from }.mapValues { it.value.map { e -> e.to } }
+
         for (edge in edges) {
             inDegree[edge.to] = (inDegree[edge.to] ?: 0) + 1
         }
+
         val queue: ArrayDeque<String> = ArrayDeque(inDegree.filter { it.value == 0 }.keys)
         val result = mutableListOf<String>()
+
         while (queue.isNotEmpty()) {
             val node = queue.removeFirst()
-        result.add(node)
-        adj[node]?.forEach { neighbor ->
+            result.add(node)
+            adj[node]?.forEach { neighbor ->
                 inDegree[neighbor] = (inDegree[neighbor] ?: 1) - 1
                 if (inDegree[neighbor] == 0) queue.add(neighbor)
             }
         }
+
         return result
     }
-        private fun percentile(sorted: List<Long>, p: Int): Long {
+
+    private fun percentile(sorted: List<Long>, p: Int): Long {
         if (sorted.isEmpty()) return 0
         val idx = (sorted.size * p / 100.0).toInt().coerceIn(0, sorted.size - 1)
         return sorted[idx]
     }
-        private fun generateFailureRecommendations(failed: ToolInvocationRecord, affected: List<ToolInvocationRecord>): List<String> {
+
+    private fun generateFailureRecommendations(failed: ToolInvocationRecord, affected: List<ToolInvocationRecord>): List<String> {
         val recs = mutableListOf<String>()
         recs.add("工具 ${failed.toolName} 失败，影响了 ${affected.size} 个后续调用")
         if (failed.retryCount > 0) {
@@ -400,7 +431,8 @@ class ToolCallDependencyAnalyzer {
         val avgDuration = if (total > 0) invs.sumOf { it.durationMs } / total else 0
         return AnalyzerStats(total, success, failure, avgDuration)
     }
-        data class AnalyzerStats(
+
+    data class AnalyzerStats(
         val totalInvocations: Int,
         val successCount: Int,
         val failureCount: Int,

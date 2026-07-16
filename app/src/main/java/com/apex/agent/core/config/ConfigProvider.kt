@@ -21,28 +21,33 @@ open class PropertiesConfigProvider(
 ) : ConfigSource {
 
     private val properties = mutableMapOf<String, String>()
-        private var fileContent: String = ""
-        private val locks = Any()
-        override val isWritable: Boolean = true
+    private var fileContent: String = ""
+    private val locks = Any()
+
+    override val isWritable: Boolean = true
 
     override fun get(key: ConfigKey): String? {
         synchronized(locks) { return properties[key.path] }
     }
-        override fun getAll(): Map<String, String> {
+
+    override fun getAll(): Map<String, String> {
         synchronized(locks) { return properties.toMap() }
     }
-        override fun set(key: ConfigKey, value: String) {
+
+    override fun set(key: ConfigKey, value: String) {
         synchronized(locks) {
             properties[key.path] = value
             saveToFile()
         }
     }
-        override fun reload() {
+
+    override fun reload() {
         synchronized(locks) {
             loadFromFile()
         }
     }
-        private fun loadFromFile() {
+
+    private fun loadFromFile() {
         properties.clear()
         if (!file.exists()) return
         fileContent = file.readText()
@@ -54,7 +59,8 @@ open class PropertiesConfigProvider(
             properties[name] = props.getProperty(name)
         }
     }
-        private fun saveToFile() {
+
+    private fun saveToFile() {
         val props = Properties()
         props.putAll(properties)
         OutputStreamWriter(FileOutputStream(file), Charsets.UTF_8).use { writer ->
@@ -79,7 +85,8 @@ open class PropertiesConfigProvider(
             }
         }
     }
-        override fun close() {
+
+    override fun close() {
         properties.clear()
     }
 }
@@ -96,43 +103,50 @@ open class JsonConfigProvider(
 ) : ConfigSource {
 
     private val config = mutableMapOf<String, String>()
-        private val serializer = JsonConfigSerializer()
-        private val locks = Any()
-        override val isWritable: Boolean = true
+    private val serializer = JsonConfigSerializer()
+    private val locks = Any()
+
+    override val isWritable: Boolean = true
 
     override fun get(key: ConfigKey): String? {
         synchronized(locks) { return config[key.path] }
     }
-        override fun getAll(): Map<String, String> {
+
+    override fun getAll(): Map<String, String> {
         synchronized(locks) { return config.toMap() }
     }
-        override fun set(key: ConfigKey, value: String) {
+
+    override fun set(key: ConfigKey, value: String) {
         synchronized(locks) {
             config[key.path] = value
             saveToFile()
         }
     }
-        override fun reload() {
+
+    override fun reload() {
         synchronized(locks) {
             loadFromFile()
         }
     }
-        private fun loadFromFile() {
+
+    private fun loadFromFile() {
         config.clear()
         if (!file.exists()) return
         val content = file.readText()
         try {
             val parsed = serializer.deserialize(content)
-        config.putAll(parsed)
+            config.putAll(parsed)
         } catch (e: Exception) {
             throw RuntimeException("无法解析 JSON 配置文件: ${file.absolutePath}", e)
         }
     }
-        private fun saveToFile() {
+
+    private fun saveToFile() {
         val content = serializer.serialize(config)
         file.writeText(content)
     }
-        override fun close() {
+
+    override fun close() {
         config.clear()
     }
 }
@@ -155,12 +169,13 @@ open class EnvironmentConfigProvider(
         val envKey = toEnvKey(key.path)
         return System.getenv(envKey) ?: System.getenv(key.path.replace(".", "_").uppercase())
     }
-        override fun getAll(): Map<String, String> {
+
+    override fun getAll(): Map<String, String> {
         val result = mutableMapOf<String, String>()
         for ((envKey, value) in System.getenv()) {
             if (envKey.startsWith(prefix)) {
                 val configKey = toConfigPath(envKey)
-        result[configKey] = value
+                result[configKey] = value
             }
         }
         return result
@@ -184,7 +199,8 @@ open class EnvironmentConfigProvider(
         } else envKey
         return withoutPrefix.lowercase().replace("_", ".")
     }
-        override fun reload() {
+
+    override fun reload() {
         // 环境变量在运行时不可变，无需操作
     }
 }
@@ -205,14 +221,16 @@ open class SystemPropertyConfigProvider(
     override fun get(key: ConfigKey): String? {
         return System.getProperty(key.path)
     }
-        override fun getAll(): Map<String, String> {
+
+    override fun getAll(): Map<String, String> {
         val result = mutableMapOf<String, String>()
         for (key in System.getProperties().stringPropertyNames()) {
             result[key] = System.getProperty(key)
         }
         return result
     }
-        override fun reload() {
+
+    override fun reload() {
         // 系统属性在运行时可通过 System.setProperty 修改，但无需缓存
     }
 }
@@ -229,18 +247,22 @@ open class MemoryConfigProvider(
 ) : ConfigSource {
 
     private val store = java.util.concurrent.ConcurrentHashMap<String, String>()
-        override val isWritable: Boolean = true
+
+    override val isWritable: Boolean = true
 
     override fun get(key: ConfigKey): String? = store[key.path]
 
     override fun getAll(): Map<String, String> = store.toMap()
-        override fun set(key: ConfigKey, value: String) {
+
+    override fun set(key: ConfigKey, value: String) {
         store[key.path] = value
     }
-        override fun reload() {
+
+    override fun reload() {
         // 内存配置不受 reload 影响
     }
-        override fun close() {
+
+    override fun close() {
         store.clear()
     }
 
@@ -279,14 +301,17 @@ open class SharedPreferencesConfigProvider(
     override fun get(key: ConfigKey): String? {
         return sharedPreferences.getString(key.path, null)
     }
-        override fun getAll(): Map<String, String> {
+
+    override fun getAll(): Map<String, String> {
         return sharedPreferences.all.mapValues { it.value?.toString() ?: "" }
             .filterKeys { it !is Nothing }
     }
-        override fun set(key: ConfigKey, value: String) {
+
+    override fun set(key: ConfigKey, value: String) {
         sharedPreferences.edit().putString(key.path, value).apply()
     }
-        override fun reload() {
+
+    override fun reload() {
         // SharedPreferences 自动同步，无需额外操作
     }
 
@@ -317,34 +342,40 @@ open class CompositeConfigProvider(
 ) : ConfigSource {
 
     override val isWritable: Boolean = providers.any { it.isWritable }
-        constructor(vararg providers: ConfigSource) : this(providers.toList())
-        override fun get(key: ConfigKey): String? {
+
+    constructor(vararg providers: ConfigSource) : this(providers.toList())
+
+    override fun get(key: ConfigKey): String? {
         for (provider in providers) {
             val value = provider.get(key)
-        if (value != null) return value
+            if (value != null) return value
         }
         return null
     }
-        override fun getAll(): Map<String, String> {
+
+    override fun getAll(): Map<String, String> {
         val result = mutableMapOf<String, String>()
         for (provider in providers) {
             result.putAll(provider.getAll())
         }
         return result
     }
-        override fun set(key: ConfigKey, value: String) {
+
+    override fun set(key: ConfigKey, value: String) {
         val writableProvider = providers
             .filter { it.isWritable }
             .maxByOrNull { it.priority }
         writableProvider?.set(key, value)
             ?: throw UnsupportedOperationException("没有可写的配置源")
     }
-        override fun reload() {
+
+    override fun reload() {
         for (provider in providers) {
             provider.reload()
         }
     }
-        override fun close() {
+
+    override fun close() {
         for (provider in providers) {
             provider.close()
         }

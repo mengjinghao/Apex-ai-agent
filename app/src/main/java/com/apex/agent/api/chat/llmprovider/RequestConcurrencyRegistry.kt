@@ -8,9 +8,12 @@ object RequestConcurrencyRegistry {
         val maxConcurrentRequests: Int,
         val semaphore: Semaphore
     )
-        private val semaphores = ConcurrentHashMap<String, Entry>()
-        fun getOrCreate(key: String, maxConcurrentRequests: Int): Semaphore {
+
+    private val semaphores = ConcurrentHashMap<String, Entry>()
+
+    fun getOrCreate(key: String, maxConcurrentRequests: Int): Semaphore {
         require(maxConcurrentRequests > 0) { "maxConcurrentRequests must be > 0" }
+
         return semaphores.compute(key) { _, existing ->
             if (existing == null || existing.maxConcurrentRequests != maxConcurrentRequests) {
                 Entry(

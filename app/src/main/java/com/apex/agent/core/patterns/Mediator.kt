@@ -37,9 +37,9 @@ interface AgentComponent {
 /** 中介者接口 */
 interface Mediator<T : AgentComponent> {
     fun register(component: T)
-        fun unregister(component: T)
-        fun notify(sender: T, event: MediatorEvent)
-        fun sendTo(sender: T, target: T, event: MediatorEvent): Boolean
+    fun unregister(component: T)
+    fun notify(sender: T, event: MediatorEvent)
+    fun sendTo(sender: T, target: T, event: MediatorEvent): Boolean
 }
 
 /** Agent 中介者实现 */
@@ -48,61 +48,68 @@ class AgentMediator(
 ) : Mediator<AgentComponent> {
 
     private val components = CopyOnWriteArrayList<AgentComponent>()
-        private val eventQueue = ConcurrentLinkedQueue<MediatorEvent>()
-        private val failedDeliveries = AtomicInteger(0)
-        override fun register(component: AgentComponent) {
+    private val eventQueue = ConcurrentLinkedQueue<MediatorEvent>()
+    private val failedDeliveries = AtomicInteger(0)
+
+    override fun register(component: AgentComponent) {
         if (components.none { it.name == component.name }) {
             components.add(component)
         }
     }
-        override fun unregister(component: AgentComponent) {
+
+    override fun unregister(component: AgentComponent) {
         components.remove(component)
     }
-        override fun notify(sender: AgentComponent, event: MediatorEvent) {
+
+    override fun notify(sender: AgentComponent, event: MediatorEvent) {
         when (deliveryGuarantee) {
             DeliveryGuarantee.AT_MOST_ONCE -> {
                 components.filter { it.name != sender.name }.forEach { it.onEvent(event) }
             }
-        DeliveryGuarantee.AT_LEAST_ONCE -> {
+            DeliveryGuarantee.AT_LEAST_ONCE -> {
                 eventQueue.offer(event)
-        processQueue(sender)
+                processQueue(sender)
             }
-        DeliveryGuarantee.EXACTLY_ONCE -> {
+            DeliveryGuarantee.EXACTLY_ONCE -> {
                 val receivers = components.filter { it.name != sender.name }
-        val allDelivered = receivers.all { it.onEvent(event) }
-        if (!allDelivered) {
+                val allDelivered = receivers.all { it.onEvent(event) }
+                if (!allDelivered) {
                     eventQueue.offer(event)
-        failedDeliveries.incrementAndGet()
+                    failedDeliveries.incrementAndGet()
                 }
             }
         }
     }
-        override fun sendTo(sender: AgentComponent, target: AgentComponent, event: MediatorEvent): Boolean {
+
+    override fun sendTo(sender: AgentComponent, target: AgentComponent, event: MediatorEvent): Boolean {
         val component = components.find { it.name == target.name } ?: return false
         return component.onEvent(event)
     }
-        private fun processQueue(sender: AgentComponent) {
+
+    private fun processQueue(sender: AgentComponent) {
         val processed = mutableListOf<MediatorEvent>()
         for (event in eventQueue) {
             val delivered = components.filter { it.name != sender.name }.all { it.onEvent(event) }
-        if (delivered) processed.add(event)
+            if (delivered) processed.add(event)
         }
         eventQueue.removeAll(processed)
     }
-        fun getRegisteredComponents(): List<AgentComponent> = components.toList()
-        fun getQueuedEventCount(): Int = eventQueue.size
+
+    fun getRegisteredComponents(): List<AgentComponent> = components.toList()
+    fun getQueuedEventCount(): Int = eventQueue.size
     fun getFailedDeliveryCount(): Int = failedDeliveries.get()
 }
 
 /** AgentA */
 class AgentA : AgentComponent {
     override val name = "AgentA"
-        override val capabilities = setOf("reasoning", "planning")
-        override fun onEvent(event: MediatorEvent): Boolean {
+    override val capabilities = setOf("reasoning", "planning")
+
+    override fun onEvent(event: MediatorEvent): Boolean {
         return when (event.type) {
             "task_assigned" -> { true }
             "status_request" -> { true }
-        else -> false
+            else -> false
         }
     }
 }
@@ -110,12 +117,13 @@ class AgentA : AgentComponent {
 /** AgentB */
 class AgentB : AgentComponent {
     override val name = "AgentB"
-        override val capabilities = setOf("tool_execution", "code_generation")
-        override fun onEvent(event: MediatorEvent): Boolean {
+    override val capabilities = setOf("tool_execution", "code_generation")
+
+    override fun onEvent(event: MediatorEvent): Boolean {
         return when (event.type) {
             "execute_tool" -> { true }
             "generate_code" -> { true }
-        else -> false
+            else -> false
         }
     }
 }
@@ -123,12 +131,13 @@ class AgentB : AgentComponent {
 /** AgentC */
 class AgentC : AgentComponent {
     override val name = "AgentC"
-        override val capabilities = setOf("memory", "knowledge_retrieval")
-        override fun onEvent(event: MediatorEvent): Boolean {
+    override val capabilities = setOf("memory", "knowledge_retrieval")
+
+    override fun onEvent(event: MediatorEvent): Boolean {
         return when (event.type) {
             "query_knowledge" -> { true }
             "store_memory" -> { true }
-        else -> false
+            else -> false
         }
     }
 }

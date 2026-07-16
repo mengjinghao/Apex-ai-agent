@@ -5,7 +5,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CapabilityMatcher @Inject constructor() {
+class CapabilityMatcher constructor() {
 
     data class MatchResult(
         val score: Float,
@@ -14,7 +14,8 @@ class CapabilityMatcher @Inject constructor() {
         val matchedSpecialties: List<String> = emptyList(),
         val missingSkills: List<String> = emptyList()
     )
-        fun computeMatch(
+
+    fun computeMatch(
         requiredSkills: List<String>,
         specialties: List<String>,
         capabilityProfile: AgentCapabilityProfile
@@ -41,7 +42,8 @@ class CapabilityMatcher @Inject constructor() {
             missingSkills = missing
         )
     }
-        fun computeSpecialtyOverlap(required: List<String>, specialties: List<String>): Float {
+
+    fun computeSpecialtyOverlap(required: List<String>, specialties: List<String>): Float {
         if (required.isEmpty()) return 0.5f
         if (specialties.isEmpty()) return 0f
         val normalizedRequired = required.map { it.lowercase().trim() }
@@ -53,26 +55,29 @@ class CapabilityMatcher @Inject constructor() {
                 spec.split(" ", "_", "-").any { it == req } ||
                 req.split(" ", "_", "-").any { it == spec }
             }
-        if (hasMatch) matchCount++
+            if (hasMatch) matchCount++
         }
         return matchCount.toFloat() / required.size
     }
-        fun computeCapabilityScores(
+
+    fun computeCapabilityScores(
         required: List<String>,
         profile: AgentCapabilityProfile
     ): Map<String, Double> {
         return required.associateWith { skill ->
             val direct = profile.getCapability(skill)
-        if (direct > 0.0) direct
+            if (direct > 0.0) direct
             else profile.predictCapability(skill, skill)
         }
     }
-        fun findBestCategoryMatch(description: String, category: String, profiles: List<Pair<String, AgentCapabilityProfile>>): String? {
+
+    fun findBestCategoryMatch(description: String, category: String, profiles: List<Pair<String, AgentCapabilityProfile>>): String? {
         return profiles.maxByOrNull { (_, profile) ->
             profile.predictCapability(description, category)
         }?.first
     }
-        fun rankByRelevance(
+
+    fun rankByRelevance(
         query: String,
         candidates: List<Pair<String, String>>,
         topN: Int = 5
@@ -80,9 +85,9 @@ class CapabilityMatcher @Inject constructor() {
         val lowerQuery = query.lowercase()
         val queryTerms = lowerQuery.split(" ", "_", "-", "\n").filter { it.length > 2 }.toSet()
         val scored = candidates.map { (id, description) ->
-        val lowerDesc = description.lowercase()
-        val descTerms = lowerDesc.split(" ", "_", "-", "\n").filter { it.length > 2 }.toSet()
-        val intersection = queryTerms.intersect(descTerms).size
+            val lowerDesc = description.lowercase()
+            val descTerms = lowerDesc.split(" ", "_", "-", "\n").filter { it.length > 2 }.toSet()
+            val intersection = queryTerms.intersect(descTerms).size
             val jaccard = if (queryTerms.union(descTerms).isEmpty()) 0f
             else intersection.toFloat() / queryTerms.union(descTerms).size
             id to jaccard

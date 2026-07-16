@@ -12,21 +12,28 @@ class SystemDiagnosticsManager(private val context: Context) {
         val message: String = "",
         val timestamp: Long = System.currentTimeMillis()
     )
-        enum class Status { HEALTHY, WARNING, ERROR, UNKNOWN }
-        private val diagnostics = ConcurrentHashMap<String, DiagnosticResult>()
-        fun runDiagnostics(): List<DiagnosticResult> {
+
+    enum class Status { HEALTHY, WARNING, ERROR, UNKNOWN }
+
+    private val diagnostics = ConcurrentHashMap<String, DiagnosticResult>()
+
+    fun runDiagnostics(): List<DiagnosticResult> {
         return diagnostics.values.toList()
     }
-        fun registerComponent(name: String) {
+
+    fun registerComponent(name: String) {
         diagnostics[name] = DiagnosticResult(name, Status.UNKNOWN)
     }
-        fun updateComponentStatus(name: String, status: Status, message: String = "") {
+
+    fun updateComponentStatus(name: String, status: Status, message: String = "") {
         diagnostics[name] = DiagnosticResult(name, status, message)
     }
-        fun getComponentStatus(name: String): DiagnosticResult? {
+
+    fun getComponentStatus(name: String): DiagnosticResult? {
         return diagnostics[name]
     }
-        fun clear() {
+
+    fun clear() {
         diagnostics.clear()
     }
 }

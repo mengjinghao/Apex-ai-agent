@@ -59,7 +59,7 @@ abstract class BaseForegroundService : Service() {
             ).apply {
                 description = channelDescription
             }
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
         }
     }
@@ -95,5 +95,6 @@ abstract class BaseForegroundService : Service() {
         stopForeground(if (removeNotification) STOP_FOREGROUND_REMOVE else STOP_FOREGROUND_DETACH)
         stopSelf()
     }
-        override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onBind(intent: Intent?): IBinder? = null
 }

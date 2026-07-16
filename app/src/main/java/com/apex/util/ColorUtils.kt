@@ -52,16 +52,16 @@ object ColorUtils {
     fun hexToInt(hex: String): Int? {
         return try {
             val cleanHex = hex.trimStart('#')
-        when (cleanHex.length) {
+            when (cleanHex.length) {
                 3 -> {
                     val r = cleanHex[0].toString().repeat(2)
-        val g = cleanHex[1].toString().repeat(2)
-        val b = cleanHex[2].toString().repeat(2)
-        Color.parseColor("#FF$r$g$b")
+                    val g = cleanHex[1].toString().repeat(2)
+                    val b = cleanHex[2].toString().repeat(2)
+                    Color.parseColor("#FF$r$g$b")
                 }
                 6 -> Color.parseColor("#FF$cleanHex")
                 8 -> Color.parseColor("#$cleanHex")
-        else -> null
+                else -> null
             }
         } catch (e: Exception) {
             null
@@ -219,11 +219,13 @@ object ColorUtils {
         val r = Color.red(color) / 255f
         val g = Color.green(color) / 255f
         val b = Color.blue(color) / 255f
+
         val max = maxOf(r, g, b)
         val min = minOf(r, g, b)
         val delta = max - min
 
         val lightness = (max + min) / 2f
+
         val hue = if (delta == 0f) 0f else {
             val h = when (max) {
                 r -> ((g - b) / delta) % 6f
@@ -233,7 +235,9 @@ object ColorUtils {
             }
             (h * 60f + 360f) % 360f
         }
+
         val saturation = if (delta == 0f) 0f else delta / (1f - kotlin.math.abs(2f * lightness - 1f))
+
         return HSL(hue, saturation.coerceIn(0f, 1f), lightness.coerceIn(0f, 1f))
     }
 
@@ -252,8 +256,9 @@ object ColorUtils {
 
         if (saturation == 0f) {
             val gray = (lightness * 255f).toInt().coerceIn(0, 255)
-        return argbToInt(255, gray, gray, gray)
+            return argbToInt(255, gray, gray, gray)
         }
+
         val hueToRgb = { p: Float, q: Float, t: Float ->
             var ht = t
             if (ht < 0f) ht += 1f
@@ -265,12 +270,14 @@ object ColorUtils {
                 else -> p
             }
         }
+
         val q = if (lightness < 0.5f) lightness * (1f + saturation) else lightness + saturation - lightness * saturation
         val p = 2f * lightness - q
 
         val r = (hueToRgb(p, q, hue + 1f / 3f) * 255f).toInt().coerceIn(0, 255)
         val g = (hueToRgb(p, q, hue) * 255f).toInt().coerceIn(0, 255)
         val b = (hueToRgb(p, q, hue - 1f / 3f) * 255f).toInt().coerceIn(0, 255)
+
         return argbToInt(255, r, g, b)
     }
 

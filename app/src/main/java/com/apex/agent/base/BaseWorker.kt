@@ -93,7 +93,7 @@ abstract class BaseWorker(
     protected fun handleRetryOrFail(outputData: Data = workDataOf()): Result {
         return if (!isMaxRetriesReached) {
             val backoffDelay = calculateBackoffDelay()
-        Result.retry()
+            Result.retry()
         } else {
             Result.failure(outputData)
         }
@@ -111,7 +111,8 @@ abstract class BaseWorker(
         val jitter = (clampedDelay * 0.1).toLong().coerceAtLeast(1L)
         return clampedDelay + Random.nextLong(-jitter, jitter + 1)
     }
-        companion object {
+
+    companion object {
         private const val KEY_PROGRESS = "progress"
         private const val KEY_PROGRESS_MAX = "progress_max"
         private const val KEY_PROGRESS_MESSAGE = "progress_message"

@@ -28,8 +28,8 @@ import com.apex.agent.core.memory.apex.core.*
 class BurstModeMemory {
 
     private val conversationStore = BaseMemoryStore()
-        private val experienceStore = BaseMemoryStore()
-        private val strategyStore = BaseMemoryStore()
+    private val experienceStore = BaseMemoryStore()
+    private val strategyStore = BaseMemoryStore()
 
     /**
      * 存储任务记录。
@@ -184,7 +184,8 @@ class BurstModeMemory {
         experienceStore.clear()
         strategyStore.clear()
     }
-        fun getStats(): MemoryModuleStats = MemoryModuleStats(
+
+    fun getStats(): MemoryModuleStats = MemoryModuleStats(
         totalEntries = conversationStore.count() + experienceStore.count() + strategyStore.count(),
         conversationCount = conversationStore.count(),
         experienceCount = experienceStore.count() + strategyStore.count(),

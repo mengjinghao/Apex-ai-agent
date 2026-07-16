@@ -12,12 +12,12 @@ object XmlTextProcessor {
     @JvmStatic
     fun processStreamToText(stream: Flow<String>): Flow<String> {
         // Stub: 原 UI 实现会过滤 XML 标签、提取纯文本
-    return stream
+        return stream
     }
 
     @JvmStatic
     fun processText(text: String): String {
         // Stub: 简单移除 XML 标签
-    return text.replace(Regex("<[^>]+>"), "")
+        return text.replace(Regex("<[^>]+>"), "")
     }
 }

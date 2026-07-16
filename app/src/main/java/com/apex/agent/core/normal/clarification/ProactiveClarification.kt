@@ -83,10 +83,12 @@ class ProactiveClarification {
         needs.addAll(detectMissingContext(userMessage, context))
 
         // 按置信度排序，取前 3 个
-    val topNeeds = needs.sortedByDescending { it.confidence }.take(3)
+        val topNeeds = needs.sortedByDescending { it.confidence }.take(3)
+
         val combinedQuestion = if (topNeeds.isNotEmpty()) {
             buildCombinedQuestion(topNeeds)
         } else ""
+
         return ClarificationResult(
             needed = topNeeds.isNotEmpty(),
             needs = topNeeds,
@@ -108,6 +110,7 @@ class ProactiveClarification {
     }
 
     // ============ 检测方法 ============
+
     private fun detectPronounAmbiguity(message: String, context: Map<String, Any>): List<ClarificationNeed> {
         val needs = mutableListOf<ClarificationNeed>()
         val pronouns = mapOf(
@@ -127,7 +130,8 @@ class ProactiveClarification {
         )
 
         // 如果上下文中没有明确的指代对象，标记为模糊
-    val hasRecentEntity = context.containsKey("last_entity") || context.containsKey("last_subject")
+        val hasRecentEntity = context.containsKey("last_entity") || context.containsKey("last_subject")
+
         for ((pronoun, desc) in pronouns) {
             if (message.contains(pronoun, ignoreCase = true) && !hasRecentEntity) {
                 needs.add(ClarificationNeed(
@@ -137,12 +141,13 @@ class ProactiveClarification {
                     suggestedQuestion = "你提到的「$pronoun」具体指什么？",
                     confidence = 0.8f
                 ))
-        break  // 只报告一个代词模糊
+                break  // 只报告一个代词模糊
             }
         }
         return needs
     }
-        private fun detectTermAmbiguity(message: String): List<ClarificationNeed> {
+
+    private fun detectTermAmbiguity(message: String): List<ClarificationNeed> {
         val needs = mutableListOf<ClarificationNeed>()
         val ambiguousTerms = mapOf(
             "苹果" to listOf("水果", "公司"),
@@ -153,6 +158,7 @@ class ProactiveClarification {
             "bug" to listOf("程序错误", "昆虫"),
             " mouse" to listOf("鼠标", "老鼠")
         )
+
         for ((term, interpretations) in ambiguousTerms) {
             if (message.contains(term, ignoreCase = true)) {
                 needs.add(ClarificationNeed(
@@ -167,7 +173,8 @@ class ProactiveClarification {
         }
         return needs
     }
-        private fun detectUnclearTarget(message: String): List<ClarificationNeed> {
+
+    private fun detectUnclearTarget(message: String): List<ClarificationNeed> {
         val needs = mutableListOf<ClarificationNeed>()
         val actionPatterns = mapOf(
             "删除" to "删除哪个文件/目录？",
@@ -179,12 +186,13 @@ class ProactiveClarification {
             "open" to "Which file/app to open?",
             "send" to "Send to whom? What content?"
         )
+
         for ((action, question) in actionPatterns) {
             if (message.contains(action, ignoreCase = true)) {
                 // 检查是否有明确的目标
-    val hasTarget = message.contains(Regex("(文件|目录|应用|程序|配置)[\\s]*[\"「『]([^\"」』]+)[\"」』]")) ||
+                val hasTarget = message.contains(Regex("(文件|目录|应用|程序|配置)[\\s]*[\"「『]([^\"」』]+)[\"」』]")) ||
                                message.contains(Regex("/\\S+"))  // 路径
-    if (!hasTarget) {
+                if (!hasTarget) {
                     needs.add(ClarificationNeed(
                         type = ClarificationType.TARGET_UNCLEAR,
                         ambiguousPart = action,
@@ -197,7 +205,8 @@ class ProactiveClarification {
         }
         return needs
     }
-        private fun detectVagueScope(message: String): List<ClarificationNeed> {
+
+    private fun detectVagueScope(message: String): List<ClarificationNeed> {
         val needs = mutableListOf<ClarificationNeed>()
         val vagueWords = mapOf(
             "一些" to "具体多少？",
@@ -210,6 +219,7 @@ class ProactiveClarification {
             "many" to "approximately how many?",
             "several" to "how many exactly?"
         )
+
         for ((word, question) in vagueWords) {
             if (message.contains(word, ignoreCase = true)) {
                 needs.add(ClarificationNeed(
@@ -219,15 +229,16 @@ class ProactiveClarification {
                     suggestedQuestion = "你说的「$word」$question",
                     confidence = 0.6f
                 ))
-        break
+                break
             }
         }
         return needs
     }
-        private fun detectVagueIntent(message: String): List<ClarificationNeed> {
+
+    private fun detectVagueIntent(message: String): List<ClarificationNeed> {
         val needs = mutableListOf<ClarificationNeed>()
         // 过短的消息可能意图模糊
-    if (message.trim().length < 5 && !message.matches(Regex("^(你好|hi|hello|谢谢).*", RegexOption.IGNORE_CASE))) {
+        if (message.trim().length < 5 && !message.matches(Regex("^(你好|hi|hello|谢谢).*", RegexOption.IGNORE_CASE))) {
             needs.add(ClarificationNeed(
                 type = ClarificationType.INTENT_VAGUE,
                 ambiguousPart = message,
@@ -238,10 +249,11 @@ class ProactiveClarification {
         }
         return needs
     }
-        private fun detectMissingContext(message: String, context: Map<String, Any>): List<ClarificationNeed> {
+
+    private fun detectMissingContext(message: String, context: Map<String, Any>): List<ClarificationNeed> {
         val needs = mutableListOf<ClarificationNeed>()
         // 检测代码相关但无上下文
-    if (message.contains("这段代码") || message.contains("这个错误") || message.contains("this code") || message.contains("this error")) {
+        if (message.contains("这段代码") || message.contains("这个错误") || message.contains("this code") || message.contains("this error")) {
             if (!context.containsKey("code") && !context.containsKey("error") && !message.contains("```")) {
                 needs.add(ClarificationNeed(
                     type = ClarificationType.CONTEXT_MISSING,
@@ -254,7 +266,8 @@ class ProactiveClarification {
         }
         return needs
     }
-        private fun buildCombinedQuestion(needs: List<ClarificationNeed>): String {
+
+    private fun buildCombinedQuestion(needs: List<ClarificationNeed>): String {
         if (needs.size == 1) return needs[0].suggestedQuestion
 
         val sb = StringBuilder()

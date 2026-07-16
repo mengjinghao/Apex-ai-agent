@@ -27,7 +27,7 @@ import com.apex.agent.core.memory.apex.core.*
 class MultiAgentMemory {
 
     private val conversationStore = BaseMemoryStore()
-        private val experienceStore = BaseMemoryStore()
+    private val experienceStore = BaseMemoryStore()
 
     /**
      * 存储协作对话。
@@ -145,7 +145,8 @@ class MultiAgentMemory {
         conversationStore.clear()
         experienceStore.clear()
     }
-        fun getStats(): MemoryModuleStats = MemoryModuleStats(
+
+    fun getStats(): MemoryModuleStats = MemoryModuleStats(
         totalEntries = conversationStore.count() + experienceStore.count(),
         conversationCount = conversationStore.count(),
         experienceCount = experienceStore.count(),

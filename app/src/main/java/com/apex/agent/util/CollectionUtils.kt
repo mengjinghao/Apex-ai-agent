@@ -22,8 +22,8 @@ object CollectionUtils {
         var start = 0
         while (start < list.size) {
             val end = minOf(start + size, list.size)
-        result.add(list.subList(start, end))
-        start = end
+            result.add(list.subList(start, end))
+            start = end
         }
         return result
     }
@@ -164,9 +164,9 @@ object CollectionUtils {
         val result = mutableListOf<T>()
         for (element in list) {
             val key = keyExtractor(element)
-        if (key !in seen) {
+            if (key !in seen) {
                 seen.add(key)
-        result.add(element)
+                result.add(element)
             }
         }
         return result
@@ -197,7 +197,7 @@ object CollectionUtils {
         for (i in 1 until list.size) {
             if (list[i] != previous) {
                 result.add(list[i])
-        previous = list[i]
+                previous = list[i]
             }
         }
         return result
@@ -214,9 +214,11 @@ object CollectionUtils {
         if (windowSize <= 0) throw IllegalArgumentException("windowSize must be positive, got $windowSize")
         if (values.isEmpty()) return emptyList()
         if (values.size < windowSize) return emptyList()
+
         val result = mutableListOf<Double>()
         var windowSum = values.take(windowSize).sum()
         result.add(windowSum / windowSize)
+
         for (i in windowSize until values.size) {
             windowSum += values[i] - values[i - windowSize]
             result.add(windowSum / windowSize)
@@ -294,12 +296,12 @@ object CollectionUtils {
         val n = list.size
         for (i in 0 until (1 shl n)) {
             val subset = mutableListOf<T>()
-        for (j in 0 until n) {
+            for (j in 0 until n) {
                 if (i and (1 shl j) != 0) {
                     subset.add(list[j])
                 }
             }
-        result.add(subset)
+            result.add(subset)
         }
         return result
     }
@@ -316,7 +318,7 @@ object CollectionUtils {
         val random = Random(seed)
         for (i in mutable.indices.reversed()) {
             val j = random.nextInt(i + 1)
-        val temp = mutable[i]
+            val temp = mutable[i]
             mutable[i] = mutable[j]
             mutable[j] = temp
         }
@@ -368,11 +370,12 @@ object CollectionUtils {
         if (windowSize <= 0) throw IllegalArgumentException("windowSize must be positive, got $windowSize")
         if (step <= 0) throw IllegalArgumentException("step must be positive, got $step")
         if (list.size < windowSize) return emptyList()
+
         val result = mutableListOf<List<T>>()
         var start = 0
         while (start + windowSize <= list.size) {
             result.add(list.subList(start, start + windowSize))
-        start += step
+            start += step
         }
         return result
     }
@@ -633,7 +636,7 @@ object CollectionUtils {
         val result = mutableListOf<T>()
         for (element in list) {
             result.add(element)
-        if (predicate(element)) break
+            if (predicate(element)) break
         }
         return result
     }
@@ -662,8 +665,8 @@ object CollectionUtils {
         var first = true
         for (item in list) {
             if (!first) result.add(element)
-        result.add(item)
-        first = false
+            result.add(item)
+            first = false
         }
         return result
     }
@@ -708,7 +711,7 @@ object CollectionUtils {
         var sum = 0.0
         for (v in values) {
             sum += v.toDouble()
-        result.add(sum)
+            result.add(sum)
         }
         return result
     }

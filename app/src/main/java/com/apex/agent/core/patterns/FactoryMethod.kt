@@ -43,7 +43,7 @@ class ModelClientFactory : Creator<ModelClient>() {
             "GEMINI" -> GeminiClient()
             "CLAUDE" -> ClaudeClient()
             "DEEPSEEK" -> DeepseekClient()
-        else -> throw IllegalArgumentException("Unknown model type: $type")
+            else -> throw IllegalArgumentException("Unknown model type: $type")
         }
     }
 }
@@ -52,28 +52,28 @@ class ModelClientFactory : Creator<ModelClient>() {
 interface StorageProvider {
     fun read(key: String): String?
     fun write(key: String, value: String)
-        fun delete(key: String): Boolean
+    fun delete(key: String): Boolean
 }
 
 class LocalStorageProvider : StorageProvider {
     private val store = mutableMapOf<String, String>()
-        override fun read(key: String): String? = store[key]
+    override fun read(key: String): String? = store[key]
     override fun write(key: String, value: String) { store[key] = value }
-        override fun delete(key: String): Boolean = store.remove(key) != null
+    override fun delete(key: String): Boolean = store.remove(key) != null
 }
 
 class DatabaseStorageProvider : StorageProvider {
     private val store = mutableMapOf<String, String>()
-        override fun read(key: String): String? = store[key]
+    override fun read(key: String): String? = store[key]
     override fun write(key: String, value: String) { store[key] = value }
-        override fun delete(key: String): Boolean = store.remove(key) != null
+    override fun delete(key: String): Boolean = store.remove(key) != null
 }
 
 class SupabaseStorageProvider : StorageProvider {
     private val store = mutableMapOf<String, String>()
-        override fun read(key: String): String? = store[key]
+    override fun read(key: String): String? = store[key]
     override fun write(key: String, value: String) { store[key] = value }
-        override fun delete(key: String): Boolean = store.remove(key) != null
+    override fun delete(key: String): Boolean = store.remove(key) != null
 }
 
 /** 存储提供者工厂 */
@@ -83,7 +83,7 @@ class StorageProviderFactory : Creator<StorageProvider>() {
             "LOCAL" -> LocalStorageProvider()
             "DATABASE" -> DatabaseStorageProvider()
             "SUPABASE" -> SupabaseStorageProvider()
-        else -> throw IllegalArgumentException("Unknown storage type: $type")
+            else -> throw IllegalArgumentException("Unknown storage type: $type")
         }
     }
 }
@@ -105,7 +105,7 @@ class NotificationFactory : Creator<Notification>() {
             "INFO" -> InfoNotification("Info", "General information")
             "WARNING" -> WarningNotification("Warning", "Proceed with caution")
             "ERROR" -> ErrorNotification("Error", "An error occurred")
-        else -> throw IllegalArgumentException("Unknown notification type: $type")
+            else -> throw IllegalArgumentException("Unknown notification type: $type")
         }
     }
 }

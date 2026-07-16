@@ -1,4 +1,29 @@
 package com.apex.core.tools.agent
 
-// STUBBED: had 9 errors
-class ShowerBinderReceiver
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import com.apex.util.AppLogger
+import com.ai.assistance.shower.IShowerService
+import com.ai.assistance.shower.ShowerBinderContainer
+
+class ShowerBinderReceiver : BroadcastReceiver() {
+
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != ACTION_SHOWER_BINDER_READY) {
+            return
+        }
+        val container = intent.getParcelableExtra<ShowerBinderContainer>(EXTRA_BINDER_CONTAINER)
+        val binder = container?.binder
+        val service = binder?.let { IShowerService.Stub.asInterface(it) }
+        val alive = service?.asBinder()?.isBinderAlive == true
+        AppLogger.d(TAG, "onReceive: service=${service} alive=${alive}")
+        ShowerBinderRegistry.setService(service)
+    }
+
+    companion object {
+        private const val TAG = "ShowerBinderReceiver"
+        const val ACTION_SHOWER_BINDER_READY = "com.apex.action.SHOWER_BINDER_READY"
+        const val EXTRA_BINDER_CONTAINER = "binder_container"
+    }
+}

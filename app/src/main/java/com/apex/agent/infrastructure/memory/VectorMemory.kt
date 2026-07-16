@@ -56,31 +56,38 @@ class VectorMemory(
         val score: Float,
         val metadata: Map<String, String> = emptyMap()
     )
-        companion object {
+
+    companion object {
         private const val TAG = "VectorMemory"
         private const val FILE_NAME = "vector_memory.json"
         private const val TMP_SUFFIX = ".tmp"
     }
-        private val lock = ReentrantReadWriteLock()
-        private val store = ConcurrentHashMap<String, VectorEntry>()
-        private val insertionOrder = linkedMapOf<String, Long>()
-        private val searchCache = object : LinkedHashMap<String, List<VectorResult>>(searchCacheSize, 0.75f, true) {
+
+    private val lock = ReentrantReadWriteLock()
+    private val store = ConcurrentHashMap<String, VectorEntry>()
+    private val insertionOrder = linkedMapOf<String, Long>()
+
+    private val searchCache = object : LinkedHashMap<String, List<VectorResult>>(searchCacheSize, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<VectorResult>>): Boolean {
             return size > searchCacheSize
         }
     }
-        private val json = Json {
+
+    private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
         encodeDefaults = true
     }
-        private val persistenceFile: File
+
+    private val persistenceFile: File
         get() = File(storageDir, FILE_NAME)
-        init {
+
+    init {
         storageDir.mkdirs()
         loadFromDisk()
     }
-        override fun add(id: String, vector: FloatArray, metadata: Map<String, String>) {
+
+    override fun add(id: String, vector: FloatArray, metadata: Map<String, String>) {
         require(vector.size == dimension) { "向量维度 $dimension 与实际 ${vector.size} 不匹配" }
         val entry = VectorEntry(
             id = id,
@@ -91,40 +98,42 @@ class VectorMemory(
         lock.write {
             store[id] = entry
             insertionOrder.remove(id)
-        insertionOrder[id] = System.currentTimeMillis()
-        evictIfNeeded()
-        searchCache.clear()
-        syncToDisk()
+            insertionOrder[id] = System.currentTimeMillis()
+            evictIfNeeded()
+            searchCache.clear()
+            syncToDisk()
         }
     }
-        override fun remove(id: String): Boolean {
+
+    override fun remove(id: String): Boolean {
         lock.write {
             val removed = store.remove(id) != null
             insertionOrder.remove(id)
-        if (removed) {
+            if (removed) {
                 searchCache.clear()
-        syncToDisk()
+                syncToDisk()
             }
-        return removed
+            return removed
         }
     }
-        override fun search(query: FloatArray, topK: Int): List<VectorResult> {
+
+    override fun search(query: FloatArray, topK: Int): List<VectorResult> {
         val cacheKey = buildCacheKey(query, topK)
         lock.read {
             searchCache[cacheKey]?.let { return it }
         }
         lock.write {
             searchCache[cacheKey]?.let { return it }
-        val now = System.currentTimeMillis()
-        val results = store.entries
+            val now = System.currentTimeMillis()
+            val results = store.entries
                 .mapNotNull { (id, entry) ->
                     if (isExpired(entry, now)) {
                         store.remove(id)
-        insertionOrder.remove(id)
-        return@mapNotNull null
+                        insertionOrder.remove(id)
+                        return@mapNotNull null
                     }
-        val score = cosineSimilarity(query, entry.vector.toFloatArray())
-        VectorResult(
+                    val score = cosineSimilarity(query, entry.vector.toFloatArray())
+                    VectorResult(
                         id = id,
                         score = score,
                         metadata = entry.metadata
@@ -132,19 +141,21 @@ class VectorMemory(
                 }
                 .sortedByDescending { it.score }
                 .take(topK)
-        searchCache[cacheKey] = results
+            searchCache[cacheKey] = results
             return results
         }
     }
-        override fun clear() {
+
+    override fun clear() {
         lock.write {
             store.clear()
-        insertionOrder.clear()
-        searchCache.clear()
-        syncToDisk()
+            insertionOrder.clear()
+            searchCache.clear()
+            syncToDisk()
         }
     }
-        override fun size(): Int {
+
+    override fun size(): Int {
         lock.read { return store.size }
     }
 
@@ -159,7 +170,7 @@ class VectorMemory(
         while (store.size > maxVectors) {
             val eldest = insertionOrder.entries.firstOrNull() ?: break
             store.remove(eldest.key)
-        insertionOrder.remove(eldest.key)
+            insertionOrder.remove(eldest.key)
         }
     }
 
@@ -171,8 +182,8 @@ class VectorMemory(
         var normB = 0.0
         for (i in a.indices) {
             dot += a[i].toDouble() * b[i].toDouble()
-        normA += a[i].toDouble() * a[i].toDouble()
-        normB += b[i].toDouble() * b[i].toDouble()
+            normA += a[i].toDouble() * a[i].toDouble()
+            normB += b[i].toDouble() * b[i].toDouble()
         }
         val denominator = sqrt(normA) * sqrt(normB)
         return if (denominator == 0.0) 0f else (dot / denominator).toFloat()
@@ -188,10 +199,10 @@ class VectorMemory(
     private fun syncToDisk() {
         try {
             val data = PersistenceData(store.values.toList())
-        val content = json.encodeToString(data)
-        val tmpFile = File(storageDir, "$FILE_NAME$TMP_SUFFIX")
-        tmpFile.writeText(content, Charsets.UTF_8)
-        tmpFile.renameTo(persistenceFile)
+            val content = json.encodeToString(data)
+            val tmpFile = File(storageDir, "$FILE_NAME$TMP_SUFFIX")
+            tmpFile.writeText(content, Charsets.UTF_8)
+            tmpFile.renameTo(persistenceFile)
         } catch (e: Exception) {
             android.util.Log.w(TAG, "向量持久化写入失败", e)
         }
@@ -203,9 +214,9 @@ class VectorMemory(
             val file = persistenceFile
             if (!file.exists()) return
             val content = file.readText(Charsets.UTF_8)
-        val data = json.decodeFromString<PersistenceData>(content)
-        val now = System.currentTimeMillis()
-        data.entries.forEach { entry ->
+            val data = json.decodeFromString<PersistenceData>(content)
+            val now = System.currentTimeMillis()
+            data.entries.forEach { entry ->
                 if (!isExpired(entry, now)) {
                     store[entry.id] = entry
                     insertionOrder[entry.id] = entry.timestamp
@@ -213,9 +224,9 @@ class VectorMemory(
             }
         } catch (e: Exception) {
             android.util.Log.w(TAG, "加载向量持久化数据失败，使用空存储", e)
-        store.clear()
-        insertionOrder.clear()
-        persistenceFile.delete()
+            store.clear()
+            insertionOrder.clear()
+            persistenceFile.delete()
         }
     }
 

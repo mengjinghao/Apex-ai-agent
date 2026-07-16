@@ -8,7 +8,7 @@ interface ChannelAdapter {
     val name: String
     suspend fun sendMessage(message: AgentMessage): Result<Boolean>
     fun receiveMessage(callback: (AgentMessage) -> Unit)
-        suspend fun isAvailable(): Boolean
+    suspend fun isAvailable(): Boolean
     fun initialize()
-        fun shutdown()
+    fun shutdown()
 }

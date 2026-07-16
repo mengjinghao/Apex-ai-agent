@@ -33,11 +33,12 @@ class TerminalPreferences(private val context: Context) {
             val arr = JSONArray(json)
             (0 until arr.length()).map { i ->
                 val o = arr.getJSONObject(i)
-        o.getString("cmd") to o.getLong("ts")
+                o.getString("cmd") to o.getLong("ts")
             }
         } catch (e: Exception) { emptyList() }
     }
-        suspend fun saveHistory(history: List<Pair<String, Long>>) {
+
+    suspend fun saveHistory(history: List<Pair<String, Long>>) {
         val arr = JSONArray()
         history.takeLast(500).forEach { (cmd, ts) ->
             arr.put(JSONObject().put("cmd", cmd).put("ts", ts))
@@ -50,13 +51,14 @@ class TerminalPreferences(private val context: Context) {
         val json = p[K.ALIASES] ?: return@map emptyMap()
         try {
             val o = JSONObject(json)
-        o.keys().asSequence().associateWith { key ->
+            o.keys().asSequence().associateWith { key ->
                 val v = o.getJSONObject(key)
-        v.getString("command") to (if (v.has("desc")) v.getString("desc") else null)
+                v.getString("command") to (if (v.has("desc")) v.getString("desc") else null)
             }
         } catch (e: Exception) { emptyMap() }
     }
-        suspend fun saveAliases(aliases: Map<String, com.apex.agent.presentation.enhancedterminal.data.CommandAlias>) {
+
+    suspend fun saveAliases(aliases: Map<String, com.apex.agent.presentation.enhancedterminal.data.CommandAlias>) {
         val o = JSONObject()
         aliases.forEach { (key, alias) ->
             o.put(key, JSONObject().put("command", alias.command).apply {
@@ -73,7 +75,7 @@ class TerminalPreferences(private val context: Context) {
             val arr = JSONArray(json)
             (0 until arr.length()).map { i ->
                 val o = arr.getJSONObject(i)
-        com.apex.agent.presentation.enhancedterminal.data.Snippet(
+                com.apex.agent.presentation.enhancedterminal.data.Snippet(
                     id = o.getString("id"),
                     name = o.getString("name"),
                     content = o.getString("content"),
@@ -84,14 +86,15 @@ class TerminalPreferences(private val context: Context) {
             }
         } catch (e: Exception) { emptyList() }
     }
-        suspend fun saveSnippets(snippets: List<com.apex.agent.presentation.enhancedterminal.data.Snippet>) {
+
+    suspend fun saveSnippets(snippets: List<com.apex.agent.presentation.enhancedterminal.data.Snippet>) {
         val arr = JSONArray()
         snippets.forEach { s ->
             val tagsArr = JSONArray()
-        s.tags.forEach { tagsArr.put(it) }
-        arr.put(JSONObject().apply {
+            s.tags.forEach { tagsArr.put(it) }
+            arr.put(JSONObject().apply {
                 put("id", s.id); put("name", s.name); put("content", s.content)
-        put("language", s.language); put("tags", tagsArr); put("createdAt", s.createdAt)
+                put("language", s.language); put("tags", tagsArr); put("createdAt", s.createdAt)
             })
         }
         context.terminalDataStore.edit { it[K.SNIPPETS] = arr.toString() }
@@ -101,7 +104,8 @@ class TerminalPreferences(private val context: Context) {
     val themeIdFlow: Flow<String> = context.terminalDataStore.data.map { p ->
         p[K.THEME_ID] ?: "apex_dark"
     }
-        suspend fun saveThemeId(id: String) {
+
+    suspend fun saveThemeId(id: String) {
         context.terminalDataStore.edit { it[K.THEME_ID] = id }
     }
 
@@ -109,7 +113,8 @@ class TerminalPreferences(private val context: Context) {
     val fontSizeFlow: Flow<Int> = context.terminalDataStore.data.map { p ->
         p[K.FONT_SIZE] ?: 12
     }
-        suspend fun saveFontSize(size: Int) {
+
+    suspend fun saveFontSize(size: Int) {
         context.terminalDataStore.edit { it[K.FONT_SIZE] = size }
     }
 }

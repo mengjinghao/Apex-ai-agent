@@ -4,7 +4,7 @@ import android.graphics.Color
 import androidx.compose.ui.graphics.Color as ComposeColor
 
 /**
- * Material You 色彩提取器
+ * Material You 色彩提取�?
  * 根据源颜色生成完整的 Material You 色彩方案
  */
 object MaterialYouColorExtractor {
@@ -138,7 +138,7 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * 获取默认的Material You 色彩方案（亮色模式）
+     * 获取默认�?Material You 色彩方案（亮色模式）
      */
     fun getDefaultLightColors(): MaterialYouColors {
         return MaterialYouColors(
@@ -178,7 +178,7 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * 获取默认的Material You 色彩方案（暗色模式）
+     * 获取默认�?Material You 色彩方案（暗色模式）
      */
     fun getDefaultDarkColors(): MaterialYouColors {
         return MaterialYouColors(
@@ -218,7 +218,7 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * 将MaterialYouColors 转换为Compose ColorScheme
+     * �?MaterialYouColors 转换�?Compose ColorScheme
      */
     fun toColorScheme(colors: MaterialYouColors): androidx.compose.material3.ColorScheme {
         return if (colors.isDark) {
@@ -293,12 +293,13 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * RGB 转HSL
+     * RGB �?HSL
      */
     private fun rgbToHsl(color: Int): FloatArray {
         val r = ((color shr 16) and 0xFF) / 255f
         val g = ((color shr 8) and 0xFF) / 255f
         val b = (color and 0xFF) / 255f
+
         val max = r.coerceAtLeast(g).coerceAtLeast(b)
         val min = r.coerceAtMost(g).coerceAtMost(b)
         var h = 0f
@@ -308,18 +309,19 @@ object MaterialYouColorExtractor {
         if (max != min) {
             val d = max - min
             s = if (l > 0.5f) d / (2 - max - min) else d / (max + min)
-        h = when (max) {
+            h = when (max) {
                 r -> ((g - b) / d + (if (g < b) 6f else 0f)) / 6f
                 g -> ((b - r) / d + 2f) / 6f
                 b -> ((r - g) / d + 4f) / 6f
                 else -> 0f
             }
         }
+
         return floatArrayOf(h * 360f, s, l)
     }
 
     /**
-     * HSL 转RGB
+     * HSL �?RGB
      */
     private fun hslToRgb(h: Float, s: Float, l: Float): Int {
         val r: Float
@@ -332,19 +334,21 @@ object MaterialYouColorExtractor {
             b = l
         } else {
             val hue = h / 360f
-        val q = if (l < 0.5f) l * (1 + s) else l + s - l * s
+            val q = if (l < 0.5f) l * (1 + s) else l + s - l * s
             val p = 2 * l - q
             r = hueToRgb(p, q, hue + 1f / 3f)
-        g = hueToRgb(p, q, hue)
-        b = hueToRgb(p, q, hue - 1f / 3f)
+            g = hueToRgb(p, q, hue)
+            b = hueToRgb(p, q, hue - 1f / 3f)
         }
+
         return Color.rgb(
             (r * 255).toInt().coerceIn(0, 255),
             (g * 255).toInt().coerceIn(0, 255),
             (b * 255).toInt().coerceIn(0, 255)
         )
     }
-        private fun hueToRgb(p: Float, q: Float, t: Float): Float {
+
+    private fun hueToRgb(p: Float, q: Float, t: Float): Float {
         var hue = t
         if (hue < 0f) hue += 1f
         if (hue > 1f) hue -= 1f

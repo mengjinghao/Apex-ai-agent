@@ -8,11 +8,14 @@ object AndroidUserPathUtils {
     fun currentUserId(): Int = Process.myUid() / PER_USER_RANGE
 
     fun currentUserDataRootPath(): String = "/data/user/${currentUserId()}"
-        fun currentUserPackageDataPath(packageName: String): String =
+
+    fun currentUserPackageDataPath(packageName: String): String =
         "${currentUserDataRootPath()}/${packageName}"
-        fun currentUserPackageFilesPath(packageName: String): String =
+
+    fun currentUserPackageFilesPath(packageName: String): String =
         "${currentUserPackageDataPath(packageName)}/files"
-        fun isCurrentUserPackageDataPath(path: String, packageName: String): Boolean {
+
+    fun isCurrentUserPackageDataPath(path: String, packageName: String): Boolean {
         val normalizedPath = path.trim()
         return normalizedPath.startsWith(currentUserPackageDataPath(packageName))
     }

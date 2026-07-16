@@ -31,7 +31,7 @@ import java.util.Stack
 class ExpressionEvaluator {
 
     private val tokenizer = Tokenizer()
-        private val parser = Parser()
+    private val parser = Parser()
 
     /**
      * 求值表达式
@@ -83,12 +83,13 @@ class ExpressionEvaluator {
         val regex = Regex("\\$\\{([^}]+)}|\\\$([a-zA-Z_][a-zA-Z0-9_.]*)")
         regex.findAll(template).forEach { m ->
             val ref = (m.groupValues[1].ifEmpty { m.groupValues[2] }).trim()
-        val value = resolveVariable(ref, context)?.toString() ?: ""
+            val value = resolveVariable(ref, context)?.toString() ?: ""
             result = result.replace(m.value, value)
         }
         return result
     }
-        private fun resolveVariable(path: String, context: Map<String, Any>): Any? {
+
+    private fun resolveVariable(path: String, context: Map<String, Any>): Any? {
         val parts = path.split(".")
         var current: Any? = context[parts[0]] ?: context["__node_${parts[0]}_output"]
         for (i in 1 until parts.size) {
@@ -101,10 +102,11 @@ class ExpressionEvaluator {
     }
 
     // ============ Tokenizer ============
+
     private class Tokenizer {
         fun tokenize(input: String): List<Token> {
             val tokens = mutableListOf<Token>()
-        var i = 0
+            var i = 0
             val s = input.trim()
             while (i < s.length) {
                 val c = s[i]
@@ -112,24 +114,24 @@ class ExpressionEvaluator {
                     c.isWhitespace() -> i++
                     c == '$' && i + 1 < s.length && s[i + 1] == '{' -> {
                         // ${var.path}
-        val end = s.indexOf('}', i + 2)
+                        val end = s.indexOf('}', i + 2)
                         require(end > 0) { "未闭合的 \${" }
-        val path = s.substring(i + 2, end)
+                        val path = s.substring(i + 2, end)
                         tokens.add(Token.Variable(path))
                         i = end + 1
                     }
                     c == '$' && i + 1 < s.length && (s[i + 1].isLetter() || s[i + 1] == '_') -> {
                         // $var.path
-    var j = i + 1
+                        var j = i + 1
                         while (j < s.length && (s[j].isLetterOrDigit() || s[j] == '_' || s[j] == '.')) j++
                         tokens.add(Token.Variable(s.substring(i + 1, j)))
                         i = j
                     }
                     c == '\'' || c == '"' -> {
                         // 字符串字面量
-    val quote = c
+                        val quote = c
                         val sb = StringBuilder()
-        var j = i + 1
+                        var j = i + 1
                         while (j < s.length && s[j] != quote) {
                             if (s[j] == '\\' && j + 1 < s.length) {
                                 sb.append(when (s[j + 1]) {
@@ -149,19 +151,19 @@ class ExpressionEvaluator {
                     }
                     c.isDigit() || (c == '-' && i + 1 < s.length && s[i + 1].isDigit() && (tokens.isEmpty() || tokens.last() is Token.Operator)) -> {
                         // 数字
-    var j = if (c == '-') i + 1 else i
+                        var j = if (c == '-') i + 1 else i
                         var hasDot = false
                         while (j < s.length && (s[j].isDigit() || s[j] == '.')) {
                             if (s[j] == '.') hasDot = true
                             j++
                         }
-        val numStr = s.substring(i, j)
+                        val numStr = s.substring(i, j)
                         tokens.add(Token.NumberLiteral(if (hasDot) numStr.toDouble() else numStr.toLong().toDouble()))
                         i = j
                     }
                     c.isLetter() || c == '_' -> {
                         // 标识符 / 关键字
-    var j = i
+                        var j = i
                         while (j < s.length && (s[j].isLetterOrDigit() || s[j] == '_')) j++
                         val word = s.substring(i, j)
                         tokens.add(when (word.lowercase()) {
@@ -212,11 +214,12 @@ class ExpressionEvaluator {
                     else -> throw IllegalArgumentException("无法识别的字符: $c (位置 $i)")
                 }
             }
-        return tokens
+            return tokens
         }
     }
 
     // ============ Token ============
+
     sealed class Token {
         data class Variable(val path: String) : Token()
         data class StringLiteral(val value: String) : Token()
@@ -234,6 +237,7 @@ class ExpressionEvaluator {
     }
 
     // ============ AST ============
+
     sealed class ASTNode {
         abstract fun eval(context: Map<String, Any>): Any?
 
@@ -244,22 +248,22 @@ class ExpressionEvaluator {
         data class VariableRef(val path: String) : ASTNode() {
             override fun eval(context: Map<String, Any>): Any? {
                 val parts = path.split(".")
-        var current: Any? = context[parts[0]] ?: context["__node_${parts[0]}_output"]
+                var current: Any? = context[parts[0]] ?: context["__node_${parts[0]}_output"]
                 for (i in 1 until parts.size) {
                     current = when (current) {
                         is Map<*, *> -> current[parts[i]]
                         else -> return null
                     }
                 }
-        return current
+                return current
             }
         }
 
         data class BinaryOp(val op: String, val left: ASTNode, val right: ASTNode) : ASTNode() {
             override fun eval(context: Map<String, Any>): Any? {
                 val l = left.eval(context)
-        val r = right.eval(context)
-        return when (op) {
+                val r = right.eval(context)
+                return when (op) {
                     "+" -> when {
                         l is Number && r is Number -> l.toDouble() + r.toDouble()
                         else -> (l?.toString() ?: "") + (r?.toString() ?: "")
@@ -280,13 +284,15 @@ class ExpressionEvaluator {
                     else -> throw IllegalStateException("未知运算符: $op")
                 }
             }
-        private fun cmp(l: Any?, r: Any?): Int {
+
+            private fun cmp(l: Any?, r: Any?): Int {
                 return when {
                     l is Number && r is Number -> l.toDouble().compareTo(r.toDouble())
                     else -> (l?.toString() ?: "").compareTo(r?.toString() ?: "")
                 }
             }
-        private fun toBool(v: Any?): Boolean = when (v) {
+
+            private fun toBool(v: Any?): Boolean = when (v) {
                 is Boolean -> v
                 is Number -> v.toDouble() != 0.0
                 is String -> v.lowercase() in setOf("true", "1", "yes", "on")
@@ -298,7 +304,7 @@ class ExpressionEvaluator {
         data class UnaryOp(val op: String, val operand: ASTNode) : ASTNode() {
             override fun eval(context: Map<String, Any>): Any? {
                 val v = operand.eval(context)
-        return when (op) {
+                return when (op) {
                     "!" -> when (v) {
                         is Boolean -> !v
                         is Number -> v.toDouble() == 0.0
@@ -315,8 +321,8 @@ class ExpressionEvaluator {
         data class MethodCall(val receiver: ASTNode, val method: String, val args: List<ASTNode>) : ASTNode() {
             override fun eval(context: Map<String, Any>): Any? {
                 val recv = receiver.eval(context)?.toString() ?: ""
-        val argVals = args.map { it.eval(context) }
-        return when (method.lowercase()) {
+                val argVals = args.map { it.eval(context) }
+                return when (method.lowercase()) {
                     "contains" -> recv.contains(argVals.firstOrNull()?.toString() ?: "")
                     "startswith" -> recv.startsWith(argVals.firstOrNull()?.toString() ?: "")
                     "endswith" -> recv.endsWith(argVals.firstOrNull()?.toString() ?: "")
@@ -328,7 +334,7 @@ class ExpressionEvaluator {
                     "replace" -> recv.replace(argVals[0]?.toString() ?: "", argVals.getOrNull(1)?.toString() ?: "")
                     "substring" -> {
                         val start = (argVals[0] as Number).toInt()
-        val end = (argVals.getOrNull(1) as? Number)?.toInt() ?: recv.length
+                        val end = (argVals.getOrNull(1) as? Number)?.toInt() ?: recv.length
                         recv.substring(start, end)
                     }
                     "indexof" -> recv.indexOf(argVals.firstOrNull()?.toString() ?: "")
@@ -340,19 +346,20 @@ class ExpressionEvaluator {
         data class Ternary(val condition: ASTNode, val thenBranch: ASTNode, val elseBranch: ASTNode) : ASTNode() {
             override fun eval(context: Map<String, Any>): Any? {
                 val cond = condition.eval(context)
-        val isTrue = when (cond) {
+                val isTrue = when (cond) {
                     is Boolean -> cond
                     is Number -> cond.toDouble() != 0.0
                     is String -> cond.lowercase() in setOf("true", "1", "yes", "on")
                     null -> false
                     else -> true
                 }
-        return if (isTrue) thenBranch.eval(context) else elseBranch.eval(context)
+                return if (isTrue) thenBranch.eval(context) else elseBranch.eval(context)
             }
         }
     }
 
     // ============ Parser ============
+
     private class Parser {
         private var tokens: List<Token> = emptyList()
         private var pos = 0
@@ -362,53 +369,59 @@ class ExpressionEvaluator {
             this.pos = 0
             val node = parseTernary()
             require(pos == tokens.size) { "未消费的 token: ${tokens.drop(pos)}" }
-        return node
+            return node
         }
+
         private fun peek(): Token? = tokens.getOrNull(pos)
         private fun next(): Token = tokens[pos++]
         private fun match(vararg types: Token): Boolean {
             val t = peek() ?: return false
             return types.any { it == t || it::class == t::class }
         }
+
         private fun parseTernary(): ASTNode {
             val cond = parseNullCoalesce()
-        if (peek() is Token.QuestionMark) {
+            if (peek() is Token.QuestionMark) {
                 next()
-        val thenBranch = parseTernary()
+                val thenBranch = parseTernary()
                 require(peek() is Token.Colon) { "三元运算符缺少 :" }
                 next()
-        val elseBranch = parseTernary()
-        return ASTNode.Ternary(cond, thenBranch, elseBranch)
+                val elseBranch = parseTernary()
+                return ASTNode.Ternary(cond, thenBranch, elseBranch)
             }
-        return cond
+            return cond
         }
+
         private fun parseNullCoalesce(): ASTNode {
             var left = parseLogicalOr()
             while (peek() is Token.Operator && (peek() as Token.Operator).op == "??") {
                 next()
-        val right = parseLogicalOr()
+                val right = parseLogicalOr()
                 left = ASTNode.BinaryOp("??", left, right)
             }
-        return left
+            return left
         }
+
         private fun parseLogicalOr(): ASTNode {
             var left = parseLogicalAnd()
             while (peek() is Token.Operator && (peek() as Token.Operator).op == "||") {
                 next()
-        val right = parseLogicalAnd()
+                val right = parseLogicalAnd()
                 left = ASTNode.BinaryOp("||", left, right)
             }
-        return left
+            return left
         }
+
         private fun parseLogicalAnd(): ASTNode {
             var left = parseEquality()
             while (peek() is Token.Operator && (peek() as Token.Operator).op == "&&") {
                 next()
-        val right = parseEquality()
+                val right = parseEquality()
                 left = ASTNode.BinaryOp("&&", left, right)
             }
-        return left
+            return left
         }
+
         private fun parseEquality(): ASTNode {
             var left = parseComparison()
             while (peek() is Token.Operator && (peek() as Token.Operator).op in setOf("==", "!=")) {
@@ -416,8 +429,9 @@ class ExpressionEvaluator {
                 val right = parseComparison()
                 left = ASTNode.BinaryOp(op, left, right)
             }
-        return left
+            return left
         }
+
         private fun parseComparison(): ASTNode {
             var left = parseAdditive()
             while (peek() is Token.Operator && (peek() as Token.Operator).op in setOf(">", "<", ">=", "<=")) {
@@ -425,8 +439,9 @@ class ExpressionEvaluator {
                 val right = parseAdditive()
                 left = ASTNode.BinaryOp(op, left, right)
             }
-        return left
+            return left
         }
+
         private fun parseAdditive(): ASTNode {
             var left = parseMultiplicative()
             while (peek() is Token.Operator && (peek() as Token.Operator).op in setOf("+", "-")) {
@@ -434,8 +449,9 @@ class ExpressionEvaluator {
                 val right = parseMultiplicative()
                 left = ASTNode.BinaryOp(op, left, right)
             }
-        return left
+            return left
         }
+
         private fun parseMultiplicative(): ASTNode {
             var left = parseUnary()
             while (peek() is Token.Operator && (peek() as Token.Operator).op in setOf("*", "/", "%")) {
@@ -443,27 +459,29 @@ class ExpressionEvaluator {
                 val right = parseUnary()
                 left = ASTNode.BinaryOp(op, left, right)
             }
-        return left
+            return left
         }
+
         private fun parseUnary(): ASTNode {
             if (peek() is Token.Operator && (peek() as Token.Operator).op in setOf("!", "-")) {
                 val op = (next() as Token.Operator).op
                 val operand = parseUnary()
-        return ASTNode.UnaryOp(op, operand)
+                return ASTNode.UnaryOp(op, operand)
             }
-        return parsePostfix()
+            return parsePostfix()
         }
+
         private fun parsePostfix(): ASTNode {
             var node = parsePrimary()
             while (true) {
                 when {
                     peek() is Token.Dot -> {
                         next()
-        val ident = next() as Token.Identifier
+                        val ident = next() as Token.Identifier
                         if (peek() is Token.LParen) {
                             next()
-        val args = mutableListOf<ASTNode>()
-        if (peek() !is Token.RParen) {
+                            val args = mutableListOf<ASTNode>()
+                            if (peek() !is Token.RParen) {
                                 args.add(parseTernary())
                                 while (peek() is Token.Comma) {
                                     next()
@@ -475,7 +493,7 @@ class ExpressionEvaluator {
                             node = ASTNode.MethodCall(node, ident.name, args)
                         } else {
                             // 属性访问 - 视为变量路径的一部分
-    val path = when (node) {
+                            val path = when (node) {
                                 is ASTNode.VariableRef -> node.path + "." + ident.name
                                 else -> ident.name
                             }
@@ -485,8 +503,9 @@ class ExpressionEvaluator {
                     else -> break
                 }
             }
-        return node
+            return node
         }
+
         private fun parsePrimary(): ASTNode {
             return when (val t = peek()) {
                 is Token.Variable -> { next(); ASTNode.VariableRef(t.path) }
@@ -496,7 +515,7 @@ class ExpressionEvaluator {
                 Token.NullLiteral -> { next(); ASTNode.Literal(null) }
                 is Token.LParen -> {
                     next()
-        val node = parseTernary()
+                    val node = parseTernary()
                     require(peek() is Token.RParen) { "缺少 )" }
                     next()
                     node

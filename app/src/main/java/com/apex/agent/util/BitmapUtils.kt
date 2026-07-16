@@ -154,7 +154,7 @@ object BitmapUtils {
     fun base64ToBitmap(base64: String): Bitmap? {
         return try {
             val bytes = Base64.decode(base64, Base64.DEFAULT)
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
         } catch (e: Exception) {
             null
         }
@@ -184,7 +184,7 @@ object BitmapUtils {
         var inSampleSize = 1
         if (height > reqHeight || width > reqWidth) {
             val halfHeight = height / 2
-        val halfWidth = width / 2
+            val halfWidth = width / 2
             while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
                 inSampleSize *= 2
             }
@@ -205,10 +205,10 @@ object BitmapUtils {
             val options = BitmapFactory.Options().apply {
                 inJustDecodeBounds = true
                 BitmapFactory.decodeFile(filePath, this)
-        inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
-        inJustDecodeBounds = false
+                inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
+                inJustDecodeBounds = false
             }
-        BitmapFactory.decodeFile(filePath, options)
+            BitmapFactory.decodeFile(filePath, options)
         } catch (e: Exception) {
             null
         }
@@ -228,10 +228,10 @@ object BitmapUtils {
             val options = BitmapFactory.Options().apply {
                 inJustDecodeBounds = true
                 BitmapFactory.decodeResource(res, resId, this)
-        inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
-        inJustDecodeBounds = false
+                inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
+                inJustDecodeBounds = false
             }
-        BitmapFactory.decodeResource(res, resId, options)
+            BitmapFactory.decodeResource(res, resId, options)
         } catch (e: Exception) {
             null
         }
@@ -306,10 +306,12 @@ object BitmapUtils {
         val result = bitmap.copy(Bitmap.Config.ARGB_8888, true)
         val canvas = Canvas(result)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
         val wmWidth = watermark.width
         val wmHeight = watermark.height
         val horizontalGravity = position and android.view.Gravity.HORIZONTAL_GRAVITY_MASK
         val verticalGravity = position and android.view.Gravity.VERTICAL_GRAVITY_MASK
+
         val x = when (horizontalGravity) {
             android.view.Gravity.LEFT -> margin
             android.view.Gravity.RIGHT -> bitmap.width - wmWidth - margin

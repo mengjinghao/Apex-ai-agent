@@ -2,11 +2,6 @@ package com.apex.agent.core.memory.apex.core
 
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import com.apex.agent.core.memory.apex.burst.BurstModeMemory
-import com.apex.agent.core.memory.apex.multiagent.MultiAgentMemory
-import com.apex.agent.core.memory.apex.normal.NormalAgentMemory
-import com.apex.agent.core.memory.apex.skills.SkillToolMemory
-import com.apex.agent.core.memory.apex.web.WebAutomationMemory
 
 /**
  * Apex 记忆系统 — 5 大模块架构。

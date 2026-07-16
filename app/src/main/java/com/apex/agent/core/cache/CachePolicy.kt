@@ -39,7 +39,7 @@ sealed class CachePolicy {
         /** 按最后访问时间升序排序，返回需要淘汰的条目 */
         fun evictCandidates(entries: Collection<CacheEntry<*>>): List<CacheEntry<*>> {
             if (entries.size <= maxSize) return emptyList()
-        return entries.sortedBy { it.lastAccessedAt }
+            return entries.sortedBy { it.lastAccessedAt }
                 .take(entries.size - maxSize)
         }
     }
@@ -72,7 +72,7 @@ sealed class CachePolicy {
         /** 按创建时间升序排序，返回需要淘汰的条目 */
         fun evictCandidates(entries: Collection<CacheEntry<*>>): List<CacheEntry<*>> {
             if (entries.size <= maxSize) return emptyList()
-        return entries.sortedBy { it.createdAt }
+            return entries.sortedBy { it.createdAt }
                 .take(entries.size - maxSize)
         }
     }
@@ -89,7 +89,7 @@ sealed class CachePolicy {
     ) : CachePolicy() {
         init {
             require(policies.isNotEmpty()) { "HybridPolicy requires at least one sub-policy" }
-        require(policies.values.all { it > 0 }) { "All weights must be positive" }
+            require(policies.values.all { it > 0 }) { "All weights must be positive" }
         }
 
         /**
@@ -104,22 +104,22 @@ sealed class CachePolicy {
                         val age = System.currentTimeMillis() - entry.createdAt
                         (age.toDouble() / policy.duration) * weight
                     }
-        is LruPolicy -> {
+                    is LruPolicy -> {
                         val idle = System.currentTimeMillis() - entry.lastAccessedAt
                         (idle.toDouble() / 1_000_000) * weight
                     }
-        is LfuPolicy -> {
+                    is LfuPolicy -> {
                         (1.0 / (entry.hitCount + 1)) * weight
                     }
-        is FifoPolicy -> {
+                    is FifoPolicy -> {
                         (System.currentTimeMillis() - entry.createdAt).toDouble() * weight
                     }
-        is HybridPolicy -> {
+                    is HybridPolicy -> {
                         (policy as CachePolicy).let { this.evictionScore(entry) } * weight
                     }
                 }
             }
-        return score
+            return score
         }
     }
 }

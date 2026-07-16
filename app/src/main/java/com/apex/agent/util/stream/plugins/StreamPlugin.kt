@@ -18,7 +18,7 @@ enum class PluginState {
 }
 
 /**
- * 流处理插件接取* 用于实现各种针对字符流的处理逻辑
+ * 流处理插件接�?* 用于实现各种针对字符流的处理逻辑
  */
 interface StreamPlugin {
     /**
@@ -28,17 +28,12 @@ interface StreamPlugin {
     val state: PluginState
     
     /**
-     * 处理单个字符，并决定是否应将其发射到流中，
-    * @param c 要处理的字符
-     * @param atStartOfLine 标记字符是否位于一行的开，
-    * @return 如果该字符应被包含在最终的组流中，则返回`true`；如果希望过滤掉（不发射），则返回`false`，
-    */
+     * 处理单个字符，并决定是否应将其发射到流中�?    * @param c 要处理的字符
+     * @param atStartOfLine 标记字符是否位于一行的开�?    * @return 如果该字符应被包含在最终的组流中，则返回`true`；如果希望过滤掉（不发射），则返回`false`�?    */
     fun processChar(c: Char, atStartOfLine: Boolean): Boolean
     
     /**
-     * 初始化插，
-    * @return 是否初始化成务
-    */
+     * 初始化插�?    * @return 是否初始化成�?    */
     fun initPlugin(): Boolean
     
     /**
@@ -47,7 +42,6 @@ interface StreamPlugin {
     fun destroy()
     
     /**
-     * 重置插件状态
-    */
+     * 重置插件状�?    */
     fun reset()
 } 

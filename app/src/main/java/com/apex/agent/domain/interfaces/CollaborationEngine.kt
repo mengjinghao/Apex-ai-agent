@@ -5,7 +5,7 @@ package com.apex.agent.domain.interfaces
  */
 sealed class CollaborationResult<out T> {
     data class Success<T>(val data: T) : CollaborationResult<T>()
-        data class Failure(val error: CollaborationError) : CollaborationResult<Nothing>()
+    data class Failure(val error: CollaborationError) : CollaborationResult<Nothing>()
 }
 
 /**
@@ -62,7 +62,7 @@ interface ICollaborationEngine {
     suspend fun unregisterAgent(agentId: String): Boolean
     suspend fun getAvailableAgents(): List<AgentCapability>
     fun addListener(listener: CollaborationListener)
-        fun removeListener(listener: CollaborationListener)
+    fun removeListener(listener: CollaborationListener)
 }
 
 /**
@@ -70,10 +70,10 @@ interface ICollaborationEngine {
  */
 interface CollaborationListener {
     fun onTaskStarted(taskId: String, agentId: String)
-        fun onTaskProgress(taskId: String, progress: Float, message: String)
-        fun onTaskCompleted(taskId: String, result: String)
-        fun onTaskFailed(taskId: String, error: String)
-        fun onAgentStatusChanged(agentId: String, status: AgentStatus)
+    fun onTaskProgress(taskId: String, progress: Float, message: String)
+    fun onTaskCompleted(taskId: String, result: String)
+    fun onTaskFailed(taskId: String, error: String)
+    fun onAgentStatusChanged(agentId: String, status: AgentStatus)
 }
 
 /**

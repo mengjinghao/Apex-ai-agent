@@ -148,7 +148,8 @@ sealed class AppError(
     ) : AppError(code, message) {
         val cause: Throwable? = cause
     }
-        companion object {
+
+    companion object {
         /**
          * 根据 Throwable 类型自动匹配合适的 AppError。
          *
@@ -164,23 +165,23 @@ sealed class AppError(
             is SocketTimeoutException -> TimeoutError(
                 message = throwable.message ?: "连接超时"
             )
-        is ConnectException -> NetworkError(
+            is ConnectException -> NetworkError(
                 message = throwable.message ?: "连接失败",
                 cause = throwable
             )
-        is UnknownHostException -> NetworkError(
+            is UnknownHostException -> NetworkError(
                 message = "无法解析服务器地址",
                 cause = throwable
             )
-        is SSLException -> NetworkError(
+            is SSLException -> NetworkError(
                 message = "SSL 连接错误",
                 cause = throwable
             )
-        is IOException -> NetworkError(
+            is IOException -> NetworkError(
                 message = throwable.message ?: "网络错误",
                 cause = throwable
             )
-        else -> UnknownError(
+            else -> UnknownError(
                 message = throwable.message ?: "未知错误",
                 cause = throwable
             )

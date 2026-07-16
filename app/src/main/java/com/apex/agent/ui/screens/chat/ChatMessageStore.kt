@@ -16,7 +16,7 @@ import java.io.File
 class ChatMessageStore(context: Context) {
 
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
-        private val dir = File(context.filesDir, "apex-chat-messages").apply { mkdirs() }
+    private val dir = File(context.filesDir, "apex-chat-messages").apply { mkdirs() }
 
     /** 保存会话消息。 */
     fun save(sessionId: String, messages: List<PersistedMessage>) {
@@ -31,8 +31,8 @@ class ChatMessageStore(context: Context) {
     fun load(sessionId: String): List<PersistedMessage> {
         return try {
             val file = File(dir, "$sessionId.json")
-        if (!file.exists()) return emptyList()
-        json.decodeFromString(file.readText())
+            if (!file.exists()) return emptyList()
+            json.decodeFromString(file.readText())
         } catch (_: Throwable) { emptyList() }
     }
 

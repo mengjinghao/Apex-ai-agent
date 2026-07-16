@@ -24,5 +24,5 @@ object TerminalThemes {
         TerminalTheme("monokai","Monokai",Color(0xFF272822),Color(0xFFF8F8F2),Color(0xFFF92672),Color(0xFFF8F8F2),Color(0xFF66D9EF),Color(0xFFF92672),Color(0xFFA6E22E),Color(0xFFE6DB74),Color(0xFFAE81FF),Color(0xFF75715E)),
         TerminalTheme("github_light","GitHub Light",Color(0xFFFFFFFF),Color(0xFF24292E),Color(0xFF0366D6),Color(0xFF24292E),Color(0xFF0366D6),Color(0xFFCB2431),Color(0xFF28A745),Color(0xFFD1A904),Color(0xFF6F42C1),Color(0xFF6A737D)),
     )
-        fun byId(id: String) = all.firstOrNull { it.id == id } ?: all.first()
+    fun byId(id: String) = all.firstOrNull { it.id == id } ?: all.first()
 }

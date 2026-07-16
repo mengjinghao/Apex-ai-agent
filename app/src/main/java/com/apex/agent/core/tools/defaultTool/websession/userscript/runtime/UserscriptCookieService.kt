@@ -27,12 +27,12 @@ internal data class UserscriptCookieRecord(
             .put("value", value)
             .also { json ->
                 domain?.let { json.put("domain", it) }
-        path?.let { json.put("path", it) }
-        url?.let { json.put("url", it) }
-        json.put("secure", secure)
-        json.put("httpOnly", httpOnly)
-        json.put("session", session)
-        expirationDate?.let { json.put("expirationDate", it) }
+                path?.let { json.put("path", it) }
+                url?.let { json.put("url", it) }
+                json.put("secure", secure)
+                json.put("httpOnly", httpOnly)
+                json.put("session", session)
+                expirationDate?.let { json.put("expirationDate", it) }
             }
 }
 
@@ -40,7 +40,8 @@ internal class UserscriptCookieService(
     private val cookieManager: CookieManager
 ) {
     private val mirror = ConcurrentHashMap<String, UserscriptCookieRecord>()
-        fun list(
+
+    fun list(
         details: JSONObject,
         fallbackUrl: String
     ): List<UserscriptCookieRecord> {
@@ -49,27 +50,28 @@ internal class UserscriptCookieService(
         val targetHost = targetUri?.host?.lowercase(Locale.ROOT)
         val targetPath = targetUri?.path?.ifBlank { "/" } ?: "/"
         val requestedName = details.optString("name").ifBlank { null }
+
         val visibleCookies =
             cookieManager.getCookie(targetUrl)
                 .orEmpty()
                 .split(';')
                 .mapNotNull { raw ->
                     val part = raw.trim()
-        if (part.isBlank() || !part.contains('=')) {
+                    if (part.isBlank() || !part.contains('=')) {
                         return@mapNotNull null
                     }
-        val name = part.substringBefore('=').trim()
-        val value = part.substringAfter('=', "")
-        if (name.isBlank()) {
+                    val name = part.substringBefore('=').trim()
+                    val value = part.substringAfter('=', "")
+                    if (name.isBlank()) {
                         return@mapNotNull null
                     }
-        val mirrored =
+                    val mirrored =
                         mirror.values.firstOrNull { record ->
                             record.name == name &&
                                 domainMatches(targetHost, record.domain) &&
                                 pathMatches(targetPath, record.path)
                         }
-        UserscriptCookieRecord(
+                    UserscriptCookieRecord(
                         name = name,
                         value = value,
                         domain = mirrored?.domain ?: targetHost,
@@ -81,6 +83,7 @@ internal class UserscriptCookieService(
                         url = mirrored?.url ?: targetUrl
                     )
                 }
+
         val merged =
             (visibleCookies + mirror.values.filter { record ->
                 domainMatches(targetHost, record.domain) &&
@@ -88,11 +91,13 @@ internal class UserscriptCookieService(
             }).distinctBy { cookie ->
                 listOf(cookie.name, cookie.domain.orEmpty(), cookie.path.orEmpty()).joinToString("::")
             }
+
         return merged.filter { cookie ->
             requestedName == null || cookie.name == requestedName
         }
     }
-        fun set(
+
+    fun set(
         details: JSONObject,
         fallbackUrl: String
     ): UserscriptCookieRecord {
@@ -107,30 +112,32 @@ internal class UserscriptCookieService(
         val httpOnly = details.optBoolean("httpOnly", false)
         val expirationDate = details.optDouble("expirationDate").takeIf { !it.isNaN() }
         val session = details.optBoolean("session", expirationDate == null)
+
         val cookieString =
             buildString {
                 append(name)
-        append('=')
-        append(value)
-        append("; Path=")
-        append(path)
-        domain?.takeIf { it.isNotBlank() }?.let {
+                append('=')
+                append(value)
+                append("; Path=")
+                append(path)
+                domain?.takeIf { it.isNotBlank() }?.let {
                     append("; Domain=")
-        append(it)
+                    append(it)
                 }
-        if (secure) {
+                if (secure) {
                     append("; Secure")
                 }
-        if (httpOnly) {
+                if (httpOnly) {
                     append("; HttpOnly")
                 }
-        if (expirationDate != null) {
+                if (expirationDate != null) {
                     append("; Expires=")
-        append(httpDate(expirationDate))
+                    append(httpDate(expirationDate))
                 }
             }
         cookieManager.setCookie(targetUrl, cookieString)
         flush()
+
         val record =
             UserscriptCookieRecord(
                 name = name,
@@ -146,7 +153,8 @@ internal class UserscriptCookieService(
         mirror[scopeKey(record)] = record
         return record
     }
-        fun delete(
+
+    fun delete(
         details: JSONObject,
         fallbackUrl: String
     ): Boolean {
@@ -159,12 +167,12 @@ internal class UserscriptCookieService(
         val cookieString =
             buildString {
                 append(name)
-        append("=; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT")
-        append("; Path=")
-        append(path)
-        domain?.takeIf { it.isNotBlank() }?.let {
+                append("=; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT")
+                append("; Path=")
+                append(path)
+                domain?.takeIf { it.isNotBlank() }?.let {
                     append("; Domain=")
-        append(it)
+                    append(it)
                 }
             }
         cookieManager.setCookie(targetUrl, cookieString)
@@ -176,23 +184,27 @@ internal class UserscriptCookieService(
         }
         return true
     }
-        private fun flush() {
+
+    private fun flush() {
         runCatching { cookieManager.flush() }
     }
-        private fun scopeKey(record: UserscriptCookieRecord): String =
+
+    private fun scopeKey(record: UserscriptCookieRecord): String =
         listOf(
             record.name,
             record.domain.orEmpty().lowercase(Locale.ROOT),
             record.path.orEmpty()
         ).joinToString("::")
-        private fun httpDate(epochSeconds: Double): String {
+
+    private fun httpDate(epochSeconds: Double): String {
         val formatter =
             SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).apply {
                 timeZone = TimeZone.getTimeZone("GMT")
             }
         return formatter.format(Date((epochSeconds * 1000.0).toLong()))
     }
-        private fun domainMatches(
+
+    private fun domainMatches(
         host: String?,
         domain: String?
     ): Boolean {
@@ -203,7 +215,8 @@ internal class UserscriptCookieService(
         val normalizedHost = host?.lowercase(Locale.ROOT) ?: return false
         return normalizedHost == normalizedDomain || normalizedHost.endsWith(".${normalizedDomain}")
     }
-        private fun pathMatches(
+
+    private fun pathMatches(
         path: String,
         cookiePath: String?
     ): Boolean {

@@ -16,7 +16,7 @@ import java.util.TimeZone
 object TimeUtils {
 
     private const val DEFAULT_PATTERN = "yyyy-MM-dd HH:mm:ss"
-        private val defaultZoneId: ZoneId get() = ZoneId.systemDefault()
+    private val defaultZoneId: ZoneId get() = ZoneId.systemDefault()
 
     /**
      * 获取当前时间戳（毫秒）。
@@ -42,7 +42,7 @@ object TimeUtils {
     fun formatTimestamp(millis: Long, pattern: String = DEFAULT_PATTERN): String {
         return try {
             val formatter = DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), defaultZoneId).format(formatter)
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), defaultZoneId).format(formatter)
         } catch (_: Exception) {
             ""
         }
@@ -59,8 +59,8 @@ object TimeUtils {
     fun formatTimestamp(millis: Long, pattern: String, timeZone: TimeZone): String {
         return try {
             val formatter = DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
-        val zoneId = timeZone.toZoneId()
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), zoneId).format(formatter)
+            val zoneId = timeZone.toZoneId()
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), zoneId).format(formatter)
         } catch (_: Exception) {
             ""
         }
@@ -76,8 +76,8 @@ object TimeUtils {
     fun parseTimestamp(dateString: String, pattern: String = DEFAULT_PATTERN): Long? {
         return try {
             val formatter = DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
-        val localDateTime = LocalDateTime.parse(dateString, formatter)
-        localDateTime.atZone(defaultZoneId).toInstant().toEpochMilli()
+            val localDateTime = LocalDateTime.parse(dateString, formatter)
+            localDateTime.atZone(defaultZoneId).toInstant().toEpochMilli()
         } catch (_: Exception) {
             null
         }
@@ -187,6 +187,7 @@ object TimeUtils {
         val diff = now - millis
 
         if (diff < 0) return "刚刚"
+
         val seconds = diff / 1000
         val minutes = seconds / 60
         val hours = minutes / 60
@@ -194,13 +195,13 @@ object TimeUtils {
 
         return when {
             seconds < 60 -> "刚刚"
-        minutes < 60 -> "${minutes}分钟前"
-        hours < 24 -> "${hours}小时前"
-        days == 1L -> "昨天"
-        days < 7 -> "${days}天前"
-        days < 30 -> "${days / 7}周前"
-        days < 365 -> "${days / 30}个月前"
-        else -> "${days / 365}年前"
+            minutes < 60 -> "${minutes}分钟前"
+            hours < 24 -> "${hours}小时前"
+            days == 1L -> "昨天"
+            days < 7 -> "${days}天前"
+            days < 30 -> "${days / 7}周前"
+            days < 365 -> "${days / 30}个月前"
+            else -> "${days / 365}年前"
         }
     }
 

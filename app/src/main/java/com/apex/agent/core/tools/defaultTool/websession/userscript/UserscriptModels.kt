@@ -6,7 +6,8 @@ internal enum class UserscriptRunAt(val rawValue: String) {
     DOCUMENT_START("document-start"),
     DOCUMENT_END("document-end"),
     DOCUMENT_IDLE("document-idle");
-        companion object {
+
+    companion object {
         fun fromRaw(raw: String): UserscriptRunAt =
             entries.firstOrNull { it.rawValue.equals(raw?.trim(), ignoreCase = true) }
                 ?: DOCUMENT_END

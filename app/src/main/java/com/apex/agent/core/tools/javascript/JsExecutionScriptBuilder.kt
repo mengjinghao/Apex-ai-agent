@@ -10,30 +10,30 @@ private fun buildExecutionPreludeSource(): String {
             var root = typeof globalThis !== 'undefined'
                 ? globalThis
                 : (typeof window !== 'undefined' ? window : this);
-        var runtime =
+            var runtime =
                 root &&
                 root.__Apex_call_runtime_ref &&
                 typeof root.__Apex_call_runtime_ref === 'object'
                     ? root.__Apex_call_runtime_ref
                     : __Apex_call_runtime;
-        return runtime && typeof runtime === 'object' ? runtime : __Apex_call_runtime;
+            return runtime && typeof runtime === 'object' ? runtime : __Apex_call_runtime;
         }
         function __ApexInvokeCallRuntime(methodName, argsLike) {
             var runtime = __ApexGetActiveCallRuntime();
-        var method = runtime ? runtime[methodName] : undefined;
-        if (typeof method !== 'function') {
+            var method = runtime ? runtime[methodName] : undefined;
+            if (typeof method !== 'function') {
                 return undefined;
             }
-        return method.apply(runtime, Array.prototype.slice.call(argsLike || []));
+            return method.apply(runtime, Array.prototype.slice.call(argsLike || []));
         }
         function __ApexInvokeCallRuntimeConsole(methodName, argsLike) {
             var runtime = __ApexGetActiveCallRuntime();
-        var runtimeConsole = runtime && runtime.console ? runtime.console : null;
-        var method = runtimeConsole ? runtimeConsole[methodName] : undefined;
-        if (typeof method !== 'function') {
+            var runtimeConsole = runtime && runtime.console ? runtime.console : null;
+            var method = runtimeConsole ? runtimeConsole[methodName] : undefined;
+            if (typeof method !== 'function') {
                 return undefined;
             }
-        return method.apply(runtimeConsole, Array.prototype.slice.call(argsLike || []));
+            return method.apply(runtimeConsole, Array.prototype.slice.call(argsLike || []));
         }
         var sendIntermediateResult = function() { return __ApexInvokeCallRuntime('sendIntermediateResult', arguments); };
         var emit = function() { return __ApexInvokeCallRuntime('emit', arguments); };
@@ -82,29 +82,33 @@ private fun buildExecutionPreludeSource(): String {
 
 internal fun buildExecutionRuntimeBridgeScript(): String {
     val preludeSource = JSONObject.quote(buildExecutionPreludeSource())
-        return """
+    return """
         (function() {
             var root = typeof globalThis !== 'undefined'
                 ? globalThis
                 : (typeof window !== 'undefined' ? window : this);
-        if (typeof root.${TOOLPKG_EXECUTION_ENTRY_FUNCTION} === 'function') {
+            if (typeof root.${TOOLPKG_EXECUTION_ENTRY_FUNCTION} === 'function') {
                 return;
             }
-        var runtimePrelude = ${preludeSource};
-        function text(value) {
+
+            var runtimePrelude = ${preludeSource};
+
+            function text(value) {
                 return value == null ? '' : String(value);
             }
-        function toBoolean(value) {
+
+            function toBoolean(value) {
                 if (value === true || value === false) {
                     return value;
                 }
-        if (typeof value === 'string') {
+                if (typeof value === 'string') {
                     var normalized = value.trim().toLowerCase();
-        return normalized === 'true' || normalized === '1';
+                    return normalized === 'true' || normalized === '1';
                 }
-        return !!value;
+                return !!value;
             }
-        function safeSerialize(value) {
+
+            function safeSerialize(value) {
                 try {
                     return JSON.stringify(value);
                 } catch (error) {
@@ -115,57 +119,62 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                     });
                 }
             }
-        function getCallState(callId) {
+
+            function getCallState(callId) {
                 return typeof root.__ApexGetCallState === 'function'
                     ? root.__ApexGetCallState(callId)
                     : null;
             }
-        function normalizePath(pathValue) {
+
+            function normalizePath(pathValue) {
                 var parts = text(pathValue).replace(/\\/g, '/').split('/');
-        var stack = [];
-        for (var i = 0; i < parts.length; i += 1) {
+                var stack = [];
+                for (var i = 0; i < parts.length; i += 1) {
                     var part = parts[i];
-        if (!part || part === '.') {
+                    if (!part || part === '.') {
                         continue;
                     }
-        if (part === '..') {
+                    if (part === '..') {
                         if (stack.length > 0) {
                             stack.pop();
                         }
-        continue;
+                        continue;
                     }
-        stack.push(part);
+                    stack.push(part);
                 }
-        return stack.join('/');
+                return stack.join('/');
             }
-        function dirname(pathValue) {
+
+            function dirname(pathValue) {
                 var normalized = normalizePath(pathValue);
-        var index = normalized.lastIndexOf('/');
-        return index < 0 ? '' : normalized.slice(0, index);
+                var index = normalized.lastIndexOf('/');
+                return index < 0 ? '' : normalized.slice(0, index);
             }
-        function resolveModulePath(request, fromPath) {
+
+            function resolveModulePath(request, fromPath) {
                 var normalized = text(request).replace(/\\/g, '/').trim();
-        if (!normalized) {
+                if (!normalized) {
                     return '';
                 }
-        if (!(normalized.startsWith('.') || normalized.startsWith('/'))) {
+                if (!(normalized.startsWith('.') || normalized.startsWith('/'))) {
                     return normalized;
                 }
-        if (normalized.startsWith('/')) {
+                if (normalized.startsWith('/')) {
                     return normalizePath(normalized);
                 }
-        var base = dirname(fromPath);
-        return normalizePath(base ? base + '/' + normalized : normalized);
+                var base = dirname(fromPath);
+                return normalizePath(base ? base + '/' + normalized : normalized);
             }
-        function buildCandidatePaths(modulePath) {
+
+            function buildCandidatePaths(modulePath) {
                 var normalized = normalizePath(modulePath);
-        if (!normalized) {
+                if (!normalized) {
                     return [];
                 }
-        if (/\.[a-z0-9]+$/i.test(normalized)) {
+                if (/\.[a-z0-9]+$/i.test(normalized)) {
                     return [normalized];
                 }
-        return [
+                return [
                     normalized,
                     normalized + '.js',
                     normalized + '.json',
@@ -173,33 +182,39 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                     normalized + '/index.json'
                 ];
             }
-        function hashText(value) {
+
+            function hashText(value) {
                 var textValue = text(value);
-        var hash = 0;
-        for (var i = 0; i < textValue.length; i += 1) {
+                var hash = 0;
+                for (var i = 0; i < textValue.length; i += 1) {
                     hash = (((hash << 5) - hash) + textValue.charCodeAt(i)) | 0;
                 }
-        return (hash >>> 0).toString(16);
+                return (hash >>> 0).toString(16);
             }
-        function ensureFactoryCache() {
+
+            function ensureFactoryCache() {
                 if (!root.__ApexFactoryCache || typeof root.__ApexFactoryCache !== 'object') {
                     root.__ApexFactoryCache = Object.create(null);
                 }
-        return root.__ApexFactoryCache;
+                return root.__ApexFactoryCache;
             }
-        function ensureModuleInstanceCache() {
+
+            function ensureModuleInstanceCache() {
                 if (!root.__ApexModuleInstanceCache || typeof root.__ApexModuleInstanceCache !== 'object') {
                     root.__ApexModuleInstanceCache = Object.create(null);
                 }
-        return root.__ApexModuleInstanceCache;
+                return root.__ApexModuleInstanceCache;
             }
-        function buildFactoryKey(kind, identity, source) {
+
+            function buildFactoryKey(kind, identity, source) {
                 return [text(kind), text(identity), text(source).length, hashText(source)].join(':');
             }
-        function buildModuleInstanceKey(kind, identity, source) {
+
+            function buildModuleInstanceKey(kind, identity, source) {
                 return ['instance', text(kind), text(identity), text(source).length, hashText(source)].join(':');
             }
-        function createFactory(source) {
+
+            function createFactory(source) {
                 return new Function(
                     'module',
                     'exports',
@@ -208,47 +223,51 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                     runtimePrelude + '\n' + source
                 );
             }
-        function getFactory(kind, identity, source) {
+
+            function getFactory(kind, identity, source) {
                 var key = buildFactoryKey(kind, identity, source);
-        var cache = ensureFactoryCache();
-        if (typeof cache[key] === 'function') {
+                var cache = ensureFactoryCache();
+                if (typeof cache[key] === 'function') {
                     return cache[key];
                 }
-        var factory = createFactory(source);
-        cache[key] = factory;
-        return factory;
+                var factory = createFactory(source);
+                cache[key] = factory;
+                return factory;
             }
-        function tagModuleExports(modulePath, exportsRef) {
+
+            function tagModuleExports(modulePath, exportsRef) {
                 if (typeof exportsRef === 'function') {
                     try { exportsRef.__Apex_toolpkg_module_path = modulePath; } catch (_e) {}
-        return;
-                }
-        if (!exportsRef || typeof exportsRef !== 'object') {
                     return;
                 }
-        Object.keys(exportsRef).forEach(function(key) {
+                if (!exportsRef || typeof exportsRef !== 'object') {
+                    return;
+                }
+                Object.keys(exportsRef).forEach(function(key) {
                     if (typeof exportsRef[key] === 'function') {
                         try { exportsRef[key].__Apex_toolpkg_module_path = modulePath; } catch (_e) {}
                     }
                 });
             }
-        function createRegistrationScreenPlaceholder(modulePath) {
+
+            function createRegistrationScreenPlaceholder(modulePath) {
                 function ScreenPlaceholder() {
                     return null;
                 }
-        try { ScreenPlaceholder.__Apex_toolpkg_module_path = modulePath; } catch (_e) {}
-        return ScreenPlaceholder;
+                try { ScreenPlaceholder.__Apex_toolpkg_module_path = modulePath; } catch (_e) {}
+                return ScreenPlaceholder;
             }
-        function normalizeComposeResult(value) {
+
+            function normalizeComposeResult(value) {
                 if (!value || typeof value !== 'object' || !value.composeDsl || typeof value.composeDsl !== 'object') {
                     return value;
                 }
-        if (!Object.prototype.hasOwnProperty.call(value.composeDsl, 'screen')) {
+                if (!Object.prototype.hasOwnProperty.call(value.composeDsl, 'screen')) {
                     return value;
                 }
-        var screenRef = value.composeDsl.screen;
-        var resolved = '';
-        if (typeof screenRef === 'function') {
+                var screenRef = value.composeDsl.screen;
+                var resolved = '';
+                if (typeof screenRef === 'function') {
                     resolved = text(screenRef.__Apex_toolpkg_module_path).trim();
                 } else if (
                     screenRef &&
@@ -259,41 +278,44 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                 } else if (typeof screenRef === 'string') {
                     throw new Error('composeDsl.screen must be a compose_dsl screen function, not a string path');
                 }
-        if (!resolved) {
+                if (!resolved) {
                     throw new Error('composeDsl.screen is missing a toolpkg module path marker');
                 }
-        value.composeDsl.screen = resolved.replace(/\\/g, '/');
-        return value;
+                value.composeDsl.screen = resolved.replace(/\\/g, '/');
+                return value;
             }
-        function findTargetFunction(exportsRef, moduleRef, functionName) {
+
+            function findTargetFunction(exportsRef, moduleRef, functionName) {
                 if (exportsRef && typeof exportsRef[functionName] === 'function') {
                     return exportsRef[functionName];
                 }
-        if (moduleRef && moduleRef.exports && typeof moduleRef.exports[functionName] === 'function') {
+                if (moduleRef && moduleRef.exports && typeof moduleRef.exports[functionName] === 'function') {
                     return moduleRef.exports[functionName];
                 }
-        if (typeof root[functionName] === 'function') {
+                if (typeof root[functionName] === 'function') {
                     return root[functionName];
                 }
-        return null;
+                return null;
             }
-        function buildAvailableFunctions(exportsRef, moduleRef) {
+
+            function buildAvailableFunctions(exportsRef, moduleRef) {
                 var names = [];
-        function collect(target) {
+                function collect(target) {
                     if (!target || typeof target !== 'object') {
                         return;
                     }
-        Object.keys(target).forEach(function(key) {
+                    Object.keys(target).forEach(function(key) {
                         if (typeof target[key] === 'function' && names.indexOf(key) < 0) {
                             names.push(key);
                         }
                     });
                 }
-        collect(exportsRef);
-        collect(moduleRef && moduleRef.exports ? moduleRef.exports : null);
-        return names;
+                collect(exportsRef);
+                collect(moduleRef && moduleRef.exports ? moduleRef.exports : null);
+                return names;
             }
-        root.${TOOLPKG_EXECUTION_ENTRY_FUNCTION} = function(
+
+            root.${TOOLPKG_EXECUTION_ENTRY_FUNCTION} = function(
                 callId,
                 params,
                 scriptText,
@@ -305,58 +327,65 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                     typeof root.__ApexRegisterCallSession === 'function'
                         ? root.__ApexRegisterCallSession
                         : null;
-        if (typeof registerCallSession !== 'function') {
+                if (typeof registerCallSession !== 'function') {
                     NativeInterface.setCallError(callId, 'JS execution runtime bridge is unavailable');
-        return;
+                    return;
                 }
-        var safeTimeoutSec = Math.max(1, Number(timeoutSec) || 1);
-        var safePreTimeoutMs = Math.max(1000, Number(preTimeoutMs) || 1000);
-        var callState = registerCallSession(callId, params);
-        var previousCallId = root.__ApexCurrentCallId;
-        var previousCallRuntime = root.__Apex_call_runtime_ref;
-        root.__ApexCurrentCallId = callId;
-        function markStage(stage) {
+
+                var safeTimeoutSec = Math.max(1, Number(timeoutSec) || 1);
+                var safePreTimeoutMs = Math.max(1000, Number(preTimeoutMs) || 1000);
+                var callState = registerCallSession(callId, params);
+                var previousCallId = root.__ApexCurrentCallId;
+                var previousCallRuntime = root.__Apex_call_runtime_ref;
+                root.__ApexCurrentCallId = callId;
+
+                function markStage(stage) {
                     if (callState) {
                         callState.lastExecStage = text(stage);
                     }
                 }
-        function markFunction(name) {
+
+                function markFunction(name) {
                     if (callState) {
                         callState.lastExecFunction = text(name);
                     }
                 }
-        function markRequire(request, fromPath, resolvedPath) {
+
+                function markRequire(request, fromPath, resolvedPath) {
                     if (!callState) {
                         return;
                     }
-        callState.lastRequireRequest = text(request);
-        callState.lastRequireFrom = text(fromPath);
-        callState.lastRequireResolved = text(resolvedPath);
+                    callState.lastRequireRequest = text(request);
+                    callState.lastRequireFrom = text(fromPath);
+                    callState.lastRequireResolved = text(resolvedPath);
                 }
-        function markModule(modulePath) {
+
+                function markModule(modulePath) {
                     if (callState) {
                         callState.lastModulePath = text(modulePath);
                     }
                 }
-        function clearExecutionTimeouts() {
+
+                function clearExecutionTimeouts() {
                     if (!callState) {
                         return;
                     }
-        try {
+                    try {
                         if (callState.safetyTimeout) clearTimeout(callState.safetyTimeout);
-        if (callState.safetyTimeoutFinal) clearTimeout(callState.safetyTimeoutFinal);
+                        if (callState.safetyTimeoutFinal) clearTimeout(callState.safetyTimeoutFinal);
                     } catch (_e) {
                     }
-        callState.safetyTimeout = null;
-        callState.safetyTimeoutFinal = null;
+                    callState.safetyTimeout = null;
+                    callState.safetyTimeoutFinal = null;
                 }
-        function finalizeCall() {
+
+                function finalizeCall() {
                     clearExecutionTimeouts();
-        if (root.__ApexCurrentCallId === callId) {
+                    if (root.__ApexCurrentCallId === callId) {
                         root.__ApexCurrentCallId =
                             typeof previousCallId === 'string' ? previousCallId : '';
                     }
-        if (root.__Apex_call_runtime_ref === callRuntime) {
+                    if (root.__Apex_call_runtime_ref === callRuntime) {
                         if (
                             previousCallRuntime &&
                             typeof previousCallRuntime === 'object'
@@ -370,71 +399,80 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                             }
                         }
                     }
-        if (typeof root.__ApexCleanupCallSession === 'function') {
+                    if (typeof root.__ApexCleanupCallSession === 'function') {
                         root.__ApexCleanupCallSession(callId);
                     }
                 }
-        function isActive() {
+
+                function isActive() {
                     var state = getCallState(callId);
-        return !!(state && !state.completed);
+                    return !!(state && !state.completed);
                 }
-        function emitSerializedResult(resultText) {
+
+                function emitSerializedResult(resultText) {
                     var state = getCallState(callId);
-        if (!state || state.completed) {
+                    if (!state || state.completed) {
                         return;
                     }
-        state.completed = true;
-        NativeInterface.setCallResult(callId, resultText);
-        finalizeCall();
+                    state.completed = true;
+                    NativeInterface.setCallResult(callId, resultText);
+                    finalizeCall();
                 }
-        function emitError(message) {
+
+                function emitError(message) {
                     var state = getCallState(callId);
-        if (!state || state.completed) {
+                    if (!state || state.completed) {
                         return;
                     }
-        state.completed = true;
-        NativeInterface.setCallError(callId, text(message || 'Unknown error'));
-        finalizeCall();
+                    state.completed = true;
+                    NativeInterface.setCallError(callId, text(message || 'Unknown error'));
+                    finalizeCall();
                 }
-        function readCallValue(key, fallbackValue) {
+
+                function readCallValue(key, fallbackValue) {
                     var state = getCallState(callId);
-        var currentParams =
+                    var currentParams =
                         state && state.params && typeof state.params === 'object'
                             ? state.params
                             : null;
-        var value = currentParams ? currentParams[key] : undefined;
-        return value == null || value === '' ? fallbackValue : text(value);
+                    var value = currentParams ? currentParams[key] : undefined;
+                    return value == null || value === '' ? fallbackValue : text(value);
                 }
-        callState.safetyTimeout = setTimeout(function() {
+
+                callState.safetyTimeout = setTimeout(function() {
                     if (!isActive()) {
                         return;
                     }
-        callState.safetyTimeoutFinal = setTimeout(function() {
+                    callState.safetyTimeoutFinal = setTimeout(function() {
                         emitError('Script execution timed out after ' + safeTimeoutSec + ' seconds');
                     }, 5000);
                 }, safePreTimeoutMs);
-        function callRuntimeReport(error, context) {
+
+                function callRuntimeReport(error, context) {
                     if (typeof root.__ApexReportDetailedErrorForCall === 'function') {
                         return root.__ApexReportDetailedErrorForCall(callId, error, context);
                     }
-        return {
+                    return {
                         formatted: text(context) + ': ' + text(error),
                         details: { message: text(error), stack: text(error), lineNumber: 0 }
                     };
                 }
-        function emitIntermediate(value) {
+
+                function emitIntermediate(value) {
                     if (isActive()) {
                         NativeInterface.sendCallIntermediateResult(callId, safeSerialize(value));
                     }
                 }
-        function complete(value) {
+
+                function complete(value) {
                     emitSerializedResult(safeSerialize(normalizeComposeResult(value)));
                 }
-        function handleAsync(value) {
+
+                function handleAsync(value) {
                     if (!value || typeof value.then !== 'function') {
                         return false;
                     }
-        Promise.resolve(value)
+                    Promise.resolve(value)
                         .then(function(result) {
                             if (isActive()) {
                                 complete(result);
@@ -444,8 +482,8 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                             if (!isActive()) {
                                 return;
                             }
-        var report = callRuntimeReport(error, 'Async Promise Rejection');
-        emitError(
+                            var report = callRuntimeReport(error, 'Async Promise Rejection');
+                            emitError(
                                 report && report.formatted
                                     ? JSON.stringify({
                                         error: 'Promise rejection',
@@ -455,9 +493,10 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                                     : 'Promise rejection: ' + text(error && error.stack ? error.stack : error)
                             );
                         });
-        return true;
+                    return true;
                 }
-        function createRuntime() {
+
+                function createRuntime() {
                     return {
                         emit: emitIntermediate,
                         delta: emitIntermediate,
@@ -468,7 +507,7 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                         complete: complete,
                         getEnv: function(key) {
                             var value = NativeInterface.getEnvForCall(callId, text(key).trim());
-        return value == null || value === '' ? undefined : text(value);
+                            return value == null || value === '' ? undefined : text(value);
                         },
                         getState: function() { return readCallValue('__Apex_package_state', undefined); },
                         getLang: function() { return readCallValue('__Apex_package_lang', 'en'); },
@@ -485,13 +524,14 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                         }
                     };
                 }
-        var callRuntime = createRuntime();
-        root.__Apex_call_runtime_ref = callRuntime;
-        var registrationMode = toBoolean(readCallValue('__Apex_registration_mode', false));
-        var packageTarget =
+
+                var callRuntime = createRuntime();
+                root.__Apex_call_runtime_ref = callRuntime;
+                var registrationMode = toBoolean(readCallValue('__Apex_registration_mode', false));
+                var packageTarget =
                     readCallValue('__Apex_ui_package_name', '') ||
                     readCallValue('toolPkgId', '');
-        var screenPath = normalizePath(
+                var screenPath = normalizePath(
                     readCallValue(
                         '__Apex_script_screen',
                         params && params.moduleSpec && params.moduleSpec.screen
@@ -499,10 +539,11 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                             : ''
                     )
                 );
-        var moduleCache = registrationMode
+                var moduleCache = registrationMode
                     ? Object.create(null)
                     : ensureModuleInstanceCache();
-        function readToolPkgModule(modulePath) {
+
+                function readToolPkgModule(modulePath) {
                     if (
                         !packageTarget ||
                         typeof NativeInterface === 'undefined' ||
@@ -511,71 +552,77 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                     ) {
                         return null;
                     }
-        var candidates = buildCandidatePaths(modulePath);
-        for (var i = 0; i < candidates.length; i += 1) {
+                    var candidates = buildCandidatePaths(modulePath);
+                    for (var i = 0; i < candidates.length; i += 1) {
                         var candidate = candidates[i];
-        var textResult = NativeInterface.readToolPkgTextResource(packageTarget, candidate);
-        if (typeof textResult === 'string' && textResult.length > 0) {
+                        var textResult = NativeInterface.readToolPkgTextResource(packageTarget, candidate);
+                        if (typeof textResult === 'string' && textResult.length > 0) {
                             return { path: candidate, text: textResult };
                         }
                     }
-        return null;
+                    return null;
                 }
-        function executeModule(modulePath, moduleText, requireInternal) {
+
+                function executeModule(modulePath, moduleText, requireInternal) {
                     markStage('execute_required_module');
-        markModule(modulePath);
-        var moduleKey = buildModuleInstanceKey('module', packageTarget + ':' + modulePath, moduleText);
-        if (moduleCache[moduleKey]) {
+                    markModule(modulePath);
+
+                    var moduleKey = buildModuleInstanceKey('module', packageTarget + ':' + modulePath, moduleText);
+                    if (moduleCache[moduleKey]) {
                         return moduleCache[moduleKey].exports;
                     }
-        var module = { exports: {} };
-        moduleCache[moduleKey] = module;
-        if (/\.json$/i.test(modulePath)) {
+
+                    var module = { exports: {} };
+                    moduleCache[moduleKey] = module;
+
+                    if (/\.json$/i.test(modulePath)) {
                         try {
                             module.exports = JSON.parse(moduleText);
-        return module.exports;
+                            return module.exports;
                         } catch (error) {
                             delete moduleCache[moduleKey];
-        throw error;
+                            throw error;
                         }
                     }
-        var localRequire = function(nextName) {
+
+                    var localRequire = function(nextName) {
                         return requireInternal(nextName, modulePath);
                     };
-        var factory = getFactory('module', packageTarget + ':' + modulePath, moduleText);
-        var previousActiveModule = root.__ApexActiveModule;
-        var previousActiveExports = root.__ApexActiveModuleExports;
-        root.__ApexActiveModule = module;
-        root.__ApexActiveModuleExports = module.exports;
-        try {
+                    var factory = getFactory('module', packageTarget + ':' + modulePath, moduleText);
+                    var previousActiveModule = root.__ApexActiveModule;
+                    var previousActiveExports = root.__ApexActiveModuleExports;
+                    root.__ApexActiveModule = module;
+                    root.__ApexActiveModuleExports = module.exports;
+                    try {
                         factory(module, module.exports, localRequire, callRuntime);
                     } catch (error) {
                         delete moduleCache[moduleKey];
-        throw error;
+                        throw error;
                     } finally {
                         root.__ApexActiveModule = previousActiveModule;
-        root.__ApexActiveModuleExports = previousActiveExports;
+                        root.__ApexActiveModuleExports = previousActiveExports;
                     }
-        tagModuleExports(modulePath, module.exports);
-        return module.exports;
+                    tagModuleExports(modulePath, module.exports);
+                    return module.exports;
                 }
-        function requireInternal(moduleName, fromPath) {
+
+                function requireInternal(moduleName, fromPath) {
                     var request = text(moduleName).trim();
-        if (request === 'lodash') {
+                    if (request === 'lodash') {
                         return root._;
                     }
-        if (request === 'uuid') {
+                    if (request === 'uuid') {
                         return {
                             v4: function() {
                                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(char) {
                                     var random = Math.random() * 16 | 0;
-        var value = char === 'x' ? random : ((random & 0x3) | 0x8);
-        return value.toString(16);
+                                    var value = char === 'x' ? random : ((random & 0x3) | 0x8);
+                                    return value.toString(16);
                                 });
                             }
                         };
                     }
-        if (request === 'axios') {
+                    if (request === 'axios') {
                         return {
                             get: function(url, config) {
                                 return root.toolCall('http_request', config ? Object.assign({ url: url }, config) : { url: url });
@@ -585,112 +632,121 @@ internal fun buildExecutionRuntimeBridgeScript(): String {
                             }
                         };
                     }
-        if (!(request.startsWith('.') || request.startsWith('/'))) {
+                    if (!(request.startsWith('.') || request.startsWith('/'))) {
                         return {};
                     }
-        var resolvedPath = resolveModulePath(request, fromPath || screenPath);
-        markStage('require_module');
-        markRequire(request, fromPath || screenPath || '<root>', resolvedPath);
-        markModule(resolvedPath);
-        if (registrationMode && /(^|\/)ui\/.+\.ui\.js$/i.test(resolvedPath)) {
+
+                    var resolvedPath = resolveModulePath(request, fromPath || screenPath);
+                    markStage('require_module');
+                    markRequire(request, fromPath || screenPath || '<root>', resolvedPath);
+                    markModule(resolvedPath);
+
+                    if (registrationMode && /(^|\/)ui\/.+\.ui\.js$/i.test(resolvedPath)) {
                         return createRegistrationScreenPlaceholder(resolvedPath);
                     }
-        var loaded = readToolPkgModule(resolvedPath);
-        if (!loaded) {
+
+                    var loaded = readToolPkgModule(resolvedPath);
+                    if (!loaded) {
                         throw new Error(
                             'Cannot resolve module "' + request + '" from "' + (fromPath || screenPath || '<root>') + '"'
                         );
                     }
-        return executeModule(loaded.path, loaded.text, requireInternal);
+                    return executeModule(loaded.path, loaded.text, requireInternal);
                 }
-        try {
+
+                try {
                     markFunction(targetFunctionName);
-        var mainModuleIdentity = packageTarget + ':' + (screenPath || '<root>');
-        var mainModuleKey = buildModuleInstanceKey('main', mainModuleIdentity, scriptText);
-        var module = moduleCache[mainModuleKey];
-        var exports = module && module.exports ? module.exports : null;
-        var require = function(moduleName) {
+                    var mainModuleIdentity = packageTarget + ':' + (screenPath || '<root>');
+                    var mainModuleKey = buildModuleInstanceKey('main', mainModuleIdentity, scriptText);
+                    var module = moduleCache[mainModuleKey];
+                    var exports = module && module.exports ? module.exports : null;
+                    var require = function(moduleName) {
                         markStage('require_request');
-        markRequire(moduleName, screenPath || '<root>', '');
-        return requireInternal(moduleName, screenPath);
+                        markRequire(moduleName, screenPath || '<root>', '');
+                        return requireInternal(moduleName, screenPath);
                     };
-        if (!module) {
+
+                    if (!module) {
                         module = { exports: {} };
-        moduleCache[mainModuleKey] = module;
-        exports = module.exports;
-        markStage('compile_main_script');
-        var mainFactory = getFactory('main', packageTarget + ':' + screenPath, scriptText);
-        markStage('execute_main_script');
-        var previousActiveModule = root.__ApexActiveModule;
-        var previousActiveExports = root.__ApexActiveModuleExports;
-        root.__ApexActiveModule = module;
-        root.__ApexActiveModuleExports = exports;
-        try {
+                        moduleCache[mainModuleKey] = module;
+                        exports = module.exports;
+                        markStage('compile_main_script');
+                        var mainFactory = getFactory('main', packageTarget + ':' + screenPath, scriptText);
+                        markStage('execute_main_script');
+                        var previousActiveModule = root.__ApexActiveModule;
+                        var previousActiveExports = root.__ApexActiveModuleExports;
+                        root.__ApexActiveModule = module;
+                        root.__ApexActiveModuleExports = exports;
+                        try {
                             mainFactory(module, exports, require, callRuntime);
                         } catch (error) {
                             delete moduleCache[mainModuleKey];
-        throw error;
+                            throw error;
                         } finally {
                             root.__ApexActiveModule = previousActiveModule;
-        root.__ApexActiveModuleExports = previousActiveExports;
+                            root.__ApexActiveModuleExports = previousActiveExports;
                         }
                     } else {
                         if (exports == null) {
                             exports = {};
-        module.exports = exports;
+                            module.exports = exports;
                         }
-        markStage('reuse_main_script');
+                        markStage('reuse_main_script');
                     }
-        var rootExports = module.exports || exports || {};
-        tagModuleExports(screenPath || '<root>', rootExports);
-        var inlineFunctionName = readCallValue('__Apex_inline_function_name', '');
-        var inlineFunctionSource = readCallValue('__Apex_inline_function_source', '');
-        if (inlineFunctionName && inlineFunctionSource) {
+                    var rootExports = module.exports || exports || {};
+                    tagModuleExports(screenPath || '<root>', rootExports);
+
+                    var inlineFunctionName = readCallValue('__Apex_inline_function_name', '');
+                    var inlineFunctionSource = readCallValue('__Apex_inline_function_source', '');
+                    if (inlineFunctionName && inlineFunctionSource) {
                         markStage('evaluate_inline_hook_function');
-        var inlineFunction = eval('(' + inlineFunctionSource + ')');
-        if (typeof inlineFunction !== 'function') {
+                        var inlineFunction = eval('(' + inlineFunctionSource + ')');
+                        if (typeof inlineFunction !== 'function') {
                             throw new Error('inline hook source did not evaluate to function');
                         }
-        rootExports[inlineFunctionName] = inlineFunction;
-        module.exports[inlineFunctionName] = inlineFunction;
+                        rootExports[inlineFunctionName] = inlineFunction;
+                        module.exports[inlineFunctionName] = inlineFunction;
                     }
-        var targetFunction = findTargetFunction(rootExports, module, targetFunctionName);
-        if (typeof targetFunction !== 'function') {
+
+                    var targetFunction = findTargetFunction(rootExports, module, targetFunctionName);
+                    if (typeof targetFunction !== 'function') {
                         emitError(
                             "Function '" +
                                 targetFunctionName +
                                 "' not found in script. Available functions: " +
                                 buildAvailableFunctions(rootExports, module).join(', ')
                         );
-        return;
+                        return;
                     }
-        markStage('invoke_target_function');
-        var previousModule = callState.currentModule;
-        var previousExports = callState.currentModuleExports;
-        var previousActiveModule = root.__ApexActiveModule;
-        var previousActiveExports = root.__ApexActiveModuleExports;
-        callState.currentModule = module;
-        callState.currentModuleExports = rootExports;
-        root.__ApexActiveModule = module;
-        root.__ApexActiveModuleExports = rootExports;
-        var functionResult;
-        try {
+
+                    markStage('invoke_target_function');
+                    var previousModule = callState.currentModule;
+                    var previousExports = callState.currentModuleExports;
+                    var previousActiveModule = root.__ApexActiveModule;
+                    var previousActiveExports = root.__ApexActiveModuleExports;
+                    callState.currentModule = module;
+                    callState.currentModuleExports = rootExports;
+                    root.__ApexActiveModule = module;
+                    root.__ApexActiveModuleExports = rootExports;
+                    var functionResult;
+                    try {
                         functionResult = targetFunction(params);
                     } finally {
                         callState.currentModule = previousModule;
-        callState.currentModuleExports = previousExports;
-        root.__ApexActiveModule = previousActiveModule;
-        root.__ApexActiveModuleExports = previousActiveExports;
+                        callState.currentModuleExports = previousExports;
+                        root.__ApexActiveModule = previousActiveModule;
+                        root.__ApexActiveModuleExports = previousActiveExports;
                     }
-        markStage('handle_function_result');
-        if (!handleAsync(functionResult)) {
+
+                    markStage('handle_function_result');
+                    if (!handleAsync(functionResult)) {
                         complete(functionResult);
                     }
                 } catch (error) {
                     var runtimeContext = typeof root.__ApexBuildRuntimeContext === 'function'
                         ? text(root.__ApexBuildRuntimeContext(callId))
                         : '';
-        emitError(
+                    emitError(
                         'Script error: ' +
                             text(error && error.message ? error.message : error) +
                             (runtimeContext ? '\nRuntime Context: ' + runtimeContext : '') +

@@ -67,60 +67,65 @@ data class EnhancedNode(
         fun generateNodeId(): String =
             "enode_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}"
     }
-        fun validate(): ValidationResult {
+
+    fun validate(): ValidationResult {
         val errors = mutableListOf<String>()
+
         if (id.isBlank()) errors.add("节点 ID 不能为空")
         if (name.isBlank()) errors.add("节点名称不能为空")
+
         when (type) {
             EnhancedNodeType.TRIGGER -> {
                 if (config.triggerConfig == null) errors.add("触发节点需要 triggerConfig")
             }
-        EnhancedNodeType.EXECUTE -> {
+            EnhancedNodeType.EXECUTE -> {
                 if (config.actionType.isNullOrBlank()) errors.add("执行节点需要 actionType")
             }
-        EnhancedNodeType.CONDITION -> {
+            EnhancedNodeType.CONDITION -> {
                 if (config.left == null || config.operator == null) {
                     errors.add("条件节点需要 left/right 和 operator")
                 }
             }
-        EnhancedNodeType.LOGIC -> {
+            EnhancedNodeType.LOGIC -> {
                 if (config.operator == null) errors.add("逻辑节点需要 operator (AND/OR/NOT)")
             }
-        EnhancedNodeType.EXTRACT -> {
+            EnhancedNodeType.EXTRACT -> {
                 if (config.extractMode == null) errors.add("提取节点需要 extractMode")
             }
-        EnhancedNodeType.FAN_OUT -> {
+            EnhancedNodeType.FAN_OUT -> {
                 if (config.fanOutSpec == null) errors.add("FAN_OUT 节点需要 fanOutSpec")
             }
-        EnhancedNodeType.FAN_IN -> {
+            EnhancedNodeType.FAN_IN -> {
                 if (config.fanInSpec == null) errors.add("FAN_IN 节点需要 fanInSpec")
             }
-        EnhancedNodeType.LOOP -> {
+            EnhancedNodeType.LOOP -> {
                 if (config.loopSpec == null) errors.add("循环节点需要 loopSpec")
             }
-        EnhancedNodeType.SUB_WORKFLOW -> {
+            EnhancedNodeType.SUB_WORKFLOW -> {
                 if (config.subWorkflowConfig == null) errors.add("子工作流节点需要 subWorkflowConfig")
             }
-        EnhancedNodeType.HUMAN_INPUT -> {
+            EnhancedNodeType.HUMAN_INPUT -> {
                 if (config.humanInputConfig == null) errors.add("人工输入节点需要 humanInputConfig")
             }
-        EnhancedNodeType.SAGA -> {
+            EnhancedNodeType.SAGA -> {
                 if (config.actionType.isNullOrBlank()) errors.add("Saga 节点需要 actionType")
-        if (config.compensateActionType.isNullOrBlank()) {
+                if (config.compensateActionType.isNullOrBlank()) {
                     errors.add("Saga 节点需要 compensateActionType（补偿动作）")
                 }
             }
-        EnhancedNodeType.DELAY -> {
+            EnhancedNodeType.DELAY -> {
                 if (config.delayMs == null || config.delayMs <= 0) {
                     errors.add("延时节点需要正数 delayMs")
                 }
             }
-        EnhancedNodeType.END -> { /* no required config */ }
+            EnhancedNodeType.END -> { /* no required config */ }
         }
+
         return if (errors.isEmpty()) ValidationResult.Valid
         else ValidationResult.Invalid(errors)
     }
-        sealed class ValidationResult {
+
+    sealed class ValidationResult {
         data object Valid : ValidationResult()
         data class Invalid(val errors: List<String>) : ValidationResult()
     }
@@ -313,24 +318,27 @@ sealed class ParameterValueDef {
 
     @Serializable
     data class Expression(val expr: String) : ParameterValueDef()
-        companion object {
+
+    companion object {
         fun static(value: String): ParameterValueDef = StaticValue(value)
         fun ref(nodeId: String, jsonPath: String? = null): ParameterValueDef = NodeReference(nodeId, jsonPath)
         fun expr(expr: String): ParameterValueDef = Expression(expr)
     }
-        fun resolve(context: Map<String, Any>): String = when (this) {
+
+    fun resolve(context: Map<String, Any>): String = when (this) {
         is StaticValue -> value
         is NodeReference -> {
             val v = context[nodeId]
             when {
                 jsonPath.isNullOrBlank() -> v?.toString() ?: ""
-        v is Map<*, *> -> resolveJsonPath(v, jsonPath)?.toString() ?: ""
-        else -> v?.toString() ?: ""
+                v is Map<*, *> -> resolveJsonPath(v, jsonPath)?.toString() ?: ""
+                else -> v?.toString() ?: ""
             }
         }
         is Expression -> evalExpression(expr, context)
     }
-        private fun resolveJsonPath(obj: Map<*, *>, path: String): Any? {
+
+    private fun resolveJsonPath(obj: Map<*, *>, path: String): Any? {
         var current: Any? = obj
         for (segment in path.split(".")) {
             current = when (current) {
@@ -340,17 +348,18 @@ sealed class ParameterValueDef {
         }
         return current
     }
-        private fun evalExpression(expr: String, context: Map<String, Any>): String {
+
+    private fun evalExpression(expr: String, context: Map<String, Any>): String {
         // 简易表达式：${nodeId.field} 替换
-    var result = expr
+        var result = expr
         val regex = Regex("\\$\\{([^}]+)}")
         regex.findAll(expr).forEach { m ->
             val (ref) = m.destructured
             val parts = ref.split(".", limit = 2)
-        val v = context[parts[0]]
+            val v = context[parts[0]]
             val resolved = if (parts.size == 2 && v is Map<*, *>) v[parts[1]]?.toString() ?: ""
-        else v?.toString() ?: ""
-        result = result.replace("\${$ref}", resolved)
+                          else v?.toString() ?: ""
+            result = result.replace("\${$ref}", resolved)
         }
         return result
     }

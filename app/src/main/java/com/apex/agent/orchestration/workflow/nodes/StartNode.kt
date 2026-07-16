@@ -13,7 +13,8 @@ class StartNode(
     override val description: String = ""
 ) : WorkflowNode {
     override val nodeType: String = "START"
-        override suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>> = flow {
+
+    override suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>> = flow {
         emit(Result.Success(NodeExecutionResult(success = true, nextNodeId = null)))
     }
 }

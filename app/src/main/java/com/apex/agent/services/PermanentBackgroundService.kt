@@ -24,15 +24,18 @@ class PermanentBackgroundService : Service() {
         const val NOTIFICATION_ID = 1003
         const val TAG = "PermanentBgService"
     }
-        override fun onCreate() {
+
+    override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
     }
-        override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY
     }
-        override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         super.onDestroy()
@@ -49,11 +52,11 @@ class PermanentBackgroundService : Service() {
                 NotificationManager.IMPORTANCE_MIN
             ).apply {
                 description = "用于保持应用后台运行和数据同步"
-        setShowBadge(false)
-        lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+                setShowBadge(false)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
             }
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
         }
     }
 

@@ -27,7 +27,7 @@ import com.apex.agent.core.memory.apex.core.*
 class WebAutomationMemory {
 
     private val operationStore = BaseMemoryStore()
-        private val harvestStore = BaseMemoryStore()
+    private val harvestStore = BaseMemoryStore()
 
     /**
      * 存储操作经验。
@@ -180,7 +180,8 @@ class WebAutomationMemory {
         operationStore.clear()
         harvestStore.clear()
     }
-        fun getStats(): MemoryModuleStats {
+
+    fun getStats(): MemoryModuleStats {
         val total = operationStore.count() + harvestStore.count()
         return MemoryModuleStats(
             totalEntries = total,

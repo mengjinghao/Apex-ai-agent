@@ -13,7 +13,8 @@ class WorkspaceBackupManager private constructor(private val context: Context) {
         fun stop() {}
         fun snapshot(): String? = null
     }
-        companion object {
+
+    companion object {
         @Volatile private var instance: WorkspaceBackupManager? = null
 
         @JvmStatic
@@ -23,7 +24,8 @@ class WorkspaceBackupManager private constructor(private val context: Context) {
             }
         }
     }
-        fun createHookSession(): WorkspaceToolHookSession = object : WorkspaceToolHookSession {}
-        fun backup(workspaceId: String): Boolean = false
+
+    fun createHookSession(): WorkspaceToolHookSession = object : WorkspaceToolHookSession {}
+    fun backup(workspaceId: String): Boolean = false
     fun restore(workspaceId: String): Boolean = false
 }

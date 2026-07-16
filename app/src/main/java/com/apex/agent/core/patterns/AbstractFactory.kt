@@ -8,14 +8,14 @@ package com.apex.agent.core.patterns
 /** 记忆接口 */
 interface Memory {
     fun store(key: String, value: Any)
-        fun retrieve(key: String): Any?
+    fun retrieve(key: String): Any?
     fun clear()
 }
 
 /** 存储接口 */
 interface Storage {
     fun save(id: String, data: ByteArray)
-        fun load(id: String): ByteArray?
+    fun load(id: String): ByteArray?
     fun delete(id: String): Boolean
 }
 
@@ -40,27 +40,27 @@ interface AgentComponentFactory {
 /** RAM 记忆 */
 class InMemoryMemory : Memory {
     private val store = mutableMapOf<String, Any>()
-        override fun store(key: String, value: Any) { store[key] = value }
-        override fun retrieve(key: String): Any? = store[key]
+    override fun store(key: String, value: Any) { store[key] = value }
+    override fun retrieve(key: String): Any? = store[key]
     override fun clear() = store.clear()
 }
 
 /** 本地文件存储 */
 class LocalFileStorage : Storage {
     private val store = mutableMapOf<String, ByteArray>()
-        override fun save(id: String, data: ByteArray) { store[id] = data }
-        override fun load(id: String): ByteArray? = store[id]
+    override fun save(id: String, data: ByteArray) { store[id] = data }
+    override fun load(id: String): ByteArray? = store[id]
     override fun delete(id: String): Boolean = store.remove(id) != null
 }
 
 /** 生产环境工厂 */
 class ProductionAgentFactory : AgentComponentFactory {
     override fun createMemory(): Memory = InMemoryMemory()
-        override fun createStorage(): Storage = LocalFileStorage()
-        override fun createToolExecutor(): ToolExecutor = object : ToolExecutor {
+    override fun createStorage(): Storage = LocalFileStorage()
+    override fun createToolExecutor(): ToolExecutor = object : ToolExecutor {
         override suspend fun execute(name: String, params: Map<String, Any>): Any = "Production:$name"
     }
-        override fun createReasoningEngine(): ReasoningEngine = object : ReasoningEngine {
+    override fun createReasoningEngine(): ReasoningEngine = object : ReasoningEngine {
         override suspend fun reason(input: String, context: Map<String, Any>): String = "Production reasoning: $input"
     }
 }
@@ -68,15 +68,15 @@ class ProductionAgentFactory : AgentComponentFactory {
 /** 测试环境工厂 */
 class TestingAgentFactory : AgentComponentFactory {
     override fun createMemory(): Memory = InMemoryMemory()
-        override fun createStorage(): Storage = object : Storage {
+    override fun createStorage(): Storage = object : Storage {
         override fun save(id: String, data: ByteArray) {}
         override fun load(id: String): ByteArray? = null
         override fun delete(id: String): Boolean = true
     }
-        override fun createToolExecutor(): ToolExecutor = object : ToolExecutor {
+    override fun createToolExecutor(): ToolExecutor = object : ToolExecutor {
         override suspend fun execute(name: String, params: Map<String, Any>): Any = "Mock:$name"
     }
-        override fun createReasoningEngine(): ReasoningEngine = object : ReasoningEngine {
+    override fun createReasoningEngine(): ReasoningEngine = object : ReasoningEngine {
         override suspend fun reason(input: String, context: Map<String, Any>): String = "Mock reasoning"
     }
 }
@@ -84,11 +84,11 @@ class TestingAgentFactory : AgentComponentFactory {
 /** 轻量级工厂 */
 class LightweightAgentFactory : AgentComponentFactory {
     override fun createMemory(): Memory = InMemoryMemory()
-        override fun createStorage(): Storage = LocalFileStorage()
-        override fun createToolExecutor(): ToolExecutor = object : ToolExecutor {
+    override fun createStorage(): Storage = LocalFileStorage()
+    override fun createToolExecutor(): ToolExecutor = object : ToolExecutor {
         override suspend fun execute(name: String, params: Map<String, Any>): Any = "Lightweight:$name"
     }
-        override fun createReasoningEngine(): ReasoningEngine = object : ReasoningEngine {
+    override fun createReasoningEngine(): ReasoningEngine = object : ReasoningEngine {
         override suspend fun reason(input: String, context: Map<String, Any>): String = input
     }
 }
@@ -96,11 +96,11 @@ class LightweightAgentFactory : AgentComponentFactory {
 /** 高性能工厂 */
 class HighPerformanceAgentFactory : AgentComponentFactory {
     override fun createMemory(): Memory = InMemoryMemory()
-        override fun createStorage(): Storage = LocalFileStorage()
-        override fun createToolExecutor(): ToolExecutor = object : ToolExecutor {
+    override fun createStorage(): Storage = LocalFileStorage()
+    override fun createToolExecutor(): ToolExecutor = object : ToolExecutor {
         override suspend fun execute(name: String, params: Map<String, Any>): Any = "HighPerf:$name"
     }
-        override fun createReasoningEngine(): ReasoningEngine = object : ReasoningEngine {
+    override fun createReasoningEngine(): ReasoningEngine = object : ReasoningEngine {
         override suspend fun reason(input: String, context: Map<String, Any>): String = "Optimized: $input"
     }
 }
@@ -108,14 +108,16 @@ class HighPerformanceAgentFactory : AgentComponentFactory {
 /** 工厂注册表 */
 class FactoryRegistry {
     private val factories = mutableMapOf<String, AgentComponentFactory>()
-        init {
+
+    init {
         register("production", ProductionAgentFactory())
         register("testing", TestingAgentFactory())
         register("lightweight", LightweightAgentFactory())
         register("high_performance", HighPerformanceAgentFactory())
     }
-        fun register(name: String, factory: AgentComponentFactory) { factories[name] = factory }
-        fun get(name: String): AgentComponentFactory? = factories[name]
+
+    fun register(name: String, factory: AgentComponentFactory) { factories[name] = factory }
+    fun get(name: String): AgentComponentFactory? = factories[name]
 
     /** 自动检测配置 */
     fun autoDetect(config: Map<String, String>): AgentComponentFactory {

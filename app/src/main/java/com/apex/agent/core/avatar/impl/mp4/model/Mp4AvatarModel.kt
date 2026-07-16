@@ -33,12 +33,14 @@ data class Mp4AvatarModel(
             ""
         }
     }
-        fun animationFileForEmotion(emotion: AvatarEmotion): String? {
+
+    fun animationFileForEmotion(emotion: AvatarEmotion): String? {
         return emotionToFileMap[emotion]
             ?.trim()
             ?.takeIf { it.isNotEmpty() }
     }
-        companion object {
+
+    companion object {
         fun createStandard(
             id: String,
             name: String,
@@ -54,7 +56,7 @@ data class Mp4AvatarModel(
                 AvatarEmotion.CONFUSED to "confused.${fileExtension}",
                 AvatarEmotion.SURPRISED to "surprised.${fileExtension}"
             )
-        return Mp4AvatarModel(
+            return Mp4AvatarModel(
                 id = id,
                 name = name,
                 basePath = basePath,

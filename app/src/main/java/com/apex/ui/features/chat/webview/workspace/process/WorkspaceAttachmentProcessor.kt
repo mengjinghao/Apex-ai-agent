@@ -12,7 +12,7 @@ object WorkspaceAttachmentProcessor {
     @JvmStatic
     fun readWorkspaceRootRuleFile(context: Context, workspaceId: String? = null): String? {
         // Stub: 原 UI 实现会读取工作区根目录的规则文件，已移除
-    return null
+        return null
     }
 
     @JvmStatic
@@ -22,7 +22,7 @@ object WorkspaceAttachmentProcessor {
         maxTokens: Int = 4000
     ): String {
         // Stub: 原 UI 实现会收集工作区所有文件内容并格式化为附件
-    return ""
+        return ""
     }
 
     @JvmStatic

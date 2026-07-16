@@ -360,8 +360,8 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
 
     // ObjectBox
-    // implementation(libs.objectbox.kotlin) // Disabled
-    // kapt(libs.objectbox.processor) // ObjectBox disabled: KSP not supported
+    // // ObjectBox removed // Disabled
+    // // ObjectBox removed // ObjectBox disabled: KSP not supported
     implementation(libs.junrar.junrar)
 
     // Compose dependencies - use BOM for version consistency

@@ -18,6 +18,6 @@ internal class UserscriptStorageNotifier {
             .put("remote", change.remote)
             .also { payload ->
                 payload.put("oldValueJson", change.oldValueJson)
-        payload.put("newValueJson", change.newValueJson)
+                payload.put("newValueJson", change.newValueJson)
             }
 }

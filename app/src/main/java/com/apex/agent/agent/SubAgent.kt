@@ -23,7 +23,8 @@ interface SubAgent {
     fun canHandle(taskType: String): Boolean {
         return agentType == taskType || agentType == "general"
     }
-        fun getExecutionConfig(): AgentExecutionConfig {
+
+    fun getExecutionConfig(): AgentExecutionConfig {
         return AgentExecutionConfig()
     }
 }
@@ -65,6 +66,7 @@ data class AgentMetrics(
         totalExecutionTime += executionTime
         averageExecutionTime = totalExecutionTime / totalExecutions
         lastExecutionTime = System.currentTimeMillis()
+
         if (success) {
             successfulExecutions++
             consecutiveFailures = 0
@@ -73,13 +75,16 @@ data class AgentMetrics(
             consecutiveFailures++
             lastFailureTime = System.currentTimeMillis()
         }
+
         if (wasTimeout) timeoutCount++
         if (usedRetry) retryCount++
     }
-        fun shouldOpenCircuitBreaker(threshold: Int): Boolean {
+
+    fun shouldOpenCircuitBreaker(threshold: Int): Boolean {
         return consecutiveFailures >= threshold
     }
-        fun shouldAllowRequest(circuitBreakerTimeoutMs: Long): Boolean {
+
+    fun shouldAllowRequest(circuitBreakerTimeoutMs: Long): Boolean {
         if (!isCircuitBreakerOpen) return true
 
         val timeSinceOpened = System.currentTimeMillis() - circuitBreakerOpenedAt
@@ -90,12 +95,14 @@ data class AgentMetrics(
         }
         return false
     }
-        fun openCircuitBreaker() {
+
+    fun openCircuitBreaker() {
         isCircuitBreakerOpen = true
         circuitBreakerOpenedAt = System.currentTimeMillis()
         circuitBreakerOpenCount++
     }
-        fun reset() {
+
+    fun reset() {
         totalExecutions = 0
         successfulExecutions = 0
         failedExecutions = 0
@@ -123,9 +130,11 @@ class ResilientSubAgentWrapper(
 ) : SubAgent by delegate {
 
     private val _metricsFlow = MutableStateFlow(metrics)
-        val metricsFlow: StateFlow<AgentMetrics> = _metricsFlow.asStateFlow()
-        override suspend fun execute(task: SubTask): SubTaskResult {
+    val metricsFlow: StateFlow<AgentMetrics> = _metricsFlow.asStateFlow()
+
+    override suspend fun execute(task: SubTask): SubTaskResult {
         val config = delegate.getExecutionConfig()
+
         if (config.enableCircuitBreaker && !metrics.shouldAllowRequest(config.circuitBreakerTimeoutMs)) {
             return SubTaskResult(
                 taskId = task.taskId,
@@ -135,12 +144,13 @@ class ResilientSubAgentWrapper(
                 errorStack = "Agent ${delegate.agentId} circuit breaker is open. Please try again later."
             )
         }
+
         var lastException: Exception? = null
         var currentDelay = config.retryDelayMs
 
         repeat(config.maxRetries) { attempt ->
             val startTime = System.currentTimeMillis()
-        var wasTimeout = false
+            var wasTimeout = false
 
             val result = withTimeoutOrNull(config.timeoutMs) {
                 try {
@@ -150,32 +160,37 @@ class ResilientSubAgentWrapper(
                     null
                 }
             }
-        val executionTime = System.currentTimeMillis() - startTime
+
+            val executionTime = System.currentTimeMillis() - startTime
 
             if (result != null) {
                 val usedRetry = attempt > 0
                 metrics.recordExecution(result.success, executionTime, false, usedRetry)
-        _metricsFlow.value = metrics.copy()
-        if (result.success || !config.enableCircuitBreaker) {
+                _metricsFlow.value = metrics.copy()
+
+                if (result.success || !config.enableCircuitBreaker) {
                     return result
                 }
-        if (config.enableCircuitBreaker && metrics.shouldOpenCircuitBreaker(config.circuitBreakerThreshold)) {
+
+                if (config.enableCircuitBreaker && metrics.shouldOpenCircuitBreaker(config.circuitBreakerThreshold)) {
                     metrics.openCircuitBreaker()
-        _metricsFlow.value = metrics.copy()
-        return result.copy(
+                    _metricsFlow.value = metrics.copy()
+                    return result.copy(
                         errorMessage = "${result.errorMessage ?: ""} Circuit breaker opened after ${metrics.consecutiveFailures} consecutive failures"
                     )
                 }
             } else {
                 wasTimeout = true
                 metrics.recordExecution(false, executionTime, wasTimeout, attempt > 0)
-        _metricsFlow.value = metrics.copy()
+                _metricsFlow.value = metrics.copy()
             }
-        if (attempt < config.maxRetries - 1) {
+
+            if (attempt < config.maxRetries - 1) {
                 delay(currentDelay)
-        currentDelay = (currentDelay * config.backoffMultiplier).toLong()
+                currentDelay = (currentDelay * config.backoffMultiplier).toLong()
             }
         }
+
         return SubTaskResult(
             taskId = task.taskId,
             success = false,
@@ -184,7 +199,8 @@ class ResilientSubAgentWrapper(
             errorStack = lastException?.stackTraceToString() ?: "Execution failed after ${config.maxRetries} attempts"
         )
     }
-        fun getMetrics(): AgentMetrics = metrics
+
+    fun getMetrics(): AgentMetrics = metrics
 
     fun resetCircuitBreaker() {
         metrics.isCircuitBreakerOpen = false
@@ -192,7 +208,8 @@ class ResilientSubAgentWrapper(
         metrics.consecutiveFailures = 0
         _metricsFlow.value = metrics.copy()
     }
-        fun resetAllMetrics() {
+
+    fun resetAllMetrics() {
         metrics.reset()
         _metricsFlow.value = metrics.copy()
     }
@@ -201,14 +218,17 @@ class ResilientSubAgentWrapper(
 class DynamicAgentRegistry {
 
     private val _agents = MutableStateFlow<Map<String, SubAgent>>(emptyMap())
-        val agents: StateFlow<Map<String, SubAgent>> = _agents.asStateFlow()
-        private val _agentMetrics = MutableStateFlow<Map<String, AgentMetrics>>(emptyMap())
-        val agentMetrics: StateFlow<Map<String, AgentMetrics>> = _agentMetrics.asStateFlow()
-        fun registerAgent(agent: SubAgent): Boolean {
+    val agents: StateFlow<Map<String, SubAgent>> = _agents.asStateFlow()
+
+    private val _agentMetrics = MutableStateFlow<Map<String, AgentMetrics>>(emptyMap())
+    val agentMetrics: StateFlow<Map<String, AgentMetrics>> = _agentMetrics.asStateFlow()
+
+    fun registerAgent(agent: SubAgent): Boolean {
         val currentAgents = _agents.value.toMutableMap()
         if (agent.agentId in currentAgents) {
             return false
         }
+
         currentAgents[agent.agentId] = ResilientSubAgentWrapper(agent)
         _agents.value = currentAgents
 
@@ -218,11 +238,13 @@ class DynamicAgentRegistry {
 
         return true
     }
-        fun unregisterAgent(agentId: String): Boolean {
+
+    fun unregisterAgent(agentId: String): Boolean {
         val currentAgents = _agents.value.toMutableMap()
         if (agentId !in currentAgents) {
             return false
         }
+
         currentAgents.remove(agentId)
         _agents.value = currentAgents
 
@@ -232,39 +254,49 @@ class DynamicAgentRegistry {
 
         return true
     }
-        fun getAgent(agentId: String): SubAgent? {
+
+    fun getAgent(agentId: String): SubAgent? {
         return _agents.value[agentId]
     }
-        fun getAgentByType(agentType: String): SubAgent? {
+
+    fun getAgentByType(agentType: String): SubAgent? {
         return _agents.value.values.find { it.agentType == agentType }
     }
-        fun getAllAgents(): List<SubAgent> {
+
+    fun getAllAgents(): List<SubAgent> {
         return _agents.value.values.toList()
     }
-        fun getAgentTypes(): Set<String> {
+
+    fun getAgentTypes(): Set<String> {
         return _agents.value.values.map { it.agentType }.toSet()
     }
-        fun getMetrics(agentId: String): AgentMetrics? {
+
+    fun getMetrics(agentId: String): AgentMetrics? {
         return _agentMetrics.value[agentId]
     }
-        fun getAllMetrics(): Map<String, AgentMetrics> {
+
+    fun getAllMetrics(): Map<String, AgentMetrics> {
         return _agentMetrics.value
     }
-        fun resetMetrics(agentId: String? = null) {
+
+    fun resetMetrics(agentId: String? = null) {
         if (agentId != null) {
             _agentMetrics.value[agentId]?.reset()
-        _agentMetrics.value = _agentMetrics.value.toMutableMap()
+            _agentMetrics.value = _agentMetrics.value.toMutableMap()
         } else {
             _agentMetrics.value.values.forEach { it.reset() }
-        _agentMetrics.value = _agentMetrics.value.toMutableMap()
+            _agentMetrics.value = _agentMetrics.value.toMutableMap()
         }
     }
-        fun resetCircuitBreaker(agentId: String) {
+
+    fun resetCircuitBreaker(agentId: String) {
         (_agents.value[agentId] as? ResilientSubAgentWrapper)?.resetCircuitBreaker()
     }
-        fun clear() {
+
+    fun clear() {
         _agents.value = emptyMap()
         _agentMetrics.value = emptyMap()
     }
-        fun size(): Int = _agents.value.size
+
+    fun size(): Int = _agents.value.size
 }

@@ -11,11 +11,14 @@ class SimpleSanxingSystem(private val context: Context) {
         val maxIterations: Int = 3,
         val timeoutMs: Long = 30000
     )
-        private var config = SanxingConfig()
-        fun configure(config: SanxingConfig) {
+
+    private var config = SanxingConfig()
+
+    fun configure(config: SanxingConfig) {
         this.config = config
     }
-        fun execute(task: String): Result<String> {
+
+    fun execute(task: String): Result<String> {
         return Result.success("Task executed: $task")
     }
 }

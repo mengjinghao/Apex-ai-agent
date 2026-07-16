@@ -77,19 +77,19 @@ data class ToolCategory(
 
 object ToolCategories {
     val FILE_SYSTEM = ToolCategory("file_system", "File System", priority = 10)
-        val NETWORK = ToolCategory("network", "Network", priority = 20)
-        val UI = ToolCategory("ui", "UI Automation", priority = 30)
-        val DEVICE = ToolCategory("device", "Device", priority = 40)
-        val APP = ToolCategory("app", "Application", priority = 50)
-        val MEMORY = ToolCategory("memory", "Memory", priority = 60)
-        val WORKFLOW = ToolCategory("workflow", "Workflow", priority = 70)
-        val CHAT = ToolCategory("chat", "Chat", priority = 80)
-        val MEDIA = ToolCategory("media", "Media", priority = 90)
-        val SYSTEM = ToolCategory("system", "System", priority = 100)
-        val BROWSER = ToolCategory("browser", "Browser", priority = 25)
-        val TERMINAL = ToolCategory("terminal", "Terminal", priority = 35)
-        val MCP = ToolCategory("mcp", "MCP External", priority = 200)
-        val USER = ToolCategory("user", "User Packages", priority = 300)
+    val NETWORK = ToolCategory("network", "Network", priority = 20)
+    val UI = ToolCategory("ui", "UI Automation", priority = 30)
+    val DEVICE = ToolCategory("device", "Device", priority = 40)
+    val APP = ToolCategory("app", "Application", priority = 50)
+    val MEMORY = ToolCategory("memory", "Memory", priority = 60)
+    val WORKFLOW = ToolCategory("workflow", "Workflow", priority = 70)
+    val CHAT = ToolCategory("chat", "Chat", priority = 80)
+    val MEDIA = ToolCategory("media", "Media", priority = 90)
+    val SYSTEM = ToolCategory("system", "System", priority = 100)
+    val BROWSER = ToolCategory("browser", "Browser", priority = 25)
+    val TERMINAL = ToolCategory("terminal", "Terminal", priority = 35)
+    val MCP = ToolCategory("mcp", "MCP External", priority = 200)
+    val USER = ToolCategory("user", "User Packages", priority = 300)
 }
 
 data class ToolSpec(

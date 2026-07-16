@@ -13,52 +13,59 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class TextChannelAdapter @Inject constructor(
+class TextChannelAdapter constructor(
     private val context: Context
 ) : ChannelAdapter {
     override val channel = CommunicationChannel.TEXT
     override val name = "文本"
-        private var messageCallback: ((AgentMessage) -> Unit)? = null
+
+    private var messageCallback: ((AgentMessage) -> Unit)? = null
     private var initialized = false
     private val messageQueue = mutableListOf<AgentMessage>()
-        private val coroutineScope = CoroutineScope(Dispatchers.IO)
-        override suspend fun sendMessage(message: AgentMessage): Result<Boolean> {
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
+    override suspend fun sendMessage(message: AgentMessage): Result<Boolean> {
         if (!initialized) return Result.Success(false)
         return try {
             coroutineScope.launch {
                 delay(500)
-        Toast.makeText(context, "收到消息: ${message.content}", Toast.LENGTH_SHORT).show()
-        simulateReply(message)
+                Toast.makeText(context, "收到消息: ${message.content}", Toast.LENGTH_SHORT).show()
+                simulateReply(message)
             }
-        Result.Success(true)
+            Result.Success(true)
         } catch (e: Exception) {
             Result.Failure(e)
         }
     }
-        override fun receiveMessage(callback: (AgentMessage) -> Unit) {
+
+    override fun receiveMessage(callback: (AgentMessage) -> Unit) {
         this.messageCallback = callback
         synchronized(messageQueue) {
             messageQueue.forEach { callback(it) }
-        messageQueue.clear()
+            messageQueue.clear()
         }
     }
-        override suspend fun isAvailable() = initialized
+
+    override suspend fun isAvailable() = initialized
 
     override fun initialize() {
         initialized = true
     }
-        override fun shutdown() {
+
+    override fun shutdown() {
         messageCallback = null
         messageQueue.clear()
         initialized = false
     }
-        private fun simulateReply(originalMessage: AgentMessage) {
+
+    private fun simulateReply(originalMessage: AgentMessage) {
         val replyContent = when {
-            originalMessage.content.contains("你好", ignoreCase = true) -> "你好！很高兴为你服务。"
-        originalMessage.content.contains("谢谢", ignoreCase = true) -> "不客气！有问题随时问我。"
-        originalMessage.content.contains("时间", ignoreCase = true) -> "现在时间是${java.time.LocalTime.now()}"
-        else -> "已收到你的消息 \"${originalMessage.content}\""
+            originalMessage.content.contains("你好", ignoreCase = true) -> "你好！很高兴为你服务�?
+            originalMessage.content.contains("谢谢", ignoreCase = true) -> "不客气！有问题随时问我�?
+            originalMessage.content.contains("时间", ignoreCase = true) -> "现在时间�?${java.time.LocalTime.now()}"
+            else -> "已收到你的消�? \"${originalMessage.content}\""
         }
+
         val replyMessage = AgentMessage(
             id = UUID.randomUUID().toString(),
             senderId = "system",
@@ -66,6 +73,7 @@ class TextChannelAdapter @Inject constructor(
             content = replyContent,
             timestamp = System.currentTimeMillis()
         )
+
         synchronized(messageQueue) {
             messageCallback?.invoke(replyMessage) ?: messageQueue.add(replyMessage)
         }

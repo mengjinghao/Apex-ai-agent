@@ -7,7 +7,8 @@ enum class PromptTurnKind {
     TOOL_CALL,
     TOOL_RESULT,
     SUMMARY;
-        companion object {
+
+    companion object {
         fun fromRole(role: String): PromptTurnKind {
             return when (role.trim().lowercase()) {
                 "system" -> SYSTEM
@@ -32,13 +33,14 @@ data class PromptTurn(
         get() =
             when (kind) {
                 PromptTurnKind.SYSTEM -> "system"
-        PromptTurnKind.USER -> "user"
-        PromptTurnKind.ASSISTANT -> "assistant"
-        PromptTurnKind.TOOL_CALL -> "tool_call"
-        PromptTurnKind.TOOL_RESULT -> "tool_result"
-        PromptTurnKind.SUMMARY -> "summary"
+                PromptTurnKind.USER -> "user"
+                PromptTurnKind.ASSISTANT -> "assistant"
+                PromptTurnKind.TOOL_CALL -> "tool_call"
+                PromptTurnKind.TOOL_RESULT -> "tool_result"
+                PromptTurnKind.SUMMARY -> "summary"
             }
-        companion object {
+
+    companion object {
         fun fromRole(
             role: String,
             content: String,
@@ -63,8 +65,8 @@ fun List<PromptTurn>.appendUserTurnIfMissing(message: String): List<PromptTurn> 
     if (message.isBlank()) {
         return this
     }
-        val lastTurn = lastOrNull()
-        return if (lastTurn?.kind == PromptTurnKind.USER && lastTurn.content == message) {
+    val lastTurn = lastOrNull()
+    return if (lastTurn?.kind == PromptTurnKind.USER && lastTurn.content == message) {
         this
     } else {
         this + PromptTurn(kind = PromptTurnKind.USER, content = message)
@@ -81,8 +83,9 @@ fun List<PromptTurn>.mergeAdjacentTurns(
     if (size <= 1) {
         return this
     }
-        val merged = mutableListOf<PromptTurn>()
-        for (turn in this) {
+
+    val merged = mutableListOf<PromptTurn>()
+    for (turn in this) {
         val previous = merged.lastOrNull()
         if (previous != null && shouldMerge(previous, turn)) {
             merged[merged.lastIndex] =
@@ -94,7 +97,7 @@ fun List<PromptTurn>.mergeAdjacentTurns(
             merged.add(turn)
         }
     }
-        return merged
+    return merged
 }
 
 fun List<Pair<String, String>>.toPromptTurns(): List<PromptTurn> {

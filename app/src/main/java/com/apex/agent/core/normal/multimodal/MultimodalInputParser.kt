@@ -44,12 +44,12 @@ data class MultimodalInput(
 
 enum class InputSource {
     USER_UPLOAD,        // 用户上传
-        SCREENSHOT,         // 屏幕截图
-        VOICE_RECORDING,    // 语音录制
-        CLIPBOARD,          // 剪贴板
-        CAMERA,             // 相机
-        DRAG_DROP,          // 拖拽
-        URI_REFERENCE       // URI 引用
+    SCREENSHOT,         // 屏幕截图
+    VOICE_RECORDING,    // 语音录制
+    CLIPBOARD,          // 剪贴板
+    CAMERA,             // 相机
+    DRAG_DROP,          // 拖拽
+    URI_REFERENCE       // URI 引用
 }
 
 /**
@@ -135,7 +135,8 @@ data class VoiceSegment(val text: String, val startMs: Long, val endMs: Long, va
 class MultimodalInputParser {
 
     private val parsers = ConcurrentHashMap<MultimodalType, MultimodalParser>()
-        init {
+
+    init {
         registerBuiltinParsers()
     }
 
@@ -158,9 +159,10 @@ class MultimodalInputParser {
             errors = listOf("不支持的输入类型: ${input.type}"),
             processingTimeMs = System.currentTimeMillis() - start
         )
+
         return try {
             val result = parser.parse(input)
-        result.copy(processingTimeMs = System.currentTimeMillis() - start)
+            result.copy(processingTimeMs = System.currentTimeMillis() - start)
         } catch (e: Exception) {
             MultimodalParseResult(
                 inputId = input.id,
@@ -189,10 +191,10 @@ class MultimodalInputParser {
         results.forEach { result ->
             if (result.success) {
                 sb.appendLine("- 类型: ${result.type}")
-        if (result.description.isNotBlank()) {
+                if (result.description.isNotBlank()) {
                     sb.appendLine("  描述: ${result.description}")
                 }
-        if (result.extractedText.isNotBlank()) {
+                if (result.extractedText.isNotBlank()) {
                     sb.appendLine("  内容: ${result.extractedText.take(500)}")
                 }
             } else {
@@ -203,6 +205,7 @@ class MultimodalInputParser {
     }
 
     // ============ 内置解析器 ============
+
     private fun registerBuiltinParsers() {
         // 文本解析器
         registerParser(MultimodalType.TEXT, TextParser())
@@ -217,10 +220,11 @@ class MultimodalInputParser {
     }
 
     // ============ 文本解析器 ============
+
     class TextParser : MultimodalParser {
         override suspend fun parse(input: MultimodalInput): MultimodalParseResult {
             val text = input.metadata["text"]?.toString() ?: ""
-        return MultimodalParseResult(
+            return MultimodalParseResult(
                 inputId = input.id,
                 type = MultimodalType.TEXT,
                 success = true,
@@ -232,11 +236,12 @@ class MultimodalInputParser {
     }
 
     // ============ 图片解析器 ============
+
     class ImageParser : MultimodalParser {
         override suspend fun parse(input: MultimodalInput): MultimodalParseResult {
             // 占位实现：实际应调用 OCR/VLM 服务
-    val imagePath = input.metadata["path"]?.toString()
-        val result = ImageParseResult(
+            val imagePath = input.metadata["path"]?.toString()
+            val result = ImageParseResult(
                 ocrText = input.metadata["ocr_text"]?.toString() ?: "[图片内容需要 OCR 识别]",
                 objects = emptyList(),
                 sceneDescription = input.metadata["description"]?.toString() ?: "[图片场景描述]",
@@ -245,7 +250,8 @@ class MultimodalInputParser {
                 colors = emptyList(),
                 dimensions = (input.metadata["width"] as? Int ?: 0) to (input.metadata["height"] as? Int ?: 0)
             )
-        return MultimodalParseResult(
+
+            return MultimodalParseResult(
                 inputId = input.id,
                 type = input.type,
                 success = true,
@@ -261,22 +267,25 @@ class MultimodalInputParser {
     }
 
     // ============ 文件解析器 ============
+
     class FileParser : MultimodalParser {
         override suspend fun parse(input: MultimodalInput): MultimodalParseResult {
             val fileName = input.metadata["fileName"]?.toString() ?: "unknown"
-        val filePath = input.metadata["path"]?.toString() ?: ""
-        val content = input.metadata["content"]?.toString() ?: ""
-        val fileType = detectFileType(fileName)
-        val structure = analyzeStructure(content, fileType)
-        val metadata = FileMetadata(
+            val filePath = input.metadata["path"]?.toString() ?: ""
+            val content = input.metadata["content"]?.toString() ?: ""
+
+            val fileType = detectFileType(fileName)
+            val structure = analyzeStructure(content, fileType)
+            val metadata = FileMetadata(
                 author = input.metadata["author"]?.toString(),
                 createdAt = input.metadata["createdAt"] as? Long,
                 modifiedAt = input.metadata["modifiedAt"] as? Long,
                 size = (input.metadata["size"] as? Number)?.toLong() ?: content.length.toLong(),
                 encoding = "UTF-8"
             )
-        val summary = generateSummary(content, fileType)
-        val result = FileParseResult(
+            val summary = generateSummary(content, fileType)
+
+            val result = FileParseResult(
                 fileName = fileName,
                 fileType = fileType,
                 content = content,
@@ -284,7 +293,8 @@ class MultimodalInputParser {
                 metadata = metadata,
                 summary = summary
             )
-        return MultimodalParseResult(
+
+            return MultimodalParseResult(
                 inputId = input.id,
                 type = MultimodalType.FILE,
                 success = true,
@@ -294,9 +304,10 @@ class MultimodalInputParser {
                 suggestedPrompt = "用户上传了文件 $fileName，内容摘要: $summary"
             )
         }
+
         private fun detectFileType(fileName: String): FileType {
             val ext = fileName.substringAfterLast(".", "").lowercase()
-        return when (ext) {
+            return when (ext) {
                 "txt", "log" -> FileType.TEXT
                 "kt", "java", "py", "js", "ts", "go", "rs", "c", "cpp", "h", "swift" -> FileType.CODE
                 "pdf" -> FileType.PDF
@@ -314,80 +325,87 @@ class MultimodalInputParser {
                 else -> FileType.UNKNOWN
             }
         }
+
         private fun analyzeStructure(content: String, fileType: FileType): FileStructure? {
             val sections = mutableListOf<SectionInfo>()
-        val toc = mutableListOf<String>()
-        val codeBlocks = mutableListOf<CodeBlockInfo>()
-        when (fileType) {
+            val toc = mutableListOf<String>()
+            val codeBlocks = mutableListOf<CodeBlockInfo>()
+
+            when (fileType) {
                 FileType.MARKDOWN, FileType.TEXT -> {
                     val lines = content.lines()
-        var currentSection: SectionInfo? = null
+                    var currentSection: SectionInfo? = null
                     var sectionContent = StringBuilder()
-        var inCodeBlock = false
+                    var inCodeBlock = false
                     var codeStart = 0
                     var codeLang = ""
-        lines.forEachIndexed { i, line ->
+
+                    lines.forEachIndexed { i, line ->
                         if (line.startsWith("```")) {
                             if (inCodeBlock) {
                                 codeBlocks.add(CodeBlockInfo(codeLang, codeStart, i, lines.subList(codeStart, i + 1).joinToString("\n")))
-        inCodeBlock = false
+                                inCodeBlock = false
                             } else {
                                 inCodeBlock = true
                                 codeStart = i
                                 codeLang = line.removePrefix("```").trim()
                             }
                         }
-        if (line.matches(Regex("^#{1,6}\\s+.+"))) {
+                        if (line.matches(Regex("^#{1,6}\\s+.+"))) {
                             if (currentSection != null) {
                                 sections.add(currentSection!!.copy(content = sectionContent.toString()))
                             }
-        val level = line.takeWhile { it == '#' }.length
-        val title = line.dropWhile { it == '#' }.trim()
-        toc.add(title)
-        currentSection = SectionInfo(title, level, "", i + 1)
-        sectionContent = StringBuilder()
+                            val level = line.takeWhile { it == '#' }.length
+                            val title = line.dropWhile { it == '#' }.trim()
+                            toc.add(title)
+                            currentSection = SectionInfo(title, level, "", i + 1)
+                            sectionContent = StringBuilder()
                         } else if (currentSection != null) {
                             sectionContent.appendLine(line)
                         }
                     }
-        if (currentSection != null) {
+                    if (currentSection != null) {
                         sections.add(currentSection!!.copy(content = sectionContent.toString()))
                     }
                 }
-        FileType.CODE -> {
+                FileType.CODE -> {
                     // 代码文件：提取函数/类定义
-    val patterns = mapOf(
+                    val patterns = mapOf(
                         "function" to Regex("(?:fun|function|def|func)\\s+(\\w+)"),
                         "class" to Regex("(?:class|interface|object|struct|enum)\\s+(\\w+)")
                     )
-        patterns.forEach { (type, regex) ->
+                    patterns.forEach { (type, regex) ->
                         regex.findAll(content).forEach { match ->
                             sections.add(SectionInfo("$type: ${match.groupValues[1]}", 1, "", null))
                         }
                     }
                 }
-        else -> {}
+                else -> {}
             }
-        return FileStructure(sections, toc, codeBlocks)
+
+            return FileStructure(sections, toc, codeBlocks)
         }
+
         private fun generateSummary(content: String, fileType: FileType): String {
             return when (fileType) {
                 FileType.CODE -> "代码文件，${content.lines().size} 行"
-        FileType.MARKDOWN -> "Markdown 文档，${content.lines().size} 行"
-        FileType.JSON -> "JSON 数据，${content.length} 字符"
-        else -> "文件内容，${content.length} 字符"
+                FileType.MARKDOWN -> "Markdown 文档，${content.lines().size} 行"
+                FileType.JSON -> "JSON 数据，${content.length} 字符"
+                else -> "文件内容，${content.length} 字符"
             }
         }
     }
 
     // ============ 语音解析器 ============
+
     class VoiceParser : MultimodalParser {
         override suspend fun parse(input: MultimodalInput): MultimodalParseResult {
             // 占位：实际应调用 ASR 服务
-    val transcript = input.metadata["transcript"]?.toString() ?: "[语音转文本结果]"
-        val language = input.metadata["language"]?.toString() ?: "zh-CN"
-        val confidence = (input.metadata["confidence"] as? Number)?.toFloat() ?: 0.9f
-        val result = VoiceParseResult(
+            val transcript = input.metadata["transcript"]?.toString() ?: "[语音转文本结果]"
+            val language = input.metadata["language"]?.toString() ?: "zh-CN"
+            val confidence = (input.metadata["confidence"] as? Number)?.toFloat() ?: 0.9f
+
+            val result = VoiceParseResult(
                 transcript = transcript,
                 language = language,
                 confidence = confidence,
@@ -395,7 +413,8 @@ class MultimodalInputParser {
                 detectedIntent = detectIntent(transcript),
                 entities = extractEntities(transcript)
             )
-        return MultimodalParseResult(
+
+            return MultimodalParseResult(
                 inputId = input.id,
                 type = input.type,
                 success = true,
@@ -405,6 +424,7 @@ class MultimodalInputParser {
                 suggestedPrompt = "用户语音输入: $transcript"
             )
         }
+
         private fun detectIntent(text: String): String? {
             val intentPatterns = mapOf(
                 "查询" to listOf("查", "找", "搜索", "search", "find", "query"),
@@ -413,19 +433,20 @@ class MultimodalInputParser {
                 "提醒" to listOf("提醒", "闹钟", "remind", "alarm"),
                 "闲聊" to listOf("你好", "聊天", "hello", "hi", "hey")
             )
-        for ((intent, keywords) in intentPatterns) {
+            for ((intent, keywords) in intentPatterns) {
                 if (keywords.any { text.contains(it, ignoreCase = true) }) return intent
             }
-        return null
+            return null
         }
+
         private fun extractEntities(text: String): List<String> {
             val entities = mutableListOf<String>()
             // 时间实体
-        Regex("\\d{1,2}[:：]\\d{2}|\\d{1,2}点|明天|后天|今天|now|today|tomorrow").findAll(text)
+            Regex("\\d{1,2}[:：]\\d{2}|\\d{1,2}点|明天|后天|今天|now|today|tomorrow").findAll(text)
                 .map { it.value }.toList().let { entities.addAll(it) }
             // 数字实体
-        Regex("\\b\\d+\\b").findAll(text).map { it.value }.take(3).toList().let { entities.addAll(it) }
-        return entities
+            Regex("\\b\\d+\\b").findAll(text).map { it.value }.take(3).toList().let { entities.addAll(it) }
+            return entities
         }
     }
 }

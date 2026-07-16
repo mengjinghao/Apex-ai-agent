@@ -45,7 +45,8 @@ enum class SceneCategory {
 class SceneTemplateRegistry {
 
     private val templates = ConcurrentHashMap<String, SceneTemplate>()
-        private val activeTemplates = ConcurrentHashMap<String, String>()  // chatId -> templateId
+    private val activeTemplates = ConcurrentHashMap<String, String>()  // chatId -> templateId
+
     init {
         registerBuiltinTemplates()
     }
@@ -104,11 +105,11 @@ class SceneTemplateRegistry {
         val template = getActive(chatId) ?: return ""
         return buildString {
             appendLine("[当前场景: ${template.displayName}]")
-        appendLine(template.systemPrompt)
-        if (template.recommendedDepth.isNotBlank()) {
+            appendLine(template.systemPrompt)
+            if (template.recommendedDepth.isNotBlank()) {
                 appendLine("[推荐深度: ${template.recommendedDepth}]")
             }
-        if (template.recommendedStyle.isNotBlank()) {
+            if (template.recommendedStyle.isNotBlank()) {
                 appendLine("[推荐风格: ${template.recommendedStyle}]")
             }
         }
@@ -128,6 +129,7 @@ class SceneTemplateRegistry {
     }
 
     // ============ 预置模板 ============
+
     private fun registerBuiltinTemplates() {
         // 编程助手
         register(SceneTemplate(

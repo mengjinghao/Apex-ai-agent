@@ -47,8 +47,9 @@ internal data class UserscriptWebRequestResolution(
 
 internal class UserscriptWebRequestEngine {
     private val registrations = ConcurrentHashMap<String, UserscriptWebRequestRegistration>()
-        private val registrationOrder = AtomicLong(0L)
-        fun register(
+    private val registrationOrder = AtomicLong(0L)
+
+    fun register(
         scriptId: Long,
         sessionId: String,
         rulesJson: String,
@@ -67,13 +68,15 @@ internal class UserscriptWebRequestEngine {
             )
         return registrationId
     }
-        fun unregister(registrationId: String): Boolean =
+
+    fun unregister(registrationId: String): Boolean =
         registrations.remove(registrationId) != null
 
     fun clearSession(sessionId: String) {
         registrations.entries.removeIf { it.value.sessionId == sessionId }
     }
-        fun resolve(
+
+    fun resolve(
         sessionId: String,
         url: String,
         requestType: String
@@ -95,9 +98,11 @@ internal class UserscriptWebRequestEngine {
                         )
                     }
                 }
+
         if (matches.isEmpty()) {
             return UserscriptWebRequestResolution()
         }
+
         val mergedAction =
             matches.fold(UserscriptWebRequestAction()) { acc, match ->
                 UserscriptWebRequestAction(
@@ -108,9 +113,11 @@ internal class UserscriptWebRequestEngine {
                     responseBody = match.action.responseBody ?: acc.responseBody
                 )
             }
+
         return UserscriptWebRequestResolution(matches = matches, mergedAction = mergedAction)
     }
-        private fun parseRules(rulesJson: String): List<UserscriptWebRequestRule> {
+
+    private fun parseRules(rulesJson: String): List<UserscriptWebRequestRule> {
         val trimmed = rulesJson.trim()
         if (trimmed.isBlank()) {
             return emptyList()
@@ -118,20 +125,21 @@ internal class UserscriptWebRequestEngine {
         val array =
             when {
                 trimmed.startsWith("[") -> JSONArray(trimmed)
-        trimmed.startsWith("{") -> JSONArray().put(JSONObject(trimmed))
-        else -> JSONArray().put(JSONObject().put("selector", trimmed))
+                trimmed.startsWith("{") -> JSONArray().put(JSONObject(trimmed))
+                else -> JSONArray().put(JSONObject().put("selector", trimmed))
             }
         return buildList {
             for (index in 0 until array.length()) {
                 val item = array.opt(index)
-        when (item) {
+                when (item) {
                     is JSONObject -> parseRuleObject(item)?.let(::add)
-        is String -> add(UserscriptWebRequestRule(matchers = listOf(item), types = emptySet(), action = UserscriptWebRequestAction()))
+                    is String -> add(UserscriptWebRequestRule(matchers = listOf(item), types = emptySet(), action = UserscriptWebRequestAction()))
                 }
             }
         }
     }
-        private fun parseRuleObject(raw: JSONObject): UserscriptWebRequestRule? {
+
+    private fun parseRuleObject(raw: JSONObject): UserscriptWebRequestRule? {
         val selectors = mutableListOf<String>()
         listOf("selector", "match", "url").forEach { key ->
             raw.optString(key).trim().takeIf { it.isNotBlank() }?.let(selectors::add)
@@ -147,7 +155,7 @@ internal class UserscriptWebRequestEngine {
         val types =
             buildSet {
                 raw.optString("type").trim().takeIf { it.isNotBlank() }?.let { add(it.lowercase(Locale.ROOT)) }
-        raw.optJSONArray("types")?.let { array ->
+                raw.optJSONArray("types")?.let { array ->
                     for (index in 0 until array.length()) {
                         array.optString(index).trim().takeIf { it.isNotBlank() }?.let {
                             add(it.lowercase(Locale.ROOT))
@@ -176,7 +184,8 @@ internal class UserscriptWebRequestEngine {
             action = action
         )
     }
-        private fun matchesType(
+
+    private fun matchesType(
         rule: UserscriptWebRequestRule,
         requestType: String
     ): Boolean = rule.types.isEmpty() || requestType in rule.types
@@ -187,30 +196,32 @@ internal class UserscriptWebRequestEngine {
     ): Boolean =
         rule.matchers.any { matcher ->
             val trimmed = matcher.trim()
-        when {
+            when {
                 trimmed == "*" -> true
                 trimmed.startsWith("/") && trimmed.endsWith("/") && trimmed.length > 2 ->
                     runCatching { Regex(trimmed.removePrefix("/").removeSuffix("/"), RegexOption.IGNORE_CASE).containsMatchIn(url) }
                         .getOrDefault(false)
-        trimmed.contains("*") ->
+                trimmed.contains("*") ->
                     globToRegex(trimmed).matches(url)
-        else -> url.contains(trimmed, ignoreCase = true)
+                else -> url.contains(trimmed, ignoreCase = true)
             }
         }
-        private fun globToRegex(pattern: String): Regex {
+
+    private fun globToRegex(pattern: String): Regex {
         val builder = StringBuilder("^")
         pattern.forEach { ch ->
             when (ch) {
                 '*' -> builder.append(".*")
                 '.', '?', '+', '(', ')', '[', ']', '{', '}', '^', '$', '|', '\\' ->
                     builder.append('\\').append(ch)
-        else -> builder.append(ch)
+                else -> builder.append(ch)
             }
         }
         builder.append('$')
         return Regex(builder.toString(), RegexOption.IGNORE_CASE)
     }
-        private fun JSONObject?.toStringMap(): Map<String, String> {
+
+    private fun JSONObject?.toStringMap(): Map<String, String> {
         if (this == null) {
             return emptyMap()
         }

@@ -14,8 +14,9 @@ interface Expression {
 /** 脚本上下文 */
 class ScriptContext {
     private val variables = mutableMapOf<String, Any?>()
-        fun setVariable(name: String, value: Any?) { variables[name] = value }
-        fun getVariable(name: String): Any? = variables[name]
+
+    fun setVariable(name: String, value: Any?) { variables[name] = value }
+    fun getVariable(name: String): Any? = variables[name]
     fun hasVariable(name: String): Boolean = name in variables
     fun clear() = variables.clear()
 }
@@ -24,7 +25,7 @@ class ScriptContext {
 class ValueExpression(private val value: Any?) : Expression {
     override fun interpret(context: ScriptContext): Any? = value
     override fun accept(visitor: ExpressionVisitor): Any? = visitor.visitValue(this)
-        fun getValue(): Any? = value
+    fun getValue(): Any? = value
 }
 
 /** 变量表达式（终端） */
@@ -33,7 +34,7 @@ class VariableExpression(private val name: String) : Expression {
         return context.getVariable(name) ?: throw IllegalStateException("Undefined variable: $name")
     }
     override fun accept(visitor: ExpressionVisitor): Any? = visitor.visitVariable(this)
-        fun getName(): String = name
+    fun getName(): String = name
 }
 
 /** 函数表达式（终端） */
@@ -143,27 +144,30 @@ class ExpressionParser(private val input: String) {
     fun parse(): Expression {
         return parseCompound()
     }
-        private fun parseCompound(): CompoundExpression {
+
+    private fun parseCompound(): CompoundExpression {
         val exprs = mutableListOf<Expression>()
         while (pos < input.length) {
             skipWhitespace()
-        if (pos >= input.length) break
+            if (pos >= input.length) break
             exprs.add(parseConditional())
             skipWhitespace()
-        if (pos < input.length && input[pos] == ';') pos++
+            if (pos < input.length && input[pos] == ';') pos++
         }
         return CompoundExpression(exprs)
     }
-        private fun parseConditional(): Expression {
+
+    private fun parseConditional(): Expression {
         val expr = parseOr()
         skipWhitespace()
         if (pos + 2 < input.length && input.substring(pos, pos + 3) == "if ") {
             val condition = parseConditional()
-        return ConditionalExpression(condition, expr)
+            return ConditionalExpression(condition, expr)
         }
         return expr
     }
-        private fun parseOr(): Expression {
+
+    private fun parseOr(): Expression {
         var left = parseAnd()
         skipWhitespace()
         while (pos + 2 < input.length && input.substring(pos, pos + 3) == "or ") {
@@ -174,7 +178,8 @@ class ExpressionParser(private val input: String) {
         }
         return left
     }
-        private fun parseAnd(): Expression {
+
+    private fun parseAnd(): Expression {
         var left = parseComparison()
         skipWhitespace()
         while (pos + 3 < input.length && input.substring(pos, pos + 4) == "and ") {
@@ -185,7 +190,8 @@ class ExpressionParser(private val input: String) {
         }
         return left
     }
-        private fun parseComparison(): Expression {
+
+    private fun parseComparison(): Expression {
         var left = parseTerm()
         skipWhitespace()
         while (pos < input.length) {
@@ -198,7 +204,7 @@ class ExpressionParser(private val input: String) {
                 input[pos] == '<' -> { pos++; "<" }
                 else -> null
             }
-        if (op != null) {
+            if (op != null) {
                 skipWhitespace()
                 left = BinaryExpression(left, op, parseTerm())
             } else break
@@ -206,7 +212,8 @@ class ExpressionParser(private val input: String) {
         }
         return left
     }
-        private fun parseTerm(): Expression {
+
+    private fun parseTerm(): Expression {
         var left = parseFactor()
         skipWhitespace()
         while (pos < input.length && (input[pos] == '+' || input[pos] == '-')) {
@@ -217,7 +224,8 @@ class ExpressionParser(private val input: String) {
         }
         return left
     }
-        private fun parseFactor(): Expression {
+
+    private fun parseFactor(): Expression {
         var left = parseUnary()
         skipWhitespace()
         while (pos < input.length && (input[pos] == '*' || input[pos] == '/')) {
@@ -228,25 +236,27 @@ class ExpressionParser(private val input: String) {
         }
         return left
     }
-        private fun parseUnary(): Expression {
+
+    private fun parseUnary(): Expression {
         skipWhitespace()
         if (pos < input.length && input[pos] == '!') {
             pos++; skipWhitespace()
-        return UnaryExpression("not", parsePrimary())
+            return UnaryExpression("not", parsePrimary())
         }
         if (pos < input.length && input[pos] == '-') {
             pos++; skipWhitespace()
-        return UnaryExpression("-", parsePrimary())
+            return UnaryExpression("-", parsePrimary())
         }
         return parsePrimary()
     }
-        private fun parsePrimary(): Expression {
+
+    private fun parsePrimary(): Expression {
         skipWhitespace()
         if (pos >= input.length) throw IllegalStateException("Unexpected end of input")
         return when {
             input[pos] == '(' -> {
                 pos++; val expr = parseConditional()
-        if (pos >= input.length || input[pos] != ')') throw IllegalStateException("Missing )")
+                if (pos >= input.length || input[pos] != ')') throw IllegalStateException("Missing )")
                 pos++; expr
             }
             input[pos] == '"' || input[pos] == '\'' -> {
@@ -254,7 +264,7 @@ class ExpressionParser(private val input: String) {
                 val start = pos
                 while (pos < input.length && input[pos] != quote) pos++
                 val str = input.substring(start, pos)
-        if (pos < input.length) pos++
+                if (pos < input.length) pos++
                 ValueExpression(str)
             }
             input[pos].isDigit() -> {
@@ -270,15 +280,15 @@ class ExpressionParser(private val input: String) {
                 while (pos < input.length && (input[pos].isLetterOrDigit() || input[pos] == '_')) pos++
                 val name = input.substring(start, pos)
                 skipWhitespace()
-        if (pos < input.length && input[pos] == '(') {
+                if (pos < input.length && input[pos] == '(') {
                     pos++; val args = mutableListOf<Expression>()
                     while (pos < input.length && input[pos] != ')') {
                         skipWhitespace()
-        if (args.isNotEmpty()) { if (input[pos] == ',') pos++; skipWhitespace() }
+                        if (args.isNotEmpty()) { if (input[pos] == ',') pos++; skipWhitespace() }
                         args.add(parseConditional())
                         skipWhitespace()
                     }
-        if (pos < input.length) pos++
+                    if (pos < input.length) pos++
                     FunctionExpression(name, args)
                 } else {
                     VariableExpression(name)
@@ -286,7 +296,8 @@ class ExpressionParser(private val input: String) {
             }
         }
     }
-        private fun skipWhitespace() {
+
+    private fun skipWhitespace() {
         while (pos < input.length && input[pos].isWhitespace()) pos++
     }
 }
@@ -294,14 +305,15 @@ class ExpressionParser(private val input: String) {
 /** Agent 脚本解释器 */
 class AgentScriptInterpreter {
     private val context = ScriptContext()
-        private val parser: ExpressionParser? = null
+    private val parser: ExpressionParser? = null
 
     fun execute(script: String): Any? {
         val parser = ExpressionParser(script)
         val ast = parser.parse()
         return ast.interpret(context)
     }
-        fun setVariable(name: String, value: Any?) { context.setVariable(name, value) }
-        fun getContext(): ScriptContext = context
+
+    fun setVariable(name: String, value: Any?) { context.setVariable(name, value) }
+    fun getContext(): ScriptContext = context
     fun clearContext() = context.clear()
 }

@@ -19,11 +19,11 @@ object JsonUtils {
     fun isValidJson(json: String): Boolean {
         return try {
             JSONObject(json)
-        true
+            true
         } catch (_: Exception) {
             try {
                 JSONArray(json)
-        true
+                true
             } catch (_: Exception) {
                 false
             }
@@ -41,14 +41,14 @@ object JsonUtils {
     fun toJson(obj: Any?): String {
         return when (obj) {
             null -> "null"
-        is JSONObject -> obj.toString()
-        is JSONArray -> obj.toString()
-        is Map<*, *> -> JSONObject(obj).toString()
-        is Collection<*> -> JSONArray(obj.toList()).toString()
-        is Array<*> -> JSONArray(obj).toString()
-        is Int, is Long, is Float, is Double, is Boolean -> obj.toString()
-        is String -> "\"$obj\""
-        else -> try {
+            is JSONObject -> obj.toString()
+            is JSONArray -> obj.toString()
+            is Map<*, *> -> JSONObject(obj).toString()
+            is Collection<*> -> JSONArray(obj.toList()).toString()
+            is Array<*> -> JSONArray(obj).toString()
+            is Int, is Long, is Float, is Double, is Boolean -> obj.toString()
+            is String -> "\"$obj\""
+            else -> try {
                 JSONObject.wrap(obj).toString()
             } catch (_: Exception) {
                 obj.toString()
@@ -65,7 +65,7 @@ object JsonUtils {
     fun toMap(json: String): Map<String, Any>? {
         return try {
             val jsonObject = JSONObject(json)
-        jsonObject.toMap()
+            jsonObject.toMap()
         } catch (_: Exception) {
             null
         }
@@ -80,7 +80,7 @@ object JsonUtils {
     fun toList(json: String): List<Any>? {
         return try {
             val jsonArray = JSONArray(json)
-        jsonArray.toList()
+            jsonArray.toList()
         } catch (_: Exception) {
             null
         }
@@ -97,8 +97,8 @@ object JsonUtils {
         return try {
             when {
                 json.trimStart().startsWith("{") -> JSONObject(json).toString(indentFactor)
-        json.trimStart().startsWith("[") -> JSONArray(json).toString(indentFactor)
-        else -> json
+                json.trimStart().startsWith("[") -> JSONArray(json).toString(indentFactor)
+                else -> json
             }
         } catch (_: Exception) {
             json
@@ -115,8 +115,8 @@ object JsonUtils {
         return try {
             when {
                 json.trimStart().startsWith("{") -> JSONObject(json).toString()
-        json.trimStart().startsWith("[") -> JSONArray(json).toString()
-        else -> json
+                json.trimStart().startsWith("[") -> JSONArray(json).toString()
+                else -> json
             }
         } catch (_: Exception) {
             json
@@ -148,7 +148,7 @@ object JsonUtils {
     fun getInt(json: String, key: String): Int? {
         return try {
             val jo = JSONObject(json)
-        if (jo.has(key)) jo.getInt(key) else null
+            if (jo.has(key)) jo.getInt(key) else null
         } catch (_: Exception) {
             null
         }
@@ -164,7 +164,7 @@ object JsonUtils {
     fun getLong(json: String, key: String): Long? {
         return try {
             val jo = JSONObject(json)
-        if (jo.has(key)) jo.getLong(key) else null
+            if (jo.has(key)) jo.getLong(key) else null
         } catch (_: Exception) {
             null
         }
@@ -180,7 +180,7 @@ object JsonUtils {
     fun getDouble(json: String, key: String): Double? {
         return try {
             val jo = JSONObject(json)
-        if (jo.has(key)) jo.getDouble(key) else null
+            if (jo.has(key)) jo.getDouble(key) else null
         } catch (_: Exception) {
             null
         }
@@ -196,7 +196,7 @@ object JsonUtils {
     fun getBoolean(json: String, key: String): Boolean? {
         return try {
             val jo = JSONObject(json)
-        if (jo.has(key)) jo.getBoolean(key) else null
+            if (jo.has(key)) jo.getBoolean(key) else null
         } catch (_: Exception) {
             null
         }
@@ -272,10 +272,10 @@ object JsonUtils {
         val map = mutableMapOf<String, Any>()
         keys().forEach { key ->
             val value = get(key)
-        map[key] = when (value) {
+            map[key] = when (value) {
                 is JSONObject -> value.toMap()
-        is JSONArray -> value.toList()
-        JSONObject.NULL -> Unit
+                is JSONArray -> value.toList()
+                JSONObject.NULL -> Unit
                 else -> value
             }
         }
@@ -289,10 +289,10 @@ object JsonUtils {
         val list = mutableListOf<Any>()
         for (i in 0 until length()) {
             val value = get(i)
-        list.add(when (value) {
+            list.add(when (value) {
                 is JSONObject -> value.toMap()
-        is JSONArray -> value.toList()
-        JSONObject.NULL -> Unit
+                is JSONArray -> value.toList()
+                JSONObject.NULL -> Unit
                 else -> value
             })
         }

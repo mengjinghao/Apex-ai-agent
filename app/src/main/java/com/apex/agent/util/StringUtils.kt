@@ -13,17 +13,24 @@ object StringUtils {
     private val EMAIL_REGEX = Pattern.compile(
         "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
     )
-        private val URL_REGEX = Pattern.compile(
+
+    private val URL_REGEX = Pattern.compile(
         "^(https?://)?([\\w-]+\\.)+[\\w-]+(/[\\w-./?%&=]*)?$"
     )
-        private val CHINESE_REGEX = Pattern.compile("[\\u4e00-\\u9fa5]")
-        private val HTML_TAG_REGEX = Pattern.compile("<[^>]*>")
-        private val EMAIL_EXTRACT_REGEX = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
-        private val URL_EXTRACT_REGEX = Pattern.compile(
+
+    private val CHINESE_REGEX = Pattern.compile("[\\u4e00-\\u9fa5]")
+
+    private val HTML_TAG_REGEX = Pattern.compile("<[^>]*>")
+
+    private val EMAIL_EXTRACT_REGEX = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
+
+    private val URL_EXTRACT_REGEX = Pattern.compile(
         "https?://[\\w./?=&%+-]+|[\\w-]+\\.[\\w-]+\\.[\\w-]+(/[\\w./?=&%+-]*)?"
     )
-        private val PHONE_REGEX = Pattern.compile("(\\+?\\d{1,3}[-.\\s]?)?\\(?\\d{2,4}\\)?[-.\\s]?\\d{3,4}[-.\\s]?\\d{3,4}")
-        private val MENTION_REGEX = Pattern.compile("@(\\w+)")
+
+    private val PHONE_REGEX = Pattern.compile("(\\+?\\d{1,3}[-.\\s]?)?\\(?\\d{2,4}\\)?[-.\\s]?\\d{3,4}[-.\\s]?\\d{3,4}")
+
+    private val MENTION_REGEX = Pattern.compile("@(\\w+)")
 
     /**
      * 计算两个字符串之间的 Levenshtein 编辑距离
@@ -82,7 +89,7 @@ object StringUtils {
         for ((i, ch) in camelCase.withIndex()) {
             if (ch.isUpperCase()) {
                 if (i > 0) result.append('_')
-        result.append(ch.lowercaseChar())
+                result.append(ch.lowercaseChar())
             } else {
                 result.append(ch)
             }
@@ -107,7 +114,7 @@ object StringUtils {
             } else {
                 if (part.isNotEmpty()) {
                     result.append(part[0].uppercaseChar())
-        if (part.length > 1) result.append(part.substring(1).lowercase())
+                    if (part.length > 1) result.append(part.substring(1).lowercase())
                 }
             }
         }
@@ -190,7 +197,7 @@ object StringUtils {
         if (url.isBlank()) return false
         return try {
             URL(url)
-        true
+            true
         } catch (e: Exception) {
             URL_REGEX.matcher(url).matches()
         }
@@ -209,7 +216,7 @@ object StringUtils {
         var startIndex = 0
         while (true) {
             val index = text.indexOf(sub, startIndex)
-        if (index < 0) break
+            if (index < 0) break
             count++
             startIndex = index + sub.length
         }
@@ -539,8 +546,8 @@ object StringUtils {
         return text.map { ch ->
             when {
                 ch.isUpperCase() -> ch.lowercaseChar()
-        ch.isLowerCase() -> ch.uppercaseChar()
-        else -> ch
+                ch.isLowerCase() -> ch.uppercaseChar()
+                else -> ch
             }
         }.joinToString("")
     }
@@ -572,8 +579,8 @@ object StringUtils {
         var start = 0
         while (start < text.length) {
             val end = minOf(start + size, text.length)
-        result.add(text.substring(start, end))
-        start = end
+            result.add(text.substring(start, end))
+            start = end
         }
         return result
     }
@@ -607,12 +614,12 @@ object StringUtils {
         for (word in words) {
             if (lineLength + word.length > width) {
                 if (result.isNotEmpty()) result.append("\n")
-        result.append(word)
-        lineLength = word.length
+                result.append(word)
+                lineLength = word.length
             } else {
                 if (result.isNotEmpty() && lineLength > 0) result.append(" ")
-        result.append(word)
-        lineLength += word.length + 1
+                result.append(word)
+                lineLength += word.length + 1
             }
         }
         return result.toString()
@@ -709,11 +716,11 @@ object StringUtils {
         var start = 0
         while (true) {
             val openIndex = text.indexOf(open, start)
-        if (openIndex < 0) break
+            if (openIndex < 0) break
             val closeIndex = text.indexOf(close, openIndex + open.length)
-        if (closeIndex < 0) break
+            if (closeIndex < 0) break
             result.add(text.substring(openIndex + open.length, closeIndex))
-        start = closeIndex + close.length
+            start = closeIndex + close.length
         }
         return result
     }

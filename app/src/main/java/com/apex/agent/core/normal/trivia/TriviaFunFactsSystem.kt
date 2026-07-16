@@ -32,19 +32,19 @@ data class FunFact(
 
 enum class FactCategory {
     ANIMAL,        // 动物
-        SCIENCE,       // 科学
-        HISTORY,       // 历史
-        GEOGRAPHY,     // 地理
-        CULTURE,       // 文化
-        FOOD,          // 食物
-        HUMAN_BODY,    // 人体
-        SPACE,         // 太空
-        TECHNOLOGY,    // 技术
-        LANGUAGE,      // 语言
-        SPORTS,        // 体育
-        ART,           // 艺术
-        NATURE,        // 自然
-        WEIRD          // 奇葩
+    SCIENCE,       // 科学
+    HISTORY,       // 历史
+    GEOGRAPHY,     // 地理
+    CULTURE,       // 文化
+    FOOD,          // 食物
+    HUMAN_BODY,    // 人体
+    SPACE,         // 太空
+    TECHNOLOGY,    // 技术
+    LANGUAGE,      // 语言
+    SPORTS,        // 体育
+    ART,           // 艺术
+    NATURE,        // 自然
+    WEIRD          // 奇葩
 }
 
 /**
@@ -66,9 +66,10 @@ data class TriviaQuestion(
 class TriviaFunFactsSystem {
 
     private val facts = mutableListOf<FunFact>()
-        private val questions = mutableListOf<TriviaQuestion>()
-        private val userStats = ConcurrentHashMap<String, UserTriviaStats>()
-        private val dailyFact = ConcurrentHashMap<String, FunFact>()  // 日期 -> 每日冷知识
+    private val questions = mutableListOf<TriviaQuestion>()
+    private val userStats = ConcurrentHashMap<String, UserTriviaStats>()
+    private val dailyFact = ConcurrentHashMap<String, FunFact>()  // 日期 -> 每日冷知识
+
     init {
         loadBuiltinFacts()
         loadBuiltinQuestions()
@@ -118,7 +119,7 @@ class TriviaFunFactsSystem {
             q.options.indexOf(answer.trim()).let { it >= 0 && q.options[it] == q.answer }
 
         // 更新统计
-    val stats = userStats.computeIfAbsent(userId) { UserTriviaStats(userId) }
+        val stats = userStats.computeIfAbsent(userId) { UserTriviaStats(userId) }
         val updated = stats.copy(
             totalAnswered = stats.totalAnswered + 1,
             correctAnswers = if (correct) stats.correctAnswers + 1 else stats.correctAnswers,
@@ -143,8 +144,8 @@ class TriviaFunFactsSystem {
         val fact = getRandomFact()
         return buildString {
             append("[你知道吗] ")
-        append(fact.fact)
-        fact.explanation?.let { append("\n$it") }
+            append(fact.fact)
+            fact.explanation?.let { append("\n$it") }
         }
     }
 
@@ -152,7 +153,8 @@ class TriviaFunFactsSystem {
      * 获取用户统计
      */
     fun getUserStats(userId: String): UserTriviaStats = userStats[userId] ?: UserTriviaStats(userId)
-        data class UserTriviaStats(
+
+    data class UserTriviaStats(
         val userId: String,
         val totalAnswered: Int = 0,
         val correctAnswers: Int = 0,
@@ -160,56 +162,59 @@ class TriviaFunFactsSystem {
     ) {
         val accuracy: Float get() = if (totalAnswered > 0) correctAnswers.toFloat() / totalAnswered else 0f
     }
-        data class AnswerResult(
+
+    data class AnswerResult(
         val correct: Boolean,
         val feedback: String,
         val funFact: String? = null
     )
-        private fun loadBuiltinFacts() {
+
+    private fun loadBuiltinFacts() {
         facts.addAll(listOf(
             // 动物
-        FunFact("f1", FactCategory.ANIMAL, "章鱼有 3 个心脏", "两个鳃心一个体心，游泳时体心会停跳"),
+            FunFact("f1", FactCategory.ANIMAL, "章鱼有 3 个心脏", "两个鳃心一个体心，游泳时体心会停跳"),
             FunFact("f2", FactCategory.ANIMAL, "蜗牛有约 25600 颗牙齿", "牙齿长在舌头上，称为齿舌"),
             FunFact("f3", FactCategory.ANIMAL, "蜂鸟不能走路", "腿太短，只能飞或栖息"),
             FunFact("f4", FactCategory.ANIMAL, "海獭睡觉时会手牵手", "防止漂散"),
             FunFact("f5", FactCategory.ANIMAL, "猫每天睡 16-20 小时"),
             FunFact("f6", FactCategory.ANIMAL, "袋熊的便便是方形的"),
             // 科学
-        FunFact("f7", FactCategory.SCIENCE, "宇宙中最常见的元素是氢", "占可见物质约 75%"),
+            FunFact("f7", FactCategory.SCIENCE, "宇宙中最常见的元素是氢", "占可见物质约 75%"),
             FunFact("f8", FactCategory.SCIENCE, "光从太阳到地球需要约 8 分钟"),
             FunFact("f9", FactCategory.SCIENCE, "DNA 链拉直约 2 米长"),
             FunFact("f10", FactCategory.SCIENCE, "一茶匙中子星物质重约 60 亿吨"),
             // 历史
-        FunFact("f11", FactCategory.HISTORY, "牛津大学比阿兹特克帝国还古老", "牛津 1096 年开始教学，阿兹特克 1428 年建国"),
+            FunFact("f11", FactCategory.HISTORY, "牛津大学比阿兹特克帝国还古老", "牛津 1096 年开始教学，阿兹特克 1428 年建国"),
             FunFact("f12", FactCategory.HISTORY, "埃及艳后生活的时代离 iPhone 比离金字塔更近"),
             // 地理
-        FunFact("f13", FactCategory.GEOGRAPHY, "俄罗斯横跨 11 个时区"),
+            FunFact("f13", FactCategory.GEOGRAPHY, "俄罗斯横跨 11 个时区"),
             FunFact("f14", FactCategory.GEOGRAPHY, "撒哈拉沙漠曾经是热带雨林"),
             FunFact("f15", FactCategory.GEOGRAPHY, "加拿大湖泊比世界其他地方加起来还多"),
             // 食物
-        FunFact("f16", FactCategory.FOOD, "蜂蜜永远不会过期", "考古发现 3000 年前的蜂蜜仍可食用"),
+            FunFact("f16", FactCategory.FOOD, "蜂蜜永远不会过期", "考古发现 3000 年前的蜂蜜仍可食用"),
             FunFact("f17", FactCategory.FOOD, "草莓不是浆果，但香蕉是"),
             FunFact("f18", FactCategory.FOOD, "番茄在 19 世纪被美国最高法院判定为蔬菜"),
             // 人体
-        FunFact("f19", FactCategory.HUMAN_BODY, "人一生产生约 2.5 万升唾液"),
+            FunFact("f19", FactCategory.HUMAN_BODY, "人一生产生约 2.5 万升唾液"),
             FunFact("f20", FactCategory.HUMAN_BODY, "你的胃黏膜每 3-4 天更新一次"),
             FunFact("f21", FactCategory.HUMAN_BODY, "打喷嚏时所有身体机能都会停止，包括心跳（瞬间）"),
             // 太空
-        FunFact("f22", FactCategory.SPACE, "金星上一天比一年长", "金星自转 243 地球日，公转 225 地球日"),
+            FunFact("f22", FactCategory.SPACE, "金星上一天比一年长", "金星自转 243 地球日，公转 225 地球日"),
             FunFact("f23", FactCategory.SPACE, "太空是绝对寂静的", "没有空气传播声音"),
             FunFact("f24", FactCategory.SPACE, "月球每年远离地球约 3.8 厘米"),
             // 技术
-        FunFact("f25", FactCategory.TECHNOLOGY, "第一个网页至今仍在线", "1991 年由 Tim Berners-Lee 创建"),
+            FunFact("f25", FactCategory.TECHNOLOGY, "第一个网页至今仍在线", "1991 年由 Tim Berners-Lee 创建"),
             FunFact("f26", FactCategory.TECHNOLOGY, "Python 是以 Monty Python 命名的，不是蛇"),
             // 语言
-        FunFact("f27", FactCategory.LANGUAGE, "中文是最多人使用的母语", "约 12 亿人"),
+            FunFact("f27", FactCategory.LANGUAGE, "中文是最多人使用的母语", "约 12 亿人"),
             FunFact("f28", FactCategory.LANGUAGE, "冰岛语保留了大量古诺尔斯语，现代冰岛人能读懂千年前的萨迦"),
             // 奇葩
-        FunFact("f29", FactCategory.WEIRD, "云的平均重量约 500 吨", "相当于 100 头大象"),
+            FunFact("f29", FactCategory.WEIRD, "云的平均重量约 500 吨", "相当于 100 头大象"),
             FunFact("f30", FactCategory.WEIRD, "你出生时约有 300 块骨头，成年后只有 206 块", "因为骨头会融合")
         ))
     }
-        private fun loadBuiltinQuestions() {
+
+    private fun loadBuiltinQuestions() {
         questions.addAll(listOf(
             TriviaQuestion("q1", FactCategory.ANIMAL, 1, "章鱼有几个心脏？", "3", listOf("1", "2", "3", "4"), "两个鳃心一个体心"),
             TriviaQuestion("q2", FactCategory.SCIENCE, 2, "光从太阳到地球需要多久？", "8分钟", listOf("8秒", "8分钟", "8小时", "8天")),

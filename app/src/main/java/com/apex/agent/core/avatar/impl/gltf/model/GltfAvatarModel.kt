@@ -21,7 +21,8 @@ data class GltfAvatarModel(
 
     val isBinaryGlb: Boolean
         get() = modelFile.endsWith(".glb", ignoreCase = true)
-        val normalizedDeclaredAnimationNames: List<String>
+
+    val normalizedDeclaredAnimationNames: List<String>
         get() = declaredAnimationNames
             .map { it.trim() }
             .filter { it.isNotBlank() }

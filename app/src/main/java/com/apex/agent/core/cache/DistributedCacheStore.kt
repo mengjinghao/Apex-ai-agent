@@ -29,36 +29,43 @@ class DistributedCacheStore<V>(
 
     /** 本地备份存储，用于降级场景 */
     private val backupStore = ConcurrentHashMap<String, CacheEntry<V>>()
-        private val hits = AtomicLong(0)
-        private val misses = AtomicLong(0)
-        private val evictions = AtomicLong(0)
-        override fun get(key: String): CacheEntry<V>? {
+
+    private val hits = AtomicLong(0)
+    private val misses = AtomicLong(0)
+    private val evictions = AtomicLong(0)
+
+    override fun get(key: String): CacheEntry<V>? {
         return retryable {
             simulateNetworkFetch(key)
         } ?: fallbackGet(key)
     }
-        override fun put(entry: CacheEntry<V>) {
+
+    override fun put(entry: CacheEntry<V>) {
         retryable {
             simulateNetworkPut(entry.key, entry)
-        Unit
+            Unit
         } ?: fallbackPut(entry)
     }
-        override fun remove(key: String): Boolean {
+
+    override fun remove(key: String): Boolean {
         return retryable {
             simulateNetworkDelete(key)
-        true
+            true
         } ?: fallbackRemove(key)
     }
-        override fun clear() {
+
+    override fun clear() {
         backupStore.clear()
         log.info("Distributed cache cleared (local backup only)")
     }
-        override fun contains(key: String): Boolean {
+
+    override fun contains(key: String): Boolean {
         return retryable {
             simulateNetworkContains(key)
         } ?: backupStore.containsKey(key)
     }
-        override fun size(): Int = backupStore.size
+
+    override fun size(): Int = backupStore.size
 
     override fun stats(): CacheStats {
         return CacheStats(
@@ -70,22 +77,23 @@ class DistributedCacheStore<V>(
             avgAccessTime = 0L
         )
     }
-        override fun evict(policy: CachePolicy): List<String> {
+
+    override fun evict(policy: CachePolicy): List<String> {
         val evictedKeys = mutableListOf<String>()
         val candidates = when (policy) {
             is CachePolicy.TtlPolicy -> {
                 backupStore.values.filter { it.isExpired() }.map { it.key }
             }
-        is CachePolicy.LruPolicy -> {
+            is CachePolicy.LruPolicy -> {
                 policy.evictCandidates(backupStore.values).map { it.key }
             }
-        is CachePolicy.LfuPolicy -> {
+            is CachePolicy.LfuPolicy -> {
                 policy.evictCandidates(backupStore.values).map { it.key }
             }
-        is CachePolicy.FifoPolicy -> {
+            is CachePolicy.FifoPolicy -> {
                 policy.evictCandidates(backupStore.values).map { it.key }
             }
-        is CachePolicy.HybridPolicy -> {
+            is CachePolicy.HybridPolicy -> {
                 backupStore.values.sortedByDescending { policy.evictionScore(it) }
                     .take((backupStore.size * 0.25).toInt().coerceAtLeast(1))
                     .map { it.key }
@@ -93,22 +101,23 @@ class DistributedCacheStore<V>(
         }
         for (key in candidates) {
             backupStore.remove(key)
-        evictedKeys.add(key)
+            evictedKeys.add(key)
         }
         evictions.addAndGet(evictedKeys.size.toLong())
         return evictedKeys
     }
-        override fun warmUp(keys: Collection<String>): Int {
+
+    override fun warmUp(keys: Collection<String>): Int {
         var loaded = 0
         for (key in keys) {
             if (!backupStore.containsKey(key)) {
                 retryable {
                     val entry = simulateNetworkFetch(key)
-        if (entry != null) {
+                    if (entry != null) {
                         backupStore[key] = entry
                         loaded++
                     }
-        null
+                    null
                 }
             } else {
                 loaded++
@@ -128,7 +137,7 @@ class DistributedCacheStore<V>(
                 lastException = e
                 log.warn("Distributed cache retry {}/{} failed: {}",
                     attempt, maxRetries, e.message)
-        if (attempt < maxRetries) {
+                if (attempt < maxRetries) {
                     Thread.sleep(retryDelayMs * (1L shl (attempt - 1)))
                 }
             }
@@ -142,10 +151,10 @@ class DistributedCacheStore<V>(
         val entry = backupStore[key]
         return if (entry != null) {
             hits.incrementAndGet()
-        entry.recordAccess().also { backupStore[key] = it }
+            entry.recordAccess().also { backupStore[key] = it }
         } else {
             misses.incrementAndGet()
-        null
+            null
         }
     }
 
@@ -170,7 +179,7 @@ class DistributedCacheStore<V>(
         val entry = backupStore[key]
         if (entry != null) {
             hits.incrementAndGet()
-        return entry.recordAccess().also { backupStore[key] = it }
+            return entry.recordAccess().also { backupStore[key] = it }
         }
         misses.incrementAndGet()
         return null

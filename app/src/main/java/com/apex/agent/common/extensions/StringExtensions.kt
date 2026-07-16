@@ -56,7 +56,7 @@ fun String.truncate(maxLength: Int, ellipsis: String = "..."): String {
 fun String.isEmail(): Boolean {
     if (isBlank()) return false
     val regex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-        return regex.matches(this)
+    return regex.matches(this)
 }
 
 /**
@@ -67,7 +67,7 @@ fun String.isEmail(): Boolean {
 fun String.isPhone(): Boolean {
     if (isBlank()) return false
     val cleaned = replace(Regex("[\\s\\-()]"), "")
-        return cleaned.length >= 10 && cleaned.all { it.isDigit() }
+    return cleaned.length >= 10 && cleaned.all { it.isDigit() }
 }
 
 /**
@@ -78,7 +78,7 @@ fun String.isPhone(): Boolean {
 fun String.isUrl(): Boolean {
     if (isBlank()) return false
     val regex = Regex("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]")
-        return regex.matches(this)
+    return regex.matches(this)
 }
 
 /**
@@ -100,9 +100,9 @@ fun String.isNumeric(): Boolean {
 fun String.toCamelCase(): String {
     if (isEmpty()) return this
     val separators = Regex("[_\\s-]")
-        val parts = split(separators).filter { it.isNotEmpty() }
-        if (parts.isEmpty()) return ""
-        return parts.first().lowercase() + parts.drop(1).joinToString("") {
+    val parts = split(separators).filter { it.isNotEmpty() }
+    if (parts.isEmpty()) return ""
+    return parts.first().lowercase() + parts.drop(1).joinToString("") {
         it.replaceFirstChar { c -> c.uppercase() }
     }
 }
@@ -116,13 +116,13 @@ fun String.toCamelCase(): String {
 fun String.toSnakeCase(): String {
     if (isEmpty()) return this
     val result = StringBuilder()
-        for (char in this) {
+    for (char in this) {
         if (char.isUpperCase() && result.isNotEmpty()) {
             result.append('_')
         }
         result.append(char.lowercase())
     }
-        return result.toString().replace(Regex("[\\s-]"), "_")
+    return result.toString().replace(Regex("[\\s-]"), "_")
 }
 
 /**
@@ -141,7 +141,7 @@ fun String.countOccurrences(sub: String): Int {
         count++
         startIndex = index + sub.length
     }
-        return count
+    return count
 }
 
 /**

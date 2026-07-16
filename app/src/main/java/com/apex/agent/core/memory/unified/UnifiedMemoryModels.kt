@@ -20,7 +20,7 @@ data class UnifiedMemoryItem(
         other as UnifiedMemoryItem
         return id == other.id
     }
-        override fun hashCode(): Int = id.hashCode()
+    override fun hashCode(): Int = id.hashCode()
 }
 
 data class ModeAwareMemoryConfig(

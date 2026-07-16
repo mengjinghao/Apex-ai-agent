@@ -68,19 +68,19 @@ object DangerousCommandDetector {
         val lower = command.trim().lowercase()
         for (p in patterns) {
             // 构建正则:允许中间有空格变化
-    val regexStr = p.regex
+            val regexStr = p.regex
                 .replace(" ", "\\s+")
                 .replace(".", "\\.")
                 .replace("*", ".*")
                 .replace("~", System.getProperty("user.home") ?: "~")
             try {
                 val regex = Regex(regexStr, RegexOption.IGNORE_CASE)
-        if (regex.containsMatchIn(lower)) {
+                if (regex.containsMatchIn(lower)) {
                     return DetectionResult(true, p.description, p.level)
                 }
             } catch (e: Exception) {
                 // 正则构建失败,用简单 contains 匹配
-    if (lower.contains(p.regex.lowercase().replace("\\", ""))) {
+                if (lower.contains(p.regex.lowercase().replace("\\", ""))) {
                     return DetectionResult(true, p.description, p.level)
                 }
             }

@@ -19,16 +19,16 @@ fun <T> List<T>?.orEmpty(): List<T> = this ?: emptyList()
  */
 fun <T> List<T>.chunked(size: Int): List<List<T>> {
     require(size > 0) { "分块大小必须大于 0，实际为 $size" }
-        if (isEmpty()) return emptyList()
-        val result = mutableListOf<List<T>>()
-        var i = 0
+    if (isEmpty()) return emptyList()
+    val result = mutableListOf<List<T>>()
+    var i = 0
     while (i < size) {
         if (i >= this.size) break
         val end = (i + size).coerceAtMost(this.size)
         result.add(subList(i, end))
         i += size
     }
-        return result
+    return result
 }
 
 /**
@@ -39,7 +39,7 @@ fun <T> List<T>.chunked(size: Int): List<List<T>> {
  */
 fun <T> List<T>.second(): T {
     if (size < 2) throw IndexOutOfBoundsException("列表长度 $size 小于 2")
-        return this[1]
+    return this[1]
 }
 
 /**
@@ -50,7 +50,7 @@ fun <T> List<T>.second(): T {
  */
 fun <T> List<T>.third(): T {
     if (size < 3) throw IndexOutOfBoundsException("列表长度 $size 小于 3")
-        return this[2]
+    return this[2]
 }
 
 /**
@@ -78,12 +78,12 @@ fun <T> List<T>.thirdOrNull(): T? {
  */
 fun <T> List<T?>.filterNotNull(): List<T> {
     val result = mutableListOf<T>()
-        for (element in this) {
+    for (element in this) {
         if (element != null) {
             result.add(element)
         }
     }
-        return result
+    return result
 }
 
 /**

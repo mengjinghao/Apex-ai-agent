@@ -37,44 +37,52 @@ private enum class RegistrationBucket {
 
 internal class JsToolPkgRegistrationSession {
     private val lock = Any()
-        private var capture: MutableMap<RegistrationBucket, MutableList<String>>? = null
+    private var capture: MutableMap<RegistrationBucket, MutableList<String>>? = null
 
     fun begin() {
         synchronized(lock) {
             capture = mutableMapOf()
         }
     }
-        fun appendToolboxUiModule(specJson: String) = append(RegistrationBucket.TOOLBOX_UI, specJson)
-        fun appendAppLifecycleHook(specJson: String) = append(RegistrationBucket.APP_LIFECYCLE, specJson)
-        fun appendMessageProcessingPlugin(specJson: String) =
+
+    fun appendToolboxUiModule(specJson: String) = append(RegistrationBucket.TOOLBOX_UI, specJson)
+    fun appendAppLifecycleHook(specJson: String) = append(RegistrationBucket.APP_LIFECYCLE, specJson)
+    fun appendMessageProcessingPlugin(specJson: String) =
         append(RegistrationBucket.MESSAGE_PROCESSING, specJson)
-        fun appendXmlRenderPlugin(specJson: String) = append(RegistrationBucket.XML_RENDER, specJson)
-        fun appendInputMenuTogglePlugin(specJson: String) =
+
+    fun appendXmlRenderPlugin(specJson: String) = append(RegistrationBucket.XML_RENDER, specJson)
+    fun appendInputMenuTogglePlugin(specJson: String) =
         append(RegistrationBucket.INPUT_MENU_TOGGLE, specJson)
-        fun appendToolLifecycleHook(specJson: String) =
+
+    fun appendToolLifecycleHook(specJson: String) =
         append(RegistrationBucket.TOOL_LIFECYCLE, specJson)
-        fun appendPromptInputHook(specJson: String) = append(RegistrationBucket.PROMPT_INPUT, specJson)
-        fun appendPromptHistoryHook(specJson: String) =
+
+    fun appendPromptInputHook(specJson: String) = append(RegistrationBucket.PROMPT_INPUT, specJson)
+    fun appendPromptHistoryHook(specJson: String) =
         append(RegistrationBucket.PROMPT_HISTORY, specJson)
-        fun appendPromptEstimateHistoryHook(specJson: String) =
+    fun appendPromptEstimateHistoryHook(specJson: String) =
         append(RegistrationBucket.PROMPT_ESTIMATE_HISTORY, specJson)
-        fun appendSystemPromptComposeHook(specJson: String) =
+
+    fun appendSystemPromptComposeHook(specJson: String) =
         append(RegistrationBucket.SYSTEM_PROMPT_COMPOSE, specJson)
-        fun appendToolPromptComposeHook(specJson: String) =
+
+    fun appendToolPromptComposeHook(specJson: String) =
         append(RegistrationBucket.TOOL_PROMPT_COMPOSE, specJson)
-        fun appendPromptFinalizeHook(specJson: String) =
+
+    fun appendPromptFinalizeHook(specJson: String) =
         append(RegistrationBucket.PROMPT_FINALIZE, specJson)
-        fun appendPromptEstimateFinalizeHook(specJson: String) =
+    fun appendPromptEstimateFinalizeHook(specJson: String) =
         append(RegistrationBucket.PROMPT_ESTIMATE_FINALIZE, specJson)
-        fun finish(executionResult: Any): ToolPkgMainRegistrationCapture {
+
+    fun finish(executionResult: Any): ToolPkgMainRegistrationCapture {
         if (executionResult is String && executionResult.trim().startsWith("Error:", ignoreCase = true)) {
             val message = executionResult.substringAfter(':', executionResult).trim()
-        throw IllegalStateException(message.ifBlank { "toolpkg main registration failed" })
+            throw IllegalStateException(message.ifBlank { "toolpkg main registration failed" })
         }
         synchronized(lock) {
             val current = capture.orEmpty()
-        fun read(bucket: RegistrationBucket): List<String> = current[bucket]?.toList().orEmpty()
-        return ToolPkgMainRegistrationCapture(
+            fun read(bucket: RegistrationBucket): List<String> = current[bucket]?.toList().orEmpty()
+            return ToolPkgMainRegistrationCapture(
                 toolboxUiModules = read(RegistrationBucket.TOOLBOX_UI),
                 appLifecycleHooks = read(RegistrationBucket.APP_LIFECYCLE),
                 messageProcessingPlugins = read(RegistrationBucket.MESSAGE_PROCESSING),
@@ -91,19 +99,22 @@ internal class JsToolPkgRegistrationSession {
             )
         }
     }
-        fun end() {
+
+    fun end() {
         synchronized(lock) {
             capture = null
         }
     }
-        private fun append(bucket: RegistrationBucket, specJson: String) {
+
+    private fun append(bucket: RegistrationBucket, specJson: String) {
         val normalized = normalizeRegistrationSpec(specJson)
         synchronized(lock) {
             val target = capture ?: error("toolpkg registration session is not active")
-        target.getOrPut(bucket) { mutableListOf() }.add(normalized)
+            target.getOrPut(bucket) { mutableListOf() }.add(normalized)
         }
     }
-        private fun normalizeRegistrationSpec(specJson: String): String {
+
+    private fun normalizeRegistrationSpec(specJson: String): String {
         val trimmed = specJson.trim()
         require(trimmed.isNotEmpty()) { "toolpkg registration payload is empty" }
         val parsed = JSONTokener(trimmed).nextValue()
@@ -118,16 +129,18 @@ internal fun buildToolPkgRegistrationBridgeScript(): String {
             var root = typeof globalThis !== 'undefined'
                 ? globalThis
                 : (typeof window !== 'undefined' ? window : this);
-        var inlineHookCounter = 0;
-        function installGlobal(name, value) {
+            var inlineHookCounter = 0;
+
+            function installGlobal(name, value) {
                 var key = String(name || '').trim();
-        if (!key || value === undefined) {
+                if (!key || value === undefined) {
                     return;
                 }
-        try { globalThis[key] = value; } catch (_e) {}
-        try { window[key] = value; } catch (_e2) {}
+                try { globalThis[key] = value; } catch (_e) {}
+                try { window[key] = value; } catch (_e2) {}
             }
-        function requireNative(name) {
+
+            function requireNative(name) {
                 if (
                     typeof NativeInterface === 'undefined' ||
                     !NativeInterface ||
@@ -135,67 +148,73 @@ internal fun buildToolPkgRegistrationBridgeScript(): String {
                 ) {
                     throw new Error('NativeInterface.' + name + ' is unavailable');
                 }
-        return NativeInterface[name].bind(NativeInterface);
+                return NativeInterface[name].bind(NativeInterface);
             }
-        function copyObject(source, excludedKey) {
+
+            function copyObject(source, excludedKey) {
                 var output = {};
-        var keys = Object.keys(source || {});
-        for (var i = 0; i < keys.length; i += 1) {
+                var keys = Object.keys(source || {});
+                for (var i = 0; i < keys.length; i += 1) {
                     var key = keys[i];
-        if (key !== excludedKey) {
+                    if (key !== excludedKey) {
                         output[key] = source[key];
                     }
                 }
-        return output;
+                return output;
             }
-        function getActiveExports() {
+
+            function getActiveExports() {
                 return typeof root.__ApexGetActiveModuleExports === 'function'
                     ? root.__ApexGetActiveModuleExports()
                     : null;
             }
-        function resolveExportedFunctionName(fn) {
+
+            function resolveExportedFunctionName(fn) {
                 var exportsRef = getActiveExports();
-        if (!exportsRef || typeof exportsRef !== 'object') {
+                if (!exportsRef || typeof exportsRef !== 'object') {
                     return '';
                 }
-        var keys = Object.keys(exportsRef);
-        for (var i = 0; i < keys.length; i += 1) {
+                var keys = Object.keys(exportsRef);
+                for (var i = 0; i < keys.length; i += 1) {
                     if (exportsRef[keys[i]] === fn) {
                         return keys[i];
                     }
                 }
-        return '';
+                return '';
             }
-        function buildInlineFunctionName(definition) {
+
+            function buildInlineFunctionName(definition) {
                 inlineHookCounter += 1;
-        var rawId = String((definition && definition.id) || 'hook');
-        var safeId = rawId.replace(/[^a-zA-Z0-9_$]/g, '_') || 'hook';
-        return '__Apex_inline_hook_' + safeId + '_' + inlineHookCounter;
+                var rawId = String((definition && definition.id) || 'hook');
+                var safeId = rawId.replace(/[^a-zA-Z0-9_$]/g, '_') || 'hook';
+                return '__Apex_inline_hook_' + safeId + '_' + inlineHookCounter;
             }
-        function normalizeFunctionField(definition, fieldName, label) {
+
+            function normalizeFunctionField(definition, fieldName, label) {
                 if (!definition || typeof definition !== 'object' || Array.isArray(definition)) {
                     throw new Error(label + ' expects an object');
                 }
-        var normalized = copyObject(definition, fieldName);
-        var fn = definition[fieldName];
-        if (typeof fn !== 'function') {
+                var normalized = copyObject(definition, fieldName);
+                var fn = definition[fieldName];
+                if (typeof fn !== 'function') {
                     throw new Error(label + ' requires a function reference');
                 }
-        var exportedName = resolveExportedFunctionName(fn);
-        normalized[fieldName] = exportedName || buildInlineFunctionName(definition);
-        if (!exportedName) {
+                var exportedName = resolveExportedFunctionName(fn);
+                normalized[fieldName] = exportedName || buildInlineFunctionName(definition);
+                if (!exportedName) {
                     normalized.function_source = String(fn);
                 }
-        return normalized;
+                return normalized;
             }
-        function normalizeScreenField(definition, label) {
+
+            function normalizeScreenField(definition, label) {
                 if (!definition || typeof definition !== 'object' || Array.isArray(definition)) {
                     throw new Error(label + ' expects an object');
                 }
-        var normalized = copyObject(definition, 'screen');
-        var screen = definition.screen;
-        var path = '';
-        if (typeof screen === 'string') {
+                var normalized = copyObject(definition, 'screen');
+                var screen = definition.screen;
+                var path = '';
+                if (typeof screen === 'string') {
                     path = screen.trim().replace(/\\/g, '/');
                 } else if (typeof screen === 'function' && typeof screen.__Apex_toolpkg_module_path === 'string') {
                     path = screen.__Apex_toolpkg_module_path.trim().replace(/\\/g, '/');
@@ -207,67 +226,71 @@ internal fun buildToolPkgRegistrationBridgeScript(): String {
                 ) {
                     path = screen.default.__Apex_toolpkg_module_path.trim().replace(/\\/g, '/');
                 }
-        if (!path) {
+                if (!path) {
                     throw new Error(label + ' requires a serializable screen reference');
                 }
-        normalized.screen = path;
-        return normalized;
+                normalized.screen = path;
+                return normalized;
             }
-        function registerWithNative(definition, label, nativeMethod, fieldName) {
+
+            function registerWithNative(definition, label, nativeMethod, fieldName) {
                 var normalized = fieldName
                     ? normalizeFunctionField(definition, fieldName, label)
                     : normalizeScreenField(definition, label);
-        requireNative(nativeMethod)(JSON.stringify(normalized));
+                requireNative(nativeMethod)(JSON.stringify(normalized));
             }
-        function resolveCurrentToolPkgTarget() {
+
+            function resolveCurrentToolPkgTarget() {
                 var callId = String(root.__ApexCurrentCallId || '').trim();
-        var callState =
+                var callState =
                     callId && typeof root.__ApexGetCallState === 'function'
                         ? root.__ApexGetCallState(callId)
                         : null;
-        var params =
+                var params =
                     callState && callState.params && typeof callState.params === 'object'
                         ? callState.params
                         : null;
-        if (!params) {
+                if (!params) {
                     return '';
                 }
-        var candidates = [
+                var candidates = [
                     params.__Apex_ui_package_name,
                     params.toolPkgId,
                     params.containerPackageName,
                     params.__Apex_toolpkg_subpackage_id,
                     params.__Apex_package_name
                 ];
-        for (var i = 0; i < candidates.length; i += 1) {
+                for (var i = 0; i < candidates.length; i += 1) {
                     var value = String(candidates[i] || '').trim();
-        if (value) {
+                    if (value) {
                         return value;
                     }
                 }
-        return '';
+                return '';
             }
-        function readToolPkgResource(key, outputFileName, internal) {
+
+            function readToolPkgResource(key, outputFileName, internal) {
                 var resourceKey = String(key || '').trim();
-        if (!resourceKey) {
+                if (!resourceKey) {
                     return Promise.reject(new Error('resource key is required'));
                 }
-        var target = resolveCurrentToolPkgTarget();
-        if (!target) {
+                var target = resolveCurrentToolPkgTarget();
+                if (!target) {
                     return Promise.reject(new Error('package/toolpkg runtime target is empty'));
                 }
-        var path = requireNative('readToolPkgResource')(
+                var path = requireNative('readToolPkgResource')(
                     target,
                     resourceKey,
                     outputFileName == null ? '' : String(outputFileName).trim(),
                     internal === true ? 'true' : ''
                 );
-        if (typeof path === 'string' && path.trim()) {
+                if (typeof path === 'string' && path.trim()) {
                     return Promise.resolve(path);
                 }
-        return Promise.reject(new Error('resource not found: ' + resourceKey));
+                return Promise.reject(new Error('resource not found: ' + resourceKey));
             }
-        var api = {
+
+            var api = {
                 registerToolboxUiModule: function(definition) {
                     registerWithNative(
                         definition,
@@ -294,12 +317,13 @@ internal fun buildToolPkgRegistrationBridgeScript(): String {
                 ['registerPromptEstimateFinalizeHook', 'registerToolPkgPromptEstimateFinalizeHook']
             ].forEach(function(entry) {
                 var apiName = entry[0];
-        var nativeMethod = entry[1];
-        api[apiName] = function(definition) {
+                var nativeMethod = entry[1];
+                api[apiName] = function(definition) {
                     registerWithNative(definition, apiName, nativeMethod, 'function');
                 };
             });
-        installGlobal('ToolPkg', api);
+
+            installGlobal('ToolPkg', api);
         })();
     """.trimIndent()
 }

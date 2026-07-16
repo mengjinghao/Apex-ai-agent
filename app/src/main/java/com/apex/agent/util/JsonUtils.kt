@@ -18,14 +18,14 @@ object JsonUtils {
         if (json.isBlank()) return false
         return try {
             val trimmed = json.trim()
-        if (trimmed.startsWith("{")) {
+            if (trimmed.startsWith("{")) {
                 JSONObject(trimmed)
             } else if (trimmed.startsWith("[")) {
                 JSONArray(trimmed)
             } else {
                 return false
             }
-        true
+            true
         } catch (e: Exception) {
             false
         }
@@ -41,10 +41,10 @@ object JsonUtils {
         if (json.isBlank()) return json
         return try {
             val trimmed = json.trim()
-        when {
+            when {
                 trimmed.startsWith("{") -> JSONObject(trimmed).toString(2)
-        trimmed.startsWith("[") -> JSONArray(trimmed).toString(2)
-        else -> json
+                trimmed.startsWith("[") -> JSONArray(trimmed).toString(2)
+                else -> json
             }
         } catch (e: Exception) {
             json
@@ -61,10 +61,10 @@ object JsonUtils {
         if (json.isBlank()) return json
         return try {
             val trimmed = json.trim()
-        when {
+            when {
                 trimmed.startsWith("{") -> JSONObject(trimmed).toString()
-        trimmed.startsWith("[") -> JSONArray(trimmed).toString()
-        else -> json
+                trimmed.startsWith("[") -> JSONArray(trimmed).toString()
+                else -> json
             }
         } catch (e: Exception) {
             json
@@ -80,9 +80,9 @@ object JsonUtils {
     fun jsonToMap(json: String): Map<String, Any>? {
         return try {
             val trimmed = json.trim()
-        if (!trimmed.startsWith("{")) return null
+            if (!trimmed.startsWith("{")) return null
             val jsonObject = JSONObject(trimmed)
-        jsonObjectToMap(jsonObject)
+            jsonObjectToMap(jsonObject)
         } catch (e: Exception) {
             null
         }
@@ -110,26 +110,26 @@ object JsonUtils {
         if (json.isBlank() || path.isBlank()) return null
         return try {
             val trimmed = json.trim()
-        val root: Any = when {
+            val root: Any = when {
                 trimmed.startsWith("{") -> JSONObject(trimmed)
-        trimmed.startsWith("[") -> JSONArray(trimmed)
-        else -> return null
+                trimmed.startsWith("[") -> JSONArray(trimmed)
+                else -> return null
             }
-        val parts = path.split(".")
-        var current: Any? = root
+            val parts = path.split(".")
+            var current: Any? = root
             for (part in parts) {
                 current = when (current) {
                     is JSONObject -> {
                         if (current.has(part)) current.get(part) else return null
                     }
-        is JSONArray -> {
+                    is JSONArray -> {
                         val index = part.toIntOrNull() ?: return null
                         if (index in 0 until current.length()) current.get(index) else return null
                     }
-        else -> return null
+                    else -> return null
                 }
             }
-        if (current === JSONObject.NULL) null else current
+            if (current === JSONObject.NULL) null else current
         } catch (e: Exception) {
             null
         }
@@ -145,9 +145,9 @@ object JsonUtils {
     fun mergeJson(base: String, overlay: String): String {
         return try {
             val baseObj = JSONObject(base.trim())
-        val overlayObj = JSONObject(overlay.trim())
-        val merged = deepMerge(baseObj, overlayObj)
-        merged.toString()
+            val overlayObj = JSONObject(overlay.trim())
+            val merged = deepMerge(baseObj, overlayObj)
+            merged.toString()
         } catch (e: Exception) {
             base
         }
@@ -164,14 +164,14 @@ object JsonUtils {
         val result = mutableMapOf<String, String>()
         try {
             val trimmed = json.trim()
-        when {
+            when {
                 trimmed.startsWith("{") -> {
                     val obj = JSONObject(trimmed)
-        flattenJsonObject(obj, prefix, result)
+                    flattenJsonObject(obj, prefix, result)
                 }
-        trimmed.startsWith("[") -> {
+                trimmed.startsWith("[") -> {
                     val arr = JSONArray(trimmed)
-        flattenJsonArray(arr, prefix, result)
+                    flattenJsonArray(arr, prefix, result)
                 }
             }
         } catch (_: Exception) {
@@ -189,7 +189,7 @@ object JsonUtils {
         if (json.isBlank()) return false
         return try {
             val trimmed = json.trim()
-        trimmed.startsWith("[") && JSONArray(trimmed).length() >= 0
+            trimmed.startsWith("[") && JSONArray(trimmed).length() >= 0
         } catch (e: Exception) {
             false
         }
@@ -205,7 +205,7 @@ object JsonUtils {
         if (json.isBlank()) return false
         return try {
             val trimmed = json.trim()
-        trimmed.startsWith("{") && JSONObject(trimmed).length() >= 0
+            trimmed.startsWith("{") && JSONObject(trimmed).length() >= 0
         } catch (e: Exception) {
             false
         }
@@ -221,14 +221,14 @@ object JsonUtils {
         val paths = mutableListOf<String>()
         try {
             val trimmed = json.trim()
-        when {
+            when {
                 trimmed.startsWith("{") -> {
                     val obj = JSONObject(trimmed)
-        extractPathsFromObject(obj, "", paths)
+                    extractPathsFromObject(obj, "", paths)
                 }
-        trimmed.startsWith("[") -> {
+                trimmed.startsWith("[") -> {
                     val arr = JSONArray(trimmed)
-        extractPathsFromArray(arr, "", paths)
+                    extractPathsFromArray(arr, "", paths)
                 }
             }
         } catch (_: Exception) {
@@ -245,16 +245,16 @@ object JsonUtils {
     fun removeNulls(json: String): String {
         return try {
             val trimmed = json.trim()
-        when {
+            when {
                 trimmed.startsWith("{") -> {
                     val obj = JSONObject(trimmed)
-        removeNullsFromObject(obj).toString()
+                    removeNullsFromObject(obj).toString()
                 }
-        trimmed.startsWith("[") -> {
+                trimmed.startsWith("[") -> {
                     val arr = JSONArray(trimmed)
-        removeNullsFromArray(arr).toString()
+                    removeNullsFromArray(arr).toString()
                 }
-        else -> json
+                else -> json
             }
         } catch (e: Exception) {
             json
@@ -270,91 +270,96 @@ object JsonUtils {
     fun sortJson(json: String): String {
         return try {
             val trimmed = json.trim()
-        when {
+            when {
                 trimmed.startsWith("{") -> {
                     val obj = JSONObject(trimmed)
-        sortJsonObject(obj).toString(2)
+                    sortJsonObject(obj).toString(2)
                 }
-        trimmed.startsWith("[") -> {
+                trimmed.startsWith("[") -> {
                     val arr = JSONArray(trimmed)
-        sortJsonArray(arr).toString(2)
+                    sortJsonArray(arr).toString(2)
                 }
-        else -> json
+                else -> json
             }
         } catch (e: Exception) {
             json
         }
     }
-        private fun jsonObjectToMap(jsonObject: JSONObject): Map<String, Any> {
+
+    private fun jsonObjectToMap(jsonObject: JSONObject): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
         for (key in jsonObject.keys()) {
             val value = jsonObject.get(key)
-        map[key] = when (value) {
+            map[key] = when (value) {
                 is JSONObject -> jsonObjectToMap(value)
-        is JSONArray -> jsonArrayToList(value)
-        JSONObject.NULL -> "null"
-        else -> value
+                is JSONArray -> jsonArrayToList(value)
+                JSONObject.NULL -> "null"
+                else -> value
             }
         }
         return map
     }
-        private fun jsonArrayToList(jsonArray: JSONArray): List<Any> {
+
+    private fun jsonArrayToList(jsonArray: JSONArray): List<Any> {
         val list = mutableListOf<Any>()
         for (i in 0 until jsonArray.length()) {
             val value = jsonArray.get(i)
-        list.add(
+            list.add(
                 when (value) {
                     is JSONObject -> jsonObjectToMap(value)
-        is JSONArray -> jsonArrayToList(value)
-        JSONObject.NULL -> "null"
-        else -> value
+                    is JSONArray -> jsonArrayToList(value)
+                    JSONObject.NULL -> "null"
+                    else -> value
                 }
             )
         }
         return list
     }
-        private fun mapToJsonObject(map: Map<String, Any?>): JSONObject {
+
+    private fun mapToJsonObject(map: Map<String, Any?>): JSONObject {
         val jsonObject = JSONObject()
         for ((key, value) in map) {
             when (value) {
                 is Map<*, *> -> {
                     @Suppress("UNCHECKED_CAST")
-        jsonObject.put(key, mapToJsonObject(value as Map<String, Any?>))
+                    jsonObject.put(key, mapToJsonObject(value as Map<String, Any?>))
                 }
-        is List<*> -> {
+                is List<*> -> {
                     jsonObject.put(key, listToJsonArray(value))
                 }
-        null -> jsonObject.put(key, JSONObject.NULL)
-        else -> jsonObject.put(key, value)
+                null -> jsonObject.put(key, JSONObject.NULL)
+                else -> jsonObject.put(key, value)
             }
         }
         return jsonObject
     }
-        private fun listToJsonArray(list: List<*>): JSONArray {
+
+    private fun listToJsonArray(list: List<*>): JSONArray {
         val jsonArray = JSONArray()
         for (item in list) {
             when (item) {
                 is Map<*, *> -> {
                     @Suppress("UNCHECKED_CAST")
-        jsonArray.put(mapToJsonObject(item as Map<String, Any?>))
+                    jsonArray.put(mapToJsonObject(item as Map<String, Any?>))
                 }
-        is List<*> -> jsonArray.put(listToJsonArray(item))
-        null -> jsonArray.put(JSONObject.NULL)
-        else -> jsonArray.put(item)
+                is List<*> -> jsonArray.put(listToJsonArray(item))
+                null -> jsonArray.put(JSONObject.NULL)
+                else -> jsonArray.put(item)
             }
         }
         return jsonArray
     }
-        private fun deepMerge(base: JSONObject, overlay: JSONObject): JSONObject {
+
+    private fun deepMerge(base: JSONObject, overlay: JSONObject): JSONObject {
         val result = JSONObject()
         for (key in base.keys()) {
             result.put(key, base.get(key))
         }
         for (key in overlay.keys()) {
             val overlayValue = overlay.get(key)
-        if (result.has(key)) {
+            if (result.has(key)) {
                 val baseValue = result.get(key)
-        if (baseValue is JSONObject && overlayValue is JSONObject) {
+                if (baseValue is JSONObject && overlayValue is JSONObject) {
                     result.put(key, deepMerge(baseValue, overlayValue))
                 } else {
                     result.put(key, overlayValue)
@@ -365,99 +370,107 @@ object JsonUtils {
         }
         return result
     }
-        private fun flattenJsonObject(obj: JSONObject, prefix: String, result: MutableMap<String, String>) {
+
+    private fun flattenJsonObject(obj: JSONObject, prefix: String, result: MutableMap<String, String>) {
         for (key in obj.keys()) {
             val fullKey = if (prefix.isEmpty()) key else "$prefix.$key"
-        val value = obj.get(key)
-        when (value) {
+            val value = obj.get(key)
+            when (value) {
                 is JSONObject -> flattenJsonObject(value, fullKey, result)
-        is JSONArray -> flattenJsonArray(value, fullKey, result)
-        JSONObject.NULL -> result[fullKey] = "null"
-        else -> result[fullKey] = value.toString()
+                is JSONArray -> flattenJsonArray(value, fullKey, result)
+                JSONObject.NULL -> result[fullKey] = "null"
+                else -> result[fullKey] = value.toString()
             }
         }
     }
-        private fun flattenJsonArray(arr: JSONArray, prefix: String, result: MutableMap<String, String>) {
+
+    private fun flattenJsonArray(arr: JSONArray, prefix: String, result: MutableMap<String, String>) {
         for (i in 0 until arr.length()) {
             val fullKey = "$prefix[$i]"
-        val value = arr.get(i)
-        when (value) {
+            val value = arr.get(i)
+            when (value) {
                 is JSONObject -> flattenJsonObject(value, fullKey, result)
-        is JSONArray -> flattenJsonArray(value, fullKey, result)
-        JSONObject.NULL -> result[fullKey] = "null"
-        else -> result[fullKey] = value.toString()
+                is JSONArray -> flattenJsonArray(value, fullKey, result)
+                JSONObject.NULL -> result[fullKey] = "null"
+                else -> result[fullKey] = value.toString()
             }
         }
     }
-        private fun extractPathsFromObject(obj: JSONObject, prefix: String, paths: MutableList<String>) {
+
+    private fun extractPathsFromObject(obj: JSONObject, prefix: String, paths: MutableList<String>) {
         for (key in obj.keys()) {
             val fullKey = if (prefix.isEmpty()) key else "$prefix.$key"
-        paths.add(fullKey)
-        val value = obj.get(key)
-        when (value) {
+            paths.add(fullKey)
+            val value = obj.get(key)
+            when (value) {
                 is JSONObject -> extractPathsFromObject(value, fullKey, paths)
-        is JSONArray -> extractPathsFromArray(value, fullKey, paths)
+                is JSONArray -> extractPathsFromArray(value, fullKey, paths)
             }
         }
     }
-        private fun extractPathsFromArray(arr: JSONArray, prefix: String, paths: MutableList<String>) {
+
+    private fun extractPathsFromArray(arr: JSONArray, prefix: String, paths: MutableList<String>) {
         for (i in 0 until arr.length()) {
             val fullKey = "$prefix[$i]"
-        paths.add(fullKey)
-        val value = arr.get(i)
-        when (value) {
+            paths.add(fullKey)
+            val value = arr.get(i)
+            when (value) {
                 is JSONObject -> extractPathsFromObject(value, fullKey, paths)
-        is JSONArray -> extractPathsFromArray(value, fullKey, paths)
+                is JSONArray -> extractPathsFromArray(value, fullKey, paths)
             }
         }
     }
-        private fun removeNullsFromObject(obj: JSONObject): JSONObject {
+
+    private fun removeNullsFromObject(obj: JSONObject): JSONObject {
         val result = JSONObject()
         for (key in obj.keys()) {
             val value = obj.get(key)
-        when (value) {
+            when (value) {
                 JSONObject.NULL -> { /* skip */ }
-        is JSONObject -> result.put(key, removeNullsFromObject(value))
-        is JSONArray -> result.put(key, removeNullsFromArray(value))
-        else -> result.put(key, value)
+                is JSONObject -> result.put(key, removeNullsFromObject(value))
+                is JSONArray -> result.put(key, removeNullsFromArray(value))
+                else -> result.put(key, value)
             }
         }
         return result
     }
-        private fun removeNullsFromArray(arr: JSONArray): JSONArray {
+
+    private fun removeNullsFromArray(arr: JSONArray): JSONArray {
         val result = JSONArray()
         for (i in 0 until arr.length()) {
             val value = arr.get(i)
-        when (value) {
+            when (value) {
                 JSONObject.NULL -> { /* skip */ }
-        is JSONObject -> result.put(removeNullsFromObject(value))
-        is JSONArray -> result.put(removeNullsFromArray(value))
-        else -> result.put(value)
+                is JSONObject -> result.put(removeNullsFromObject(value))
+                is JSONArray -> result.put(removeNullsFromArray(value))
+                else -> result.put(value)
             }
         }
         return result
     }
-        private fun sortJsonObject(obj: JSONObject): JSONObject {
+
+    private fun sortJsonObject(obj: JSONObject): JSONObject {
         val result = JSONObject()
         val sortedKeys = obj.keys().asSequence().sorted().toList()
         for (key in sortedKeys) {
             val value = obj.get(key)
-        when (value) {
+            when (value) {
                 is JSONObject -> result.put(key, sortJsonObject(value))
-        is JSONArray -> result.put(key, sortJsonArray(value))
-        else -> result.put(key, value)
+                is JSONArray -> result.put(key, sortJsonArray(value))
+                else -> result.put(key, value)
             }
         }
         return result
     }
-        private fun sortJsonArray(arr: JSONArray): JSONArray {
+
+    private fun sortJsonArray(arr: JSONArray): JSONArray {
         val result = JSONArray()
         for (i in 0 until arr.length()) {
             val value = arr.get(i)
-        when (value) {
+            when (value) {
                 is JSONObject -> result.put(sortJsonObject(value))
-        is JSONArray -> result.put(sortJsonArray(value))
-        else -> result.put(value)
+                is JSONArray -> result.put(sortJsonArray(value))
+                else -> result.put(value)
             }
         }
         return result

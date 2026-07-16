@@ -17,9 +17,9 @@ data class UpdateAsset(
     val name: String,
     val size: Long = 0L,
     @SerialName("browser_download_url")
-        val browserDownloadUrl: String,
+    val browserDownloadUrl: String,
     @SerialName("content_type")
-        val contentType: String = ""
+    val contentType: String = ""
 )
 
 /** GitHub Release API 返回的发布信息 */
@@ -28,11 +28,11 @@ data class UpdateRelease(
     val id: Long = 0L,
     val name: String? = null,
     @SerialName("tag_name")
-        val tagName: String,
+    val tagName: String,
     val body: String? = null,
     val prerelease: Boolean = false,
     @SerialName("published_at")
-        val publishedAt: String? = null,
+    val publishedAt: String? = null,
     val assets: List<UpdateAsset> = emptyList(),
     val htmlUrl: String? = null
 )

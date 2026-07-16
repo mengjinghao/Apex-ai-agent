@@ -15,22 +15,28 @@ object ValidationUtils {
      * @property message 验证结果描述信息
      */
     data class ValidationResult(val isValid: Boolean, val message: String = "")
-        private val EMAIL_REGEX = Pattern.compile(
+
+    private val EMAIL_REGEX = Pattern.compile(
         "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
     )
-        private val PHONE_REGEX = Pattern.compile(
+
+    private val PHONE_REGEX = Pattern.compile(
         "^1[3-9]\\d{9}$"
     )
-        private val URL_REGEX = Pattern.compile(
+
+    private val URL_REGEX = Pattern.compile(
         "^(https?://)?([\\w-]+\\.)+[\\w-]+(/[\\w-./?%&=]*)?$"
     )
-        private val IPV4_REGEX = Pattern.compile(
+
+    private val IPV4_REGEX = Pattern.compile(
         "^(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$"
     )
-        private val HEX_COLOR_REGEX = Pattern.compile(
+
+    private val HEX_COLOR_REGEX = Pattern.compile(
         "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
     )
-        private val BASE64_REGEX = Pattern.compile(
+
+    private val BASE64_REGEX = Pattern.compile(
         "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
     )
 
@@ -110,7 +116,7 @@ object ValidationUtils {
                     n = n % 10 + 1
                 }
             }
-        sum += n
+            sum += n
             alternate = !alternate
         }
         return sum % 10 == 0
@@ -128,25 +134,28 @@ object ValidationUtils {
         val trimmed = idCard.trim()
 
         // 支持 15 位旧版身份证
-    val idCard15Regex = Pattern.compile("^[1-9]\\d{7}(?:0\\d|1[0-2])(?:[0-2]\\d|3[01])\\d{3}$")
+        val idCard15Regex = Pattern.compile("^[1-9]\\d{7}(?:0\\d|1[0-2])(?:[0-2]\\d|3[01])\\d{3}$")
         if (idCard15Regex.matcher(trimmed).matches()) return true
 
         // 18 位身份证
-    val idCard18Regex = Pattern.compile("^[1-9]\\d{5}(?:19|20)\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]$")
+        val idCard18Regex = Pattern.compile("^[1-9]\\d{5}(?:19|20)\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]$")
         if (!idCard18Regex.matcher(trimmed).matches()) return false
 
         // 加权因子
-    val weightFactors = intArrayOf(7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2)
+        val weightFactors = intArrayOf(7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2)
         // 校验码对应表
-    val checkCodes = charArrayOf('1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2')
+        val checkCodes = charArrayOf('1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2')
+
         var sum = 0
         for (i in 0..16) {
             val digit = trimmed[i] - '0'
             if (digit < 0 || digit > 9) return false
             sum += digit * weightFactors[i]
         }
+
         val expectedCheckCode = checkCodes[sum % 11]
         val actualCheckCode = trimmed[17].uppercaseChar()
+
         return actualCheckCode == expectedCheckCode
     }
 
@@ -164,24 +173,30 @@ object ValidationUtils {
         if (password.length < minLength) {
             return ValidationResult(false, "密码长度不能少于 $minLength 个字符")
         }
+
         var strengthScore = 0
         val issues = mutableListOf<String>()
+
         if (password.any { it.isUpperCase() }) strengthScore++
         else issues.add("缺少大写字母")
+
         if (password.any { it.isLowerCase() }) strengthScore++
         else issues.add("缺少小写字母")
+
         if (password.any { it.isDigit() }) strengthScore++
         else issues.add("缺少数字")
+
         if (password.any { !it.isLetterOrDigit() }) strengthScore++
         else issues.add("缺少特殊字符")
+
         if (password.length >= 12) strengthScore++
         if (password.length >= 16) strengthScore++
 
         return when {
             strengthScore >= 5 -> ValidationResult(true, "强密码")
-        strengthScore >= 3 -> ValidationResult(true, "中等强度密码，建议：${issues.joinToString("、")}")
-        strengthScore >= 2 -> ValidationResult(false, "弱密码，缺少：${issues.joinToString("、")}")
-        else -> ValidationResult(false, "密码强度不足，需要包含大写字母、小写字母、数字和特殊字符")
+            strengthScore >= 3 -> ValidationResult(true, "中等强度密码，建议：${issues.joinToString("、")}")
+            strengthScore >= 2 -> ValidationResult(false, "弱密码，缺少：${issues.joinToString("、")}")
+            else -> ValidationResult(false, "密码强度不足，需要包含大写字母、小写字母、数字和特殊字符")
         }
     }
 
@@ -206,14 +221,14 @@ object ValidationUtils {
         if (json.isBlank()) return false
         return try {
             val trimmed = json.trim()
-        if (trimmed.startsWith("{")) {
+            if (trimmed.startsWith("{")) {
                 org.json.JSONObject(trimmed)
             } else if (trimmed.startsWith("[")) {
                 org.json.JSONArray(trimmed)
             } else {
                 return false
             }
-        true
+            true
         } catch (e: Exception) {
             false
         }
@@ -230,7 +245,7 @@ object ValidationUtils {
         if (!BASE64_REGEX.matcher(input).matches()) return false
         return try {
             Base64.getDecoder().decode(input)
-        true
+            true
         } catch (e: Exception) {
             false
         }

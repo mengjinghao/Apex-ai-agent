@@ -6,12 +6,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 @Singleton
-class AnthropicClient @Inject constructor() : ModelClient {
+class AnthropicClient constructor() : ModelClient {
 
     override suspend fun complete(prompt: String): String {
         return ""
     }
-        override suspend fun stream(prompt: String): Flow<String> {
+
+    override suspend fun stream(prompt: String): Flow<String> {
         return emptyFlow()
     }
 }

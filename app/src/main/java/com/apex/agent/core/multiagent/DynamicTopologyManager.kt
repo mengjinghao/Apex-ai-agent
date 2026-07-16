@@ -23,19 +23,22 @@ class DynamicTopologyManager(private val context: Context) {
         private const val REPLICATION_FACTOR = 3
         private const val FAILURE_THRESHOLD = 3
     }
-        private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-        private val agentRegistry = ConcurrentHashMap<String, AgentNode>()
-        private val topologyGraph = ConcurrentHashMap<String, MutableSet<AgentEdge>>()
-        private val gossipState = ConcurrentHashMap<String, GossipMessage>()
-        private val capabilityIndex = ConcurrentHashMap<String, MutableSet<String>>()
-        private val _networkTopology = MutableStateFlow(NetworkTopology())
-        val networkTopology: StateFlow<NetworkTopology> = _networkTopology
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private val agentRegistry = ConcurrentHashMap<String, AgentNode>()
+    private val topologyGraph = ConcurrentHashMap<String, MutableSet<AgentEdge>>()
+    private val gossipState = ConcurrentHashMap<String, GossipMessage>()
+    private val capabilityIndex = ConcurrentHashMap<String, MutableSet<String>>()
+
+    private val _networkTopology = MutableStateFlow(NetworkTopology())
+    val networkTopology: StateFlow<NetworkTopology> = _networkTopology
 
     private val _agentDiscovery = MutableSharedFlow<AgentDiscoveryEvent>()
-        val agentDiscovery: SharedFlow<AgentDiscoveryEvent> = _agentDiscovery
+    val agentDiscovery: SharedFlow<AgentDiscoveryEvent> = _agentDiscovery
 
     private val _roleAssignments = MutableStateFlow<Map<String, String>>(emptyMap())
-        val roleAssignments: StateFlow<Map<String, String>> = _roleAssignments
+    val roleAssignments: StateFlow<Map<String, String>> = _roleAssignments
 
     private var gossipJob: Job? = null
     private var discoveryJob: Job? = null
@@ -46,7 +49,8 @@ class DynamicTopologyManager(private val context: Context) {
         startDiscoveryProtocol()
         startTopologyUpdate()
     }
-        data class AgentNode(
+
+    data class AgentNode(
         val agentId: String,
         val capabilities: MutableMap<String, Float>,
         var role: AgentRole,
@@ -62,10 +66,12 @@ class DynamicTopologyManager(private val context: Context) {
             ACTIVE, IDLE, BUSY, FAILING, OFFLINE
         }
     }
-        enum class AgentRole {
+
+    enum class AgentRole {
         COORDINATOR, EXECUTOR, MONITOR, ROUTER, REPLICATOR, DISCOVERY
     }
-        data class AgentEdge(
+
+    data class AgentEdge(
         val sourceId: String,
         val targetId: String,
         val connectionType: ConnectionType,
@@ -78,7 +84,8 @@ class DynamicTopologyManager(private val context: Context) {
             DIRECT, RELAY, FEDERATED
         }
     }
-        data class GossipMessage(
+
+    data class GossipMessage(
         val messageId: String,
         val sourceAgentId: String,
         val targetAgentId: String?,
@@ -89,15 +96,16 @@ class DynamicTopologyManager(private val context: Context) {
     ) {
         sealed class GossipPayload {
             data class CapabilityUpdate(val capabilities: Map<String, Float>) : GossipPayload()
-        data class Heartbeat(val status: AgentNode.NodeStatus, val load: Float) : GossipPayload()
-        data class TopologyQuery(val queryId: String) : GossipPayload()
-        data class TopologyResponse(val topology: NetworkTopology) : GossipPayload()
-        data class RoleProposal(val proposedRole: AgentRole, val reason: String) : GossipPayload()
-        data class CapabilityQuery(val capability: String) : GossipPayload()
-        data class CapabilityResponse(val agents: List<String>) : GossipPayload()
+            data class Heartbeat(val status: AgentNode.NodeStatus, val load: Float) : GossipPayload()
+            data class TopologyQuery(val queryId: String) : GossipPayload()
+            data class TopologyResponse(val topology: NetworkTopology) : GossipPayload()
+            data class RoleProposal(val proposedRole: AgentRole, val reason: String) : GossipPayload()
+            data class CapabilityQuery(val capability: String) : GossipPayload()
+            data class CapabilityResponse(val agents: List<String>) : GossipPayload()
         }
     }
-        data class NetworkTopology(
+
+    data class NetworkTopology(
         val nodes: Map<String, AgentNode> = emptyMap(),
         val edges: Map<String, Set<AgentEdge>> = emptyMap(),
         val centrality: Map<String, Float> = emptyMap(),
@@ -105,7 +113,8 @@ class DynamicTopologyManager(private val context: Context) {
         val diameter: Int = 0,
         val avgPathLength: Float = 0f
     )
-        data class AgentDiscoveryEvent(
+
+    data class AgentDiscoveryEvent(
         val eventType: EventType,
         val agentId: String,
         val details: Map<String, Any> = emptyMap(),
@@ -116,7 +125,8 @@ class DynamicTopologyManager(private val context: Context) {
             FAILURE_DETECTED, COORDINATOR_ELECTED
         }
     }
-        data class TopologyChange(
+
+    data class TopologyChange(
         val changeType: ChangeType,
         val affectedAgents: Set<String>,
         val oldTopology: NetworkTopology?,
@@ -127,19 +137,24 @@ class DynamicTopologyManager(private val context: Context) {
             NODE_ADDED, NODE_REMOVED, EDGE_ADDED, EDGE_REMOVED, ROLE_CHANGED, RECOVERY
         }
     }
-        fun registerAgent(agentId: String, capabilities: Map<String, Float>, initialRole: AgentRole = AgentRole.EXECUTOR): Boolean {
+
+    fun registerAgent(agentId: String, capabilities: Map<String, Float>, initialRole: AgentRole = AgentRole.EXECUTOR): Boolean {
         val node = AgentNode(
             agentId = agentId,
             capabilities = capabilities.toMutableMap(),
             role = initialRole,
             status = AgentNode.NodeStatus.ACTIVE
         )
+
         agentRegistry[agentId] = node
         capabilityIndex[agentId] = capabilities.keys.toMutableSet()
+
         updateCapabilityIndex(agentId, capabilities)
+
         if (agentRegistry.size == 1) {
             assignRole(agentId, AgentRole.COORDINATOR)
         }
+
         scope.launch {
             _agentDiscovery.emit(
                 AgentDiscoveryEvent(
@@ -149,24 +164,30 @@ class DynamicTopologyManager(private val context: Context) {
                 )
             )
         }
+
         updateTopology()
         return true
     }
-        fun unregisterAgent(agentId: String) {
+
+    fun unregisterAgent(agentId: String) {
         val node = agentRegistry[agentId] ?: return
 
         capabilityIndex[agentId]?.forEach { capability ->
             capabilityIndex[capability]?.remove(agentId)
         }
         capabilityIndex.remove(agentId)
+
         topologyGraph.remove(agentId)
         agentRegistry.remove(agentId)
+
         topologyGraph.values.forEach { edges ->
             edges.removeAll { it.sourceId == agentId || it.targetId == agentId }
         }
+
         if (node.role == AgentRole.COORDINATOR) {
             electNewCoordinator()
         }
+
         scope.launch {
             _agentDiscovery.emit(
                 AgentDiscoveryEvent(
@@ -175,17 +196,22 @@ class DynamicTopologyManager(private val context: Context) {
                 )
             )
         }
+
         updateTopology()
     }
-        fun updateAgentCapabilities(agentId: String, capabilities: Map<String, Float>) {
+
+    fun updateAgentCapabilities(agentId: String, capabilities: Map<String, Float>) {
         val node = agentRegistry[agentId] ?: return
 
         capabilityIndex[agentId]?.forEach { capability ->
             capabilityIndex[capability]?.remove(agentId)
         }
+
         node.capabilities.clear()
         node.capabilities.putAll(capabilities)
+
         updateCapabilityIndex(agentId, capabilities)
+
         scope.launch {
             _agentDiscovery.emit(
                 AgentDiscoveryEvent(
@@ -196,12 +222,14 @@ class DynamicTopologyManager(private val context: Context) {
             )
         }
     }
-        private fun updateCapabilityIndex(agentId: String, capabilities: Map<String, Float>) {
+
+    private fun updateCapabilityIndex(agentId: String, capabilities: Map<String, Float>) {
         capabilities.forEach { (capability, score) ->
             capabilityIndex.getOrPut(capability) { mutableSetOf() }.add(agentId)
         }
     }
-        fun findAgentsByCapability(capability: String, minScore: Float = 0.5f): List<Pair<String, Float>> {
+
+    fun findAgentsByCapability(capability: String, minScore: Float = 0.5f): List<Pair<String, Float>> {
         return capabilityIndex[capability]?.mapNotNull { agentId ->
             val node = agentRegistry[agentId]
             if (node != null && node.status == AgentNode.NodeStatus.ACTIVE) {
@@ -212,7 +240,8 @@ class DynamicTopologyManager(private val context: Context) {
             } else null
         }?.sortedByDescending { it.second } ?: emptyList()
     }
-        fun assignRole(agentId: String, newRole: AgentRole): Boolean {
+
+    fun assignRole(agentId: String, newRole: AgentRole): Boolean {
         val node = agentRegistry[agentId] ?: return false
         val oldRole = node.role
 
@@ -221,6 +250,7 @@ class DynamicTopologyManager(private val context: Context) {
         if (oldRole == AgentRole.COORDINATOR && newRole != AgentRole.COORDINATOR) {
             electNewCoordinator()
         }
+
         scope.launch {
             _agentDiscovery.emit(
                 AgentDiscoveryEvent(
@@ -230,10 +260,12 @@ class DynamicTopologyManager(private val context: Context) {
                 )
             )
         }
+
         updateTopology()
         return true
     }
-        fun addConnection(sourceId: String, targetId: String, type: AgentEdge.ConnectionType = AgentEdge.ConnectionType.DIRECT): Boolean {
+
+    fun addConnection(sourceId: String, targetId: String, type: AgentEdge.ConnectionType = AgentEdge.ConnectionType.DIRECT): Boolean {
         val source = agentRegistry[sourceId] ?: return false
         val target = agentRegistry[targetId] ?: return false
 
@@ -242,62 +274,79 @@ class DynamicTopologyManager(private val context: Context) {
             targetId = targetId,
             connectionType = type
         )
+
         topologyGraph.getOrPut(sourceId) { mutableSetOf() }.add(edge)
+
         if (type == AgentEdge.ConnectionType.DIRECT) {
             val reverseEdge = AgentEdge(
                 sourceId = targetId,
                 targetId = sourceId,
                 connectionType = type
             )
-        topologyGraph.getOrPut(targetId) { mutableSetOf() }.add(reverseEdge)
+            topologyGraph.getOrPut(targetId) { mutableSetOf() }.add(reverseEdge)
         }
+
         updateTopology()
         return true
     }
-        fun removeConnection(sourceId: String, targetId: String) {
+
+    fun removeConnection(sourceId: String, targetId: String) {
         topologyGraph[sourceId]?.removeAll { it.targetId == targetId }
         topologyGraph[targetId]?.removeAll { it.targetId == sourceId }
         updateTopology()
     }
-        fun discoverAgents(): Set<String> {
+
+    fun discoverAgents(): Set<String> {
         return agentRegistry.keys.toSet()
     }
-        fun findPath(sourceId: String, targetId: String): List<String>? {
+
+    fun findPath(sourceId: String, targetId: String): List<String>? {
         val visited = mutableSetOf<String>()
         val queue = ArrayDeque<Pair<String, List<String>>>()
+
         queue.add(sourceId to listOf(sourceId))
+
         while (queue.isNotEmpty()) {
             val (current, path) = queue.poll()
-        if (current == targetId) return path
+
+            if (current == targetId) return path
 
             if (visited.contains(current)) continue
             visited.add(current)
-        topologyGraph[current]?.forEach { edge ->
+
+            topologyGraph[current]?.forEach { edge ->
                 if (!visited.contains(edge.targetId)) {
                     queue.add(edge.targetId to (path + edge.targetId))
                 }
             }
         }
+
         return null
     }
-        fun getShortestPath(sourceId: String, targetId: String): List<String>? {
+
+    fun getShortestPath(sourceId: String, targetId: String): List<String>? {
         return findPath(sourceId, targetId)
     }
-        fun getNearestAgent(sourceId: String, capability: String): String? {
+
+    fun getNearestAgent(sourceId: String, capability: String): String? {
         return findAgentsByCapability(capability)
             .filter { it.first != sourceId }
             .firstOrNull()?.first
     }
-        fun getHopsBetween(sourceId: String, targetId: String): Int {
+
+    fun getHopsBetween(sourceId: String, targetId: String): Int {
         return findPath(sourceId, targetId)?.size?.minus(1) ?: -1
     }
-        private fun electNewCoordinator() {
+
+    private fun electNewCoordinator() {
         val activeAgents = agentRegistry.values
             .filter { it.status == AgentNode.NodeStatus.ACTIVE && it.role != AgentRole.COORDINATOR }
             .sortedByDescending { calculateAgentScore(it) }
+
         activeAgents.firstOrNull()?.let { newCoordinator ->
             assignRole(newCoordinator.agentId, AgentRole.COORDINATOR)
-        scope.launch {
+
+            scope.launch {
                 _agentDiscovery.emit(
                     AgentDiscoveryEvent(
                         eventType = AgentDiscoveryEvent.EventType.COORDINATOR_ELECTED,
@@ -307,40 +356,50 @@ class DynamicTopologyManager(private val context: Context) {
             }
         }
     }
-        private fun calculateAgentScore(agent: AgentNode): Float {
+
+    private fun calculateAgentScore(agent: AgentNode): Float {
         val capabilityScore = agent.capabilities.values.average().toFloat()
         val healthScore = agent.health
         val loadScore = 1.0f - agent.load
         val latencyScore = 1.0f / (1.0f + agent.latency / 1000f)
+
         return (capabilityScore * 0.4f + healthScore * 0.3f + loadScore * 0.2f + latencyScore * 0.1f)
     }
-        private fun startGossipProtocol() {
+
+    private fun startGossipProtocol() {
         gossipJob = scope.launch {
             while (isActive) {
                 delay(GOSSIP_INTERVAL)
-        performGossipExchange()
+                performGossipExchange()
             }
         }
     }
-        private suspend fun performGossipExchange() {
+
+    private suspend fun performGossipExchange() {
         val activeAgents = agentRegistry.values.filter { it.status == AgentNode.NodeStatus.ACTIVE }
+
         if (activeAgents.size < 2) return
 
         activeAgents.forEach { agent ->
             val targetAgent = selectRandomAgent(agent.agentId) ?: return@forEach
-        val gossipMessage = createGossipMessage(agent.agentId, targetAgent.agentId)
-        gossipState[gossipMessage.messageId] = gossipMessage
+
+            val gossipMessage = createGossipMessage(agent.agentId, targetAgent.agentId)
+
+            gossipState[gossipMessage.messageId] = gossipMessage
 
             val response = deliverGossip(gossipMessage)
-        response?.let { updateGossipState(it) }
+
+            response?.let { updateGossipState(it) }
         }
     }
-        private fun selectRandomAgent(excludeAgentId: String): AgentNode? {
+
+    private fun selectRandomAgent(excludeAgentId: String): AgentNode? {
         return agentRegistry.values
             .filter { it.agentId != excludeAgentId && it.status == AgentNode.NodeStatus.ACTIVE }
             .randomOrNull()
     }
-        private fun createGossipMessage(sourceId: String, targetId: String): GossipMessage {
+
+    private fun createGossipMessage(sourceId: String, targetId: String): GossipMessage {
         val sourceNode = agentRegistry[sourceId]
 
         return GossipMessage(
@@ -355,51 +414,58 @@ class DynamicTopologyManager(private val context: Context) {
             vectorClock = mapOf(sourceId to System.currentTimeMillis())
         )
     }
-        private fun deliverGossip(message: GossipMessage): GossipMessage? {
+
+    private fun deliverGossip(message: GossipMessage): GossipMessage? {
         val targetId = message.targetAgentId ?: return null
 
         if (message.ttl <= 0) return null
 
         val updatedMessage = message.copy(ttl = message.ttl - 1)
+
         val targetNode = agentRegistry[targetId]
         if (targetNode == null || targetNode.status == AgentNode.NodeStatus.OFFLINE) {
             return null
         }
+
         when (val payload = message.payload) {
             is GossipMessage.GossipPayload.CapabilityUpdate -> {
                 agentRegistry[message.sourceAgentId]?.let { source ->
                     source.capabilities.putAll(payload.capabilities)
                 }
             }
-        is GossipMessage.GossipPayload.Heartbeat -> {
+            is GossipMessage.GossipPayload.Heartbeat -> {
                 agentRegistry[message.sourceAgentId]?.let { source ->
                     source.failureCount = 0
                     source.lastSeen = System.currentTimeMillis()
                 }
             }
-        else -> {}
+            else -> {}
         }
+
         return updatedMessage
     }
-        private fun updateGossipState(message: GossipMessage) {
+
+    private fun updateGossipState(message: GossipMessage) {
         val existing = gossipState[message.messageId]
         if (existing == null || message.timestamp > existing.timestamp) {
             gossipState[message.messageId] = message
         }
     }
-        private fun startDiscoveryProtocol() {
+
+    private fun startDiscoveryProtocol() {
         discoveryJob = scope.launch {
             while (isActive) {
                 delay(DISCOVERY_INTERVAL)
-        performDiscovery()
+                performDiscovery()
             }
         }
     }
-        private suspend fun performDiscovery() {
+
+    private suspend fun performDiscovery() {
         agentRegistry.values.forEach { agent ->
             if (agent.role == AgentRole.DISCOVERY || agent.role == AgentRole.COORDINATOR) {
                 val nearbyAgents = discoverNearbyAgents(agent.agentId)
-        nearbyAgents.forEach { nearbyId ->
+                nearbyAgents.forEach { nearbyId ->
                     if (agentRegistry[nearbyId] == null) {
                         _agentDiscovery.emit(
                             AgentDiscoveryEvent(
@@ -412,43 +478,51 @@ class DynamicTopologyManager(private val context: Context) {
             }
         }
     }
-        private fun discoverNearbyAgents(agentId: String): Set<String> {
+
+    private fun discoverNearbyAgents(agentId: String): Set<String> {
         val visited = mutableSetOf<String>()
         val queue = ArrayDeque<String>()
+
         queue.add(agentId)
         visited.add(agentId)
+
         var hops = 0
         while (queue.isNotEmpty() && hops < MAX_HOPS) {
             val currentSize = queue.size
             repeat(currentSize) {
                 val current = queue.poll()
-        topologyGraph[current]?.forEach { edge ->
+                topologyGraph[current]?.forEach { edge ->
                     if (!visited.contains(edge.targetId)) {
                         visited.add(edge.targetId)
-        queue.add(edge.targetId)
+                        queue.add(edge.targetId)
                     }
                 }
             }
-        hops++
+            hops++
         }
+
         visited.remove(agentId)
         return visited
     }
-        private fun startTopologyUpdate() {
+
+    private fun startTopologyUpdate() {
         topologyUpdateJob = scope.launch {
             while (isActive) {
                 delay(TOPOLOGY_UPDATE_INTERVAL)
-        updateTopology()
+                updateTopology()
             }
         }
     }
-        private fun updateTopology() {
+
+    private fun updateTopology() {
         val nodes = agentRegistry.mapKeys { it.key }
         val edges = topologyGraph.mapValues { it.value.toSet() }
+
         val centrality = calculateCentrality()
         val clusters = detectClusters()
         val diameter = calculateDiameter()
         val avgPathLength = calculateAveragePathLength()
+
         _networkTopology.value = NetworkTopology(
             nodes = nodes,
             edges = edges,
@@ -457,10 +531,13 @@ class DynamicTopologyManager(private val context: Context) {
             diameter = diameter,
             avgPathLength = avgPathLength
         )
+
         updateRoleAssignments()
     }
-        private fun calculateCentrality(): Map<String, Float> {
+
+    private fun calculateCentrality(): Map<String, Float> {
         val centrality = mutableMapOf<String, Float>()
+
         agentRegistry.keys.forEach { agentId ->
             var totalDistance = 0
             var reachableCount = 0
@@ -468,62 +545,74 @@ class DynamicTopologyManager(private val context: Context) {
             agentRegistry.keys.forEach { targetId ->
                 if (agentId != targetId) {
                     val path = findPath(agentId, targetId)
-        if (path != null) {
+                    if (path != null) {
                         totalDistance += path.size - 1
                         reachableCount++
                     }
                 }
             }
-        centrality[agentId] = if (reachableCount > 0) {
+
+            centrality[agentId] = if (reachableCount > 0) {
                 reachableCount.toFloat() / totalDistance
             } else {
                 0f
             }
         }
+
         return centrality
     }
-        private fun detectClusters(): List<Set<String>> {
+
+    private fun detectClusters(): List<Set<String>> {
         val visited = mutableSetOf<String>()
         val clusters = mutableListOf<Set<String>>()
+
         agentRegistry.keys.forEach { startAgent ->
             if (!visited.contains(startAgent)) {
                 val cluster = mutableSetOf<String>()
-        val queue = ArrayDeque<String>()
-        queue.add(startAgent)
-        visited.add(startAgent)
-        while (queue.isNotEmpty()) {
+                val queue = ArrayDeque<String>()
+
+                queue.add(startAgent)
+                visited.add(startAgent)
+
+                while (queue.isNotEmpty()) {
                     val current = queue.poll()
-        cluster.add(current)
-        topologyGraph[current]?.forEach { edge ->
+                    cluster.add(current)
+
+                    topologyGraph[current]?.forEach { edge ->
                         if (!visited.contains(edge.targetId) && edge.weight > 0.5f) {
                             visited.add(edge.targetId)
-        queue.add(edge.targetId)
+                            queue.add(edge.targetId)
                         }
                     }
                 }
-        if (cluster.size > 1) {
+
+                if (cluster.size > 1) {
                     clusters.add(cluster)
                 }
             }
         }
+
         return clusters
     }
-        private fun calculateDiameter(): Int {
+
+    private fun calculateDiameter(): Int {
         var maxDiameter = 0
 
         agentRegistry.keys.forEach { agentId ->
             agentRegistry.keys.forEach { targetId ->
                 if (agentId != targetId) {
                     val path = findPath(agentId, targetId)
-        path?.let {
+                    path?.let {
                         maxDiameter = maxOf(maxDiameter, it.size - 1)
                     }
                 }
             }
         }
+
         return maxDiameter
     }
-        private fun calculateAveragePathLength(): Float {
+
+    private fun calculateAveragePathLength(): Float {
         var totalPathLength = 0
         var pathCount = 0
 
@@ -531,19 +620,22 @@ class DynamicTopologyManager(private val context: Context) {
             agentRegistry.keys.forEach { targetId ->
                 if (agentId != targetId) {
                     val path = findPath(agentId, targetId)
-        path?.let {
+                    path?.let {
                         totalPathLength += it.size - 1
                         pathCount++
                     }
                 }
             }
         }
+
         return if (pathCount > 0) totalPathLength.toFloat() / pathCount else 0f
     }
-        private fun updateRoleAssignments() {
+
+    private fun updateRoleAssignments() {
         _roleAssignments.value = agentRegistry.mapValues { it.value.role.name }
     }
-        fun getOptimalRoleDistribution(): Map<AgentRole, Int> {
+
+    fun getOptimalRoleDistribution(): Map<AgentRole, Int> {
         val totalAgents = agentRegistry.size
 
         return mapOf(
@@ -555,9 +647,11 @@ class DynamicTopologyManager(private val context: Context) {
             AgentRole.EXECUTOR to maxOf(totalAgents / 2, totalAgents - 5)
         )
     }
-        fun rebalanceTopology() {
+
+    fun rebalanceTopology() {
         val currentDistribution = agentRegistry.values.groupingBy { it.role }.eachCount()
         val optimalDistribution = getOptimalRoleDistribution()
+
         optimalDistribution.forEach { (role, optimalCount) ->
             val currentCount = currentDistribution[role] ?: 0
 
@@ -565,24 +659,28 @@ class DynamicTopologyManager(private val context: Context) {
                 val availableAgents = agentRegistry.values
                     .filter { it.role == AgentRole.EXECUTOR && it.status == AgentNode.NodeStatus.ACTIVE }
                     .take(optimalCount - currentCount)
-        availableAgents.forEach { agent ->
+
+                availableAgents.forEach { agent ->
                     assignRole(agent.agentId, role)
                 }
             } else if (currentCount > optimalCount) {
                 val excessAgents = agentRegistry.values
                     .filter { it.role == role && it.status == AgentNode.NodeStatus.ACTIVE }
                     .drop(optimalCount)
-        excessAgents.forEach { agent ->
+
+                excessAgents.forEach { agent ->
                     assignRole(agent.agentId, AgentRole.EXECUTOR)
                 }
             }
         }
     }
-        fun simulateFailure(agentId: String) {
+
+    fun simulateFailure(agentId: String) {
         val node = agentRegistry[agentId] ?: return
 
         node.failureCount++
         node.health = maxOf(0f, node.health - 0.3f)
+
         if (node.failureCount >= FAILURE_THRESHOLD) {
             node.status = AgentNode.NodeStatus.FAILING
 
@@ -595,50 +693,63 @@ class DynamicTopologyManager(private val context: Context) {
                     )
                 )
             }
-        if (node.role == AgentRole.COORDINATOR) {
+
+            if (node.role == AgentRole.COORDINATOR) {
                 electNewCoordinator()
             }
-        triggerRecovery(agentId)
+
+            triggerRecovery(agentId)
         }
     }
-        private fun triggerRecovery(agentId: String) {
+
+    private fun triggerRecovery(agentId: String) {
         scope.launch {
             val replicationTargets = findReplicationTargets(agentId)
-        replicationTargets.forEach { targetId ->
+
+            replicationTargets.forEach { targetId ->
                 addConnection(agentId, targetId, AgentEdge.ConnectionType.RELAY)
             }
-        updateTopology()
+
+            updateTopology()
         }
     }
-        private fun findReplicationTargets(agentId: String): List<String> {
+
+    private fun findReplicationTargets(agentId: String): List<String> {
         val agent = agentRegistry[agentId] ?: return emptyList()
+
         return agentRegistry.values
             .filter { it.agentId != agentId && it.status == AgentNode.NodeStatus.ACTIVE }
             .sortedBy { abs(it.capabilities.map { c -> c.value }.average() - agent.capabilities.map { c -> c.value }.average()) }
             .take(REPLICATION_FACTOR)
             .map { it.agentId }
     }
-        fun getAgentNeighbors(agentId: String, maxHops: Int = 1): Set<String> {
+
+    fun getAgentNeighbors(agentId: String, maxHops: Int = 1): Set<String> {
         val neighbors = mutableSetOf<String>()
         val visited = mutableSetOf<String>()
         val queue = ArrayDeque<Pair<String, Int>>()
+
         queue.add(agentId to 0)
         visited.add(agentId)
+
         while (queue.isNotEmpty()) {
             val (current, hops) = queue.poll()
-        if (hops < maxHops) {
+
+            if (hops < maxHops) {
                 topologyGraph[current]?.forEach { edge ->
                     if (!visited.contains(edge.targetId)) {
                         neighbors.add(edge.targetId)
-        visited.add(edge.targetId)
-        queue.add(edge.targetId to hops + 1)
+                        visited.add(edge.targetId)
+                        queue.add(edge.targetId to hops + 1)
                     }
                 }
             }
         }
+
         return neighbors
     }
-        fun exportTopology(): String {
+
+    fun exportTopology(): String {
         return """
             {
                 "nodes": ${agentRegistry.size},
@@ -649,7 +760,8 @@ class DynamicTopologyManager(private val context: Context) {
             }
         """.trimIndent()
     }
-        fun shutdown() {
+
+    fun shutdown() {
         gossipJob?.cancel()
         discoveryJob?.cancel()
         topologyUpdateJob?.cancel()

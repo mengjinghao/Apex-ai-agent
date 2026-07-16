@@ -10,24 +10,30 @@ class PluginSystem(private val context: Context) {
         val name: String,
         val description: String
     )
-        data class Plugin(
+
+    data class Plugin(
         val id: String,
         val name: String,
         val version: String = "1.0",
         val skills: List<Skill> = emptyList()
     )
-        private val plugins = mutableListOf<Plugin>()
-        private val registeredPlugins = mutableListOf<Any>()
-        fun registerPlugin(plugin: Any) {
+
+    private val plugins = mutableListOf<Plugin>()
+    private val registeredPlugins = mutableListOf<Any>()
+
+    fun registerPlugin(plugin: Any) {
         registeredPlugins.add(plugin)
     }
-        fun getAvailableSkills(): List<Skill> {
+
+    fun getAvailableSkills(): List<Skill> {
         return plugins.flatMap { it.skills }
     }
-        fun executeSkill(skillId: String, input: String): Result<String> {
+
+    fun executeSkill(skillId: String, input: String): Result<String> {
         return Result.success("Executed skill $skillId with input: $input")
     }
-        fun getAllPlugins(): List<Plugin> {
+
+    fun getAllPlugins(): List<Plugin> {
         return plugins.toList()
     }
 }

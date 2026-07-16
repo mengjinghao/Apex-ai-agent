@@ -42,7 +42,8 @@ data class CompensationResult(
  */
 class SagaBuilder<T> {
     private val steps = mutableListOf<SagaStep<T>>()
-        fun step(
+
+    fun step(
         nodeId: String,
         name: String = nodeId,
         execute: suspend () -> T,
@@ -50,7 +51,8 @@ class SagaBuilder<T> {
     ) = apply {
         steps.add(SagaStep(nodeId, name, execute, compensate))
     }
-        fun build(): Saga<T> = Saga(steps.toList())
+
+    fun build(): Saga<T> = Saga(steps.toList())
 }
 
 /**
@@ -67,28 +69,29 @@ class Saga<T>(private val steps: List<SagaStep<T>>) {
     suspend fun run(): SagaResult<T> = coroutineScope {
         val completed = ArrayDeque<Pair<SagaStep<T>, T>>()
         val outputs = mutableMapOf<String, T>()
+
         try {
             for (step in steps) {
                 val result = step.execute()
-        outputs[step.nodeId] = result
+                outputs[step.nodeId] = result
                 completed.addFirst(step to result)  // LIFO 回滚
             }
-        SagaResult.Success(outputs)
+            SagaResult.Success(outputs)
         } catch (e: Throwable) {
             // 反向执行补偿
-    val compensationResults = mutableListOf<CompensationResult>()
-        for ((step, result) in completed) {
+            val compensationResults = mutableListOf<CompensationResult>()
+            for ((step, result) in completed) {
                 val comp = step.compensate
                 if (comp != null) {
                     try {
                         comp(result)
-        compensationResults.add(CompensationResult(step.nodeId, true))
+                        compensationResults.add(CompensationResult(step.nodeId, true))
                     } catch (ce: Throwable) {
                         compensationResults.add(CompensationResult(step.nodeId, false, ce))
                     }
                 }
             }
-        SagaResult.Compensated(outputs, e, compensationResults)
+            SagaResult.Compensated(outputs, e, compensationResults)
         }
     }
 }
@@ -98,12 +101,12 @@ class Saga<T>(private val steps: List<SagaStep<T>>) {
  */
 sealed class SagaEvent {
     data class StepStarted(val nodeId: String, val name: String) : SagaEvent()
-        data class StepCompleted(val nodeId: String, val result: Any?) : SagaEvent()
-        data class StepFailed(val nodeId: String, val error: Throwable) : SagaEvent()
-        data class CompensationStarted(val nodeId: String) : SagaEvent()
-        data class CompensationCompleted(val nodeId: String) : SagaEvent()
-        data class CompensationFailed(val nodeId: String, val error: Throwable) : SagaEvent()
-        data class SagaCompleted(val success: Boolean) : SagaEvent()
+    data class StepCompleted(val nodeId: String, val result: Any?) : SagaEvent()
+    data class StepFailed(val nodeId: String, val error: Throwable) : SagaEvent()
+    data class CompensationStarted(val nodeId: String) : SagaEvent()
+    data class CompensationCompleted(val nodeId: String) : SagaEvent()
+    data class CompensationFailed(val nodeId: String, val error: Throwable) : SagaEvent()
+    data class SagaCompleted(val success: Boolean) : SagaEvent()
 }
 
 /**
@@ -116,7 +119,7 @@ class ObservableSaga<T>(
     suspend fun run(): SagaResult<T> {
         // 注意：这是一个简化包装，实际事件需要在 Saga 内部发射
         // 生产实现应重构 Saga 类支持事件回调
-    val result = saga.run()
+        val result = saga.run()
         emitter(SagaEvent.SagaCompleted(result is SagaResult.Success))
         return result
     }

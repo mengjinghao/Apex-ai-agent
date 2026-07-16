@@ -6,13 +6,16 @@ package com.apex.ui.common.markdown
  */
 sealed class XmlRenderResult {
     data class Text(val text: String) : XmlRenderResult()
-        data class ComposeDslScreen(
+
+    data class ComposeDslScreen(
         val containerPackageName: String,
         val screenPath: String,
         val state: Map<String, Any?> = emptyMap(),
         val memo: String? = null,
         val moduleSpec: String? = null
     ) : XmlRenderResult()
-        data class Markdown(val markdown: String) : XmlRenderResult()
-        data class Html(val html: String) : XmlRenderResult()
+
+    data class Markdown(val markdown: String) : XmlRenderResult()
+
+    data class Html(val html: String) : XmlRenderResult()
 }

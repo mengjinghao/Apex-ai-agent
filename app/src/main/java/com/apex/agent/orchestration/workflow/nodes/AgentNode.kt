@@ -14,7 +14,8 @@ class AgentNode(
     private val agentId: String? = null
 ) : WorkflowNode {
     override val nodeType: String = "AGENT"
-        override suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>> = flow {
+
+    override suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>> = flow {
         emit(Result.Success(NodeExecutionResult(success = true, nextNodeId = null, output = mapOf("agentId" to (agentId ?: "")))))
     }
 }

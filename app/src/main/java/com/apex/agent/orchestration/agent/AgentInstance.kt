@@ -17,33 +17,37 @@ class AgentInstance(private val agent: Agent) {
         RUNNING,
         PAUSED
     }
-        var status: Status = Status.STOPPED
+
+    var status: Status = Status.STOPPED
         private set
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        private var job: Job? = null
+    private var job: Job? = null
     private var isPaused = false
     private val messageChannel = Channel<String>(Channel.UNLIMITED)
-        private val taskHistory = mutableListOf<AgentTaskRecord>()
-        fun start() {
+    private val taskHistory = mutableListOf<AgentTaskRecord>()
+
+    fun start() {
         if (job?.isActive == true) {
             return
         }
+
         status = Status.RUNNING
         isPaused = false
 
         job = scope.launch {
             try {
                 initializeAgent()
-        while (isActive) {
+
+                while (isActive) {
                     if (!isPaused) {
                         val message = messageChannel.tryReceive().getOrNull()
-        if (message != null) {
+                        if (message != null) {
                             processMessage(message)
                         } else {
                             performIdleThought()
                         }
-        delay(100)
+                        delay(100)
                     } else {
                         delay(100)
                     }
@@ -62,19 +66,22 @@ class AgentInstance(private val agent: Agent) {
             }
         }
     }
-        fun stop() {
+
+    fun stop() {
         isPaused = false
         job?.cancel()
         job = null
         status = Status.STOPPED
     }
-        fun pause() {
+
+    fun pause() {
         if (status == Status.RUNNING) {
             isPaused = true
             status = Status.PAUSED
         }
     }
-        fun resume() {
+
+    fun resume() {
         if (status == Status.PAUSED) {
             isPaused = false
             status = Status.RUNNING
@@ -86,12 +93,12 @@ class AgentInstance(private val agent: Agent) {
         messageChannel.trySend(message)
     }
 
-    /** 获取 Agent 的任务历取*/
+    /** 获取 Agent 的任务历�?*/
     fun getTaskHistory(): List<AgentTaskRecord> {
         return taskHistory.toList()
     }
 
-    /** 初始化Agent 环境 */
+    /** 初始�?Agent 环境 */
     private fun initializeAgent() {
         taskHistory.add(
             AgentTaskRecord(
@@ -103,7 +110,7 @@ class AgentInstance(private val agent: Agent) {
         )
     }
 
-    /** 处理一条消息*/
+    /** 处理一条消�?*/
     private fun processMessage(message: String) {
         val taskRecord = AgentTaskRecord(
             task = message.take(30),
@@ -111,12 +118,13 @@ class AgentInstance(private val agent: Agent) {
             timestamp = System.currentTimeMillis()
         )
         taskHistory.add(taskRecord)
+
         val processedResult = "[Agent ${agent.name}] Processing: ${message.take(50)}"
         taskRecord.status = "COMPLETED"
         taskRecord.result = processedResult
     }
 
-    /** 空闲思者- 轻量级自我检查*/
+    /** 空闲思�?- 轻量级自我检�?*/
     private fun performIdleThought() {
         if (System.currentTimeMillis() % 10000 < 100) {
             taskHistory.add(

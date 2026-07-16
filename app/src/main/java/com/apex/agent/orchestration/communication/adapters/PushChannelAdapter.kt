@@ -7,12 +7,13 @@ import com.apex.agent.orchestration.communication.ChannelAdapter
 import com.apex.agent.orchestration.communication.CommunicationChannel
 import javax.inject.Inject
 
-class PushChannelAdapter @Inject constructor(
+class PushChannelAdapter constructor(
     private val context: Context
 ) : ChannelAdapter {
     override val channel = CommunicationChannel.PUSH
-    override val name = "推通"
-        private var messageCallback: ((AgentMessage) -> Unit)? = null
+    override val name = "推�?
+
+    private var messageCallback: ((AgentMessage) -> Unit)? = null
     private var initialized = false
 
     override suspend fun sendMessage(message: AgentMessage): Result<Boolean> {
@@ -23,15 +24,18 @@ class PushChannelAdapter @Inject constructor(
             Result.Failure(e)
         }
     }
-        override fun receiveMessage(callback: (AgentMessage) -> Unit) {
+
+    override fun receiveMessage(callback: (AgentMessage) -> Unit) {
         this.messageCallback = callback
     }
-        override suspend fun isAvailable() = initialized
+
+    override suspend fun isAvailable() = initialized
 
     override fun initialize() {
         initialized = true
     }
-        override fun shutdown() {
+
+    override fun shutdown() {
         messageCallback = null
         initialized = false
     }

@@ -18,38 +18,42 @@ interface Originator<T> {
 class Caretaker<T>(private val maxDepth: Int = 20) {
 
     private val undoStack = ArrayDeque<Memento>()
-        private val redoStack = ArrayDeque<Memento>()
-        private var currentMemento: Memento? = null
+    private val redoStack = ArrayDeque<Memento>()
+    private var currentMemento: Memento? = null
 
     fun save(originator: Originator<T>) {
         val memento = originator.createMemento()
-        if (currentMemento != null) undoStack.addLast(requireNotNull(currentMemento))
+        if (currentMemento != null) undoStack.addLast(currentMemento!!)
         if (undoStack.size > maxDepth) undoStack.removeFirst()
         currentMemento = memento
         redoStack.clear()
     }
-        fun undo(originator: Originator<T>): Boolean {
+
+    fun undo(originator: Originator<T>): Boolean {
         val memento = undoStack.removeLastOrNull() ?: return false
-        redoStack.addLast(requireNotNull(currentMemento))
+        redoStack.addLast(currentMemento!!)
         if (redoStack.size > maxDepth) redoStack.removeFirst()
         currentMemento = memento
         return originator.restore(memento)
     }
-        fun redo(originator: Originator<T>): Boolean {
+
+    fun redo(originator: Originator<T>): Boolean {
         val memento = redoStack.removeLastOrNull() ?: return false
-        undoStack.addLast(requireNotNull(currentMemento))
+        undoStack.addLast(currentMemento!!)
         currentMemento = memento
         return originator.restore(memento)
     }
-        fun getCurrent(): Memento? = currentMemento
+
+    fun getCurrent(): Memento? = currentMemento
 
     fun clear() {
         undoStack.clear()
         redoStack.clear()
         currentMemento = null
     }
-        fun canUndo(): Boolean = undoStack.isNotEmpty()
-        fun canRedo(): Boolean = redoStack.isNotEmpty()
+
+    fun canUndo(): Boolean = undoStack.isNotEmpty()
+    fun canRedo(): Boolean = redoStack.isNotEmpty()
 }
 
 /** Agent 状态 */
@@ -69,7 +73,8 @@ class AgentStateOriginator : Originator<AgentState> {
     fun updateState(updater: (AgentState) -> AgentState) {
         state = updater(state)
     }
-        override fun createMemento(): Memento {
+
+    override fun createMemento(): Memento {
         return Memento(
             state = mapOf(
                 "status" to state.status,
@@ -79,7 +84,8 @@ class AgentStateOriginator : Originator<AgentState> {
             )
         )
     }
-        override fun restore(memento: Memento): Boolean {
+
+    override fun restore(memento: Memento): Boolean {
         val stateMap = memento.state
         state = AgentState(
             status = stateMap["status"] as? String ?: return false,
@@ -89,7 +95,7 @@ class AgentStateOriginator : Originator<AgentState> {
                 ?.split(";")?.filter { it.isNotBlank() }
                 ?.associate {
                     val parts = it.split("=", limit = 2)
-        parts[0] to (parts.getOrElse(1) { "" })
+                    parts[0] to (parts.getOrElse(1) { "" })
                 } ?: emptyMap()
         )
         return true
@@ -100,16 +106,20 @@ class AgentStateOriginator : Originator<AgentState> {
 class ConfigurationOriginator : Originator<Map<String, String>> {
 
     private var config: Map<String, String> = emptyMap()
-        fun setConfig(key: String, value: String) {
+
+    fun setConfig(key: String, value: String) {
         config = config + (key to value)
     }
-        fun getConfig(key: String): String? = config[key]
+
+    fun getConfig(key: String): String? = config[key]
 
     fun getAllConfig(): Map<String, String> = config.toMap()
-        override fun createMemento(): Memento {
+
+    override fun createMemento(): Memento {
         return Memento(state = config)
     }
-        override fun restore(memento: Memento): Boolean {
+
+    override fun restore(memento: Memento): Boolean {
         @Suppress("UNCHECKED_CAST")
         config = (memento.state as? Map<String, String>) ?: return false
         return true

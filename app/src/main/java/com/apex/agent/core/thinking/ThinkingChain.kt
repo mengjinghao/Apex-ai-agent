@@ -121,77 +121,89 @@ data class ThinkingChain(
         val to: String,
         val label: String = ""
     )
-        fun addNode(node: ThoughtNode) {
+
+    fun addNode(node: ThoughtNode) {
         nodes.add(node)
     }
-        fun addEdge(fromId: String, toId: String, label: String = "") {
+
+    fun addEdge(fromId: String, toId: String, label: String = "") {
         edges.add(Edge(fromId, toId, label))
     }
-        fun connectNodes(from: ThoughtNode, to: ThoughtNode, label: String = "") {
+
+    fun connectNodes(from: ThoughtNode, to: ThoughtNode, label: String = "") {
         addEdge(from.id, to.id, label)
     }
-        fun markComplete() {
+
+    fun markComplete() {
         endTime = System.currentTimeMillis()
     }
-        fun getDuration(): Long {
+
+    fun getDuration(): Long {
         return (endTime ?: System.currentTimeMillis()) - startTime
     }
-        fun toJson(): String {
+
+    fun toJson(): String {
         return Json.encodeToString(this)
     }
-        companion object {
+
+    companion object {
         fun fromJson(json: String): ThinkingChain {
             return Json.decodeFromString(json)
         }
+
         fun parseFromXml(thinkXml: String): ThinkingChain {
             val chain = ThinkingChain()
-        val cleanContent = thinkXml.replace("<think>", "").replace("</think>", "")
+            val cleanContent = thinkXml.replace("<think>", "").replace("</think>", "")
                 .replace("<thinking>", "").replace("</thinking>", "").trim()
-        val lines = cleanContent.split("\n")
+
+            val lines = cleanContent.split("\n")
                 .map { it.trim() }
                 .filter { it.isNotEmpty() }
-        var lastNode: ThoughtNode? = null
+
+            var lastNode: ThoughtNode? = null
 
             for (line in lines) {
                 val node = parseLineToNode(line)
-        if (node != null) {
+                if (node != null) {
                     chain.addNode(node)
-        if (lastNode != null) {
+                    if (lastNode != null) {
                         chain.connectNodes(lastNode, node)
                     }
-        lastNode = node
+                    lastNode = node
                 }
             }
-        return chain
+
+            return chain
         }
+
         private fun parseLineToNode(line: String): ThoughtNode? {
             return when {
                 line.startsWith("- 观察:") || line.startsWith("观察:") -> {
                     ObservationNode(content = line.replace("- 观察:", "").replace("观察:", "").trim())
                 }
-        line.startsWith("- 问题:") || line.startsWith("问题:") -> {
+                line.startsWith("- 问题:") || line.startsWith("问题:") -> {
                     QuestionNode(content = line.replace("- 问题:", "").replace("问题:", "").trim())
                 }
-        line.startsWith("- 推断:") || line.startsWith("推断:") || line.startsWith("推理:") -> {
+                line.startsWith("- 推断:") || line.startsWith("推断:") || line.startsWith("推理:") -> {
                     InferenceNode(content = line.replace("- 推断:", "").replace("推断:", "")
                         .replace("- 推理:", "").replace("推理:", "").trim())
                 }
-        line.startsWith("- 决定:") || line.startsWith("决定:") || line.startsWith("选择:") -> {
+                line.startsWith("- 决定:") || line.startsWith("决定:") || line.startsWith("选择:") -> {
                     DecisionNode(content = line.replace("- 决定:", "").replace("决定:", "")
                         .replace("- 选择:", "").replace("选择:", "").trim())
                 }
-        line.startsWith("- 行动:") || line.startsWith("行动:") || line.startsWith("执行:") -> {
+                line.startsWith("- 行动:") || line.startsWith("行动:") || line.startsWith("执行:") -> {
                     ActionNode(content = line.replace("- 行动:", "").replace("行动:", "")
                         .replace("- 执行:", "").replace("执行:", "").trim())
                 }
-        line.startsWith("- 结果:") || line.startsWith("结果:") -> {
+                line.startsWith("- 结果:") || line.startsWith("结果:") -> {
                     val content = line.replace("- 结果:", "").replace("结果:", "").trim()
-        ResultNode(content = content, success = !content.contains("失败", ignoreCase = true))
+                    ResultNode(content = content, success = !content.contains("失败", ignoreCase = true))
                 }
-        line.startsWith("- 总结:") || line.startsWith("总结:") -> {
+                line.startsWith("- 总结:") || line.startsWith("总结:") -> {
                     SummaryNode(content = line.replace("- 总结:", "").replace("总结:", "").trim())
                 }
-        else -> {
+                else -> {
                     InferenceNode(content = line)
                 }
             }

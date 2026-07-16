@@ -1,16 +1,14 @@
 package com.apex.agent.core.tools.defaultTool.standard
 
 /**
- * 内存查询工具的配置常重*/
+ * 内存查询工具的配置常�?*/
 object MemoryQueryConfig {
     /**
-     * 每个配置文件的最大查询快照数据
-    */
+     * 每个配置文件的最大查询快照数�?    */
     const val MAX_QUERY_SNAPSHOTS_PER_PROFILE = 32
 
     /**
-     * 默认相关性阈，
-    */
+     * 默认相关性阈�?    */
     const val DEFAULT_RELEVANCE_THRESHOLD = 0.0
 
     /**
@@ -19,13 +17,11 @@ object MemoryQueryConfig {
     const val DEFAULT_QUERY_LIMIT = 20
 
     /**
-     * 通配符查询的最大限，
-    */
+     * 通配符查询的最大限�?    */
     const val MAX_WILDCARD_QUERY_LIMIT = 500
 
     /**
-     * 截断模式的最大内容长，
-    */
+     * 截断模式的最大内容长�?    */
     const val MAX_CONTENT_LENGTH_TRUNCATED = 40
 
     /**
@@ -44,8 +40,7 @@ object MemoryQueryConfig {
     const val MAX_RELEVANT_MEMORIES_DISPLAYED = 10
 
     /**
-     * 路径查找的最大跳，
-    */
+     * 路径查找的最大跳�?    */
     const val MAX_HOPS_FOR_PATH_FINDING = 10
 
     /**
@@ -54,8 +49,7 @@ object MemoryQueryConfig {
     const val MAX_PATHS_FOR_PATH_FINDING = 10
 
     /**
-     * 图相关记忆的最大跳，
-    */
+     * 图相关记忆的最大跳�?    */
     const val MAX_HOPS_FOR_GRAPH_RELATED = 5
 
     /**
@@ -64,8 +58,7 @@ object MemoryQueryConfig {
     const val MAX_STEPS_FOR_CHAIN_OF_THOUGHT = 10
 
     /**
-     * 重要性阈，
-    */
+     * 重要性阈�?    */
     const val DEFAULT_IMPORTANCE_THRESHOLD = 0.8f
 
     /**
@@ -74,7 +67,6 @@ object MemoryQueryConfig {
     const val DEFAULT_LINK_WEIGHT = 0.7f
 
     /**
-     * 默认相似度阈，
-    */
+     * 默认相似度阈�?    */
     const val DEFAULT_SIMILARITY_THRESHOLD = 0.92f
 }

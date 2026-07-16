@@ -21,6 +21,7 @@ internal object UserscriptMatcher {
         if (metadata.excludes.any { globPattern(it, pageUrl) }) {
             return false
         }
+
         val hasPositiveRules = metadata.matches.isNotEmpty() || metadata.includes.isNotEmpty()
         if (!hasPositiveRules) {
             return false
@@ -33,7 +34,8 @@ internal object UserscriptMatcher {
         }
         return false
     }
-        fun isConnectAllowed(
+
+    fun isConnectAllowed(
         metadata: ParsedUserscriptMetadata,
         pageUrl: String,
         targetUrl: String
@@ -57,7 +59,7 @@ internal object UserscriptMatcher {
                 else -> {
                     if (normalized.startsWith("*.")) {
                         val suffix = normalized.removePrefix("*.")
-        targetHost == suffix || targetHost.endsWith(".${suffix}")
+                        targetHost == suffix || targetHost.endsWith(".${suffix}")
                     } else {
                         false
                     }
@@ -65,85 +67,93 @@ internal object UserscriptMatcher {
             }
         }
     }
-        private fun matchPattern(pattern: String, url: String): Boolean {
+
+    private fun matchPattern(pattern: String, url: String): Boolean {
         val trimmed = pattern.trim()
         if (trimmed.isBlank()) {
             return false
         }
         return runCatching {
             val uri = Uri.parse(url)
-        val scheme = uri.scheme?.lowercase(Locale.ROOT).orEmpty()
-        val host = uri.host?.lowercase(Locale.ROOT).orEmpty()
-        val fullPath =
+            val scheme = uri.scheme?.lowercase(Locale.ROOT).orEmpty()
+            val host = uri.host?.lowercase(Locale.ROOT).orEmpty()
+            val fullPath =
                 buildString {
                     append(uri.encodedPath ?: "/")
-        uri.encodedQuery?.takeIf { it.isNotBlank() }?.let {
+                    uri.encodedQuery?.takeIf { it.isNotBlank() }?.let {
                         append('?')
-        append(it)
+                        append(it)
                     }
-        uri.encodedFragment?.takeIf { it.isNotBlank() }?.let {
+                    uri.encodedFragment?.takeIf { it.isNotBlank() }?.let {
                         append('#')
-        append(it)
+                        append(it)
                     }
                 }
-        val schemePart = trimmed.substringBefore("://")
-        val afterScheme = trimmed.substringAfter("://", "")
-        val hostPart = afterScheme.substringBefore("/")
-        val pathPart = afterScheme.substringAfter("/", "")
-        val schemeMatches =
+
+            val schemePart = trimmed.substringBefore("://")
+            val afterScheme = trimmed.substringAfter("://", "")
+            val hostPart = afterScheme.substringBefore("/")
+            val pathPart = afterScheme.substringAfter("/", "")
+
+            val schemeMatches =
                 when (schemePart) {
                     "*" -> scheme == "http" || scheme == "https"
-        else -> schemePart.equals(scheme, ignoreCase = true)
+                    else -> schemePart.equals(scheme, ignoreCase = true)
                 }
-        if (!schemeMatches) {
+            if (!schemeMatches) {
                 return false
             }
-        val normalizedHost = hostPart.lowercase(Locale.ROOT)
-        val hostMatches =
+
+            val normalizedHost = hostPart.lowercase(Locale.ROOT)
+            val hostMatches =
                 when {
                     normalizedHost == "*" -> host.isNotBlank()
-        normalizedHost.startsWith("*.") -> {
+                    normalizedHost.startsWith("*.") -> {
                         val suffix = normalizedHost.removePrefix("*.")
-        host == suffix || host.endsWith(".${suffix}")
+                        host == suffix || host.endsWith(".${suffix}")
                     }
-        else -> host == normalizedHost
+                    else -> host == normalizedHost
                 }
-        if (!hostMatches) {
+            if (!hostMatches) {
                 return false
             }
-        val regex = globToRegex("/${pathPart}")
-        regex.matches(fullPath.ifBlank { "/" })
+
+            val regex = globToRegex("/${pathPart}")
+            regex.matches(fullPath.ifBlank { "/" })
         }.getOrDefault(false)
     }
-        private fun globPattern(pattern: String, url: String): Boolean {
+
+    private fun globPattern(pattern: String, url: String): Boolean {
         val trimmed = pattern.trim()
         if (trimmed.isBlank()) {
             return false
         }
         return globToRegex(trimmed).matches(url)
     }
-        private fun globToRegex(pattern: String): Regex {
+
+    private fun globToRegex(pattern: String): Regex {
         val builder = StringBuilder("^")
         pattern.forEach { ch ->
             when (ch) {
                 '*' -> builder.append(".*")
                 '.', '?', '+', '(', ')', '[', ']', '{', '}', '^', '$', '|', '\\' ->
                     builder.append('\\').append(ch)
-        else -> builder.append(ch)
+                else -> builder.append(ch)
             }
         }
         builder.append('$')
         return Regex(builder.toString(), setOf(RegexOption.IGNORE_CASE))
     }
-        private fun originOf(uri: Uri): String? {
+
+    private fun originOf(uri: Uri): String? {
         val scheme = uri.scheme?.lowercase(Locale.ROOT) ?: return null
         val host = uri.host?.lowercase(Locale.ROOT) ?: return null
         val portPart =
             when {
                 uri.port < 0 -> ""
-        scheme == "http" && uri.port == 80 -> ""
-        scheme == "https" && uri.port == 443 -> ""
-        else -> ":${uri.port}"
+                scheme == "http" && uri.port == 80 -> ""
+                scheme == "https" && uri.port == 443 -> ""
+                else -> ":${uri.port}"
             }
         return "${scheme}://${host}${portPart}"
     }

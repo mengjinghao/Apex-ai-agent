@@ -9,7 +9,8 @@ object MediaBase64Limiter {
         val base64: String,
         val mimeType: String
     )
-        fun estimateDecodedSizeBytes(base64: String): Int? {
+
+    fun estimateDecodedSizeBytes(base64: String): Int? {
         var count = 0
         for (c in base64) {
             if (!c.isWhitespace()) count += 1
@@ -24,31 +25,35 @@ object MediaBase64Limiter {
                 i -= 1
                 continue
             }
-        if (c == '=') {
+            if (c == '=') {
                 padding += 1
                 i -= 1
                 if (padding >= 2) break
                 continue
             }
-        break
+            break
         }
+
         val decoded = (count * 3) / 4 - padding
         return decoded.coerceAtLeast(0)
     }
-        fun limitBase64ForAi(base64: String, mimeType: String, maxDecodedBytes: Int = DEFAULT_MAX_DECODED_BYTES): LimitedMedia? {
+
+    fun limitBase64ForAi(base64: String, mimeType: String, maxDecodedBytes: Int = DEFAULT_MAX_DECODED_BYTES): LimitedMedia? {
         val estimated = estimateDecodedSizeBytes(base64) ?: return null
         if (estimated > maxDecodedBytes) {
             return null
         }
+
         val bytes = try {
             Base64.decode(base64, Base64.DEFAULT)
-        } catch (e: Throwable) {
-            android.util.Log.w("Apex", "Operation failed", e)
-        return null
+        } catch (_: Throwable) {
+            return null
         }
+
         if (bytes.size > maxDecodedBytes) {
             return null
         }
+
         return LimitedMedia(
             base64 = Base64.encodeToString(bytes, Base64.NO_WRAP),
             mimeType = mimeType

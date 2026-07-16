@@ -29,18 +29,18 @@ data class UserNickname(
 
 enum class NicknameOrigin {
     USER_SET,           // 用户自定义
-        AI_SUGGESTED,       // AI 建议
-        DERIVED_FROM_NAME,  // 从真名推导
-        INSIDE_JOKE,        // 内部梗
-        RANDOM              // 随机
+    AI_SUGGESTED,       // AI 建议
+    DERIVED_FROM_NAME,  // 从真名推导
+    INSIDE_JOKE,        // 内部梗
+    RANDOM              // 随机
 }
 
 enum class FormalityLevel {
     FORMAL,      // 正式（X 先生/女士）
-        POLITE,      // 礼貌（您）
-        FRIENDLY,    // 友好（你）
-        INTIMATE,    // 亲切（昵称）
-        CASUAL       // 随意（兄弟/姐妹）
+    POLITE,      // 礼貌（您）
+    FRIENDLY,    // 友好（你）
+    INTIMATE,    // 亲切（昵称）
+    CASUAL       // 随意（兄弟/姐妹）
 }
 
 data class Relationship(
@@ -53,15 +53,15 @@ data class Relationship(
 
 enum class RelationshipType {
     NEW_USER,         // 新用户
-        ACQUAINTANCE,     // 熟人
-        FRIEND,           // 朋友
-        CLOSE_FRIEND,     // 密友
-        CONFIDANT,        // 知己
-        MENTOR,           // 师长
-        STUDENT,          // 学生
-        COLLEAGUE,        // 同事
-        FAMILY,           // 家人
-        PARTNER           // 伴侣
+    ACQUAINTANCE,     // 熟人
+    FRIEND,           // 朋友
+    CLOSE_FRIEND,     // 密友
+    CONFIDANT,        // 知己
+    MENTOR,           // 师长
+    STUDENT,          // 学生
+    COLLEAGUE,        // 同事
+    FAMILY,           // 家人
+    PARTNER           // 伴侣
 }
 
 data class RelationshipMilestone(
@@ -75,12 +75,12 @@ data class RelationshipMilestone(
 
 enum class MilestoneType {
     FIRST_MEETING,       // 初次见面
-        FIRST_NAME_USAGE,    // 第一次称呼名字
-        INSIDE_JOKE_FORMED,  // 形成内部梗
-        TRUST_MILESTONE,     // 信任里程碑
-        SHARED_SECRET,       // 共享秘密
-        HELPED_WITH,         // 帮助过的事
-        CELEBRATION          // 共同庆祝
+    FIRST_NAME_USAGE,    // 第一次称呼名字
+    INSIDE_JOKE_FORMED,  // 形成内部梗
+    TRUST_MILESTONE,     // 信任里程碑
+    SHARED_SECRET,       // 共享秘密
+    HELPED_WITH,         // 帮助过的事
+    CELEBRATION          // 共同庆祝
 }
 
 data class SharedMemory(
@@ -96,20 +96,21 @@ data class SharedMemory(
 
 enum class MemoryCategory {
     FUNNY,        // 搞笑
-        TOUCHING,     // 感动
-        IMPORTANT,    // 重要
-        PERSONAL,     // 个人
-        GOAL,         // 目标
-        FEAR,         // 担忧
-        DREAM         // 梦想
+    TOUCHING,     // 感动
+    IMPORTANT,    // 重要
+    PERSONAL,     // 个人
+    GOAL,         // 目标
+    FEAR,         // 担忧
+    DREAM         // 梦想
 }
 
 class NicknameRelationshipSystem {
 
     private val nicknames = ConcurrentHashMap<String, UserNickname>()
-        private val relationships = ConcurrentHashMap<String, Relationship>()
-        private val memories = ConcurrentHashMap<String, MutableList<SharedMemory>>()
-        fun setNickname(userId: String, nickname: String, origin: NicknameOrigin = NicknameOrigin.USER_SET): UserNickname {
+    private val relationships = ConcurrentHashMap<String, Relationship>()
+    private val memories = ConcurrentHashMap<String, MutableList<SharedMemory>>()
+
+    fun setNickname(userId: String, nickname: String, origin: NicknameOrigin = NicknameOrigin.USER_SET): UserNickname {
         val existing = nicknames[userId]
         val n = UserNickname(
             userId = userId, nickname = nickname, origin = origin,
@@ -121,20 +122,21 @@ class NicknameRelationshipSystem {
         nicknames[userId] = n
         return n
     }
-        fun getNickname(userId: String): UserNickname? = nicknames[userId]
+
+    fun getNickname(userId: String): UserNickname? = nicknames[userId]
 
     fun suggestNicknames(realName: String? = null, interests: List<String> = emptyList()): List<String> {
         val suggestions = mutableListOf<String>()
         if (realName != null) {
             // 从真名推导
-    if (realName.length >= 2) {
+            if (realName.length >= 2) {
                 suggestions.add(realName.take(1) + "小" + realName.substring(1, 2))
-        suggestions.add("小" + realName.take(1))
-        suggestions.add("阿" + realName.take(1))
+                suggestions.add("小" + realName.take(1))
+                suggestions.add("阿" + realName.take(1))
             }
         }
         // 基于兴趣
-    val interestNicknames = mapOf(
+        val interestNicknames = mapOf(
             "编程" to listOf("代码侠", "Bug 猎手", "极客"),
             "音乐" to listOf("音律使者", "旋律精灵"),
             "读书" to listOf("书虫", "墨客"),
@@ -145,18 +147,20 @@ class NicknameRelationshipSystem {
             interestNicknames[interest]?.let { suggestions.addAll(it) }
         }
         // 通用建议
-    if (suggestions.isEmpty()) {
+        if (suggestions.isEmpty()) {
             suggestions.addAll(listOf("朋友", "小伙伴", "探索者", "思考者"))
         }
         return suggestions.distinct().take(5)
     }
-        fun updateFormality(userId: String, level: FormalityLevel): UserNickname? {
+
+    fun updateFormality(userId: String, level: FormalityLevel): UserNickname? {
         val n = nicknames[userId] ?: return null
         val updated = n.copy(preferredFormality = level)
         nicknames[userId] = updated
         return updated
     }
-        fun setRelationship(userId: String, type: RelationshipType, description: String = ""): Relationship {
+
+    fun setRelationship(userId: String, type: RelationshipType, description: String = ""): Relationship {
         val existing = relationships[userId]
         val r = Relationship(
             userId = userId, type = type, description = description,
@@ -169,7 +173,8 @@ class NicknameRelationshipSystem {
         relationships[userId] = r
         return r
     }
-        fun getRelationship(userId: String): Relationship? = relationships[userId]
+
+    fun getRelationship(userId: String): Relationship? = relationships[userId]
 
     fun addMilestone(userId: String, title: String, description: String, type: MilestoneType, memory: String? = null): Relationship? {
         val r = relationships[userId] ?: return null
@@ -181,7 +186,8 @@ class NicknameRelationshipSystem {
         relationships[userId] = updated
         return updated
     }
-        fun recordMemory(userId: String, title: String, description: String, category: MemoryCategory, emotion: String? = null, importance: Int = 3): SharedMemory {
+
+    fun recordMemory(userId: String, title: String, description: String, category: MemoryCategory, emotion: String? = null, importance: Int = 3): SharedMemory {
         val memory = SharedMemory(
             "mem_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}",
             userId, title, description, System.currentTimeMillis(), emotion, category, importance
@@ -189,61 +195,71 @@ class NicknameRelationshipSystem {
         memories.computeIfAbsent(userId) { mutableListOf() }.add(memory)
         return memory
     }
-        fun getMemories(userId: String, category: MemoryCategory? = null): List<SharedMemory> {
+
+    fun getMemories(userId: String, category: MemoryCategory? = null): List<SharedMemory> {
         val userMemories = memories[userId] ?: return emptyList()
         return if (category != null) userMemories.filter { it.category == category }.sortedByDescending { it.importance }
-        else userMemories.sortedByDescending { it.timestamp }
+               else userMemories.sortedByDescending { it.timestamp }
     }
-        fun generateAddress(userId: String): String {
+
+    fun generateAddress(userId: String): String {
         val nickname = nicknames[userId]
         val relationship = relationships[userId]
 
         return when {
             nickname == null -> when (relationship?.type) {
                 RelationshipType.FAMILY -> "家人"
-        RelationshipType.MENTOR -> "老师"
-        RelationshipType.PARTNER -> "亲爱的"
-        else -> "你"
+                RelationshipType.MENTOR -> "老师"
+                RelationshipType.PARTNER -> "亲爱的"
+                else -> "你"
             }
-        nickname.preferredFormality == FormalityLevel.FORMAL -> "${nickname.nickname}先生/女士"
-        nickname.preferredFormality == FormalityLevel.POLITE -> "您"
-        else -> nickname.nickname
+            nickname.preferredFormality == FormalityLevel.FORMAL -> "${nickname.nickname}先生/女士"
+            nickname.preferredFormality == FormalityLevel.POLITE -> "您"
+            else -> nickname.nickname
         }
     }
-        fun generateRelationshipPrompt(userId: String): String {
+
+    fun generateRelationshipPrompt(userId: String): String {
         val nickname = nicknames[userId]
         val relationship = relationships[userId]
         val memories = memories[userId]
 
         if (nickname == null && relationship == null) return ""
+
         val sb = StringBuilder()
         sb.append("[关系记忆]")
+
         if (nickname != null) {
             sb.append(" 称呼: ${nickname.nickname} (${nickname.preferredFormality})")
         }
+
         if (relationship != null) {
             sb.append(" | 关系: ${relationship.type}")
-        if (relationship.milestones.isNotEmpty()) {
+            if (relationship.milestones.isNotEmpty()) {
                 sb.append(" | 里程碑: ${relationship.milestones.size} 个")
-        val lastMilestone = relationship.milestones.last()
-        sb.append(" | 最近: ${lastMilestone.title}")
+                val lastMilestone = relationship.milestones.last()
+                sb.append(" | 最近: ${lastMilestone.title}")
             }
         }
+
         if (memories != null && memories.isNotEmpty()) {
             sb.append(" | 共同记忆: ${memories.size} 条")
-        val important = memories.filter { it.importance >= 4 }
-        if (important.isNotEmpty()) {
+            val important = memories.filter { it.importance >= 4 }
+            if (important.isNotEmpty()) {
                 sb.append(" | 重要记忆: ${important.first().title}")
             }
         }
+
         return sb.toString()
     }
-        fun forgetUser(userId: String) {
+
+    fun forgetUser(userId: String) {
         nicknames.remove(userId)
         relationships.remove(userId)
         memories.remove(userId)
     }
-        fun getUserProfile(userId: String): UserProfileSummary {
+
+    fun getUserProfile(userId: String): UserProfileSummary {
         return UserProfileSummary(
             nickname = nicknames[userId],
             relationship = relationships[userId],
@@ -251,7 +267,8 @@ class NicknameRelationshipSystem {
             milestoneCount = relationships[userId]?.milestones?.size ?: 0
         )
     }
-        data class UserProfileSummary(
+
+    data class UserProfileSummary(
         val nickname: UserNickname?,
         val relationship: Relationship?,
         val memoryCount: Int,

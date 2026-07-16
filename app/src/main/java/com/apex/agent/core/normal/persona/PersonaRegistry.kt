@@ -66,13 +66,13 @@ data class SpeakingStyle(
 
 enum class Tone {
     WARM,          // 温暖
-        PROFESSIONAL,  // 专业
-        HUMOROUS,      // 幽默
-        SERIOUS,       // 严肃
-        ENCOURAGING,   // 鼓励
-        SARCASTIC,     // 讽刺
-        PHILOSOPHICAL, // 哲思
-        PLAYFUL        // 俏皮
+    PROFESSIONAL,  // 专业
+    HUMOROUS,      // 幽默
+    SERIOUS,       // 严肃
+    ENCOURAGING,   // 鼓励
+    SARCASTIC,     // 讽刺
+    PHILOSOPHICAL, // 哲思
+    PLAYFUL        // 俏皮
 }
 
 enum class Pace { SLOW, MODERATE, FAST }
@@ -85,7 +85,8 @@ enum class SentenceLength { SHORT, MEDIUM, LONG, MIXED }
 class PersonaRegistry {
 
     private val personas = ConcurrentHashMap<String, Persona>()
-        private val activePersonas = ConcurrentHashMap<String, String>()  // chatId -> personaId
+    private val activePersonas = ConcurrentHashMap<String, String>()  // chatId -> personaId
+
     init {
         registerBuiltinPersonas()
     }
@@ -178,6 +179,7 @@ class PersonaRegistry {
     }
 
     // ============ 预置角色 ============
+
     private fun registerBuiltinPersonas() {
         // 学者
         register(Persona(

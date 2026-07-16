@@ -8,17 +8,18 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 interface ToolRegistryListener {
     fun onToolRegistered(tool: ToolSpec)
-        fun onToolUnregistered(toolId: String)
+    fun onToolUnregistered(toolId: String)
 }
 
 class ToolRegistry {
     private val toolsById = ConcurrentHashMap<String, ToolSpec>()
-        private val toolsByName = ConcurrentHashMap<String, ToolSpec>()
-        private val toolsByCategory = ConcurrentHashMap<String, MutableList<ToolSpec>>()
-        private val toolsByTag = ConcurrentHashMap<String, MutableList<ToolSpec>>()
-        private val listeners = CopyOnWriteArrayList<ToolRegistryListener>()
-        private val semanticIndex = SemanticIndex()
-        fun register(tool: ToolSpec) {
+    private val toolsByName = ConcurrentHashMap<String, ToolSpec>()
+    private val toolsByCategory = ConcurrentHashMap<String, MutableList<ToolSpec>>()
+    private val toolsByTag = ConcurrentHashMap<String, MutableList<ToolSpec>>()
+    private val listeners = CopyOnWriteArrayList<ToolRegistryListener>()
+    private val semanticIndex = SemanticIndex()
+
+    fun register(tool: ToolSpec) {
         toolsById[tool.id] = tool
         toolsByName[tool.name] = tool
         toolsByCategory.getOrPut(tool.category.id) { mutableListOf() }.add(tool)
@@ -30,10 +31,12 @@ class ToolRegistry {
         }
         listeners.forEach { it.onToolRegistered(tool) }
     }
-        fun registerBatch(tools: List<ToolSpec>) {
+
+    fun registerBatch(tools: List<ToolSpec>) {
         tools.forEach { register(it) }
     }
-        fun unregister(toolId: String) {
+
+    fun unregister(toolId: String) {
         val tool = toolsById.remove(toolId) ?: return
         toolsByName.remove(tool.name)
         toolsByCategory[tool.category.id]?.remove(tool)
@@ -43,20 +46,25 @@ class ToolRegistry {
         semanticIndex.remove(toolId)
         listeners.forEach { it.onToolUnregistered(toolId) }
     }
-        fun getById(id: String): ToolSpec? = toolsById[id]
+
+    fun getById(id: String): ToolSpec? = toolsById[id]
 
     fun getByName(name: String): ToolSpec? = toolsByName[name]
 
     fun getByCategory(categoryId: String): List<ToolSpec> =
         toolsByCategory[categoryId]?.toList() ?: emptyList()
-        fun getByTag(tag: String): List<ToolSpec> =
+
+    fun getByTag(tag: String): List<ToolSpec> =
         toolsByTag[tag.lowercase()]?.toList() ?: emptyList()
-        fun getAll(): List<ToolSpec> = toolsById.values.toList()
-        fun getAllCategories(): List<ToolCategory> =
+
+    fun getAll(): List<ToolSpec> = toolsById.values.toList()
+
+    fun getAllCategories(): List<ToolCategory> =
         toolsByCategory.keys.mapNotNull { id ->
             toolsByCategory[id]?.firstOrNull()?.category
         }.distinct().sortedBy { it.priority }
-        fun search(query: String, topK: Int = 5): List<ScoredTool> {
+
+    fun search(query: String, topK: Int = 5): List<ScoredTool> {
         if (query.isBlank()) return emptyList()
         val exact = getByName(query)
         if (exact != null) {
@@ -64,30 +72,36 @@ class ToolRegistry {
         }
         return semanticIndex.search(query, toolsById, topK)
     }
-        fun searchByKeywords(keywords: List<String>, topK: Int = 5): List<ScoredTool> {
+
+    fun searchByKeywords(keywords: List<String>, topK: Int = 5): List<ScoredTool> {
         val query = keywords.joinToString(" ")
         return search(query, topK)
     }
-        fun fuzzyFind(query: String): List<ScoredTool> {
+
+    fun fuzzyFind(query: String): List<ScoredTool> {
         val q = query.lowercase().trim()
         return toolsById.values.mapNotNull { tool ->
             val score = computeFuzzyScore(tool, q)
-        if (score > 0.3) ScoredTool(tool, score, "Fuzzy match") else null
+            if (score > 0.3) ScoredTool(tool, score, "Fuzzy match") else null
         }.sortedByDescending { it.score }.take(10)
     }
-        fun addListener(listener: ToolRegistryListener) {
+
+    fun addListener(listener: ToolRegistryListener) {
         listeners.add(listener)
     }
-        fun removeListener(listener: ToolRegistryListener) {
+
+    fun removeListener(listener: ToolRegistryListener) {
         listeners.remove(listener)
     }
-        fun size(): Int = toolsById.size
+
+    fun size(): Int = toolsById.size
 
     private fun computeFuzzyScore(tool: ToolSpec, query: String): Double {
         val name = tool.name.lowercase()
         val display = tool.displayName.lowercase()
         val desc = tool.description.lowercase()
         val tags = tool.tags.joinToString(" ").lowercase()
+
         return when {
             name == query -> 1.0
             name.contains(query) -> 0.9
@@ -107,35 +121,40 @@ private class SemanticIndex {
         val keywords: Set<String>,
         val description: String
     )
-        private val entries = mutableListOf<IndexEntry>()
-        fun index(tool: ToolSpec) {
+    private val entries = mutableListOf<IndexEntry>()
+
+    fun index(tool: ToolSpec) {
         val keywords = buildSet {
             addAll(tool.name.split("_", "-").map { it.lowercase() })
-        addAll(tool.tags.map { it.lowercase() })
-        addAll(tool.category.id.split("_").map { it.lowercase() })
-        add(tool.displayName.lowercase())
+            addAll(tool.tags.map { it.lowercase() })
+            addAll(tool.category.id.split("_").map { it.lowercase() })
+            add(tool.displayName.lowercase())
         }
         entries.add(IndexEntry(tool.id, keywords, tool.description.lowercase()))
     }
-        fun remove(toolId: String) {
+
+    fun remove(toolId: String) {
         entries.removeAll { it.toolId == toolId }
     }
-        fun search(
+
+    fun search(
         query: String,
         toolsById: Map<String, ToolSpec>,
         topK: Int
     ): List<ScoredTool> {
         val queryWords = query.lowercase().split(" ", "_", "-").filter { it.length > 1 }
         if (queryWords.isEmpty()) return emptyList()
+
         return entries.mapNotNull { entry ->
             val score = computeSimilarity(queryWords, entry)
-        if (score > 0.0) {
+            if (score > 0.0) {
                 val tool = toolsById[entry.toolId]
                 if (tool != null) ScoredTool(tool, score, "Semantic match") else null
             } else null
         }.sortedByDescending { it.score }.take(topK)
     }
-        private fun computeSimilarity(queryWords: List<String>, entry: IndexEntry): Double {
+
+    private fun computeSimilarity(queryWords: List<String>, entry: IndexEntry): Double {
         var matchCount = 0
         for (qw in queryWords) {
             if (entry.keywords.any { it.contains(qw) || qw.contains(it) }) {

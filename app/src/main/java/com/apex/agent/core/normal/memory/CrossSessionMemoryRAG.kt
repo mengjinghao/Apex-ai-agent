@@ -33,7 +33,7 @@ data class MemorySnippet(
         if (other !is MemorySnippet) return false
         return id == other.id
     }
-        override fun hashCode(): Int = id.hashCode()
+    override fun hashCode(): Int = id.hashCode()
 }
 
 /**
@@ -56,7 +56,7 @@ class CrossSessionMemoryRAG(
 ) {
 
     private val memories = ConcurrentHashMap<String, MemorySnippet>()
-        private val sessionIndex = ConcurrentHashMap<String, MutableList<String>>()  // sessionId -> memoryIds
+    private val sessionIndex = ConcurrentHashMap<String, MutableList<String>>()  // sessionId -> memoryIds
 
     /**
      * 记录一段对话到记忆库
@@ -78,11 +78,11 @@ class CrossSessionMemoryRAG(
         sessionIndex.computeIfAbsent(sessionId) { mutableListOf() }.add(id)
 
         // 限制大小，FIFO 淘汰
-    if (memories.size > maxMemories) {
+        if (memories.size > maxMemories) {
             val oldest = memories.entries.minByOrNull { it.value.timestamp }
-        oldest?.let { (id, _) ->
+            oldest?.let { (id, _) ->
                 memories.remove(id)
-        sessionIndex.values.forEach { list -> list.remove(id) }
+                sessionIndex.values.forEach { list -> list.remove(id) }
             }
         }
         return snippet
@@ -94,16 +94,18 @@ class CrossSessionMemoryRAG(
     fun retrieve(query: String, topK: Int = defaultTopK, excludeSessionId: String? = null): RetrievalResult {
         val start = System.currentTimeMillis()
         val queryEmbedding = embed(query)
+
         val candidates = memories.values
             .filter { excludeSessionId == null || it.sessionId != excludeSessionId }
             .map { snippet ->
                 val sim = cosineSimilarity(queryEmbedding, snippet.embedding)
-        snippet to sim
+                snippet to sim
             }
             .filter { it.second >= similarityThreshold }
             .sortedByDescending { it.second * it.first.importance }  // 相似度 × 重要性
             .take(topK)
             .map { it.first }
+
         return RetrievalResult(
             snippets = candidates,
             query = query,
@@ -136,11 +138,12 @@ class CrossSessionMemoryRAG(
     fun generateRelatedHistoryPrompt(query: String, excludeSessionId: String? = null): String {
         val result = retrieve(query, topK = 3, excludeSessionId = excludeSessionId)
         if (result.snippets.isEmpty()) return ""
+
         val sb = StringBuilder()
         sb.appendLine("[相关历史记忆]")
         result.snippets.forEach { snippet ->
             val timeStr = java.text.SimpleDateFormat("MM-dd HH:mm").format(java.util.Date(snippet.timestamp))
-        sb.appendLine("- [$timeStr ${snippet.role}] ${snippet.content.take(200)}")
+            sb.appendLine("- [$timeStr ${snippet.role}] ${snippet.content.take(200)}")
         }
         return sb.toString()
     }
@@ -173,7 +176,8 @@ class CrossSessionMemoryRAG(
             newestMemory = memories.values.maxOfOrNull { it.timestamp }
         )
     }
-        data class MemoryStats(
+
+    data class MemoryStats(
         val totalMemories: Int,
         val totalSessions: Int,
         val oldestMemory: Long?,
@@ -181,8 +185,9 @@ class CrossSessionMemoryRAG(
     )
 
     // ============ 向量化（简化实现：基于词频的稀疏向量）============
+
     private val vocabulary = ConcurrentHashMap<String, Int>()
-        private var vocabSize = 0
+    private var vocabSize = 0
 
     /**
      * 简化嵌入：基于词袋的稀疏向量
@@ -191,33 +196,36 @@ class CrossSessionMemoryRAG(
     private fun embed(text: String): FloatArray {
         val tokens = tokenize(text)
         val dim = 256  // 固定维度
-    val vec = FloatArray(dim)
+        val vec = FloatArray(dim)
+
         for (token in tokens) {
             val idx = vocabulary.computeIfAbsent(token) { vocabSize++ % dim }
-        vec[idx] += 1.0f
+            vec[idx] += 1.0f
         }
 
         // L2 归一化
-    val norm = sqrt(vec.sumOf { it * it.toDouble() }).toFloat()
+        val norm = sqrt(vec.sumOf { it * it.toDouble() }).toFloat()
         if (norm > 0) {
             for (i in vec.indices) vec[i] /= norm
         }
         return vec
     }
-        private fun tokenize(text: String): List<String> {
+
+    private fun tokenize(text: String): List<String> {
         return text.lowercase()
             .split(Regex("[\\s,，。.？?！!；;：:、\"'()（）\\[\\]【】\\n\\r\\t]+"))
             .filter { it.isNotBlank() && it.length >= 2 }
             .flatMap { token ->
                 // 中文按 bigram 切分
-    if (token.any { it.code in 0x4e00..0x9fff }) {
+                if (token.any { it.code in 0x4e00..0x9fff }) {
                     token.windowed(2, 1).filter { it.length == 2 }
                 } else {
                     listOf(token)
                 }
             }
     }
-        private fun cosineSimilarity(a: FloatArray?, b: FloatArray?): Float {
+
+    private fun cosineSimilarity(a: FloatArray?, b: FloatArray?): Float {
         if (a == null || b == null || a.size != b.size) return 0f
         var dot = 0.0
         var normA = 0.0

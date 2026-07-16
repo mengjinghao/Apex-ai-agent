@@ -93,15 +93,18 @@ sealed class NormalAgentResult {
         val thinkingChain: List<String>? = null,
         val metadata: Map<String, Any> = emptyMap()
     ) : NormalAgentResult()
-        data class NeedsClarification(
+
+    data class NeedsClarification(
         val question: String,
         val options: List<String> = emptyList()
     ) : NormalAgentResult()
-        data class NeedsToolConfirmation(
+
+    data class NeedsToolConfirmation(
         val toolName: String,
         val params: Map<String, Any>,
         val estimatedDurationMs: Long,
         val requiredPermission: String
     ) : NormalAgentResult()
-        data class Failure(val error: String, val throwable: Throwable? = null) : NormalAgentResult()
+
+    data class Failure(val error: String, val throwable: Throwable? = null) : NormalAgentResult()
 }

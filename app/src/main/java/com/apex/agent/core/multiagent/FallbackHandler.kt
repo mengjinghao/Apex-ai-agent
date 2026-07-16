@@ -8,11 +8,14 @@ class FallbackHandler {
         val retryDelayMs: Long = 1000,
         val exponentialBackoff: Boolean = true
     )
-        private var config = FallbackConfig()
-        fun configure(config: FallbackConfig) {
+
+    private var config = FallbackConfig()
+
+    fun configure(config: FallbackConfig) {
         this.config = config
     }
-        suspend fun <T> executeWithFallback(
+
+    suspend fun <T> executeWithFallback(
         action: suspend () -> T,
         fallback: suspend () -> T
     ): T {

@@ -118,7 +118,7 @@ object CoroutineUtils {
                 return block()
             } catch (_: Exception) {
                 delay(currentDelay)
-        currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
+                currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
             }
         }
         return block()
@@ -141,9 +141,9 @@ object CoroutineUtils {
         var job: Job? = null
         return {
             job?.cancel()
-        job = scope.launch {
+            job = scope.launch {
                 delay(delayMs)
-        action()
+                action()
             }
         }
     }
@@ -166,7 +166,7 @@ object CoroutineUtils {
         var lastTime = 0L
         return {
             val now = System.currentTimeMillis()
-        if (now - lastTime >= thresholdMs) {
+            if (now - lastTime >= thresholdMs) {
                 lastTime = now
                 scope.launch { action() }
             }
@@ -226,10 +226,12 @@ object CoroutineUtils {
     class CoroutineStatsCollector {
         private val _active = AtomicInteger(0)
         private val _completed = AtomicLong(0)
+
         internal fun onStart() { _active.incrementAndGet() }
+
         internal fun onComplete() {
             _active.decrementAndGet()
-        _completed.incrementAndGet()
+            _completed.incrementAndGet()
         }
 
         /** 获取当前统计快照 */
@@ -241,7 +243,7 @@ object CoroutineUtils {
         /** 重置所有计数 */
         fun reset() {
             _active.set(0)
-        _completed.set(0)
+            _completed.set(0)
         }
     }
 }

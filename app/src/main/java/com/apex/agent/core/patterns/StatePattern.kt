@@ -8,19 +8,19 @@ package com.apex.agent.core.patterns
 /** 代理事件 */
 sealed class AgentEvent {
     object Start : AgentEvent()
-        object Complete : AgentEvent()
-        object Wait : AgentEvent()
-        object Fail : AgentEvent()
-        object Recover : AgentEvent()
-        object Timeout : AgentEvent()
-        object Reset : AgentEvent()
-        data class Custom(val type: String, val data: Any? = null) : AgentEvent()
+    object Complete : AgentEvent()
+    object Wait : AgentEvent()
+    object Fail : AgentEvent()
+    object Recover : AgentEvent()
+    object Timeout : AgentEvent()
+    object Reset : AgentEvent()
+    data class Custom(val type: String, val data: Any? = null) : AgentEvent()
 }
 
 /** 状态监听器 */
 interface StateChangeListener {
     fun onStateChange(from: State, to: State, event: AgentEvent)
-        fun onTimeout(state: State)
+    fun onTimeout(state: State)
 }
 
 /** 抽象状态 */
@@ -44,8 +44,9 @@ abstract class State(val name: String) {
         if (this === other) return true
         return other is State && this::class == other::class
     }
-        override fun hashCode(): Int = this::class.hashCode()
-        override fun toString(): String = name
+
+    override fun hashCode(): Int = this::class.hashCode()
+    override fun toString(): String = name
 }
 
 /** 空闲状态 */
@@ -55,8 +56,9 @@ class IdleState : State("Idle") {
         AgentEvent.Reset -> this
         else -> this
     }
-        override fun getAllowedTransitions(): Set<State> = setOf(ProcessingState())
-        override fun enter() {}
+
+    override fun getAllowedTransitions(): Set<State> = setOf(ProcessingState())
+    override fun enter() {}
 }
 
 /** 处理状态 */
@@ -68,8 +70,9 @@ class ProcessingState : State("Processing") {
         AgentEvent.Timeout -> ErrorState()
         else -> this
     }
-        override fun getAllowedTransitions(): Set<State> = setOf(IdleState(), WaitingState(), ErrorState())
-        override fun getTimeoutMs(): Long = 30000
+
+    override fun getAllowedTransitions(): Set<State> = setOf(IdleState(), WaitingState(), ErrorState())
+    override fun getTimeoutMs(): Long = 30000
 }
 
 /** 等待状态 */
@@ -80,8 +83,9 @@ class WaitingState : State("Waiting") {
         AgentEvent.Timeout -> ErrorState()
         else -> this
     }
-        override fun getAllowedTransitions(): Set<State> = setOf(ProcessingState(), ErrorState())
-        override fun getTimeoutMs(): Long = 60000
+
+    override fun getAllowedTransitions(): Set<State> = setOf(ProcessingState(), ErrorState())
+    override fun getTimeoutMs(): Long = 60000
 }
 
 /** 错误状态 */
@@ -91,7 +95,8 @@ class ErrorState : State("Error") {
         AgentEvent.Reset -> IdleState()
         else -> this
     }
-        override fun getAllowedTransitions(): Set<State> = setOf(RecoveryState(), IdleState())
+
+    override fun getAllowedTransitions(): Set<State> = setOf(RecoveryState(), IdleState())
 }
 
 /** 恢复状态 */
@@ -107,21 +112,23 @@ class RecoveryState : State("Recovery") {
         AgentEvent.Timeout -> ErrorState()
         else -> this
     }
-        override fun getAllowedTransitions(): Set<State> = setOf(IdleState(), ErrorState())
-        override fun getTimeoutMs(): Long = 15000
+
+    override fun getAllowedTransitions(): Set<State> = setOf(IdleState(), ErrorState())
+    override fun getTimeoutMs(): Long = 15000
     override fun enter() { retryCount = 0 }
 }
 
 /** 状态机 */
 class StateMachine {
     private val history = ArrayDeque<State>()
-        private val listeners = mutableListOf<StateChangeListener>()
-        var currentState: State = IdleState()
+    private val listeners = mutableListOf<StateChangeListener>()
+    var currentState: State = IdleState()
         private set
 
     fun addListener(listener: StateChangeListener) { listeners.add(listener) }
-        fun removeListener(listener: StateChangeListener) { listeners.remove(listener) }
-        fun sendEvent(event: AgentEvent): State {
+    fun removeListener(listener: StateChangeListener) { listeners.remove(listener) }
+
+    fun sendEvent(event: AgentEvent): State {
         val newState = currentState.handle(event)
         val allowed = currentState.getAllowedTransitions()
         if (newState != currentState && newState !in allowed) {
@@ -129,14 +136,16 @@ class StateMachine {
         }
         if (newState != currentState) {
             currentState.exit()
-        history.addLast(currentState)
-        if (history.size > 10) history.removeFirst()
-        currentState = newState
+            history.addLast(currentState)
+            if (history.size > 10) history.removeFirst()
+            currentState = newState
             currentState.enter()
-        listeners.forEach { it.onStateChange(history.last(), currentState, event) }
+            listeners.forEach { it.onStateChange(history.last(), currentState, event) }
         }
         return currentState
     }
-        fun getHistory(): List<State> = history.toList()
-        fun canTransitionTo(target: State): Boolean = target in currentState.getAllowedTransitions()
+
+    fun getHistory(): List<State> = history.toList()
+
+    fun canTransitionTo(target: State): Boolean = target in currentState.getAllowedTransitions()
 }

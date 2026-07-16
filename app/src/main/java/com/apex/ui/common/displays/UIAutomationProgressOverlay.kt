@@ -19,7 +19,8 @@ class UIAutomationProgressOverlay private constructor(private val context: Conte
             }
         }
     }
-        fun show(message: String = ""): UIAutomationProgressOverlay = this
+
+    fun show(message: String = ""): UIAutomationProgressOverlay = this
     fun updateProgress(progress: Float, message: String? = null): UIAutomationProgressOverlay = this
     fun setBorderEnabled(enabled: Boolean): UIAutomationProgressOverlay = this
     fun hide(): UIAutomationProgressOverlay = this

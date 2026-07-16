@@ -15,7 +15,8 @@ class DelayNode(
     private val durationMillis: Long = 1000L
 ) : WorkflowNode {
     override val nodeType: String = "DELAY"
-        override suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>> = flow {
+
+    override suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>> = flow {
         delay(durationMillis)
         emit(Result.Success(NodeExecutionResult(success = true, nextNodeId = null)))
     }

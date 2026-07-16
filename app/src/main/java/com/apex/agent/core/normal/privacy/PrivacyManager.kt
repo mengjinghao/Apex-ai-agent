@@ -36,17 +36,17 @@ enum class PrivacyLevel {
  */
 enum class DataType {
     CONVERSATION,        // 对话内容
-        USER_PROFILE,        // 用户画像
-        MEMORY,              // 长期记忆
-        SEARCH_INDEX,        // 搜索索引
-        KNOWLEDGE_GRAPH,     // 知识图谱
-        EMOTION_TRACK,       // 情感追踪
-        HEALTH_METRICS,      // 健康指标
-        TOOL_HISTORY,        // 工具调用历史
-        BRANCH_HISTORY,      // 分支历史
-        SUMMARY,             // 摘要
-        SENSITIVE_DATA,      // 敏感数据
-        USAGE_STATISTICS     // 使用统计
+    USER_PROFILE,        // 用户画像
+    MEMORY,              // 长期记忆
+    SEARCH_INDEX,        // 搜索索引
+    KNOWLEDGE_GRAPH,     // 知识图谱
+    EMOTION_TRACK,       // 情感追踪
+    HEALTH_METRICS,      // 健康指标
+    TOOL_HISTORY,        // 工具调用历史
+    BRANCH_HISTORY,      // 分支历史
+    SUMMARY,             // 摘要
+    SENSITIVE_DATA,      // 敏感数据
+    USAGE_STATISTICS     // 使用统计
 }
 
 /**
@@ -77,30 +77,32 @@ data class PrivacyConfig(
             return DataType.values().associateWith { type ->
                 when (type) {
                     DataType.CONVERSATION -> DataPolicy(type, true, true, false, retentionDays = 90)
-        DataType.USER_PROFILE -> DataPolicy(type, true, true, false, retentionDays = null)
-        DataType.MEMORY -> DataPolicy(type, true, true, false, retentionDays = 365)
-        DataType.SEARCH_INDEX -> DataPolicy(type, true, true, false, retentionDays = 90)
-        DataType.KNOWLEDGE_GRAPH -> DataPolicy(type, true, true, false, retentionDays = null)
-        DataType.EMOTION_TRACK -> DataPolicy(type, true, true, false, retentionDays = 30)
-        DataType.HEALTH_METRICS -> DataPolicy(type, true, true, false, retentionDays = 30)
-        DataType.TOOL_HISTORY -> DataPolicy(type, true, true, false, retentionDays = 30)
-        DataType.BRANCH_HISTORY -> DataPolicy(type, true, true, false, retentionDays = 30)
-        DataType.SUMMARY -> DataPolicy(type, true, true, false, retentionDays = 90)
-        DataType.SENSITIVE_DATA -> DataPolicy(type, false, false, false, retentionDays = 0)
-        DataType.USAGE_STATISTICS -> DataPolicy(type, true, true, true, retentionDays = 365, anonymizeForAnalytics = true)
+                    DataType.USER_PROFILE -> DataPolicy(type, true, true, false, retentionDays = null)
+                    DataType.MEMORY -> DataPolicy(type, true, true, false, retentionDays = 365)
+                    DataType.SEARCH_INDEX -> DataPolicy(type, true, true, false, retentionDays = 90)
+                    DataType.KNOWLEDGE_GRAPH -> DataPolicy(type, true, true, false, retentionDays = null)
+                    DataType.EMOTION_TRACK -> DataPolicy(type, true, true, false, retentionDays = 30)
+                    DataType.HEALTH_METRICS -> DataPolicy(type, true, true, false, retentionDays = 30)
+                    DataType.TOOL_HISTORY -> DataPolicy(type, true, true, false, retentionDays = 30)
+                    DataType.BRANCH_HISTORY -> DataPolicy(type, true, true, false, retentionDays = 30)
+                    DataType.SUMMARY -> DataPolicy(type, true, true, false, retentionDays = 90)
+                    DataType.SENSITIVE_DATA -> DataPolicy(type, false, false, false, retentionDays = 0)
+                    DataType.USAGE_STATISTICS -> DataPolicy(type, true, true, true, retentionDays = 365, anonymizeForAnalytics = true)
                 }
             }
         }
+
         fun strictPolicies(): Map<DataType, DataPolicy> {
             return DataType.values().associateWith { type ->
                 when (type) {
                     DataType.CONVERSATION -> DataPolicy(type, true, false, false, retentionDays = 7)
-        DataType.MEMORY -> DataPolicy(type, true, false, false, retentionDays = 7)
-        DataType.SEARCH_INDEX -> DataPolicy(type, true, false, false, retentionDays = 7)
-        else -> DataPolicy(type, false, false, false, retentionDays = 0)
+                    DataType.MEMORY -> DataPolicy(type, true, false, false, retentionDays = 7)
+                    DataType.SEARCH_INDEX -> DataPolicy(type, true, false, false, retentionDays = 7)
+                    else -> DataPolicy(type, false, false, false, retentionDays = 0)
                 }
             }
         }
+
         fun incognitoPolicies(): Map<DataType, DataPolicy> {
             return DataType.values().associateWith { DataPolicy(it, false, false, false, 0) }
         }
@@ -112,8 +114,8 @@ data class PrivacyConfig(
  */
 sealed class DataAccessDecision {
     data class Allowed(val reason: String = "策略允许") : DataAccessDecision()
-        data class Denied(val reason: String) : DataAccessDecision()
-        data class RequiresConsent(val dataType: DataType, val reason: String) : DataAccessDecision()
+    data class Denied(val reason: String) : DataAccessDecision()
+    data class RequiresConsent(val dataType: DataType, val reason: String) : DataAccessDecision()
 }
 
 /**
@@ -124,8 +126,8 @@ class PrivacyManager(
 ) {
 
     private val consentRecords = ConcurrentHashMap<String, ConsentRecord>()
-        private val dataLifecycle = ConcurrentHashMap<String, DataRecord>()
-        private val listeners = mutableListOf<PrivacyEventListener>()
+    private val dataLifecycle = ConcurrentHashMap<String, DataRecord>()
+    private val listeners = mutableListOf<PrivacyEventListener>()
 
     /**
      * 更新隐私配置
@@ -146,9 +148,9 @@ class PrivacyManager(
             PrivacyLevel.OPEN -> PrivacyConfig.defaultPolicies().mapValues { (_, p) ->
                 p.copy(canUpload = true)
             }
-        PrivacyLevel.STANDARD -> PrivacyConfig.defaultPolicies()
-        PrivacyLevel.STRICT -> PrivacyConfig.strictPolicies()
-        PrivacyLevel.INCOGNITO -> PrivacyConfig.incognitoPolicies()
+            PrivacyLevel.STANDARD -> PrivacyConfig.defaultPolicies()
+            PrivacyLevel.STRICT -> PrivacyConfig.strictPolicies()
+            PrivacyLevel.INCOGNITO -> PrivacyConfig.incognitoPolicies()
         }
         updateConfig(config.copy(level = level, policies = newPolicies))
     }
@@ -159,12 +161,14 @@ class PrivacyManager(
     fun canStore(dataType: DataType): DataAccessDecision {
         val policy = config.policies[dataType] ?: return DataAccessDecision.Denied("无策略")
         if (!policy.canStore) return DataAccessDecision.Denied("策略禁止存储 ${dataType}")
+
         if (dataType in config.requireExplicitConsent) {
             val consent = consentRecords[dataType.name]
             if (consent == null || !consent.granted) {
                 return DataAccessDecision.RequiresConsent(dataType, "需要用户明确同意")
             }
         }
+
         return DataAccessDecision.Allowed()
     }
 
@@ -195,8 +199,8 @@ class PrivacyManager(
             grantedAt = System.currentTimeMillis(),
             expiresAt = when (scope) {
                 ConsentScope.ONCE -> System.currentTimeMillis() + 60_000  // 1 分钟
-        ConsentScope.SESSION -> null  // 会话结束失效
-        ConsentScope.PERMANENT -> null
+                ConsentScope.SESSION -> null  // 会话结束失效
+                ConsentScope.PERMANENT -> null
             }
         )
     }
@@ -249,7 +253,7 @@ class PrivacyManager(
         val byType = dataLifecycle.values.groupingBy { it.dataType }.eachCount()
         for ((type, count) in byType) {
             report.addDeleted(type, count)
-        deleteAllData(type)
+            deleteAllData(type)
         }
         consentRecords.clear()
         report.completedAt = System.currentTimeMillis()
@@ -302,17 +306,17 @@ class PrivacyManager(
         sb.appendLine("数据策略:")
         config.policies.forEach { (type, policy) ->
             val store = if (policy.canStore) "✓" else "✗"
-        val analyze = if (policy.canAnalyze) "✓" else "✗"
-        val upload = if (policy.canUpload) "✓" else "✗"
-        val retention = policy.retentionDays?.let { "${it}天" } ?: "永久"
-        sb.appendLine("  ${type.name.padEnd(20)} 存储:$store 分析:$analyze 上传:$upload 保留:$retention")
+            val analyze = if (policy.canAnalyze) "✓" else "✗"
+            val upload = if (policy.canUpload) "✓" else "✗"
+            val retention = policy.retentionDays?.let { "${it}天" } ?: "永久"
+            sb.appendLine("  ${type.name.padEnd(20)} 存储:$store 分析:$analyze 上传:$upload 保留:$retention")
         }
         sb.appendLine()
         sb.appendLine("已记录数据: ${dataLifecycle.size} 条")
         val byType = dataLifecycle.values.groupingBy { it.dataType }.eachCount()
         if (byType.isNotEmpty()) {
             sb.appendLine("按类型:")
-        byType.forEach { (type, count) -> sb.appendLine("  ${type.name}: $count") }
+            byType.forEach { (type, count) -> sb.appendLine("  ${type.name}: $count") }
         }
         sb.appendLine()
         sb.appendLine("同意记录: ${consentRecords.size} 条")
@@ -327,11 +331,13 @@ class PrivacyManager(
     fun addListener(listener: PrivacyEventListener) {
         listeners.add(listener)
     }
-        private fun notifyLevelChanged(old: PrivacyLevel, new: PrivacyLevel) {
+
+    private fun notifyLevelChanged(old: PrivacyLevel, new: PrivacyLevel) {
         listeners.forEach { it.onPrivacyLevelChanged(old, new) }
     }
 
     // ============ 数据结构 ============
+
     data class ConsentRecord(
         val dataType: DataType,
         val granted: Boolean,
@@ -339,15 +345,18 @@ class PrivacyManager(
         val grantedAt: Long,
         val expiresAt: Long?
     )
-        enum class ConsentScope { ONCE, SESSION, PERMANENT }
-        data class DataRecord(
+
+    enum class ConsentScope { ONCE, SESSION, PERMANENT }
+
+    data class DataRecord(
         val dataId: String,
         val dataType: DataType,
         val createdAt: Long,
         val expiresAt: Long?,
         val metadata: Map<String, Any>
     )
-        data class DeletionReport(
+
+    data class DeletionReport(
         val deletedByType: MutableMap<DataType, Int> = mutableMapOf(),
         var completedAt: Long = 0
     ) {
@@ -356,7 +365,8 @@ class PrivacyManager(
         }
         val totalDeleted: Int get() = deletedByType.values.sum()
     }
-        data class UserDataExport(
+
+    data class UserDataExport(
         val exportedAt: Long,
         val config: PrivacyConfig,
         val consents: Map<String, ConsentRecord>,

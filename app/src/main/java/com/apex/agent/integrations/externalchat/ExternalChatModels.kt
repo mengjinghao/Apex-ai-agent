@@ -8,41 +8,41 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ExternalChatRequest(
     @SerialName("request_id")
-        val requestId: String? = null,
+    val requestId: String? = null,
     @SerialName("message")
-        val message: String? = null,
+    val message: String? = null,
     @SerialName("group")
-        val group: String? = null,
+    val group: String? = null,
     @SerialName("create_new_chat")
-        val createNewChat: Boolean = false,
+    val createNewChat: Boolean = false,
     @SerialName("chat_id")
-        val chatId: String? = null,
+    val chatId: String? = null,
     @SerialName("create_if_none")
-        val createIfNone: Boolean = true,
+    val createIfNone: Boolean = true,
     @SerialName("show_floating")
-        val showFloating: Boolean = false,
+    val showFloating: Boolean = false,
     @SerialName("return_tool_status")
-        val returnToolStatus: Boolean = true,
+    val returnToolStatus: Boolean = true,
     @SerialName("initial_mode")
-        val initialMode: String? = null,
+    val initialMode: String? = null,
     @SerialName("auto_exit_after_ms")
-        val autoExitAfterMs: Long = -1L,
+    val autoExitAfterMs: Long = -1L,
     @SerialName("stop_after")
-        val stopAfter: Boolean = false
+    val stopAfter: Boolean = false
 )
 
 @Serializable
 data class ExternalChatResult(
     @SerialName("request_id")
-        val requestId: String? = null,
+    val requestId: String? = null,
     @SerialName("success")
-        val success: Boolean,
+    val success: Boolean,
     @SerialName("chat_id")
-        val chatId: String? = null,
+    val chatId: String? = null,
     @SerialName("ai_response")
-        val aiResponse: String? = null,
+    val aiResponse: String? = null,
     @SerialName("error")
-        val error: String? = null
+    val error: String? = null
 )
 
 enum class ExternalChatResponseMode {
@@ -53,33 +53,33 @@ enum class ExternalChatResponseMode {
 @Serializable
 data class ExternalChatHttpRequest(
     @SerialName("request_id")
-        val requestId: String? = null,
+    val requestId: String? = null,
     @SerialName("message")
-        val message: String? = null,
+    val message: String? = null,
     @SerialName("group")
-        val group: String? = null,
+    val group: String? = null,
     @SerialName("create_new_chat")
-        val createNewChat: Boolean = false,
+    val createNewChat: Boolean = false,
     @SerialName("chat_id")
-        val chatId: String? = null,
+    val chatId: String? = null,
     @SerialName("create_if_none")
-        val createIfNone: Boolean = true,
+    val createIfNone: Boolean = true,
     @SerialName("show_floating")
-        val showFloating: Boolean = false,
+    val showFloating: Boolean = false,
     @SerialName("return_tool_status")
-        val returnToolStatus: Boolean = true,
+    val returnToolStatus: Boolean = true,
     @SerialName("initial_mode")
-        val initialMode: String? = null,
+    val initialMode: String? = null,
     @SerialName("auto_exit_after_ms")
-        val autoExitAfterMs: Long = -1L,
+    val autoExitAfterMs: Long = -1L,
     @SerialName("stop_after")
-        val stopAfter: Boolean = false,
+    val stopAfter: Boolean = false,
     @SerialName("stream")
-        val stream: Boolean = false,
+    val stream: Boolean = false,
     @SerialName("response_mode")
-        val responseMode: String = "sync",
+    val responseMode: String = "sync",
     @SerialName("callback_url")
-        val callbackUrl: String? = null
+    val callbackUrl: String? = null
 ) {
     fun normalizedResponseMode(): ExternalChatResponseMode? {
         return when (responseMode.trim().lowercase(Locale.US)) {
@@ -88,10 +88,12 @@ data class ExternalChatHttpRequest(
             else -> null
         }
     }
-        fun resolvedRequestId(): String {
+
+    fun resolvedRequestId(): String {
         return requestId?.trim()?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
     }
-        fun toExecutionRequest(resolvedRequestId: String): ExternalChatRequest {
+
+    fun toExecutionRequest(resolvedRequestId: String): ExternalChatRequest {
         return ExternalChatRequest(
             requestId = resolvedRequestId,
             message = message,
@@ -111,41 +113,41 @@ data class ExternalChatHttpRequest(
 @Serializable
 data class ExternalChatAcceptedResponse(
     @SerialName("request_id")
-        val requestId: String,
+    val requestId: String,
     @SerialName("accepted")
-        val accepted: Boolean = true,
+    val accepted: Boolean = true,
     @SerialName("status")
-        val status: String = "accepted"
+    val status: String = "accepted"
 )
 
 @Serializable
 data class ExternalChatHealthResponse(
     @SerialName("status")
-        val status: String = "ok",
+    val status: String = "ok",
     @SerialName("enabled")
-        val enabled: Boolean,
+    val enabled: Boolean,
     @SerialName("service_running")
-        val serviceRunning: Boolean,
+    val serviceRunning: Boolean,
     @SerialName("port")
-        val port: Int,
+    val port: Int,
     @SerialName("version_name")
-        val versionName: String
+    val versionName: String
 )
 
 @Serializable
 data class ExternalChatStreamEnvelope(
     @SerialName("event")
-        val event: String,
+    val event: String,
     @SerialName("request_id")
-        val requestId: String,
+    val requestId: String,
     @SerialName("chat_id")
-        val chatId: String? = null,
+    val chatId: String? = null,
     @SerialName("delta")
-        val delta: String? = null,
+    val delta: String? = null,
     @SerialName("ai_response")
-        val aiResponse: String? = null,
+    val aiResponse: String? = null,
     @SerialName("success")
-        val success: Boolean? = null,
+    val success: Boolean? = null,
     @SerialName("error")
-        val error: String? = null
+    val error: String? = null
 )

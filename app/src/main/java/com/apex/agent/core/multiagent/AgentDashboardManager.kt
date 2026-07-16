@@ -34,13 +34,13 @@ enum class AlertLevel {
 class AgentDashboardManager(private val context: Context) {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-        private val snapshots = mutableListOf<SystemSnapshot>()
-        private val alerts = mutableListOf<SystemAlert>()
-        private val maxSnapshots = 100
+    private val snapshots = mutableListOf<SystemSnapshot>()
+    private val alerts = mutableListOf<SystemAlert>()
+    private val maxSnapshots = 100
     private val maxAlerts = 50
 
     private val _dashboardState = MutableStateFlow(DashboardState())
-        val dashboardState: StateFlow<DashboardState> = _dashboardState
+    val dashboardState: StateFlow<DashboardState> = _dashboardState
 
     data class DashboardState(
         val currentSnapshot: SystemSnapshot? = null,
@@ -48,59 +48,70 @@ class AgentDashboardManager(private val context: Context) {
         val historySize: Int = 0,
         val isMonitoring: Boolean = false
     )
-        init { startMonitoring() }
-        private fun startMonitoring() {
+
+    init { startMonitoring() }
+
+    private fun startMonitoring() {
         scope.launch {
             _dashboardState.value = _dashboardState.value.copy(isMonitoring = true)
-        while (isActive) {
+            while (isActive) {
                 updateSnapshot()
-        checkForAlerts()
-        delay(5000)
+                checkForAlerts()
+                delay(5000)
             }
         }
     }
-        private fun updateSnapshot() {
+
+    private fun updateSnapshot() {
         val snapshot = SystemSnapshot(overallHealth = calculateOverallHealth(), agentCount = 3, activeTasks = 5, completedTasks = 128, avgResponseTime = 1.8f, memoryUsage = 0.45f, topPerformingAgents = listOf("agent_1" to 0.95f, "agent_2" to 0.88f, "agent_3" to 0.82f), pendingCapacity = 0.7f)
         snapshots.add(snapshot)
         while (snapshots.size > maxSnapshots) { snapshots.removeAt(0) }
         _dashboardState.value = _dashboardState.value.copy(currentSnapshot = snapshot, historySize = snapshots.size)
     }
-        private fun calculateOverallHealth(): Float = 0.92f
+
+    private fun calculateOverallHealth(): Float = 0.92f
 
     private fun checkForAlerts() {
         val snapshot = _dashboardState.value.currentSnapshot ?: return
         val newAlerts = mutableListOf<SystemAlert>()
+
         if (snapshot.memoryUsage > 0.8f) {
-            newAlerts.add(SystemAlert(level = AlertLevel.WARNING, title = "内存使用过高", message = "当前内存使用现 ${(snapshot.memoryUsage * 100).toInt()}%"))
+            newAlerts.add(SystemAlert(level = AlertLevel.WARNING, title = "内存使用过高", message = "当前内存使用�? ${(snapshot.memoryUsage * 100).toInt()}%"))
         }
         if (snapshot.overallHealth < 0.7f) {
-            newAlerts.add(SystemAlert(level = AlertLevel.CRITICAL, title = "系统健康度下限", message = "系统健康应 ${(snapshot.overallHealth * 100).toInt()}%"))
+            newAlerts.add(SystemAlert(level = AlertLevel.CRITICAL, title = "系统健康度下�?, message = "系统健康�? ${(snapshot.overallHealth * 100).toInt()}%"))
         }
+
         if (newAlerts.isNotEmpty()) {
             alerts.addAll(0, newAlerts)
-        while (alerts.size > maxAlerts) { alerts.removeAt(maxAlerts) }
-        _dashboardState.value = _dashboardState.value.copy(recentAlerts = alerts.take(10))
+            while (alerts.size > maxAlerts) { alerts.removeAt(maxAlerts) }
+            _dashboardState.value = _dashboardState.value.copy(recentAlerts = alerts.take(10))
         }
     }
-        fun getHistory(lastMinutes: Int = 30): List<SystemSnapshot> {
+
+    fun getHistory(lastMinutes: Int = 30): List<SystemSnapshot> {
         val cutoffTime = System.currentTimeMillis() - (lastMinutes * 60 * 1000L)
         return snapshots.filter { it.timestamp >= cutoffTime }
     }
-        fun getCriticalAlerts(): List<SystemAlert> = alerts.filter { !it.resolved && it.level.ordinal >= AlertLevel.ERROR.ordinal }
-        fun getAlertsForComponent(component: String): List<SystemAlert> = alerts.filter { it.title.contains(component, ignoreCase = true) }
-        fun resolveAlert(alertId: String) {
+
+    fun getCriticalAlerts(): List<SystemAlert> = alerts.filter { !it.resolved && it.level.ordinal >= AlertLevel.ERROR.ordinal }
+    fun getAlertsForComponent(component: String): List<SystemAlert> = alerts.filter { it.title.contains(component, ignoreCase = true) }
+
+    fun resolveAlert(alertId: String) {
         alerts.find { it.id == alertId }?.let { alert ->
             val index = alerts.indexOf(alert)
-        if (index != -1) {
+            if (index != -1) {
                 alerts[index] = alert.copy(resolved = true)
-        _dashboardState.value = _dashboardState.value.copy(recentAlerts = alerts.take(10))
+                _dashboardState.value = _dashboardState.value.copy(recentAlerts = alerts.take(10))
             }
         }
     }
-        fun generateReport(): SystemReport {
+
+    fun generateReport(): SystemReport {
         return SystemReport(periodStart = snapshots.firstOrNull()?.timestamp, periodEnd = snapshots.lastOrNull()?.timestamp, avgHealth = snapshots.map { it.overallHealth }.average().toFloat(), totalTasksCompleted = snapshots.lastOrNull()?.completedTasks ?: 0, alertsGenerated = alerts.size, criticalEvents = alerts.count { it.level == AlertLevel.CRITICAL })
     }
-        data class SystemReport(
+
+    data class SystemReport(
         val periodStart: Long?,
         val periodEnd: Long?,
         val avgHealth: Float,
@@ -108,7 +119,8 @@ class AgentDashboardManager(private val context: Context) {
         val alertsGenerated: Int,
         val criticalEvents: Int
     )
-        fun shutdown() {
+
+    fun shutdown() {
         scope.cancel()
         _dashboardState.value = _dashboardState.value.copy(isMonitoring = false)
     }

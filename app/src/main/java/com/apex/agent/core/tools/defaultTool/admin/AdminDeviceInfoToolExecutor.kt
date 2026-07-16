@@ -1,4 +1,9 @@
 package com.apex.agent.core.tools.defaultTool.admin
 
-// STUBBED: had 2 errors
-class AdminDeviceInfoToolExecutor
+import android.content.Context
+import com.apex.agent.core.tools.defaultTool.debugger.DebuggerDeviceInfoToolExecutor
+
+/** 管理员级别的设备信息工具，继承调试版�?/
+open class AdminDeviceInfoToolExecutor(context: Context) : DebuggerDeviceInfoToolExecutor(context) {
+    // 当前阶段不添加新功能，仅继承调试实现
+}

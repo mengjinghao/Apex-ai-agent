@@ -13,7 +13,8 @@ class StripedLock(
     } else {
         List(stripes) { ReentrantLock() }
     }
-        private val rwLocks: List<ReentrantReadWriteLock>? = if (useReadWrite) {
+
+    private val rwLocks: List<ReentrantReadWriteLock>? = if (useReadWrite) {
         List(stripes) { ReentrantReadWriteLock() }
     } else null
 
@@ -32,7 +33,8 @@ class StripedLock(
             lock.unlock()
         }
     }
-        fun <T> withLock(key: Long, action: () -> T): T {
+
+    fun <T> withLock(key: Long, action: () -> T): T {
         val lock = getLock(key)
         lock.lock()
         try {
@@ -41,7 +43,8 @@ class StripedLock(
             lock.unlock()
         }
     }
-        fun <T> withReadLock(key: String, action: () -> T): T {
+
+    fun <T> withReadLock(key: String, action: () -> T): T {
         val rw = rwLocks ?: throw UnsupportedOperationException("ReadWrite locks not enabled")
         val idx = key.hashCode().let { (it and Int.MAX_VALUE) % stripes }
         val readLock = rw[idx].readLock()
@@ -52,7 +55,8 @@ class StripedLock(
             readLock.unlock()
         }
     }
-        fun <T> withWriteLock(key: String, action: () -> T): T {
+
+    fun <T> withWriteLock(key: String, action: () -> T): T {
         val rw = rwLocks ?: throw UnsupportedOperationException("ReadWrite locks not enabled")
         val idx = key.hashCode().let { (it and Int.MAX_VALUE) % stripes }
         val writeLock = rw[idx].writeLock()
@@ -69,11 +73,16 @@ class ReadWriteStripedLock(
     private val stripes: Int = 16
 ) {
     private val locks = List(stripes) { ReentrantReadWriteLock() }
-        fun readLock(key: String) = locks[key.hashCode().let { (it and Int.MAX_VALUE) % stripes }].readLock()
-        fun writeLock(key: String) = locks[key.hashCode().let { (it and Int.MAX_VALUE) % stripes }].writeLock()
-        fun readLock(key: Long) = locks[(key % stripes).toInt()].readLock()
-        fun writeLock(key: Long) = locks[(key % stripes).toInt()].writeLock()
-        fun <T> withReadLock(key: String, action: () -> T): T {
+
+    fun readLock(key: String) = locks[key.hashCode().let { (it and Int.MAX_VALUE) % stripes }].readLock()
+
+    fun writeLock(key: String) = locks[key.hashCode().let { (it and Int.MAX_VALUE) % stripes }].writeLock()
+
+    fun readLock(key: Long) = locks[(key % stripes).toInt()].readLock()
+
+    fun writeLock(key: Long) = locks[(key % stripes).toInt()].writeLock()
+
+    fun <T> withReadLock(key: String, action: () -> T): T {
         val lock = readLock(key)
         lock.lock()
         try {
@@ -82,7 +91,8 @@ class ReadWriteStripedLock(
             lock.unlock()
         }
     }
-        fun <T> withWriteLock(key: String, action: () -> T): T {
+
+    fun <T> withWriteLock(key: String, action: () -> T): T {
         val lock = writeLock(key)
         lock.lock()
         try {
@@ -91,7 +101,8 @@ class ReadWriteStripedLock(
             lock.unlock()
         }
     }
-        fun <T> withReadLock(key: Long, action: () -> T): T {
+
+    fun <T> withReadLock(key: Long, action: () -> T): T {
         val lock = readLock(key)
         lock.lock()
         try {
@@ -100,7 +111,8 @@ class ReadWriteStripedLock(
             lock.unlock()
         }
     }
-        fun <T> withWriteLock(key: Long, action: () -> T): T {
+
+    fun <T> withWriteLock(key: Long, action: () -> T): T {
         val lock = writeLock(key)
         lock.lock()
         try {
@@ -113,27 +125,27 @@ class ReadWriteStripedLock(
 
 class LockFreeSequence(private val start: Long = 0L) {
     private val value = java.util.concurrent.atomic.AtomicLong(start)
-        fun next(): Long = value.getAndIncrement()
-        fun current(): Long = value.get()
-        fun reset() { value.set(start) }
+    fun next(): Long = value.getAndIncrement()
+    fun current(): Long = value.get()
+    fun reset() { value.set(start) }
 }
 
 class LockFreeCounter(private val initial: Long = 0L) {
     private val value = java.util.concurrent.atomic.AtomicLong(initial)
-        fun increment(): Long = value.incrementAndGet()
-        fun decrement(): Long = value.decrementAndGet()
-        fun add(delta: Long): Long = value.addAndGet(delta)
-        fun get(): Long = value.get()
-        fun set(newValue: Long) { value.set(newValue) }
-        fun reset() { value.set(0) }
+    fun increment(): Long = value.incrementAndGet()
+    fun decrement(): Long = value.decrementAndGet()
+    fun add(delta: Long): Long = value.addAndGet(delta)
+    fun get(): Long = value.get()
+    fun set(newValue: Long) { value.set(newValue) }
+    fun reset() { value.set(0) }
 }
 
 class LockFreeReference<T>(initial: T) {
     private val ref = java.util.concurrent.atomic.AtomicReference(initial)
-        fun get(): T = ref.get()
-        fun set(value: T) { ref.set(value) }
-        fun compareAndSet(expected: T, newValue: T): Boolean = ref.compareAndSet(expected, newValue)
-        fun getAndSet(value: T): T = ref.getAndSet(value)
+    fun get(): T = ref.get()
+    fun set(value: T) { ref.set(value) }
+    fun compareAndSet(expected: T, newValue: T): Boolean = ref.compareAndSet(expected, newValue)
+    fun getAndSet(value: T): T = ref.getAndSet(value)
 }
 
 class CacheLinePaddedLong {
@@ -148,6 +160,6 @@ class CacheLinePaddedLong {
 
     fun get(): Long = v
     fun set(value: Long) { v = value }
-        fun increment(): Long { v++; return v }
-        fun add(delta: Long): Long { v += delta; return v }
+    fun increment(): Long { v++; return v }
+    fun add(delta: Long): Long { v += delta; return v }
 }

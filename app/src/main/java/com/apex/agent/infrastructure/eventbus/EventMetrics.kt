@@ -33,37 +33,45 @@ data class MetricsReport(
 class EventMetricsCollector {
 
     private val publishedCount = ConcurrentHashMap<Class<*>, AtomicLong>()
-        private val deliveredCount = ConcurrentHashMap<Class<*>, AtomicLong>()
-        private val failedCount = ConcurrentHashMap<Class<*>, AtomicLong>()
-        private val droppedCount = ConcurrentHashMap<Class<*>, AtomicLong>()
-        private val subscriberCount = ConcurrentHashMap<Class<*>, AtomicInteger>()
-        private val processingTimes = ConcurrentHashMap<Class<*>, MutableList<Long>>()
-        private val startTime = ConcurrentHashMap<Class<*>, Long>()
-        private val globalStartTime = System.currentTimeMillis()
-        fun recordPublished(eventClass: Class<*>) {
+    private val deliveredCount = ConcurrentHashMap<Class<*>, AtomicLong>()
+    private val failedCount = ConcurrentHashMap<Class<*>, AtomicLong>()
+    private val droppedCount = ConcurrentHashMap<Class<*>, AtomicLong>()
+    private val subscriberCount = ConcurrentHashMap<Class<*>, AtomicInteger>()
+    private val processingTimes = ConcurrentHashMap<Class<*>, MutableList<Long>>()
+    private val startTime = ConcurrentHashMap<Class<*>, Long>()
+    private val globalStartTime = System.currentTimeMillis()
+
+    fun recordPublished(eventClass: Class<*>) {
         publishedCount.getOrPut(eventClass) { AtomicLong(0) }.incrementAndGet()
         startTime.putIfAbsent(eventClass, System.currentTimeMillis())
     }
-        fun recordDelivered(eventClass: Class<*>, durationMs: Long) {
+
+    fun recordDelivered(eventClass: Class<*>, durationMs: Long) {
         deliveredCount.getOrPut(eventClass) { AtomicLong(0) }.incrementAndGet()
         recordProcessingTime(eventClass, durationMs)
     }
-        fun recordFailed(eventClass: Class<*>) {
+
+    fun recordFailed(eventClass: Class<*>) {
         failedCount.getOrPut(eventClass) { AtomicLong(0) }.incrementAndGet()
     }
-        fun recordDropped(eventClass: Class<*>) {
+
+    fun recordDropped(eventClass: Class<*>) {
         droppedCount.getOrPut(eventClass) { AtomicLong(0) }.incrementAndGet()
     }
-        fun registerSubscriber(eventClass: Class<*>) {
+
+    fun registerSubscriber(eventClass: Class<*>) {
         subscriberCount.getOrPut(eventClass) { AtomicInteger(0) }.incrementAndGet()
     }
-        fun unregisterSubscriber(eventClass: Class<*>) {
+
+    fun unregisterSubscriber(eventClass: Class<*>) {
         subscriberCount[eventClass]?.updateAndGet { maxOf(0, it - 1) }
     }
-        private fun recordProcessingTime(eventClass: Class<*>, durationMs: Long) {
+
+    private fun recordProcessingTime(eventClass: Class<*>, durationMs: Long) {
         processingTimes.getOrPut(eventClass) { mutableListOf() }.add(durationMs)
     }
-        fun getReport(eventClass: Class<*>): MetricsReport? {
+
+    fun getReport(eventClass: Class<*>): MetricsReport? {
         val published = publishedCount[eventClass]?.get() ?: return null
         val times = processingTimes[eventClass] ?: emptyList()
         val sorted = times.sorted()
@@ -86,10 +94,12 @@ class EventMetricsCollector {
             throughputPerSecond = throughput
         )
     }
-        fun getAllReports(): List<MetricsReport> {
+
+    fun getAllReports(): List<MetricsReport> {
         return publishedCount.keys().asSequence().mapNotNull { getReport(it) }.toList()
     }
-        fun reset() {
+
+    fun reset() {
         publishedCount.clear()
         deliveredCount.clear()
         failedCount.clear()
@@ -124,9 +134,9 @@ class EventBusReporter(
         job = scope.launch {
             while (isActive) {
                 delay(intervalMs)
-        try {
+                try {
                     val reports = collector.getAllReports()
-        if (reports.isNotEmpty()) {
+                    if (reports.isNotEmpty()) {
                         reporter(reports)
                     }
                 } catch (_: Exception) {
@@ -135,11 +145,13 @@ class EventBusReporter(
             }
         }
     }
-        fun stop() {
+
+    fun stop() {
         job?.cancel()
         job = null
     }
-        fun restart() {
+
+    fun restart() {
         stop()
         start()
     }

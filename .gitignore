@@ -120,3 +120,6 @@ examples/
 # UI重构临时文件
 ui重构模板/
 新UItext/
+
+!app/src/main/java/com/apex/data/
+!app/src/main/java/com/apex/data/**

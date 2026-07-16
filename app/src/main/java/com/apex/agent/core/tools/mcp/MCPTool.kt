@@ -1,4 +1,13 @@
 package com.apex.core.tools.mcp
 
-// STUBBED: had 1 errors
-data class MCPTool(val placeholder: String = "")
+import kotlinx.serialization.Serializable
+
+/**
+ * Represents an MCP tool definition
+ */
+@Serializable
+data class MCPTool(
+    val name: String,
+    val description: String,
+    val parameters: List<MCPToolParameter> = emptyList()
+) 

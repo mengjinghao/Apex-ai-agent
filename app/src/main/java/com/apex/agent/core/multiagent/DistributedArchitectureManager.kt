@@ -12,20 +12,24 @@ class DistributedArchitectureManager(private val context: Context) {
         val maxConnections: Int = 10,
         val heartbeatIntervalMs: Long = 5000
     )
-        private val nodes = mutableListOf<NodeConfig>()
-        private var isRunning = false
+
+    private val nodes = mutableListOf<NodeConfig>()
+    private var isRunning = false
 
     fun initialize(config: NodeConfig) {
         nodes.add(config)
         isRunning = true
     }
-        fun registerNode(node: NodeConfig) {
+
+    fun registerNode(node: NodeConfig) {
         nodes.add(node)
     }
-        fun getActiveNodes(): List<NodeConfig> {
+
+    fun getActiveNodes(): List<NodeConfig> {
         return nodes.toList()
     }
-        fun shutdown() {
+
+    fun shutdown() {
         isRunning = false
         nodes.clear()
     }

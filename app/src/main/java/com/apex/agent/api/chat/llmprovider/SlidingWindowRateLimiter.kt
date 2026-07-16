@@ -10,15 +10,17 @@ class SlidingWindowRateLimiter(
     private val windowMs: Long = 60_000L
 ) {
     private val mutex = Mutex()
-        private val timestamps = ArrayDeque<Long>()
-        suspend fun tryAcquire(nowMs: Long = System.currentTimeMillis()): Long {
+    private val timestamps = ArrayDeque<Long>()
+
+    suspend fun tryAcquire(nowMs: Long = System.currentTimeMillis()): Long {
         if (maxRequestsPerMinute <= 0) return 0L
 
         return mutex.withLock {
             while (timestamps.isNotEmpty() && nowMs - timestamps.first() >= windowMs) {
                 timestamps.removeFirst()
             }
-        if (timestamps.size >= maxRequestsPerMinute) {
+
+            if (timestamps.size >= maxRequestsPerMinute) {
                 val oldest = timestamps.first()
                 (windowMs - (nowMs - oldest)).coerceAtLeast(1L)
             } else {
@@ -27,13 +29,14 @@ class SlidingWindowRateLimiter(
             }
         }
     }
-        suspend fun acquire() {
+
+    suspend fun acquire() {
         while (true) {
             val retryAfterMs = tryAcquire()
-        if (retryAfterMs <= 0L) {
+            if (retryAfterMs <= 0L) {
                 return
             }
-        delay(retryAfterMs)
+            delay(retryAfterMs)
         }
     }
 }

@@ -34,7 +34,7 @@ fun <T> Flow<T>.result(defaultValue: T? = null): Flow<T> = catch { e ->
  */
 fun <T> Flow<T>.onStart(block: suspend () -> Unit): Flow<T> = flow {
     block()
-        collect { emit(it) }
+    collect { emit(it) }
 }
 
 /**

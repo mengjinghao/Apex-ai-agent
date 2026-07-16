@@ -30,14 +30,16 @@ class Agent(
         SPECIFIC_CONFIG,
         GLOBAL_CONFIG
     }
-        fun getConfigSource(): ConfigSource {
+
+    fun getConfigSource(): ConfigSource {
         return when {
             useGlobalConfig -> ConfigSource.GLOBAL_CONFIG
             configId != null -> ConfigSource.SPECIFIC_CONFIG
             else -> ConfigSource.SELF
         }
     }
-        fun copy(
+
+    fun copy(
         id: String = this.id,
         name: String = this.name,
         role: String = this.role,

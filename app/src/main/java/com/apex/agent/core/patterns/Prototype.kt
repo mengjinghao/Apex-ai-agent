@@ -35,13 +35,15 @@ data class WorkflowTemplate(
         edges = edges.toMutableList(),
         config = config.toMutableMap()
     )
-        override fun deepCopy(): WorkflowTemplate {
+
+    override fun deepCopy(): WorkflowTemplate {
         val copiedNodes = nodes.map { it.copy(config = it.config.toMap()) }.toMutableList()
         val copiedEdges = edges.map { it.copy() }.toMutableList()
         val copiedConfig = config.mapValues { it.value }.toMutableMap()
         return copy(nodes = copiedNodes, edges = copiedEdges, config = copiedConfig)
     }
-        override fun shallowCopy(): WorkflowTemplate = this.copy()
+
+    override fun shallowCopy(): WorkflowTemplate = this.copy()
 
     /** 覆盖配置 */
     fun overrideConfig(key: String, value: Any): WorkflowTemplate {
@@ -52,10 +54,10 @@ data class WorkflowTemplate(
     /** 转换为工作流定义 */
     fun toWorkflowDefinition(): String {
         return """
-        Workflow: $name
+            Workflow: $name
             Nodes: ${nodes.joinToString { it.name }}
-        Edges: ${edges.size}
-        Config: $config
+            Edges: ${edges.size}
+            Config: $config
         """.trimIndent()
     }
 }
@@ -69,8 +71,8 @@ data class AgentConfigPrototype(
     val tools: List<String> = emptyList()
 ) : Prototype<AgentConfigPrototype> {
     override fun clone(): AgentConfigPrototype = this.copy()
-        override fun deepCopy(): AgentConfigPrototype = this.copy(tools = tools.toList())
-        override fun shallowCopy(): AgentConfigPrototype = this
+    override fun deepCopy(): AgentConfigPrototype = this.copy(tools = tools.toList())
+    override fun shallowCopy(): AgentConfigPrototype = this
 }
 
 /** 任务原型 */
@@ -82,18 +84,23 @@ data class TaskPrototype(
     val metadata: Map<String, String> = emptyMap()
 ) : Prototype<TaskPrototype> {
     override fun clone(): TaskPrototype = this.copy()
-        override fun deepCopy(): TaskPrototype = this.copy(metadata = metadata.toMap())
-        override fun shallowCopy(): TaskPrototype = this
+    override fun deepCopy(): TaskPrototype = this.copy(metadata = metadata.toMap())
+    override fun shallowCopy(): TaskPrototype = this
 }
 
 /** 原型注册表 */
 class PrototypeRegistry {
     private val templates = mutableMapOf<String, WorkflowTemplate>()
-        fun register(name: String, template: WorkflowTemplate) {
+
+    fun register(name: String, template: WorkflowTemplate) {
         templates[name] = template
     }
-        fun get(name: String): WorkflowTemplate? = templates[name]?.deepCopy()
-        fun remove(name: String): WorkflowTemplate? = templates.remove(name)
-        fun listNames(): List<String> = templates.keys.toList()
-        fun clear() = templates.clear()
+
+    fun get(name: String): WorkflowTemplate? = templates[name]?.deepCopy()
+
+    fun remove(name: String): WorkflowTemplate? = templates.remove(name)
+
+    fun listNames(): List<String> = templates.keys.toList()
+
+    fun clear() = templates.clear()
 }

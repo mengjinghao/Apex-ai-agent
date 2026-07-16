@@ -18,7 +18,8 @@ class UIOperationOverlay private constructor(private val context: Context) {
             }
         }
     }
-        fun showClick(x: Int, y: Int): UIOperationOverlay = this
+
+    fun showClick(x: Int, y: Int): UIOperationOverlay = this
     fun showSwipe(x1: Int, y1: Int, x2: Int, y2: Int): UIOperationOverlay = this
     fun showLongPress(x: Int, y: Int): UIOperationOverlay = this
     fun hide(): UIOperationOverlay = this

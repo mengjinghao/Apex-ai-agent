@@ -22,18 +22,22 @@ data class MmdAvatarModel(
     val availableMotionFiles: List<String>
         get() {
             val normalized = motionFiles.filter { it.isNotBlank() }.distinct()
-        return if (normalized.isNotEmpty()) {
+            return if (normalized.isNotEmpty()) {
                 normalized
             } else {
                 motionFile?.takeIf { it.isNotBlank() }?.let { listOf(it) } ?: emptyList()
             }
         }
-        val motionPath: String?
+
+    val motionPath: String?
         get() = availableMotionFiles.firstOrNull()?.let { File(basePath, it).absolutePath }
-        val motionPaths: List<String>
+
+    val motionPaths: List<String>
         get() = availableMotionFiles.map { File(basePath, it).absolutePath }
-        val displayMotionName: String?
+
+    val displayMotionName: String?
         get() = availableMotionFiles.firstOrNull()
-        val displayMotionNames: List<String>
+
+    val displayMotionNames: List<String>
         get() = availableMotionFiles
 }
