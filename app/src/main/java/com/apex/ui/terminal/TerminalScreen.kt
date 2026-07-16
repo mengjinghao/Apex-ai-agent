@@ -117,7 +117,3 @@ private fun TerminalLineRow(line: TerminalLine) {
 enum class TerminalLineKind { PROMPT, OUTPUT, SYSTEM, ERROR, SUCCESS, AGENT }
 
 /** 终端行 */
-data class TerminalLine(
-    val text: String,
-    val kind: TerminalLineKind = TerminalLineKind.OUTPUT,
-)

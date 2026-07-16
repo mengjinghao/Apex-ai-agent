@@ -5,11 +5,6 @@ import com.apex.agent.AgentMessage
 import com.apex.agent.core.task.Task
 import kotlinx.coroutines.flow.Flow
 
-interface TaskExecutor {
-    suspend fun execute(task: Task): Flow<Result<Task>>
-    suspend fun pause(taskId: String): Result<Unit>
-    suspend fun resume(taskId: String): Result<Unit>
-    suspend fun cancel(taskId: String): Result<Unit>
 
     suspend fun onMessageReceived(taskId: String, message: AgentMessage): Result<Unit> = Result.Success(Unit)
 }

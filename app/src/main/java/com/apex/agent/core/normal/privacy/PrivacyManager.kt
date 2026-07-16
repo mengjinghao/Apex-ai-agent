@@ -114,7 +114,6 @@ data class PrivacyConfig(
  */
 sealed class DataAccessDecision {
     data class Allowed(val reason: String = "策略允许") : DataAccessDecision()
-    data class Denied(val reason: String) : DataAccessDecision()
     data class RequiresConsent(val dataType: DataType, val reason: String) : DataAccessDecision()
 }
 

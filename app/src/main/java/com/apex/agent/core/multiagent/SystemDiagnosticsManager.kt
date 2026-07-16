@@ -13,7 +13,6 @@ class SystemDiagnosticsManager(private val context: Context) {
         val timestamp: Long = System.currentTimeMillis()
     )
 
-    enum class Status { HEALTHY, WARNING, ERROR, UNKNOWN }
 
     private val diagnostics = ConcurrentHashMap<String, DiagnosticResult>()
 

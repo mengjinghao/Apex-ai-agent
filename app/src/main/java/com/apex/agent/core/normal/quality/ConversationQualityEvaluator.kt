@@ -90,7 +90,6 @@ enum class IssueType {
     LOW_ENGAGEMENT          // 参与度低
 }
 
-enum class IssueSeverity { CRITICAL, MAJOR, MINOR, INFO }
 
 /**
  * 单轮对话质量

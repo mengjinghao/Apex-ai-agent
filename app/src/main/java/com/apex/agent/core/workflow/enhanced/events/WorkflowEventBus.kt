@@ -40,25 +40,10 @@ sealed class WorkflowEvent {
     ) : WorkflowEvent()
 
     /** 自定义事件（用户可在节点内发布） */
-    data class Custom(
-        override val type: String,
-        override val payload: Any,
-        val publisherNodeId: String?,
-        val threadId: String?,
-        override val timestamp: Long = System.currentTimeMillis()
-    ) : WorkflowEvent()
-}
 
 /**
  * 事件订阅
  */
-data class EventSubscription(
-    val subscriptionId: String,
-    val eventType: String,
-    val filterExpression: String? = null,
-    val workflowId: String? = null,
-    val createdAt: Long = System.currentTimeMillis()
-)
 
 /**
  * 工作流事件总线

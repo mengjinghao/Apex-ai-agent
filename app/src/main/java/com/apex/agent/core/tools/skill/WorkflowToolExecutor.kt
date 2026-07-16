@@ -17,10 +17,6 @@ class WorkflowToolExecutor {
         fun validate(config: Map<String, Any>): ValidationResult
     }
 
-    data class ValidationResult(
-        val isValid: Boolean,
-        val errors: List<String> = emptyList()
-    )
 
     init {
         registerDefaultHandlers()

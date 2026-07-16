@@ -21,7 +21,6 @@ data class SagaStep<T>(
  */
 sealed class SagaResult<T> {
     /** 所有步骤成功 */
-    data class Success<T>(val outputs: Map<String, T>) : SagaResult<T>()
 
     /** 某步失败，已执行补偿 */
     data class Compensated<T>(
@@ -40,8 +39,6 @@ data class CompensationResult(
 /**
  * Saga 构建器
  */
-class SagaBuilder<T> {
-    private val steps = mutableListOf<SagaStep<T>>()
 
     fun step(
         nodeId: String,

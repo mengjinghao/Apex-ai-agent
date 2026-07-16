@@ -12,13 +12,6 @@ class CollaborationTask(
     val collaborationMode: CollaborationMode = CollaborationMode.SUPERVISOR_EXECUTION,
     val rules: CollaborationRules = CollaborationRules()
 ) {
-    enum class Status {
-        PENDING,
-        RUNNING,
-        PAUSED,
-        COMPLETED,
-        FAILED
-    }
 
     enum class CollaborationMode {
         SUPERVISOR_EXECUTION, // 主管-执行模式

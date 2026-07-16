@@ -158,21 +158,6 @@ data class DeviceInfoResultData(
 data class NotificationData(val notifications: List<Notification>, val timestamp: Long) :
         ToolResultData() {
     @Serializable
-    data class Notification(val packageName: String, val text: String, val timestamp: Long)
-        override fun toString(): String {
-        val sb = StringBuilder()
-        sb.appendLine("Device Notifications (${notifications.size} total):")
-        notifications.forEachIndexed { index, notification ->
-            sb.appendLine("${index + 1}. Package: ${notification.packageName}")
-        sb.appendLine("   Content: ${notification.text}")
-        sb.appendLine()
-        }
-        if (notifications.isEmpty()) {
-            sb.appendLine("No notifications")
-        }
-        return sb.toString()
-    }
-}
 
 /** 位置数据结构 */
 

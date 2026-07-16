@@ -6,7 +6,6 @@ package com.apex.agent.core.patterns
  */
 
 /** 记忆接口 */
-interface Memory {
     fun store(key: String, value: Any)
     fun retrieve(key: String): Any?
     fun clear()

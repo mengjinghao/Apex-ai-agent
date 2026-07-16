@@ -12,10 +12,6 @@ interface TaskMonitor {
     fun activeTaskCount(): Int
 
     @Singleton
-    class Default constructor() : TaskMonitor {
-        companion object {
-            private const val TAG = "TaskMonitor"
-        }
 
         private val activeTasks = mutableSetOf<String>()
 

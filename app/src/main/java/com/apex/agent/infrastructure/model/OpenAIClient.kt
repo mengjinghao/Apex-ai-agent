@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 @Singleton
-class OpenAIClient constructor() : ModelClient {
 
     companion object {
         private const val TAG = "OpenAIClient"

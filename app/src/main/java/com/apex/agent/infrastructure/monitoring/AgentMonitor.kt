@@ -12,10 +12,6 @@ interface AgentMonitor {
     fun activeAgentCount(): Int
 
     @Singleton
-    class Default constructor() : AgentMonitor {
-        companion object {
-            private const val TAG = "AgentMonitor"
-        }
 
         private val activeAgents = mutableSetOf<String>()
 

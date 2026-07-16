@@ -22,14 +22,6 @@ import java.io.OutputStream
 /**
  * 导出格式
  */
-enum class ExportFormat {
-    MARKDOWN,
-    JSON,
-    HTML,
-    PLAIN_TEXT,
-    CSV,
-    PDF  // 占位
-}
 
 /**
  * 导出选项
@@ -79,15 +71,6 @@ data class ToolCallRecord(
 /**
  * 导出结果
  */
-data class ExportResult(
-    val success: Boolean,
-    val format: ExportFormat,
-    val content: String,
-    val messageCount: Int,
-    val fileSizeBytes: Long,
-    val warnings: List<String> = emptyList(),
-    val errors: List<String> = emptyList()
-)
 
 /**
  * 对话导出器

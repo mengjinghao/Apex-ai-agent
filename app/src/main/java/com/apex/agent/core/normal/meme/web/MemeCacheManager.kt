@@ -146,11 +146,6 @@ class MemeCacheManager(
         return CacheStats(total, expired, byType)
     }
 
-    data class CacheStats(
-        val totalEntries: Int,
-        val expiredEntries: Int,
-        val byType: Map<String, Int>
-    )
 
     // ============ 内部方法 ============
 

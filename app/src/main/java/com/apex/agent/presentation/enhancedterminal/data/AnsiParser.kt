@@ -3,13 +3,6 @@ package com.apex.agent.presentation.enhancedterminal.data
 import androidx.compose.ui.graphics.Color
 
 object AnsiParser {
-    data class Segment(
-        val text: String,
-        val color: Color? = null,
-        val bold: Boolean = false,
-        val italic: Boolean = false,
-        val underline: Boolean = false,
-    )
 
     private val ansiRegex = Regex("\u001B\\[([0-9;]*)m")
     private val basicColors = mapOf(

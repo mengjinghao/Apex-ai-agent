@@ -177,12 +177,6 @@ class CrossSessionMemoryRAG(
         )
     }
 
-    data class MemoryStats(
-        val totalMemories: Int,
-        val totalSessions: Int,
-        val oldestMemory: Long?,
-        val newestMemory: Long?
-    )
 
     // ============ 向量化（简化实现：基于词频的稀疏向量）============
 

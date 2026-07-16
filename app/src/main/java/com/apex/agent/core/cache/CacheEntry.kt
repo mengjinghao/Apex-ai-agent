@@ -19,16 +19,6 @@ import kotlinx.serialization.Serializable
  * @property serialized   是否已序列化为 JSON 字符串
  */
 @Serializable
-data class CacheEntry<T>(
-    val key: String,
-    val value: T,
-    val createdAt: Long = System.currentTimeMillis(),
-    val lastAccessedAt: Long = System.currentTimeMillis(),
-    val ttl: Long = -1L,
-    val hitCount: Long = 0L,
-    val sizeBytes: Long = -1L,
-    val serialized: Boolean = false
-) {
 
     /** 判断当前条目是否已过期 */
     fun isExpired(): Boolean {

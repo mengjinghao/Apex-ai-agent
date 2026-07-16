@@ -27,15 +27,6 @@ class SkillCache private constructor(private val context: Context) {
         }
     }
 
-    data class CacheEntry(
-        val skillName: String,
-        val toolName: String,
-        val parametersHash: String,
-        val result: Any?,
-        val cachedAt: Long,
-        val expiresAt: Long,
-        val hitCount: AtomicLong = AtomicLong(0)
-    )
 
     data class CacheConfig(
         val maxSize: Int = DEFAULT_MAX_SIZE,
@@ -256,14 +247,3 @@ class SkillCache private constructor(private val context: Context) {
         invalidateAll()
         AppLogger.d(TAG, "SkillCache shutdown complete")
     }
-
-    data class CacheStats(
-        val size: Int,
-        val maxSize: Int,
-        val hits: Long,
-        val misses: Long,
-        val evictions: Long,
-        val expired: Long,
-        val hitRate: Double
-    )
-}

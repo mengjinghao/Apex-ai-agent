@@ -7,7 +7,6 @@ import org.json.JSONObject
  * JSON 工具类，提供对 JSON 字符串的解析、转换和操作功能。
  * 基于 Android 内置的 org.json 库实现，无需额外依赖。
  */
-object JsonUtils {
 
     /**
      * 检查字符串是否为有效的 JSON。

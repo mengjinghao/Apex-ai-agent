@@ -108,14 +108,6 @@ data class UnknownNode(
 }
 
 @Serializable
-data class ThinkingChain(
-    val id: String = UUID.randomUUID().toString(),
-    val nodes: MutableList<ThoughtNode> = mutableListOf(),
-    val edges: MutableList<Edge> = mutableListOf(),
-    val startTime: Long = System.currentTimeMillis(),
-    var endTime: Long? = null
-) {
-    @Serializable
     data class Edge(
         val from: String,
         val to: String,

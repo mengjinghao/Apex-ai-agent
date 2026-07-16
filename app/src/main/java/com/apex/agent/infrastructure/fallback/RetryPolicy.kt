@@ -5,11 +5,6 @@ import javax.inject.Singleton
 import kotlinx.coroutines.delay
 
 @Singleton
-class RetryPolicy constructor(
-    val maxRetries: Int = DEFAULT_MAX_RETRIES,
-    val delayMillis: Long = DEFAULT_DELAY_MILLIS,
-    val backoffMultiplier: Double = DEFAULT_BACKOFF_MULTIPLIER
-) {
 
     suspend fun <T> execute(block: suspend () -> T): T {
         var lastError: Throwable? = null

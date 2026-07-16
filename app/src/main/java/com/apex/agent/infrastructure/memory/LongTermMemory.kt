@@ -20,18 +20,8 @@ import kotlin.concurrent.write
  * @param storageDir 存储目录，用于存放持久化JSON文件
  * @param maxEntries 最大条目数，超过时按 LRU 淘汰
  */
-class LongTermMemory(
-    private val storageDir: File,
-    private val maxEntries: Int = 10000
-) : IMemoryStore {
 
     @Serializable
-    data class MemoryEntry(
-        val key: String,
-        val value: String,
-        val timestamp: Long,
-        val ttl: Long? = null
-    )
 
     @Serializable
     private data class PersistenceData(

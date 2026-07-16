@@ -12,11 +12,6 @@ import kotlinx.coroutines.launch
 
 class AgentInstance(private val agent: Agent) {
 
-    enum class Status {
-        STOPPED,
-        RUNNING,
-        PAUSED
-    }
 
     var status: Status = Status.STOPPED
         private set

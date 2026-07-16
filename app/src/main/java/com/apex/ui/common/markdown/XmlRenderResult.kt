@@ -5,7 +5,6 @@ package com.apex.ui.common.markdown
  * 业务代码引用 ComposeDslScreen / Text 子类型。
  */
 sealed class XmlRenderResult {
-    data class Text(val text: String) : XmlRenderResult()
 
     data class ComposeDslScreen(
         val containerPackageName: String,

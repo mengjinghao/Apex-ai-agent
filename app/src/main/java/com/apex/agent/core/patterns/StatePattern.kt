@@ -6,19 +6,14 @@ package com.apex.agent.core.patterns
  */
 
 /** 代理事件 */
-sealed class AgentEvent {
     object Start : AgentEvent()
     object Complete : AgentEvent()
     object Wait : AgentEvent()
     object Fail : AgentEvent()
     object Recover : AgentEvent()
-    object Timeout : AgentEvent()
     object Reset : AgentEvent()
-    data class Custom(val type: String, val data: Any? = null) : AgentEvent()
-}
 
 /** 状态监听器 */
-interface StateChangeListener {
     fun onStateChange(from: State, to: State, event: AgentEvent)
     fun onTimeout(state: State)
 }

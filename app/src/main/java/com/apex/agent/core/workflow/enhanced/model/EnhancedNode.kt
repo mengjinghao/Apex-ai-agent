@@ -125,11 +125,7 @@ data class EnhancedNode(
         else ValidationResult.Invalid(errors)
     }
 
-    sealed class ValidationResult {
         data object Valid : ValidationResult()
-        data class Invalid(val errors: List<String>) : ValidationResult()
-    }
-}
 
 @Serializable
 data class NodePositionDef(

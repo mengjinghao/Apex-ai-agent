@@ -3,13 +3,6 @@ package com.apex.agent.orchestration.workflow
 import com.apex.agent.common.result.Result
 import kotlinx.coroutines.flow.Flow
 
-interface WorkflowNode {
-    val nodeId: String
-    val nodeType: String
-    val name: String
-    val description: String
-    suspend fun execute(context: WorkflowContext): Flow<Result<NodeExecutionResult>>
-}
 
 data class WorkflowContext(
     val workflowId: String,

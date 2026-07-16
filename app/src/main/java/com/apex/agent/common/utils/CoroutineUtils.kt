@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicLong
 /**
  * 协程工具类，提供常用的协程调度器访问、安全启动、重试、防抖、节流、耗时测量等功能。
  */
-object CoroutineUtils {
 
     /** IO 密集型任务调度器 */
     val ioDispatcher: CoroutineDispatcher = Dispatchers.IO

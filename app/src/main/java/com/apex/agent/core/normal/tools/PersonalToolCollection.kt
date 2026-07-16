@@ -44,9 +44,6 @@ abstract class PersonalTool {
  * 工具执行结果
  */
 sealed class PersonalToolResult {
-    data class Success(val content: String, val data: Any? = null) : PersonalToolResult()
-    data class Failure(val error: String) : PersonalToolResult()
-}
 
 /**
  * 个人笔记工具

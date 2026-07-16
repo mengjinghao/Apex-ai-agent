@@ -100,19 +100,6 @@ data class ToolPerformanceAnalysis(
     val failureHotspots: List<ToolInvocationRecord>
 )
 
-data class ToolStats(
-    val name: String,
-    val totalCalls: Int,
-    val successCount: Int,
-    val failureCount: Int,
-    val avgDurationMs: Long,
-    val maxDurationMs: Long,
-    val minDurationMs: Long,
-    val totalRetries: Int,
-    val p50DurationMs: Long,
-    val p95DurationMs: Long,
-    val p99DurationMs: Long
-)
 
 /**
  * 工具调用分析器

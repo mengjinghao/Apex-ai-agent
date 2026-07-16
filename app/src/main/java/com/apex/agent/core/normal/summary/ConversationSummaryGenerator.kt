@@ -68,7 +68,6 @@ data class StructuredSummary(
 )
 
 data class TopicSummary(val topic: String, val summary: String, val messageRange: IntRange)
-data class TimelineEvent(val timestamp: Long, val description: String, val type: String)
 data class DecisionRecord(val decision: String, val rationale: String, val timestamp: Long, val messageId: String?)
 data class ActionItem(val description: String, val assignee: String?, val dueDate: String?, val priority: Int)
 data class EntityRecord(val name: String, val type: String, val mentions: Int, val firstMentioned: Long)

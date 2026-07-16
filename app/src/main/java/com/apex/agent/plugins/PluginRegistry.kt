@@ -20,9 +20,6 @@ interface ApexPlugin {
 /**
  * 扩展的插件接口，提供更完整的插件生命周期管理
  */
-interface Plugin : ApexPlugin {
-    val name: String
-    val version: String
     fun unregister()
 }
 

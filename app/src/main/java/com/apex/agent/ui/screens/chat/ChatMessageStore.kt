@@ -68,14 +68,9 @@ data class PersistedMessage(
 @Serializable
 sealed class PersistedBubble {
     @Serializable
-    data class Thinking(val text: String) : PersistedBubble()
 
     @Serializable
-    data class Text(val text: String) : PersistedBubble()
 
     @Serializable
-    data class Command(val command: String, val status: String, val output: String) : PersistedBubble()
 
     @Serializable
-    data class Search(val query: String, val results: List<String>, val status: String) : PersistedBubble()
-}

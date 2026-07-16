@@ -22,14 +22,12 @@ sealed class Result<out T> {
      *
      * @param data 成功时的数据
      */
-    data class Success<out T>(val data: T) : Result<T>()
 
     /**
      * 失败结果，包含异常信息。
      *
      * @param error 失败时的异常
      */
-    data class Failure(val error: Throwable) : Result<Nothing>()
 
     /** 如果结果为 [Success] 则返回 true */
     fun isSuccess(): Boolean = this is Success

@@ -5,13 +5,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicLong
 
-data class ToolCallRecord(
-    val toolName: String,
-    val success: Boolean,
-    val durationMs: Long,
-    val errorCode: String? = null,
-    val timestamp: Long = System.currentTimeMillis()
-)
 
 data class ToolMetrics(
     val toolName: String,

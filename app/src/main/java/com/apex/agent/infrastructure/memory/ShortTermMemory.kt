@@ -14,7 +14,6 @@ interface ShortTermMemory {
     fun clear()
 
     @Singleton
-    class Default constructor() : ShortTermMemory {
 
         private val store = mutableMapOf<String, String>()
 

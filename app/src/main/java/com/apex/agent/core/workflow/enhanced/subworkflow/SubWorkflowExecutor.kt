@@ -33,9 +33,6 @@ enum class ParentChildLink {
  * 子工作流执行结果
  */
 sealed class SubWorkflowResult {
-    data class Completed(val outputs: Map<String, Any>) : SubWorkflowResult()
-    data class TimedOut(val subThreadId: String) : SubWorkflowResult()
-    data class Failed(val error: Throwable) : SubWorkflowResult()
     data class AsyncStarted(val subThreadId: String) : SubWorkflowResult()
 }
 

@@ -208,14 +208,6 @@ class WorkflowValidator {
 /**
  * 验证结果
  */
-data class ValidationResult(
-    val errors: List<ValidationError>,
-    val warnings: List<ValidationWarning>,
-    val topologicalOrder: List<String>
-) {
-    val isValid: Boolean get() = errors.isEmpty()
-    val hasWarnings: Boolean get() = warnings.isNotEmpty()
-}
 
 /**
  * 验证错误（阻塞执行）

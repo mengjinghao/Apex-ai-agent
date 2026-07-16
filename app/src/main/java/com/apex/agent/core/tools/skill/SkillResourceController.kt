@@ -46,15 +46,6 @@ class SkillResourceController private constructor() {
         val allocatedAt: Long = System.currentTimeMillis()
     )
 
-    data class ResourceUsage(
-        val cpuUsagePercent: Float,
-        val memoryUsedMb: Int,
-        val memoryAvailableMb: Int,
-        val activeTasks: Int,
-        val queuedTasks: Int,
-        val threadCount: Int,
-        val timestamp: Long = System.currentTimeMillis()
-    )
 
     data class ResourceLimit(
         val maxConcurrentTasks: Int = DEFAULT_MAX_CONCURRENT_TASKS,
@@ -68,11 +59,6 @@ class SkillResourceController private constructor() {
         fun calculateAllocation(taskComplexity: TaskComplexity, currentUsage: ResourceUsage): Int
     }
 
-    enum class TaskComplexity {
-        LOW,
-        MEDIUM,
-        HIGH,
-        VERY_HIGH;
 
         fun getThreadRequirement(): Int = when (this) {
             LOW -> 1
@@ -367,13 +353,6 @@ class SkillResourceController private constructor() {
         val potentialImprovement: Float
     )
 
-    enum class SuggestionType {
-        INCREASE_CONCURRENCY,
-        DECREASE_CONCURRENCY,
-        OPTIMIZE_MEMORY,
-        CPU_OPTIMIZATION,
-        QUEUE_SIZE_INCREASE
-    }
 
     fun getOptimizationSuggestions(): List<OptimizationSuggestion> {
         val suggestions = mutableListOf<OptimizationSuggestion>()

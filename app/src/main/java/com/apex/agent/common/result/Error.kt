@@ -37,13 +37,6 @@ sealed class AppError(
      * @param message 错误消息
      * @param cause 原始异常
      */
-    class NetworkError(
-        code: String = "NETWORK_ERROR",
-        message: String,
-        cause: Throwable? = null
-    ) : AppError(code, message) {
-        val cause: Throwable? = cause
-    }
 
     /**
      * 数据库错误 - 数据库读写失败、查询超时等。
@@ -81,10 +74,6 @@ sealed class AppError(
      * @param code 错误码，默认为 "VALIDATION_ERROR"
      * @param message 错误消息
      */
-    class ValidationError(
-        code: String = "VALIDATION_ERROR",
-        message: String
-    ) : AppError(code, message)
 
     /**
      * 超时错误 - 操作执行超时。
@@ -141,13 +130,6 @@ sealed class AppError(
      * @param message 错误消息
      * @param cause 原始异常
      */
-    class ParseError(
-        code: String = "PARSE_ERROR",
-        message: String,
-        cause: Throwable? = null
-    ) : AppError(code, message) {
-        val cause: Throwable? = cause
-    }
 
     companion object {
         /**

@@ -241,9 +241,6 @@ class ExpressionEvaluator {
     sealed class ASTNode {
         abstract fun eval(context: Map<String, Any>): Any?
 
-        data class Literal(val value: Any?) : ASTNode() {
-            override fun eval(context: Map<String, Any>) = value
-        }
 
         data class VariableRef(val path: String) : ASTNode() {
             override fun eval(context: Map<String, Any>): Any? {

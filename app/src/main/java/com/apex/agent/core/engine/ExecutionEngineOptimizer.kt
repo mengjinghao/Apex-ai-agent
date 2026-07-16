@@ -63,15 +63,6 @@ class ExecutionEngineOptimizer(private val name: String = "exec-engine") {
         val action: suspend () -> Any?
     )
 
-    data class TaskResult(
-        val id: String,
-        val type: String,
-        val success: Boolean,
-        val durationMs: Long,
-        val queueWaitMs: Long,
-        val error: String? = null,
-        val timestamp: Long = System.currentTimeMillis()
-    )
 
     private class TaskCounters {
         val total = AtomicLong(0)
@@ -269,12 +260,6 @@ class ExecutionEngineOptimizer(private val name: String = "exec-engine") {
 }
 
 class TaskPipelineOptimizer(private val name: String = "pipeline-opt") {
-    data class PipelineStage(
-        val name: String,
-        val concurrency: Int = 1,
-        val timeoutMs: Long = 30000L,
-        val retryCount: Int = 0
-    )
 
     data class PipelineConfig(
         val stages: List<PipelineStage>,
@@ -368,7 +353,6 @@ class TaskPipelineOptimizer(private val name: String = "pipeline-opt") {
     private fun recordFailure(stage: String) { stageMetrics[stage]?.failed?.incrementAndGet() }
 }
 
-class ParallelExecutor(private val name: String = "parallel-exec") {
     data class ParallelTask<T>(
         val id: String,
         val action: suspend () -> T

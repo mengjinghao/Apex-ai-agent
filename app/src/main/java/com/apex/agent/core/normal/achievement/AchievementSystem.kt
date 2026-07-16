@@ -68,7 +68,6 @@ enum class BadgeCategory {
 sealed class AchievementRequirement {
     data class Count(val metric: String, val target: Int) : AchievementRequirement()
     data class Streak(val metric: String, val target: Int) : AchievementRequirement()
-    data class Composite(val requirements: List<AchievementRequirement>, val allRequired: Boolean = true) : AchievementRequirement()
     data class Specific(val condition: String) : AchievementRequirement()
 }
 

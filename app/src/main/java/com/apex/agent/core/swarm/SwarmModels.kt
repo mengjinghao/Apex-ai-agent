@@ -22,16 +22,6 @@ enum class DebateStatus {
 }
 
 @Serializable
-data class Argument(
-    val id: String = UUID.randomUUID().toString(),
-    val agentId: String,
-    val content: String,
-    val stance: Stance,
-    val evidence: List<String> = emptyList(),
-    val confidence: Float = 1.0f,
-    val timestamp: Long = System.currentTimeMillis(),
-    val rebuttals: List<String> = emptyList()
-)
 
 enum class Stance {
     FOR,
@@ -115,11 +105,3 @@ data class SwarmTask(
     val timeoutMs: Long = 60000,
     val requireConsensus: Boolean = true
 )
-
-enum class TaskType {
-    PROBLEM_SOLVING,
-    DECISION_MAKING,
-    CREATIVE_GENERATION,
-    CRITICAL_ANALYSIS,
-    PLANNING
-}

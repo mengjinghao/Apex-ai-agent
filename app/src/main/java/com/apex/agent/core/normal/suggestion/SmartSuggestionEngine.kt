@@ -50,7 +50,6 @@ data class Suggestion(
  */
 sealed class SuggestionAction {
     data class InsertText(val text: String, val replaceRange: IntRange? = null) : SuggestionAction()
-    data class SendMessage(val text: String) : SuggestionAction()
     data class ExecuteCommand(val command: String, val args: Map<String, Any> = emptyMap()) : SuggestionAction()
     data class SwitchScene(val sceneId: String) : SuggestionAction()
     data class TriggerTool(val toolName: String, val args: Map<String, Any>) : SuggestionAction()

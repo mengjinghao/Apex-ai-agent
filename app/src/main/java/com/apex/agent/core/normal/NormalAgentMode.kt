@@ -85,14 +85,6 @@ data class NormalAgentContext(
  * 普通 Agent 模式处理结果
  */
 sealed class NormalAgentResult {
-    data class Success(
-        val content: String,
-        val depth: ResponseDepth,
-        val intent: String,
-        val toolsUsed: List<String> = emptyList(),
-        val thinkingChain: List<String>? = null,
-        val metadata: Map<String, Any> = emptyMap()
-    ) : NormalAgentResult()
 
     data class NeedsClarification(
         val question: String,
@@ -106,5 +98,3 @@ sealed class NormalAgentResult {
         val requiredPermission: String
     ) : NormalAgentResult()
 
-    data class Failure(val error: String, val throwable: Throwable? = null) : NormalAgentResult()
-}

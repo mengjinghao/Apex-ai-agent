@@ -15,20 +15,7 @@ class SkillTaskQueue {
         private const val NORMAL_PRIORITY = 5
     }
 
-    enum class TaskState {
-        PENDING,
-        RUNNING,
-        COMPLETED,
-        FAILED,
-        CANCELLED
-    }
 
-    enum class Priority(val value: Int) {
-        LOWEST(MIN_PRIORITY),
-        LOW(2),
-        NORMAL(NORMAL_PRIORITY),
-        HIGH(7),
-        HIGHEST(MAX_PRIORITY);
 
         companion object {
             fun fromValue(value: Int): Priority {
@@ -46,16 +33,6 @@ class SkillTaskQueue {
         val timeoutMs: Long = 30000L
     )
 
-    data class TaskResult(
-        val taskId: String,
-        val skillName: String,
-        val success: Boolean,
-        val result: Any? = null,
-        val error: String? = null,
-        val startTime: Long = 0L,
-        val endTime: Long = 0L,
-        val durationMs: Long = 0L
-    )
 
     data class QueueStats(
         val totalEnqueued: Long,

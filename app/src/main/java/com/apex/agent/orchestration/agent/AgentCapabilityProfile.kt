@@ -3,15 +3,7 @@ package com.apex.agent.orchestration.agent
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
-class AgentCapabilityProfile constructor() {
 
-    data class ExecutionRecord(
-        val capability: String,
-        val success: Boolean,
-        val timestamp: Long,
-        val executionTimeMs: Long,
-        val taskDescription: String = ""
-    )
 
     private val capabilityScores = ConcurrentHashMap<String, Double>()
     private val executionHistory = mutableListOf<ExecutionRecord>()

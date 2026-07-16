@@ -16,9 +16,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SecurityManager constructor(
-    private val context: Context
-) {
 
     companion object {
         private const val TAG = "SecurityManager"
@@ -164,27 +161,7 @@ class SecurityManager constructor(
     }
 }
 
-enum class AuditAction {
-    API_KEY_STORED,
-    API_KEY_RETRIEVED,
-    API_KEY_DELETED,
-    TASK_CREATED,
-    TASK_STARTED,
-    TASK_COMPLETED,
-    TASK_FAILED,
-    AGENT_ADDED,
-    AGENT_REMOVED,
-    SECURITY_EVENT,
-    AUDIT_LOG_CLEARED
-}
 
-data class AuditEntry(
-    val id: String,
-    val action: AuditAction,
-    val targetId: String,
-    val details: String,
-    val timestamp: Long
-) {
     fun toJson(): org.json.JSONObject {
         return org.json.JSONObject().apply {
             put("id", id)

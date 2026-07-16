@@ -49,11 +49,6 @@ import kotlinx.coroutines.launch
  * // Agent 会输出 MultiPathReasoningBlock + AdversarialBlock + SelfCorrectionBlock
  * ```
  */
-class ChatSession(
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-) {
-    /** 输出流(模块化块) */
-    val stream = OutputBlockStream(scope)
 
     /** 当前水母形态(由块驱动) */
     private val _currentForm = MutableStateFlow(AuraMascot.AuraForm.IDLE)

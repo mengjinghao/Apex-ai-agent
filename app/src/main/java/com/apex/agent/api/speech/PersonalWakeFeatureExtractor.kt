@@ -10,17 +10,6 @@ import kotlin.math.sqrt
 object PersonalWakeFeatureExtractor {
     private const val EPS = 1e-10f
 
-    data class Config(
-        val sampleRate: Int = 16000,
-        val frameSize: Int = 400,
-        val hopSize: Int = 160,
-        val fftSize: Int = 512,
-        val melBins: Int = 40,
-        val numMfcc: Int = 13,
-        val maxFrames: Int = 64,
-        val fMin: Float = 20f,
-        val fMax: Float = 4000f,
-    )
 
     private data class MelFilterBank(
         val weights: Array<FloatArray>,

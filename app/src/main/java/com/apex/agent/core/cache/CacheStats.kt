@@ -15,14 +15,6 @@ package com.apex.agent.core.cache
  * @property hitRate      命中率（0.0 ~ 1.0），由 hits 与 misses 计算得出
  * @property missRate     未命中率（0.0 ~ 1.0）
  */
-data class CacheStats(
-    val hits: Long = 0L,
-    val misses: Long = 0L,
-    val evictions: Long = 0L,
-    val totalEntries: Int = 0,
-    val memoryUsage: Long = 0L,
-    val avgAccessTime: Long = 0L
-) {
 
     /** 命中率 = hits / (hits + misses)，若无请求则返回 0.0 */
     val hitRate: Double

@@ -5,14 +5,9 @@ import java.net.URL
 /**
  * 配置校验结果密封类
  */
-sealed class ValidationResult {
-    /** 校验通过 */
     data object Valid : ValidationResult()
 
     /** 校验不通过，包含错误列表 */
-    data class Invalid(val errors: List<String>) : ValidationResult() {
-        constructor(error: String) : this(listOf(error))
-    }
 
     /** 校验通过但有警告，包含警告列表 */
     data class Warning(val messages: List<String>) : ValidationResult() {

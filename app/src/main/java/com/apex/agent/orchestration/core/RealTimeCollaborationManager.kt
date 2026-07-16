@@ -12,36 +12,9 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
-class RealTimeCollaborationManager constructor(
-    private val context: Context
-) {
 
-    data class CollaborationSession(
-        val sessionId: String,
-        val taskId: String,
-        val participants: MutableSet<String> = mutableSetOf(),
-        val state: MutableMap<String, Any> = mutableMapOf(),
-        val createdAt: Long = System.currentTimeMillis()
-    )
 
-    data class CollaborationEvent(
-        val type: EventType,
-        val sessionId: String,
-        val agentId: String,
-        val data: Map<String, Any> = emptyMap(),
-        val timestamp: Long = System.currentTimeMillis()
-    ) {
-        enum class EventType {
-            AGENT_JOINED, AGENT_LEFT, STATE_CHANGED, CONFLICT_DETECTED,
-            CONFLICT_RESOLVED, SYNC_COMPLETED, CONNECTION_LOST
-        }
-    }
 
-    data class ConnectionState(
-        val agentId: String,
-        val connected: Boolean,
-        val lastHeartbeat: Long
-    )
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val sessions = ConcurrentHashMap<String, CollaborationSession>()

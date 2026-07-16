@@ -10,13 +10,6 @@ class AgentResultCache {
         val inputHash: Int
     )
 
-    data class CachedResult(
-        val result: String,
-        val metadata: Map<String, Any> = emptyMap(),
-        val timestamp: Long = System.currentTimeMillis(),
-        val producer: String = "",
-        val accessCount: Int = 0
-    )
 
     private val cache = ConcurrentHashMap<CacheKey, CachedResult>()
     private val accessCount = ConcurrentHashMap<CacheKey, Int>()
@@ -93,9 +86,3 @@ class AgentResultCache {
         }
     }
 
-    data class CacheStats(
-        val totalEntries: Int,
-        val totalAccesses: Int,
-        val topAccessed: List<Pair<String, Int>>
-    )
-}

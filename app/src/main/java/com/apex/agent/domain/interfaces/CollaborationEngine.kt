@@ -4,9 +4,6 @@ package com.apex.agent.domain.interfaces
  * 协作结果密封类，封装操作成功/失败状态
  */
 sealed class CollaborationResult<out T> {
-    data class Success<T>(val data: T) : CollaborationResult<T>()
-    data class Failure(val error: CollaborationError) : CollaborationResult<Nothing>()
-}
 
 /**
  * 协作错误信息
@@ -25,14 +22,6 @@ data class CollaborationError(val code: String, val message: String, val agentId
  * @param assignedAgentIds 已分配的Agent ID列表
  * @param createdAt 创建时间戳
  */
-data class CollaborationTask(
-    val id: String,
-    val type: String,
-    val payload: Map<String, String>,
-    val priority: Int = 0,
-    val assignedAgentIds: List<String> = emptyList(),
-    val createdAt: Long = System.currentTimeMillis()
-)
 
 /**
  * Agent能力描述
@@ -48,7 +37,6 @@ data class AgentCapability(
     val status: AgentStatus = AgentStatus.IDLE
 )
 
-enum class AgentStatus { IDLE, BUSY, ERROR, OFFLINE }
 
 /**
  * 协作引擎核心接口
@@ -68,7 +56,6 @@ interface ICollaborationEngine {
 /**
  * 协作事件监听器
  */
-interface CollaborationListener {
     fun onTaskStarted(taskId: String, agentId: String)
     fun onTaskProgress(taskId: String, progress: Float, message: String)
     fun onTaskCompleted(taskId: String, result: String)
@@ -79,18 +66,7 @@ interface CollaborationListener {
 /**
  * 任务状态信息
  */
-data class TaskStatus(
-    val taskId: String,
-    val state: TaskState,
-    val assignedAgentId: String? = null,
-    val progress: Float = 0f,
-    val result: String? = null,
-    val error: String? = null,
-    val createdAt: Long,
-    val completedAt: Long? = null
-)
 
 /**
  * 任务状态枚举
  */
-enum class TaskState { PENDING, ASSIGNED, RUNNING, COMPLETED, FAILED, CANCELLED }

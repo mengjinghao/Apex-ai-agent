@@ -120,4 +120,3 @@ class RateLimitingDecorator<T, R>(
     }
 }
 
-class RateLimitExceededException(message: String) : Exception(message)

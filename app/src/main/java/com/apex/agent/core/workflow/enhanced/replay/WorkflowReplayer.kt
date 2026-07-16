@@ -38,18 +38,6 @@ class WorkflowReplayer {
     /**
      * 时间轴事件
      */
-    data class TimelineEvent(
-        val timestampMs: Long,
-        val relativeMs: Long,
-        val type: TimelineEventType,
-        val spanId: String,
-        val parentNodeId: String?,
-        val nodeName: String,
-        val durationMs: Long,
-        val status: String,
-        val attributes: Map<String, Any>,
-        val exception: Throwable?
-    )
 
     enum class TimelineEventType {
         WORKFLOW_START, NODE_START, NODE_END, BRANCH_START, BRANCH_END, WORKFLOW_END

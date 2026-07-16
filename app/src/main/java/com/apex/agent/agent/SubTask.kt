@@ -35,12 +35,8 @@ data class TaskResult(
 )
 
 sealed class TaskState {
-    object Idle : TaskState()
     object Decomposing : TaskState()
     data class Executing(val completed: Int, val total: Int) : TaskState()
-    data class Failed(val error: String) : TaskState()
-    object Completed : TaskState()
-}
 
 interface SubtaskDecompositionStrategy {
     fun decompose(mainTask: MainTask): List<SubTask>

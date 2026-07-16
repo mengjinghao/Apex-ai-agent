@@ -52,17 +52,4 @@ class BackgroundTaskManager {
         executorService.shutdown()
     }
 
-    data class TaskInfo(
-        val taskId: String,
-        val status: TaskStatus,
-        val errorMessage: String? = null
-    )
 
-    enum class TaskStatus {
-        NOT_FOUND,
-        RUNNING,
-        COMPLETED,
-        FAILED,
-        CANCELLED
-    }
-}

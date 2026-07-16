@@ -6,7 +6,6 @@ package com.apex.agent.core.patterns
  */
 
 /** 表达式接口 */
-interface Expression {
     fun interpret(context: ScriptContext): Any?
     fun accept(visitor: ExpressionVisitor): Any?
 }

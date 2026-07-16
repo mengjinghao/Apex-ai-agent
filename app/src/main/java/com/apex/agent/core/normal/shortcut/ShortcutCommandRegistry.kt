@@ -48,7 +48,6 @@ enum class CommandCategory {
  */
 sealed class CommandTemplate {
     /** 文本模板：直接替换参数 */
-    data class Text(val template: String) : CommandTemplate() {
         fun resolve(params: Map<String, String>): String {
             var result = template
             params.forEach { (k, v) -> result = result.replace("{$k}", v) }
@@ -60,7 +59,6 @@ sealed class CommandTemplate {
     data class Prompt(val systemPrompt: String?, val userPrompt: String) : CommandTemplate()
 
     /** 动作模板：执行特定动作 */
-    data class Action(val actionType: String, val defaultArgs: Map<String, Any> = emptyMap()) : CommandTemplate()
 
     /** 组合模板：多个步骤 */
     data class Composite(val steps: List<CommandTemplate>) : CommandTemplate()
@@ -99,7 +97,6 @@ sealed class CommandExecutionResult {
     data class SendMessage(val text: String, val systemPrompt: String? = null) : CommandExecutionResult()
     data class ExecuteAction(val actionType: String, val args: Map<String, Any>) : CommandExecutionResult()
     data class CompositeResult(val results: List<CommandExecutionResult>) : CommandExecutionResult()
-    data class Error(val message: String) : CommandExecutionResult()
     data object NoOp : CommandExecutionResult()
 }
 

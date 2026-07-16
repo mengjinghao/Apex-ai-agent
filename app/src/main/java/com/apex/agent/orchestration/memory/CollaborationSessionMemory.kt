@@ -56,14 +56,6 @@ enum class ContextCategory {
     GOAL, CONSTRAINT, REQUIREMENT, PREFERENCE, FACT, INSIGHT, WARNING, GENERAL
 }
 
-data class ProgressUpdate(
-    val agentId: String,
-    val taskRef: String,
-    val status: String,
-    val progress: Float,
-    val note: String = "",
-    val timestamp: Long = System.currentTimeMillis()
-)
 
 data class Artifact(
     val id: String,

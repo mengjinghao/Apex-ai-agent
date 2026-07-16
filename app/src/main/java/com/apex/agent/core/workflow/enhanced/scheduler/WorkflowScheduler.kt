@@ -40,15 +40,6 @@ import java.util.concurrent.ConcurrentHashMap
  * - 调度事件流（实时通知）
  * - 持久化接口（可注入 Persistor 防止进程重启丢失）
  */
-class WorkflowScheduler(
-    private val executor: EnhancedWorkflowExecutor,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
-    private val persistor: SchedulePersistor? = null,
-    private val defaultTimeZone: TimeZone = TimeZone.getDefault()
-) {
-    /**
-     * 调度任务定义
-     */
     data class ScheduledJob(
         val id: String,
         val workflow: EnhancedWorkflow,

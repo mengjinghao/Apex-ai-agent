@@ -25,10 +25,6 @@ data class RichNotification(
 )
 
 /** 工作流构建器 - 流式 API */
-class WorkflowBuilder(private val name: String) {
-    private val stages = mutableListOf<Stage>()
-    private var parallel: Boolean = false
-    private val errors = mutableListOf<String>()
 
     fun stage(name: String, type: StageType, config: Map<String, String> = emptyMap()): WorkflowBuilder {
         stages.add(Stage(name, type, config))

@@ -7,7 +7,6 @@ import android.content.Context
  * 与 com.apex.agent.ui.common.displays.UIAutomationProgressOverlay 同名，
  * 但属于不同的包路径。业务代码同时引用两者。
  */
-class UIAutomationProgressOverlay private constructor(private val context: Context) {
 
     companion object {
         @Volatile private var instance: UIAutomationProgressOverlay? = null

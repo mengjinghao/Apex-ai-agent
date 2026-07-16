@@ -51,9 +51,6 @@ data class SystemHealthCheckEvent(
     val responseTime: Long
 )
 
-enum class HealthStatus {
-    HEALTHY, DEGRADED, UNHEALTHY
-}
 
 /**
  * 系统资源警告事件

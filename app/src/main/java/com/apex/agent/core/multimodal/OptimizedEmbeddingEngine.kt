@@ -245,10 +245,3 @@ class OptimizedEmbeddingEngine(private val context: Context) {
         clearCache()
         AppLogger.d(TAG, "OptimizedEmbeddingEngine shutdown")
     }
-
-    data class CacheStats(
-        val size: Int,
-        val maxSize: Int,
-        val hitRate: Double
-    )
-}

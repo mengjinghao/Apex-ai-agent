@@ -16,19 +16,10 @@ interface Prototype<T> {
 }
 
 /** 工作流节点 */
-data class WorkflowNode(val id: String, val name: String, val type: String, val config: Map<String, Any> = emptyMap())
 
 /** 工作流边 */
-data class WorkflowEdge(val sourceId: String, val targetId: String, val condition: String = "")
 
 /** 工作流模板 */
-data class WorkflowTemplate(
-    val id: String,
-    val name: String,
-    val nodes: MutableList<WorkflowNode>,
-    val edges: MutableList<WorkflowEdge>,
-    val config: MutableMap<String, Any>
-) : Prototype<WorkflowTemplate> {
 
     override fun clone(): WorkflowTemplate = copy(
         nodes = nodes.toMutableList(),

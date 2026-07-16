@@ -62,14 +62,7 @@ class DynamicTopologyManager(private val context: Context) {
         var failureCount: Int = 0,
         var metadata: MutableMap<String, Any> = mutableMapOf()
     ) {
-        enum class NodeStatus {
-            ACTIVE, IDLE, BUSY, FAILING, OFFLINE
-        }
-    }
 
-    enum class AgentRole {
-        COORDINATOR, EXECUTOR, MONITOR, ROUTER, REPLICATOR, DISCOVERY
-    }
 
     data class AgentEdge(
         val sourceId: String,
@@ -80,10 +73,6 @@ class DynamicTopologyManager(private val context: Context) {
         var bandwidth: Float = 1.0f,
         var lastUpdate: Long = System.currentTimeMillis()
     ) {
-        enum class ConnectionType {
-            DIRECT, RELAY, FEDERATED
-        }
-    }
 
     data class GossipMessage(
         val messageId: String,
@@ -95,7 +84,6 @@ class DynamicTopologyManager(private val context: Context) {
         val vectorClock: Map<String, Long>
     ) {
         sealed class GossipPayload {
-            data class CapabilityUpdate(val capabilities: Map<String, Float>) : GossipPayload()
             data class Heartbeat(val status: AgentNode.NodeStatus, val load: Float) : GossipPayload()
             data class TopologyQuery(val queryId: String) : GossipPayload()
             data class TopologyResponse(val topology: NetworkTopology) : GossipPayload()
@@ -120,11 +108,6 @@ class DynamicTopologyManager(private val context: Context) {
         val details: Map<String, Any> = emptyMap(),
         val timestamp: Long = System.currentTimeMillis()
     ) {
-        enum class EventType {
-            AGENT_JOINED, AGENT_LEFT, ROLE_CHANGED, CAPABILITY_UPDATED, TOPOLOGY_CHANGED,
-            FAILURE_DETECTED, COORDINATOR_ELECTED
-        }
-    }
 
     data class TopologyChange(
         val changeType: ChangeType,
@@ -133,10 +116,6 @@ class DynamicTopologyManager(private val context: Context) {
         val newTopology: NetworkTopology,
         val timestamp: Long
     ) {
-        enum class ChangeType {
-            NODE_ADDED, NODE_REMOVED, EDGE_ADDED, EDGE_REMOVED, ROLE_CHANGED, RECOVERY
-        }
-    }
 
     fun registerAgent(agentId: String, capabilities: Map<String, Float>, initialRole: AgentRole = AgentRole.EXECUTOR): Boolean {
         val node = AgentNode(

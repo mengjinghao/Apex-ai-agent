@@ -6,13 +6,6 @@ import com.apex.agent.domain.model.*
  * 统一工作流执行器接口
  * 定义了工作流从注册、执行、取消到状态查询的完整生命周期
  */
-interface WorkflowExecutor {
-    /**
-     * 异步执行工作流
-     * @param workflow 待执行的工作流定义
-     * @return 工作流执行结果
-     */
-    suspend fun execute(workflow: WorkflowDefinition): WorkflowResult
 
     /**
      * 取消正在执行的工作流

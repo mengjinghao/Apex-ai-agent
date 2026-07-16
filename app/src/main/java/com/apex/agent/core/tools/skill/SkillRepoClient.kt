@@ -78,13 +78,6 @@ class SkillRepoClient private constructor(private val baseUrl: String) {
         val versions: List<String>
     )
 
-    data class SearchResult(
-        val skills: List<SkillInfo>,
-        val total: Int,
-        val page: Int,
-        val pageSize: Int,
-        val hasMore: Boolean
-    )
 
     data class UpdateCheckResult(
         val skillId: String,

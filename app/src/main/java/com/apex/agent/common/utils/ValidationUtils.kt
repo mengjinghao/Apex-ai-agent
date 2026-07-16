@@ -3,7 +3,6 @@ package com.apex.agent.common.utils
 /**
  * 数据验证工具类，提供常见格式的验证方法。
  */
-object ValidationUtils {
 
     /**
      * 检查字符串是否为非空且非空白。

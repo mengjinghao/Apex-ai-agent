@@ -9,11 +9,6 @@ import java.util.concurrent.atomic.AtomicLong
  */
 
 /** 代理接口 */
-interface Agent {
-    val name: String
-    val status: String
-    suspend fun process(input: String): String
-    suspend fun getCapabilities(): List<String>
     fun isAvailable(): Boolean
 }
 

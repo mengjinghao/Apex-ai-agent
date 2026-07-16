@@ -84,11 +84,7 @@ class OutputBlockStream(
     /** 块更新事件类型 */
     sealed class BlockUpdate {
         abstract val blockId: String
-        data class Created(override val blockId: String, val block: OutputBlock) : BlockUpdate()
         data class Updated(override val blockId: String, val block: OutputBlock) : BlockUpdate()
-        data class Completed(override val blockId: String, val block: OutputBlock) : BlockUpdate()
-        data class Failed(override val blockId: String, val block: OutputBlock) : BlockUpdate()
-    }
 
     // ===== 通用块操作 =====
 

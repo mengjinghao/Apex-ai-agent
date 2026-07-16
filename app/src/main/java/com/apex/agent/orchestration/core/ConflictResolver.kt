@@ -7,58 +7,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ConflictResolver constructor() {
 
-    enum class ConflictType {
-        OPINION_DIFFERENCE,
-        RESOURCE_COMPETITION,
-        GOAL_MISMATCH,
-        APPROACH_DIVERGENCE,
-        PRIORITY_CONFLICT
-    }
 
-    enum class ResolutionStrategy {
-        VOTING,
-        SUPERVISOR_ARBITRATION,
-        CONSENSUS_BUILDING,
-        WEIGHTED_SCORING,
-        MANUAL_INTERVENTION
-    }
 
-    enum class ConflictSeverity { LOW, MEDIUM, HIGH, CRITICAL }
-    enum class ConflictStatus { DETECTED, NEGOTIATING, RESOLVED, ESCALATED, UNRESOLVED }
 
-    data class AgentOption(
-        val agentId: String,
-        val agentName: String,
-        val description: String,
-        val score: Double = 0.0,
-        val reasoning: String = "",
-        val confidence: Double = 1.0,
-        val votes: Int = 0
-    )
 
-    data class Resolution(
-        val strategy: ResolutionStrategy,
-        val chosenOption: AgentOption?,
-        val reasoning: String,
-        val confidence: Double,
-        val votes: Map<String, Int> = emptyMap()
-    )
 
-    data class Conflict(
-        val id: String,
-        val type: ConflictType,
-        val description: String,
-        val agentsInvolved: List<String>,
-        val timestamp: Long,
-        val severity: ConflictSeverity,
-        val options: List<AgentOption>,
-        val status: ConflictStatus,
-        val resolution: Resolution? = null
-    )
 
-    interface ConflictListener {
         fun onConflictDetected(conflict: Conflict)
         fun onConflictResolved(conflict: Conflict)
         fun onConflictEscalated(conflict: Conflict)

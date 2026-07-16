@@ -32,14 +32,6 @@ data class ToolPreview(
     val dataAccess: List<String> = emptyList()
 )
 
-enum class PermissionLevel {
-    NONE,           // 无需权限
-    STANDARD,       // 标准权限
-    ACCESSIBILITY,  // 无障碍服务
-    DEBUGGER,       // 调试权限
-    ADMIN,          // 管理员
-    ROOT            // Root
-}
 
 enum class RiskLevel {
     /** 只读，无副作用 */

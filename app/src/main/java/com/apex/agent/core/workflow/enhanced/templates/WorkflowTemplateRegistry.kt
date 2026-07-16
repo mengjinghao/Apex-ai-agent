@@ -66,11 +66,7 @@ data class WorkflowTemplate(
  * 模板安装结果
  */
 sealed class TemplateInstallResult {
-    data class Success(val workflow: EnhancedWorkflow, val warnings: List<String> = emptyList()) : TemplateInstallResult()
-    data class ValidationError(val errors: List<String>) : TemplateInstallResult()
     data class MissingParameters(val missing: List<String>) : TemplateInstallResult()
-    data class Failure(val error: Throwable) : TemplateInstallResult()
-}
 
 /**
  * 模板注册表接口

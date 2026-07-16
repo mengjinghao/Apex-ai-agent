@@ -216,11 +216,6 @@ class CapabilityRegistry private constructor() {
         }
     }
 
-    enum class ChangeType {
-        REGISTERED,
-        UNREGISTERED,
-        UPDATED
-    }
 
     interface CapabilityChangeListener {
         fun onCapabilityRegistered(capability: CapabilityDeclaration)

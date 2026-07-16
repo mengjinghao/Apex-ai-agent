@@ -5,12 +5,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 class IntelligentTaskAllocator(private val context: Context) {
 
-    data class TaskFeature(
-        val category: String = "general",
-        val difficulty: Int = 5,
-        val expectedDuration: Long = 60000,
-        val requiredCapabilities: List<String> = emptyList()
-    )
 
     data class AllocationRequest(
         val taskId: String = "",

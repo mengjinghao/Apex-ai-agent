@@ -60,8 +60,6 @@ object DangerousCommandDetector {
         LOW("低风险", 0xFF60A5FA),
     }
 
-    data class DangerPattern(val regex: String, val description: String, val level: DangerLevel)
-    data class DetectionResult(val isDangerous: Boolean, val description: String, val level: DangerLevel)
 
     /** 检测命令是否危险 */
     fun check(command: String): DetectionResult {

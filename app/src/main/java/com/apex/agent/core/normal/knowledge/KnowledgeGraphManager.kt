@@ -31,20 +31,6 @@ data class KnowledgeNode(
     val confidence: Float = 1.0f
 )
 
-enum class EntityType {
-    PERSON,       // 人
-    ORGANIZATION, // 组织
-    LOCATION,     // 地点
-    CONCEPT,      // 概念
-    TECHNOLOGY,   // 技术
-    PRODUCT,      // 产品
-    EVENT,        // 事件
-    DATE,         // 日期
-    DOCUMENT,     // 文档
-    PROJECT,      // 项目
-    SKILL,        // 技能
-    OTHER
-}
 
 /**
  * 知识边（关系）
@@ -435,10 +421,3 @@ class KnowledgeGraphManager {
         val totalWeight: Float
     )
 
-    data class ExtractionResult(
-        val text: String,
-        val extractedNodes: List<KnowledgeNode>,
-        val extractedEdges: List<KnowledgeEdge>,
-        val chatId: String?
-    )
-}

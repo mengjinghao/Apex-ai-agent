@@ -23,17 +23,8 @@ data class AgentTask(
     val error: String? = null
 )
 
-enum class TaskType {
-    ANALYSIS, RESEARCH, GENERATION, COLLABORATION, MAINTENANCE, MONITORING
-}
 
-enum class TaskStatus {
-    PENDING, QUEUED, IN_PROGRESS, COMPLETED, FAILED, CANCELLED
-}
 
-enum class Priority {
-    LOW, MEDIUM, HIGH, URGENT
-}
 
 class AgentTaskScheduler(private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())) {
 

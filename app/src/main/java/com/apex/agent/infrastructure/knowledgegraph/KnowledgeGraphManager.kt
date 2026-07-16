@@ -7,7 +7,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
-interface KnowledgeGraphManager {
 
     fun addNode(node: KnowledgeNode)
 
@@ -26,7 +25,6 @@ interface KnowledgeGraphManager {
     fun clear()
 
     @Singleton
-    class Default constructor() : KnowledgeGraphManager {
 
         private val nodes = ConcurrentHashMap<String, KnowledgeNode>()
         private val edges = ConcurrentHashMap<String, KnowledgeEdge>()
