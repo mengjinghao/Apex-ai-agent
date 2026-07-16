@@ -83,7 +83,7 @@ class EmotionMemory(private val context: Context) {
             }
 
             file.writeText(json.toString(2))
-            AppLogger.d(TAG, "情感记忆已保�? ${file.name}")
+            AppLogger.d(TAG, "情感记忆已保? ${file.name}")
             true
         } catch (e: Exception) {
             AppLogger.e(TAG, "保存情感记忆失败", e)
@@ -171,7 +171,7 @@ class EmotionMemory(private val context: Context) {
 
         if (entries.isEmpty()) {
             return@withContext EmotionPatternSummary(
-                timeRange = "${daysBack}�?,
+                timeRange = "${daysBack}?,
                 dominantEmotion = EnhancedEmotionAnalyzer.EmotionCategory.NEUTRAL,
                 emotionDistribution = emptyMap(),
                 averageIntensity = 0f,
@@ -222,11 +222,11 @@ class EmotionMemory(private val context: Context) {
             val dateFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
             val time = dateFormat.format(Date(entry.timestamp))
             val emotion = entry.emotionProfile.primaryEmotion.displayName
-            "${time}: �?{emotion情绪波动}"
+            "${time}: ?{emotion情绪波动}"
         }
 
         EmotionPatternSummary(
-            timeRange = "${daysBack}�?,
+            timeRange = "${daysBack}?,
             dominantEmotion = dominantEmotion,
             emotionDistribution = emotionDistribution,
             averageIntensity = averageIntensity,
@@ -374,7 +374,7 @@ class EmotionMemory(private val context: Context) {
 
         filesToDelete.forEach { it.delete() }
 
-        AppLogger.d(TAG, "清理�?${filesToDelete.size} 个过期情感记忆条�?)
+        AppLogger.d(TAG, "清理?${filesToDelete.size} 个过期情感记忆条?)
         filesToDelete.size
     }
 
@@ -385,26 +385,26 @@ class EmotionMemory(private val context: Context) {
         buildString {
             appendLine("=== 情感记忆导出 ===")
             appendLine()
-            appendLine("【总体趋势�?)
+            appendLine("【总体趋势?)
             appendLine("时间范围: ${summary.timeRange}")
             appendLine("主导情绪: ${summary.dominantEmotion.displayName}")
             appendLine("平均强度: ${String.format("%.1f", summary.averageIntensity * 100)}%")
-            appendLine("情绪动�? ${summary.emotionalTrend.name}")
+            appendLine("情绪动? ${summary.emotionalTrend.name}")
             appendLine()
 
             if (summary.keyTriggers.isNotEmpty()) {
-                appendLine("【主要触发因素�?)
+                appendLine("【主要触发因素?)
                 summary.keyTriggers.forEach { appendLine("  - ${it}") }
                 appendLine()
             }
 
             if (summary.notableEvents.isNotEmpty()) {
-                appendLine("【重要事件�?)
+                appendLine("【重要事件?)
                 summary.notableEvents.forEach { appendLine("  - ${it}") }
                 appendLine()
             }
 
-            appendLine("【详细记录�?)
+            appendLine("【详细记录?)
             entries.takeLast(10).forEach { entry ->
                 val dateFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
                 val time = dateFormat.format(Date(entry.timestamp))

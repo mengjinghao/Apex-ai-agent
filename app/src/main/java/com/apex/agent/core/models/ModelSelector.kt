@@ -185,7 +185,7 @@ class ModelSelector(private val context: Context) {
     }
 
     enum class TaskType(val displayName: String) {
-        SIMPLE_QA("简单问�?),
+        SIMPLE_QA("简单问?),
         CODE_GENERATION("代码生成"),
         SUMMARIZATION("摘要总结"),
         TRANSLATION("翻译"),

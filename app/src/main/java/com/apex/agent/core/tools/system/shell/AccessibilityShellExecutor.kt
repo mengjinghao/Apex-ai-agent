@@ -18,15 +18,15 @@ import com.apex.agent.core.tools.system.shell.AccessibilityShellProcess
 import com.apex.agent.core.tools.system.shell.ShellProcess
 
 /**
- * 基于无障碍服务的Shell命令执行。实现ACCESSIBILITY权限级别的命令执�?*
- * 注意：无障碍服务不是真正的shell执行方式，但可用于模拟某些操�?*/
+ * 基于无障碍服务的Shell命令执行。实现ACCESSIBILITY权限级别的命令执?*
+ * 注意：无障碍服务不是真正的shell执行方式，但可用于模拟某些操?*/
 class AccessibilityShellExecutor(private val context: Context) : ShellExecutor {
     companion object {
         private const val TAG = "AccessibilityShellExecutor"
         private var accessibilityService: AccessibilityService? = null
 
         /**
-         * 设置全局无障碍服务引�?        * @param service 无障碍服务实�?        */
+         * 设置全局无障碍服务引?        * @param service 无障碍服务实?        */
         fun setAccessibilityService(service: AccessibilityService) {
             accessibilityService = service
         }
@@ -63,12 +63,12 @@ class AccessibilityShellExecutor(private val context: Context) : ShellExecutor {
             return
         }
 
-        // 引导用户打开无障碍服务设�?       try {
+        // 引导用户打开无障碍服务设?       try {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
 
-            // 由于无法知道用户是否启用了服务，返回false，让调用者自行处理后续检�?           onResult(false)
+            // 由于无法知道用户是否启用了服务，返回false，让调用者自行处理后续检?           onResult(false)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error opening accessibility settings", e)
             onResult(false)
@@ -79,7 +79,7 @@ class AccessibilityShellExecutor(private val context: Context) : ShellExecutor {
         return AccessibilityShellProcess(command, this)
     }
 
-    /** 检查无障碍服务是否已启�?/
+    /** 检查无障碍服务是否已启?/
     private fun isAccessibilityServiceEnabled(): Boolean {
         val serviceString = context.packageName + "/.accessibility.YourAccessibilityService"
         val enabledServices =
@@ -107,14 +107,14 @@ class AccessibilityShellExecutor(private val context: Context) : ShellExecutor {
                 // 无障碍服务不能直接执行shell命令，此处应该转换为UI操作
                 // 这里仅作为一个框架，实际实现将根据应用程序需求而定
 
-                // 目前只返回错误信�?               return@withContext ShellExecutor.CommandResult(
+                // 目前只返回错误信?               return@withContext ShellExecutor.CommandResult(
                         false,
                         "",
                         "Accessibility service cannot directly execute shell commands. Command was: ${command}",
                         -1
                 )
 
-                // 实际实现应该解析命令并转换为相应的UI自动化操�?               // 例如:
+                // 实际实现应该解析命令并转换为相应的UI自动化操?               // 例如:
                 // if (command.startsWith("tap")) {
                 //     // 解析坐标
                 //     // 执行点击
@@ -134,7 +134,7 @@ private class AccessibilityShellProcess(
     private var exitCode = -1
     
     override val stdout: Flow<String> = callbackFlow {
-        // 无障碍服务不能执行真正的shell命令，返回错误信�?       trySend("Accessibility service cannot execute shell commands directly")
+        // 无障碍服务不能执行真正的shell命令，返回错误信?       trySend("Accessibility service cannot execute shell commands directly")
         completed = true
         close()
         awaitClose { }

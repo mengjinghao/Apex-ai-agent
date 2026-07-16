@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * 聊天服务核心�?* 
+ * 聊天服务核心?* 
  * 整合所有聊天业务逻辑，可的FloatingChatService ，ChatViewModel 使用
  * 生命周期独立，ViewModel，绑定到传入，CoroutineScope
  */
@@ -37,7 +37,7 @@ class ChatServiceCore(
         private const val TAG = "ChatServiceCore"
     }
 
-    // EnhancedAIService 实例（全局单例�?   private var enhancedAiService: EnhancedAIService? = null
+    // EnhancedAIService 实例（全局单例?   private var enhancedAiService: EnhancedAIService? = null
 
     // 委托实例
     private lateinit var messageProcessingDelegate: MessageProcessingDelegate
@@ -48,21 +48,21 @@ class ChatServiceCore(
     private lateinit var uiStateDelegate: UiStateDelegate
     private lateinit var messageCoordinationDelegate: MessageCoordinationDelegate
 
-    // 初始化状�?   private var initialized = false
+    // 初始化状?   private var initialized = false
 
-    // 回调：当 EnhancedAIService 初始化或更新�?   private var onEnhancedAiServiceReady: ((EnhancedAIService) -> Unit)? = null
+    // 回调：当 EnhancedAIService 初始化或更新?   private var onEnhancedAiServiceReady: ((EnhancedAIService) -> Unit)? = null
     
     // 额外，onTurnComplete 回调（用于悬浮窗通知应用等场景）
     private var additionalOnTurnComplete: ((String?, Int, Int, Int) -> Unit)? = null
     private var uiBridge: ChatServiceUiBridge = EmptyChatServiceUiBridge
 
     init {
-        AppLogger.d(TAG, "ChatServiceCore 初始�?
+        AppLogger.d(TAG, "ChatServiceCore 初始?
         initializeDelegates()
     }
     
     private fun initializeDelegates() {
-        // 初始，UI 状态委�?       uiStateDelegate = UiStateDelegate()
+        // 初始，UI 状态委?       uiStateDelegate = UiStateDelegate()
         
         // 初始，API 配置委托
         apiConfigDelegate = ApiConfigDelegate(
@@ -70,8 +70,8 @@ class ChatServiceCore(
             coroutineScope = coroutineScope,
             onConfigChanged = { service ->
                 enhancedAiService = service
-                // 当服务初始化后，设置 token 统计收集�?               tokenStatisticsDelegate.setupCollectors()
-                // 通知外部监听�?               onEnhancedAiServiceReady?.invoke(service)
+                // 当服务初始化后，设置 token 统计收集?               tokenStatisticsDelegate.setupCollectors()
+                // 通知外部监听?               onEnhancedAiServiceReady?.invoke(service)
                 AppLogger.d(TAG, "EnhancedAIService 已更新）
             }
         )
@@ -82,12 +82,12 @@ class ChatServiceCore(
             getEnhancedAiService = { enhancedAiService }
         )
 
-        // 初始化附件委�?       attachmentDelegate = AttachmentDelegate(
+        // 初始化附件委?       attachmentDelegate = AttachmentDelegate(
             context = context,
             toolHandler = AIToolHandler.getInstance(context)
         )
 
-        // 初始化聊天历史委�?       chatHistoryDelegate = ChatHistoryDelegate(
+        // 初始化聊天历史委?       chatHistoryDelegate = ChatHistoryDelegate(
             context = context,
             coroutineScope = coroutineScope,
             selectionMode = selectionMode,
@@ -124,7 +124,7 @@ class ChatServiceCore(
             }
         }
 
-        // 初始化消息处理委�?       messageProcessingDelegate = MessageProcessingDelegate(
+        // 初始化消息处理委?       messageProcessingDelegate = MessageProcessingDelegate(
             context = context,
             coroutineScope = coroutineScope,
             getEnhancedAiService = { enhancedAiService },
@@ -168,7 +168,7 @@ class ChatServiceCore(
             }
         )
 
-        // 初始化消息协调委�?       messageCoordinationDelegate = MessageCoordinationDelegate(
+        // 初始化消息协调委?       messageCoordinationDelegate = MessageCoordinationDelegate(
             context = context,
             coroutineScope = coroutineScope,
             chatHistoryDelegate = chatHistoryDelegate,
@@ -190,12 +190,12 @@ class ChatServiceCore(
         }
 
         initialized = true
-        AppLogger.d(TAG, "所有委托已初始�?
+        AppLogger.d(TAG, "所有委托已初始?
     }
 
     // ========== 消息处理相关 ==========
 
-    /** 发送用户消息（使用 MessageCoordinationDelegate，包含总结逻辑�?/
+    /** 发送用户消息（使用 MessageCoordinationDelegate，包含总结逻辑?/
     fun sendUserMessage(
         promptFunctionType: PromptFunctionType = PromptFunctionType.CHAT,
         roleCardIdOverride: String? = null,
@@ -266,13 +266,13 @@ class ChatServiceCore(
     }
 
     /**
-     * 切换聊天（仅切换本地状态，不写回全局 currentChatId），     * 悬浮窗可用此方法在窗口内切换会话，但不影响主界面�?    */
+     * 切换聊天（仅切换本地状态，不写回全局 currentChatId），     * 悬浮窗可用此方法在窗口内切换会话，但不影响主界面?    */
     fun switchChatLocal(chatId: String) {
         chatHistoryDelegate.switchChat(chatId, syncToGlobal = false)
     }
 
     /**
-     * 将当前本，chatId 写回全局 currentChatId，用于“返回主应用”时同步�?    */
+     * 将当前本，chatId 写回全局 currentChatId，用于“返回主应用”时同步?    */
     fun syncCurrentChatIdToGlobal() {
         val chatId = chatHistoryDelegate.currentChatId.value ?: return
         chatHistoryDelegate.switchChat(chatId, syncToGlobal = true)
@@ -325,7 +325,7 @@ class ChatServiceCore(
         attachmentDelegate.removeAttachment(filePath)
     }
 
-    /** 清空所有附�?/
+    /** 清空所有附?/
     fun clearAttachments() {
         attachmentDelegate.clearAttachments()
     }
@@ -433,7 +433,7 @@ class ChatServiceCore(
     /** 获取 EnhancedAIService 实例 */
     fun getEnhancedAiService(): EnhancedAIService? = enhancedAiService
 
-    /** 检查是否已初始�?/
+    /** 检查是否已初始?/
     fun isInitialized(): Boolean = initialized
     
     /** 设置 EnhancedAIService 就绪回调 */

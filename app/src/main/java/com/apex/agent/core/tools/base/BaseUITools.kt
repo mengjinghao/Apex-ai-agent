@@ -10,8 +10,8 @@ import com.apex.util.AppLogger
 import kotlinx.coroutines.delay
 
 /**
- * UI工具类基础抽象�? * 
- * 定义所有UI工具类的通用接口和辅助方�? * 提供统一的错误处理、重试机制和日志记录
+ * UI工具类基础抽象? * 
+ * 定义所有UI工具类的通用接口和辅助方? * 提供统一的错误处理、重试机制和日志记录
  */
 abstract class BaseUITools(protected val context: Context) : com.apex.agent.core.tools.agent.ToolImplementations {
     
@@ -19,7 +19,7 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
         private const val TAG = "BaseUITools"
     }
     
-    /** 操作日志管理�?/
+    /** 操作日志管理?/
     protected val logger = OperationLogger(UIToolsConfig.MAX_LOG_ENTRIES)
     
     // ==================== 通用辅助方法 ====================
@@ -28,7 +28,7 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
      * 带重试的执行方法
      * 
      * @param operation 要执行的操作
-     * @param maxRetries 最大重试次�?     * @param delayMs 重试延迟（毫秒）
+     * @param maxRetries 最大重试次?     * @param delayMs 重试延迟（毫秒）
      * @return 操作结果
      */
     protected suspend fun <T> executeWithRetry(
@@ -42,12 +42,12 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
             try {
                 val result = operation()
                 if (attempt > 0) {
-                    AppLogger.d(TAG, "重试成功，尝试次�?${attempt + 1}")
+                    AppLogger.d(TAG, "重试成功，尝试次?${attempt + 1}")
                 }
                 return result
             } catch (e: Exception) {
                 lastException = e
-                AppLogger.w(TAG, "${{attempt + 1} 次尝试失�?${e.message}")
+                AppLogger.w(TAG, "${{attempt + 1} 次尝试失?${e.message}")
                 
                 if (attempt < maxRetries - 1) {
                     delay(delayMs)
@@ -108,9 +108,9 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
     }
     
     /**
-     * 获取工具参数�?     * 
+     * 获取工具参数?     * 
      * @param tool AITool对象
-     * @param paramName 参数�?     * @param defaultValue 默认�?     * @return 参数�?     */
+     * @param paramName 参数?     * @param defaultValue 默认?     * @return 参数?     */
     protected fun getParameter(tool: AITool, paramName: String, defaultValue: String? = null): String? {
         return tool.parameters.find { it.name == paramName }?.value ?: defaultValue
     }
@@ -119,7 +119,7 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
      * 获取整数类型参数
      * 
      * @param tool AITool对象
-     * @param paramName 参数�?     * @param defaultValue 默认�?     * @return 参数值，如果无效返回null
+     * @param paramName 参数?     * @param defaultValue 默认?     * @return 参数值，如果无效返回null
      */
     protected fun getIntParameter(tool: AITool, paramName: String, defaultValue: Int? = null): Int? {
         val value = getParameter(tool, paramName) ?: return defaultValue
@@ -130,13 +130,13 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
      * 获取布尔类型参数
      * 
      * @param tool AITool对象
-     * @param paramName 参数�?     * @param defaultValue 默认�?     * @return 参数�?     */
+     * @param paramName 参数?     * @param defaultValue 默认?     * @return 参数?     */
     protected fun getBooleanParameter(tool: AITool, paramName: String, defaultValue: Boolean = false): Boolean {
         val value = getParameter(tool, paramName) ?: return defaultValue
         return value.toBoolean()
     }
     
-    // ==================== 必须实现的方法（来自ToolImplementations接接�?==================
+    // ==================== 必须实现的方法（来自ToolImplementations接接?==================
     
     /**
      * 点击指定坐标
@@ -181,9 +181,9 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
     // ==================== 可选实现的方法 ====================
     
     /**
-     * 截图到文�?     * 
+     * 截图到文?     * 
      * @param tool AITool对象
-     * @return 文件路径和尺�?     */
+     * @return 文件路径和尺?     */
     open suspend fun captureScreenshotToFile(tool: AITool): Pair<String?, Pair<Int, Int>?> {
         return Pair(null, null)
     }
@@ -192,7 +192,7 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
      * 截图
      * 
      * @param tool AITool对象
-     * @return 文件路径和尺�?     */
+     * @return 文件路径和尺?     */
     open suspend fun captureScreenshot(tool: AITool): Pair<String?, Pair<Int, Int>?> {
         return captureScreenshotToFile(tool)
     }
@@ -201,7 +201,7 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
      * 截图为Bitmap
      * 
      * @param tool AITool对象
-     * @return Bitmap和尺�?     */
+     * @return Bitmap和尺?     */
     open suspend fun captureScreenshotBitmap(tool: AITool): Pair<android.graphics.Bitmap?, Pair<Int, Int>?> {
         val (filePath, dimensions) = captureScreenshot(tool)
         if (filePath == null) {
@@ -224,7 +224,7 @@ abstract class BaseUITools(protected val context: Context) : com.apex.agent.core
     }
     
     /**
-     * 导出所有操作日�?     * 
+     * 导出所有操作日?     * 
      * @return 日志文本
      */
     fun exportLogs(): String {

@@ -6,7 +6,7 @@ import kotlinx.serialization.modules.contextual
 import kotlinx.serialization.serializer
 
 /**
- * MCP JSON序列化配�?*/
+ * MCP JSON序列化配?*/
 val McpJson = Json {
     // 忽略未知键，使序列化更加宽容
     ignoreUnknownKeys = true

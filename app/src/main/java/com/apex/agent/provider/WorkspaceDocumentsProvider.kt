@@ -22,12 +22,12 @@ class WorkspaceDocumentsProvider : DocumentsProvider() {
     companion object {
         private const val TAG = "WorkspaceDocumentsProvider"
         
-        // Authority需要与AndroidManifest中的声明一�?       private const val AUTHORITY = "com.apex.documents.workspace"
+        // Authority需要与AndroidManifest中的声明一?       private const val AUTHORITY = "com.apex.documents.workspace"
         
         // Root ID
         private const val ROOT_ID = "workspace_root"
         
-        // 默认文档�?       private val DEFAULT_ROOT_PROJECTION = arrayOf(
+        // 默认文档?       private val DEFAULT_ROOT_PROJECTION = arrayOf(
             DocumentsContract.Root.COLUMN_ROOT_ID,
             DocumentsContract.Root.COLUMN_MIME_TYPES,
             DocumentsContract.Root.COLUMN_FLAGS,
@@ -209,15 +209,15 @@ class WorkspaceDocumentsProvider : DocumentsProvider() {
         
         var flags = 0
         if (file.isDirectory) {
-            // 目录支持创建子文�?           if (file.canWrite()) {
+            // 目录支持创建子文?           if (file.canWrite()) {
                 flags = flags or DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE
             }
         } else if (file.canWrite()) {
-            // 文件支持写入和删�?           flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_WRITE
+            // 文件支持写入和删?           flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_WRITE
             flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_DELETE
         }
         
-        // 支持重命�?       if (file.parentFile?.canWrite() == true) {
+        // 支持重命?       if (file.parentFile?.canWrite() == true) {
             flags = flags or DocumentsContract.Document.FLAG_SUPPORTS_RENAME
         }
         
@@ -261,7 +261,7 @@ class WorkspaceDocumentsProvider : DocumentsProvider() {
         val file = if (documentId == "/") {
             workspaceRoot
         } else {
-            // 移除开头的/，拼接到workspace根目�?           val relativePath = documentId.trimStart('/')
+            // 移除开头的/，拼接到workspace根目?           val relativePath = documentId.trimStart('/')
             File(workspaceRoot, relativePath)
         }
         

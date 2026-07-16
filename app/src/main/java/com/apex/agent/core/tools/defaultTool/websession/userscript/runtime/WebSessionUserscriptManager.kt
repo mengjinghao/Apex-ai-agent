@@ -1028,7 +1028,7 @@ internal class WebSessionUserscriptManager(
                 "set" -> {
                     val cookie = cookieService.set(details, pageUrl)
                     
-                    // Agent 登录存储：自动保�?Cookie
+                    // Agent 登录存储：自动保?Cookie
                     saveAgentLoginIfNeeded(pageUrl, details)
                     
                     postRpcSuccess(replyProxy, requestId, JSONObject().put("cookieJson", cookie.toJson().toString()))
@@ -1650,7 +1650,7 @@ internal class WebSessionUserscriptManager(
     
     /**
      * 自动保存 Agent 登录 Cookie
-     * 当检测到 AI 服务网站�?Cookie 设置时，自动保存到本地存�?
+     * 当检测到 AI 服务网站?Cookie 设置时，自动保存到本地存?
      */
     private fun saveAgentLoginIfNeeded(pageUrl: String, cookieDetails: JSONObject) {
         if (pageUrl.isBlank()) return
@@ -1658,17 +1658,17 @@ internal class WebSessionUserscriptManager(
         val siteKey = extractSiteKey(pageUrl)
         if (!isAiServiceSite(siteKey)) return
         
-        // 提取完整�?Cookie 字符�?
+        // 提取完整?Cookie 字符?
         val cookiesString = buildCookiesString(pageUrl)
         if (cookiesString.isEmpty()) return
         
-        // 保存�?Agent 登录存储
+        // 保存?Agent 登录存储
         agentLoginStorage.saveCookies(siteKey, cookiesString, pageUrl)
         AppLogger.d(TAG, "Auto-saved agent login for: ${siteKey}")
     }
     
     /**
-     * �?URL 提取网站标识
+     * ?URL 提取网站标识
      */
     private fun extractSiteKey(url: String): String {
         return try {
@@ -1693,7 +1693,7 @@ internal class WebSessionUserscriptManager(
     }
     
     /**
-     * 构建完整�?Cookie 字符�?
+     * 构建完整?Cookie 字符?
      */
     private fun buildCookiesString(url: String): String {
         return try {

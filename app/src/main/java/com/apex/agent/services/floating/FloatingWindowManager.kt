@@ -654,7 +654,7 @@ class FloatingWindowManager(
                 state.currentMode.value == FloatingMode.SCREEN_OCR
         val willFullscreen = newMode == FloatingMode.FULLSCREEN || newMode == FloatingMode.SCREEN_OCR
 
-        // 取消之前的动�?       sizeAnimator?.cancel()
+        // 取消之前的动?       sizeAnimator?.cancel()
 
         val view = composeView ?: return
         val currentParams = view.layoutParams as WindowManager.LayoutParams
@@ -716,7 +716,7 @@ class FloatingWindowManager(
             }
         }
 
-        // 计算目标尺寸和位�?       data class TargetParams(
+        // 计算目标尺寸和位?       data class TargetParams(
             val width: Int,
             val height: Int,
             val x: Int,
@@ -734,11 +734,11 @@ class FloatingWindowManager(
                 
                 // 如果从全屏模式切换，球应该出现在屏幕右侧中间位置
                 val (newX, newY) = if (state.previousMode == FloatingMode.FULLSCREEN) {
-                    // 球出现在屏幕右侧，垂直居�?                   val rightX = screenWidth - ballSizeInPx
+                    // 球出现在屏幕右侧，垂直居?                   val rightX = screenWidth - ballSizeInPx
                     val centerY = (screenHeight - ballSizeInPx) / 2
                     Pair(rightX, centerY)
                 } else if (state.previousMode == FloatingMode.RESULT_DISPLAY) {
-                    // 从结果展示模式切回时，直接恢复到原来的位�?                   Pair(state.lastBallPositionX, state.lastBallPositionY)
+                    // 从结果展示模式切回时，直接恢复到原来的位?                   Pair(state.lastBallPositionX, state.lastBallPositionY)
                 } else {
                     // 处理 MATCH_PARENT (-1) 的情况，使用实际屏幕尺寸
                     val actualStartWidth = if (startWidth == WindowManager.LayoutParams.MATCH_PARENT) {
@@ -831,11 +831,11 @@ class FloatingWindowManager(
                 val finalX: Int
                 
                 if (ballCenter > screenWidth / 2) {
-                    // 球在右半屏，结果显示在球左侧（右对齐�?                   finalGravity = Gravity.TOP or Gravity.END
+                    // 球在右半屏，结果显示在球左侧（右对齐?                   finalGravity = Gravity.TOP or Gravity.END
                     // x 是距离右边的距离
                     finalX = screenWidth - (startX + ballSizeInPx)
                 } else {
-                    // 球在左半屏，结果显示在球右侧（左对齐�?                   finalGravity = Gravity.TOP or Gravity.START
+                    // 球在左半屏，结果显示在球右侧（左对齐?                   finalGravity = Gravity.TOP or Gravity.START
                     finalX = startX
                 }
 
@@ -850,7 +850,7 @@ class FloatingWindowManager(
             }
         }
 
-        // 判断是否在球模式和其他模式之间切�?       val isBallTransition = (state.previousMode == FloatingMode.BALL) ||
+        // 判断是否在球模式和其他模式之间切?       val isBallTransition = (state.previousMode == FloatingMode.BALL) ||
                                (newMode == FloatingMode.BALL)
         
         if (isBallTransition) {
@@ -858,8 +858,8 @@ class FloatingWindowManager(
             val isFromBall = state.previousMode == FloatingMode.BALL
             
             if (isToBall && !isFromBall) {
-                // 其他模式 -> 球模�?               // AnimatedContent: 旧内容在 150ms ，fadeOut + scaleOut，新内容延迟 150ms 后用 350ms fadeIn + scaleIn
-                // 策略：延�?50ms 后再改变窗口物理尺寸，这样旧内容先消失，然后窗口变小，球再出�?               android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                // 其他模式 -> 球模?               // AnimatedContent: 旧内容在 150ms ，fadeOut + scaleOut，新内容延迟 150ms 后用 350ms fadeIn + scaleIn
+                // 策略：延?50ms 后再改变窗口物理尺寸，这样旧内容先消失，然后窗口变小，球再出?               android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                     updateViewLayout { params ->
                         params.width = target.width
                         params.height = target.height
@@ -875,9 +875,9 @@ class FloatingWindowManager(
                         state.x = params.x
                         state.y = params.y
                     }
-                }, 150) // ，fadeOut/scaleOut 的时长匹�?               
+                }, 150) // ，fadeOut/scaleOut 的时长匹?               
             } else if (isFromBall && !isToBall) {
-                // 球模�?> 其他模式：触发淡出动画，球平滑消�?               // 1. 触发淡出动画�?0ms�?               state.ballExploding.value = true
+                // 球模?> 其他模式：触发淡出动画，球平滑消?               // 1. 触发淡出动画?0ms?               state.ballExploding.value = true
                 
                 // 2. 延迟 100ms 后改变窗口尺寸（此时球已经淡出消失）
                 android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
@@ -897,8 +897,8 @@ class FloatingWindowManager(
                         state.y = params.y
                     }
                     
-                    // 重置淡出状�?                   state.ballExploding.value = false
-                }, 100) // 与淡出动画时长匹�?           } else {
+                    // 重置淡出状?                   state.ballExploding.value = false
+                }, 100) // 与淡出动画时长匹?           } else {
                 // 球模式之间切换：立即更新窗口尺寸
                 updateViewLayout { params ->
                     params.width = target.width
@@ -920,8 +920,8 @@ class FloatingWindowManager(
             // 延迟标记过渡完成，与 AnimatedContent 动画时长匹配
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 state.isTransitioning = false
-            }, 500) // 匹配 AnimatedContent 的最长动画时�?       } else {
-            // 非球模式切换（如窗口↔全屏）：立即改变窗口尺�?           updateViewLayout { params ->
+            }, 500) // 匹配 AnimatedContent 的最长动画时?       } else {
+            // 非球模式切换（如窗口↔全屏）：立即改变窗口尺?           updateViewLayout { params ->
                 params.width = target.width
                 params.height = target.height
                 params.x = target.x
@@ -993,7 +993,7 @@ class FloatingWindowManager(
             focusDismissOverlayRequested = true
             setFocusDismissOverlayEnabled(true)
 
-            // Step 1: 更新窗口参数使其可获取焦�?           updateViewLayout { params ->
+            // Step 1: 更新窗口参数使其可获取焦?           updateViewLayout { params ->
                 params.flags = params.flags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
 
                 // Keep background tappable while IME is active.
@@ -1009,14 +1009,14 @@ class FloatingWindowManager(
             }
 
             // Step 2: 等待Compose真正建立输入焦点后再显示键盘
-            // 这里不能直接依赖固定延迟，否则在焦点宿主尚未准备好时会触发IMM空指�?           scheduleImeShow(view, imm)
+            // 这里不能直接依赖固定延迟，否则在焦点宿主尚未准备好时会触发IMM空指?           scheduleImeShow(view, imm)
         } else {
             pendingImeFocusRunnable?.let { mainHandler.removeCallbacks(it) }
             pendingImeFocusRunnable = null
             focusDismissOverlayRequested = false
             setFocusDismissOverlayEnabled(false)
 
-            // Step 1: 立即清理悬浮窗焦点并隐藏键盘，避免阻塞外部输入框抢焦�?           try {
+            // Step 1: 立即清理悬浮窗焦点并隐藏键盘，避免阻塞外部输入框抢焦?           try {
                 view.findFocus()?.clearFocus()
             } catch (_: Exception) {
             }
@@ -1026,7 +1026,7 @@ class FloatingWindowManager(
             }
             imm.hideSoftInputFromWindow(view.windowToken, 0)
 
-            // Step 2: 立即恢复窗口不可聚焦状态（全屏模式除外�?           updateViewLayout { params ->
+            // Step 2: 立即恢复窗口不可聚焦状态（全屏模式除外?           updateViewLayout { params ->
                 if (state.currentMode.value != FloatingMode.FULLSCREEN && state.currentMode.value != FloatingMode.SCREEN_OCR) {
                     params.flags =
                             params.flags or

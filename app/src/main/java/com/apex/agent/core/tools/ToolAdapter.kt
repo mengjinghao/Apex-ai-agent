@@ -3,7 +3,7 @@ package com.apex.core.tools
 import kotlinx.serialization.Serializable
 
 /**
- * 工具适配器接口，定义通用的工具调用方�?*/
+ * 工具适配器接口，定义通用的工具调用方?*/
 interface ToolAdapter {
     /**
      * 获取工具名称
@@ -28,7 +28,7 @@ interface ToolAdapter {
     fun getParameters(): List<ToolParameter>
 
     /**
-     * 检查工具是否可�?    */
+     * 检查工具是否可?    */
     fun isAvailable(): Boolean
 }
 
@@ -45,7 +45,7 @@ data class ToolParameter(
 )
 
 /**
- * 工具注册�?*/
+ * 工具注册?*/
 object ToolRegistry {
     private val tools = mutableMapOf<String, ToolAdapter>()
 
@@ -64,7 +64,7 @@ object ToolRegistry {
     }
 
     /**
-     * 获取所有工�?    */
+     * 获取所有工?    */
     fun getAllTools(): List<ToolAdapter> {
         return tools.values.toList()
     }

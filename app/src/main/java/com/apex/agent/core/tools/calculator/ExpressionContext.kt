@@ -28,18 +28,18 @@ object ExpressionContext {
                     "yyyy/MM/dd HH:mm:ss"
             )
 
-    /** 获取变量�?/
+    /** 获取变量?/
     fun getVariable(name: String): Double {
         val value = variables[name] ?: throw IllegalArgumentException("Variable ${name} not defined")
         return coerceToNumber(value)
     }
 
-    /** 设置变量�?/
+    /** 设置变量?/
     fun setVariable(name: String, value: Double) {
         variables[name] = value
     }
 
-    /** 将任意值转换为数字（JavaScript风格�?/
+    /** 将任意值转换为数字（JavaScript风格?/
     fun coerceToNumber(value: Any): Double {
         return when (value) {
             null -> 0.0
@@ -289,12 +289,12 @@ object ExpressionContext {
                 formatter.isLenient = false
                 return formatter.parse(dateString)
             } catch (e: Exception) {
-                // 尝试下一个格�?           }
+                // 尝试下一个格?           }
         }
         return null
     }
 
-    /** 清除所有变�?/
+    /** 清除所有变?/
     fun clearVariables() {
         variables.clear()
 
@@ -303,9 +303,9 @@ object ExpressionContext {
         variables["E"] = Math.E
     }
 
-    /** 格式化结果显�?/
+    /** 格式化结果显?/
     fun formatResult(result: Double): String {
-        // 如果是整数则不显示小数部�?       if (result == Math.floor(result) && !result.isNaN() && !result.isInfinite()) {
+        // 如果是整数则不显示小数部?       if (result == Math.floor(result) && !result.isNaN() && !result.isInfinite()) {
             return result.toInt().toString()
         }
         // 否则使用小数格式

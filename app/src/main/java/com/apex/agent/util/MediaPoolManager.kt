@@ -204,7 +204,7 @@ object MediaPoolManager {
             }
 
             if (bytes.size > MAX_INPUT_BYTES) {
-                AppLogger.e(TAG, "媒体文件过大，拒绝加入池�?${filePath}, bytes=${bytes.size}")
+                AppLogger.e(TAG, "媒体文件过大，拒绝加入池?${filePath}, bytes=${bytes.size}")
                 return "error"
             }
 
@@ -213,10 +213,10 @@ object MediaPoolManager {
             val mediaData = MediaData(base64 = base64, mimeType = effectiveMimeType)
             mediaPool[id] = mediaData
             saveToDisk(id, mediaData)
-            AppLogger.d(TAG, "成功添加媒体到池�?${id}, mimeType=${mimeType}, sizeBytes=${bytes.size}")
+            AppLogger.d(TAG, "成功添加媒体到池?${id}, mimeType=${mimeType}, sizeBytes=${bytes.size}")
             id
         } catch (e: Exception) {
-            AppLogger.e(TAG, "添加媒体时发生异�?${filePath}", e)
+            AppLogger.e(TAG, "添加媒体时发生异?${filePath}", e)
             "error"
         }
     }
@@ -226,7 +226,7 @@ object MediaPoolManager {
         return try {
             val estimated = MediaBase64Limiter.estimateDecodedSizeBytes(base64)
             if (estimated == null) {
-                AppLogger.e(TAG, "媒体base64估算失败，拒绝加入池�?mimeType=${mimeType}")
+                AppLogger.e(TAG, "媒体base64估算失败，拒绝加入池?mimeType=${mimeType}")
                 return "error"
             }
 
@@ -248,7 +248,7 @@ object MediaPoolManager {
                 val mediaData = MediaData(base64 = normalizedBase64, mimeType = mimeType)
                 mediaPool[id] = mediaData
                 saveToDisk(id, mediaData)
-                AppLogger.d(TAG, "成功从base64添加媒体到池�?${id}, mimeType=${mimeType}, sizeChars=${base64.length}")
+                AppLogger.d(TAG, "成功从base64添加媒体到池?${id}, mimeType=${mimeType}, sizeChars=${base64.length}")
                 return id
             }
 
@@ -287,7 +287,7 @@ object MediaPoolManager {
             runCatching { transcoded.file.delete() }
 
             if (bytes.size > MAX_INPUT_BYTES) {
-                AppLogger.e(TAG, "转码后的媒体仍然过大，拒绝加入池�?mimeType=${transcoded.mimeType}, bytes=${bytes.size}")
+                AppLogger.e(TAG, "转码后的媒体仍然过大，拒绝加入池?mimeType=${transcoded.mimeType}, bytes=${bytes.size}")
                 return "error"
             }
 
@@ -329,7 +329,7 @@ object MediaPoolManager {
             }
             MediaData(base64 = base64, mimeType = mimeType)
         } catch (e: Exception) {
-            AppLogger.e(TAG, "从磁盘加载媒体失�?${id}", e)
+            AppLogger.e(TAG, "从磁盘加载媒体失?${id}", e)
             null
         }
     }
@@ -348,7 +348,7 @@ object MediaPoolManager {
             metaFile.writeText(data.mimeType)
             b64File.writeText(data.base64)
         } catch (e: Exception) {
-            AppLogger.e(TAG, "保存媒体到磁盘失�?${id}", e)
+            AppLogger.e(TAG, "保存媒体到磁盘失?${id}", e)
         }
     }
 
@@ -371,7 +371,7 @@ object MediaPoolManager {
                 val loaded = loadOneFromDisk(id) ?: return@forEach
                 mediaPool[id] = loaded
             }
-            AppLogger.d(TAG, "从磁盘加载媒体缓存完�?size=${mediaPool.size}")
+            AppLogger.d(TAG, "从磁盘加载媒体缓存完?size=${mediaPool.size}")
         } catch (e: Exception) {
             AppLogger.e(TAG, "从磁盘加载媒体缓存失败：${e.message})
         }

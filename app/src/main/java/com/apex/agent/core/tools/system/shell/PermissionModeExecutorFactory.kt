@@ -23,7 +23,7 @@ import com.apex.agent.core.tools.system.shell.DebuggerShellExecutor
 import com.apex.agent.core.tools.system.shell.StandardShellExecutor
 
 /**
- * 权限模式执行器工�?- 根据 PermissionMode 创建对应�?Shell 执行�?
+ * 权限模式执行器工?- 根据 PermissionMode 创建对应?Shell 执行?
  */
 class PermissionModeExecutorFactory private constructor(private val context: Context) {
 
@@ -65,16 +65,16 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
         val cached = _executorCache.value[mode]
         val now = System.currentTimeMillis()
 
-        // 检查缓存是否有�?
+        // 检查缓存是否有?
         if (cached != null) {
             val creationTime = executorCreationTime[mode] ?: 0L
             if (now - creationTime < CACHE_TTL && cached.isAvailable()) {
-                AppLogger.v(TAG, "使用缓存�?${mode.displayName} 执行�?)
+                AppLogger.v(TAG, "使用缓存?${mode.displayName} 执行?)
                 return cached
             }
         }
 
-        AppLogger.d(TAG, "创建 ${mode.displayName} 执行�?..")
+        AppLogger.d(TAG, "创建 ${mode.displayName} 执行?..")
 
         val executor = createExecutor(mode)
         executor.initialize()
@@ -132,7 +132,7 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
     }
 
     /**
-     * 尝试按优先级顺序获取执行�?
+     * 尝试按优先级顺序获取执行?
      */
     suspend fun tryGetExecutor(
         preferredModes: List<PermissionMode> = PermissionMode.sortedByLevelDesc()
@@ -141,15 +141,15 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
             try {
                 val executor = getExecutor(mode)
                 if (executor.isAvailable() && executor.hasPermission().granted) {
-                    AppLogger.d(TAG, "使用 ${mode.displayName} 执行�?)
+                    AppLogger.d(TAG, "使用 ${mode.displayName} 执行?)
                     return executor
                 }
             } catch (e: Exception) {
-                AppLogger.w(TAG, "获取 ${mode.displayName} 执行器失�?, e)
+                AppLogger.w(TAG, "获取 ${mode.displayName} 执行器失?, e)
             }
         }
 
-        AppLogger.w(TAG, "所有高级执行器不可用，回退到标准模�?)
+        AppLogger.w(TAG, "所有高级执行器不可用，回退到标准模?)
         return getExecutor(PermissionMode.STANDARD)
     }
 
@@ -168,7 +168,7 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
                 try {
                     getExecutor(mode)
                 } catch (e: Exception) {
-                    AppLogger.w(TAG, "预加�?${mode.displayName} 执行器失�?, e)
+                    AppLogger.w(TAG, "预加?${mode.displayName} 执行器失?, e)
                 }
             }
             AppLogger.d(TAG, "执行器预加载完成")
@@ -178,7 +178,7 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
     }
 
     /**
-     * 清除指定模式的缓�?
+     * 清除指定模式的缓?
      */
     fun clearCache(mode: PermissionMode? = null) {
         if (mode != null) {
@@ -186,7 +186,7 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
                 current.toMutableMap().apply { remove(mode) }
             }
             executorCreationTime.remove(mode)
-            AppLogger.d(TAG, "已清�?${mode.displayName} 执行器缓�?)
+            AppLogger.d(TAG, "已清?${mode.displayName} 执行器缓?)
         } else {
             _executorCache.update { emptyMap() }
             executorCreationTime.clear()
@@ -203,7 +203,7 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
     }
 
     /**
-     * 获取所有可用执行器及其状�?
+     * 获取所有可用执行器及其状?
      */
     suspend fun getAvailableExecutors(): Map<PermissionMode, Pair<ShellExecutor, ShellExecutor.PermissionStatus>> {
         val result = mutableMapOf<PermissionMode, Pair<ShellExecutor, ShellExecutor.PermissionStatus>>()
@@ -214,7 +214,7 @@ class PermissionModeExecutorFactory private constructor(private val context: Con
                 val status = executor.hasPermission()
                 result[mode] = executor to status
             } catch (e: Exception) {
-                AppLogger.w(TAG, "获取 ${mode.displayName} 执行器状态失�?, e)
+                AppLogger.w(TAG, "获取 ${mode.displayName} 执行器状态失?, e)
             }
         }
 

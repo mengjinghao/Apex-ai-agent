@@ -102,7 +102,7 @@ class LogAnalyticsManager {
 
     private fun updateTaskTypeStats(taskId: String?, difficulty: Int?, duration: Long?, success: Boolean) {
         if (taskId != null && duration != null) {
-            val taskType = taskId.split("_")[0] // 简单提取任务类�?           taskTypeStats.computeIfAbsent(taskType) { mutableListOf() }.add(Triple(difficulty ?: 1, duration, success))
+            val taskType = taskId.split("_")[0] // 简单提取任务类?           taskTypeStats.computeIfAbsent(taskType) { mutableListOf() }.add(Triple(difficulty ?: 1, duration, success))
         }
     }
 
@@ -262,7 +262,7 @@ class LogAnalyticsManager {
         return logs.values.groupBy { it.component }.mapValues { it.value.size }
     }
 
-    // 高级分析功能：识别系统瓶�?   fun identifyBottlenecks(): List<Pair<String, Double>> {
+    // 高级分析功能：识别系统瓶?   fun identifyBottlenecks(): List<Pair<String, Double>> {
         return componentStats.map { (component, durations) ->
             val avgDuration = durations.average()
             Pair(component, avgDuration)

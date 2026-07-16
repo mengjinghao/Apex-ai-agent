@@ -88,7 +88,7 @@ object ModelRegistry {
         val models = mutableListOf<LocalModelInfo>()
 
         if (!llamaModelsDir.exists()) {
-            AppLogger.w(TAG, "Llama模型目录不存�? ${llamaModelsDir.absolutePath}")
+            AppLogger.w(TAG, "Llama模型目录不存? ${llamaModelsDir.absolutePath}")
             return models
         }
 
@@ -117,7 +117,7 @@ object ModelRegistry {
         val models = mutableListOf<LocalModelInfo>()
 
         if (!mnnModelsDir.exists()) {
-            AppLogger.w(TAG, "MNN模型目录不存�? ${mnnModelsDir.absolutePath}")
+            AppLogger.w(TAG, "MNN模型目录不存? ${mnnModelsDir.absolutePath}")
             return models
         }
 

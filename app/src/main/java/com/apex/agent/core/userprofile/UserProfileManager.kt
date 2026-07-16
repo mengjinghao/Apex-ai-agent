@@ -44,13 +44,13 @@ class UserProfileManager private constructor(
         // 先从缓存获取
         profileCache[userId]?.let { return@withContext it }
         
-        // 从存储获�?      val profile = memoryRepository.getHonzonProfile(userId)
+        // 从存储获?      val profile = memoryRepository.getHonzonProfile(userId)
         profileCache[userId] = profile
         profile
     }
     
     /**
-     * 从对话历史构建用户画�?    */
+     * 从对话历史构建用户画?    */
     suspend fun buildProfileFromChatHistory(userId: String, chatMessages: List<ChatMessage>): HonzonUserProfile = withContext(Dispatchers.IO) {
         val profile = profileBuilder.buildProfileFromChatHistory(userId, chatMessages)
         profileCache[userId] = profile
@@ -58,7 +58,7 @@ class UserProfileManager private constructor(
     }
     
     /**
-     * 从对话历史更新用户画�?    */
+     * 从对话历史更新用户画?    */
     suspend fun updateProfileFromChatHistory(userId: String, chatMessages: List<ChatMessage>): Boolean = withContext(Dispatchers.IO) {
         val success = profileBuilder.updateProfileFromChatHistory(userId, chatMessages)
         if (success) {
@@ -84,14 +84,14 @@ class UserProfileManager private constructor(
     }
     
     /**
-     * 获取用户画像的有效维�?    */
+     * 获取用户画像的有效维?    */
     suspend fun getNonEmptyDimensions(userId: String): Map<String, String> = withContext(Dispatchers.IO) {
         val profile = getUserProfile(userId)
         profile.getNonEmptyDimensions()
     }
     
     /**
-     * 生成个性化策略提显�?    */
+     * 生成个性化策略提显?    */
     suspend fun generatePersonalizedStrategyPrompt(userId: String, taskType: String): String = withContext(Dispatchers.IO) {
         val profile = getUserProfile(userId)
         memoryRepository.generatePersonalizedStrategyPrompt(profile, taskType)
@@ -118,7 +118,7 @@ class UserProfileManager private constructor(
     }
     
     /**
-     * 获取所有用户画像维�?    */
+     * 获取所有用户画像维?    */
     fun getProfileDimensions(): List<String> {
         return HonzonUserProfile.USER_DIMENSIONS
     }

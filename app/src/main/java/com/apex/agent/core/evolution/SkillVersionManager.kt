@@ -27,7 +27,7 @@ class SkillVersionManager(private val context: Context) {
     }
 
     /**
-     * 根据 A/B 测试逻辑选择一个版�?    * 70% 概率选择 Stable 版本
+     * 根据 A/B 测试逻辑选择一个版?    * 70% 概率选择 Stable 版本
      * 20% 概率选择 Candidate 版本
      * 10% 概率选择 Exploration 版本
      */
@@ -52,7 +52,7 @@ class SkillVersionManager(private val context: Context) {
     }
 
     /**
-     * 基于评分更新版本状�?    */
+     * 基于评分更新版本状?    */
     suspend fun promoteVersions(skillId: String) {
         val allVersions = getCandidateVersions(skillId)
         if (allVersions.isEmpty()) return

@@ -6,9 +6,9 @@ package com.apex.core.extension
  * This enum defines the expansion levels for capabilities, ensuring
  * "core is narrow waist" principle is maintained.
  *
- * Level 1: Extend existing code (零新增表面积�? * Level 2: CLI command + skill (零模型工具足迹）
- * Level 3: Service-gated tool (check_fn, 仅配置后出现�? * Level 4: Plugin (第三方能力）
- * Level 5: MCP Server (工具化非核心能力�? * Level 6: New Core Tool (最后手段）
+ * Level 1: Extend existing code (零新增表面积? * Level 2: CLI command + skill (零模型工具足迹）
+ * Level 3: Service-gated tool (check_fn, 仅配置后出现? * Level 4: Plugin (第三方能力）
+ * Level 5: MCP Server (工具化非核心能力? * Level 6: New Core Tool (最后手段）
  */
 enum class FootprintLevel(
     val level: Int,
@@ -23,7 +23,7 @@ enum class FootprintLevel(
      */
     EXTEND_EXISTING(
         level = 1,
-        description = "Extend existing code (零新增表面积�?,
+        description = "Extend existing code (零新增表面积?,
         coreImpact = CoreImpact.NONE
     ),
 
@@ -47,7 +47,7 @@ enum class FootprintLevel(
      */
     SERVICE_GATED_TOOL(
         level = 3,
-        description = "Service-gated tool (check_fn, 仅配置后出现�?,
+        description = "Service-gated tool (check_fn, 仅配置后出现?,
         coreImpact = CoreImpact.LOW
     ),
 
@@ -71,7 +71,7 @@ enum class FootprintLevel(
      */
     MCP_SERVER(
         level = 5,
-        description = "MCP Server (工具化非核心能力�?,
+        description = "MCP Server (工具化非核心能力?,
         coreImpact = CoreImpact.MEDIUM
     ),
 

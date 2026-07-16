@@ -224,7 +224,7 @@ class RootShellExecutor(private val context: Context) : ShellExecutor {
 
     override fun requestPermission(onResult: (Boolean) -> Unit) {
         try {
-            // Root权限无法通过代码请求，只能提示用�?           val hasRoot = isAvailable()
+            // Root权限无法通过代码请求，只能提示用?           val hasRoot = isAvailable()
             onResult(hasRoot)
 
             if (!hasRoot) {

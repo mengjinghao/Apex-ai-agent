@@ -32,7 +32,7 @@ import org.json.JSONTokener
 import com.apex.core.tools.javascript.JsToolCallInterface
 
 /**
- * JavaScript 引擎 - 通过 QuickJS 执行 JavaScript 脚本并提供与 Android 原生代码的交互机�?*/
+ * JavaScript 引擎 - 通过 QuickJS 执行 JavaScript 脚本并提供与 Android 原生代码的交互机?*/
 class JsEngine(private val context: Context) {
     companion object {
         private const val TAG = "JsEngine"
@@ -228,7 +228,7 @@ class JsEngine(private val context: Context) {
     }
 
     /**
-     * 安全地执行多个协程任务，确保一个任务失败不会影响其他任�?
+     * 安全地执行多个协程任务，确保一个任务失败不会影响其他任?
      */
     private suspend fun <T> withSupervisorScope(block: suspend () -> T): T {
         return kotlinx.coroutines.supervisorScope {
@@ -578,7 +578,7 @@ class JsEngine(private val context: Context) {
      * 执行 JavaScript 脚本并调用其中的特定函数
      * @param script 完整的JavaScript脚本内容
      * @param functionName 要调用的函数名称
-     * @param params 要传递给函数的参�?    * @return 函数执行结果
+     * @param params 要传递给函数的参?    * @return 函数执行结果
      */
     internal fun executeScriptFunction(
             script: String,
@@ -953,7 +953,7 @@ class JsEngine(private val context: Context) {
         return true
     }
 
-    /** 重置引擎状态，避免多次调用时的状态干�?/
+    /** 重置引擎状态，避免多次调用时的状态干?/
     private fun resetState(cancellationMessage: String = "Execution canceled: new execution started") {
         cancelAllExecutionSessions(cancellationMessage)
 
@@ -1514,7 +1514,7 @@ class JsEngine(private val context: Context) {
             )
         }
 
-        /** 异步工具调用（新版本，使用Promise�?/
+        /** 异步工具调用（新版本，使用Promise?/
         @JavascriptInterface
         fun callToolAsync(
                 callbackId: String,
@@ -1537,7 +1537,7 @@ class JsEngine(private val context: Context) {
             )
         }
 
-        /** 向JavaScript发送工具调用结�?/
+        /** 向JavaScript发送工具调用结?/
         private fun sendToolResult(callbackId: String, result: String, isError: Boolean) {
             ensureQuickJs()
             try {
@@ -1733,14 +1733,14 @@ class JsEngine(private val context: Context) {
         }
     }
 
-    /** 销毁引擎资�?/
+    /** 销毁引擎资?/
     fun destroy() {
         try {
             // 确保任何挂起的回调被完成
             cancelAllExecutionSessions("Engine destroyed")
             toolCallInterface.detachJavaBridgeLifecycle()
 
-            // 清理Bitmap注册�?           bitmapRegistry.values.forEach { it.recycle() }
+            // 清理Bitmap注册?           bitmapRegistry.values.forEach { it.recycle() }
             bitmapRegistry.clear()
 
             // 清理二进制数据注册表

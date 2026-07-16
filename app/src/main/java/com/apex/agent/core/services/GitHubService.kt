@@ -12,7 +12,7 @@ import com.apex.agent.core.provider.AuthType
 /**
  * GitHub API 服务
  * 
- * 提供�?GitHub API 交互的功�?
+ * 提供?GitHub API 交互的功?
  */
 class GitHubService {
     
@@ -78,7 +78,7 @@ class GitHubService {
     }
     
     /**
-     * 获取文件�?
+     * 获取文件?
      */
     suspend fun getFileTree(
         owner: String,
@@ -164,7 +164,7 @@ class GitHubService {
         authConfig: GitHubAuthConfig
     ): Result<FileContent?> = withContext(Dispatchers.IO) {
         try {
-            // 尝试常见�?README 文件�?
+            // 尝试常见?README 文件?
             val readmeNames = listOf("README.md", "README.rst", "README.txt", "readme.md")
             
             for (readmeName in readmeNames) {
@@ -270,18 +270,18 @@ class GitHubService {
                 }
             }
             AuthType.SSH -> {
-                // SSH 需要通过 git 命令，这里暂不支�?
+                // SSH 需要通过 git 命令，这里暂不支?
             }
         }
         
-        // GitHub API v3 需要这�?header
+        // GitHub API v3 需要这?header
         builder.addHeader("Accept", "application/vnd.github.v3+json")
         
         return builder.build()
     }
     
     /**
-     * 解析文件�?JSON
+     * 解析文件?JSON
      */
     private fun parseFileTree(json: JSONObject, basePath: String): List<GitHubFileNode> {
         val nodes = mutableListOf<GitHubFileNode>()

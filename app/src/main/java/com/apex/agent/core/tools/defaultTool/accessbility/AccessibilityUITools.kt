@@ -42,7 +42,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
     }
 
     /**
-     * 为需要无障碍服务的工具创建一个前置检查的包装�?    */
+     * 为需要无障碍服务的工具创建一个前置检查的包装?    */
     private suspend fun <T> withAccessibilityCheck(tool: AITool, block: suspend () -> T): T {
         if (!isAccessibilityServiceEnabled()) {
             throw IllegalStateException("Accessibility Service is not enabled. Please enable it in system settings to use this feature.")
@@ -66,7 +66,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             
             retryCount++
             if (retryCount < MAX_RETRY_COUNT) {
-                AppLogger.d(TAG, "获取UI层次结构失败，正在重�?${retryCount}")
+                AppLogger.d(TAG, "获取UI层次结构失败，正在重?${retryCount}")
                 delay(RETRY_DELAY_MS)
             }
         }
@@ -107,7 +107,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             // 简化布局信息
             val simplifiedLayout = simplifyLayout(uiXml)
 
-            // 创建结构化数�?          val resultData =
+            // 创建结构化数?          val resultData =
                     UIPageResultData(
                             packageName = focusInfo.packageName ?: "Unknown",
                             activityName = focusInfo.activityName ?: "Unknown",
@@ -140,18 +140,18 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                 return focusInfo
             }
 
-            // 2. 从XML中解析包�?          val (packageName, _) = UIHierarchyManager.extractWindowInfo(hierarchyXml)
+            // 2. 从XML中解析包?          val (packageName, _) = UIHierarchyManager.extractWindowInfo(hierarchyXml)
             // 3. 从服务中直接获取当前Activity名称
             val activityName = UIHierarchyManager.getCurrentActivityName(context)
 
             focusInfo.packageName = packageName
             focusInfo.activityName = activityName // 使用从服务获取的Activity名称
 
-            // 如果没有获取到，使用默认�?           if (focusInfo.packageName == null) focusInfo.packageName = "android"
+            // 如果没有获取到，使用默认?           if (focusInfo.packageName == null) focusInfo.packageName = "android"
             if (focusInfo.activityName == null) focusInfo.activityName = "ForegroundActivity"
         } catch (e: Exception) {
-            AppLogger.e(TAG, "从XML解析焦点信息时出�? e)
-            // 设置默认�?           focusInfo.packageName = "android"
+            AppLogger.e(TAG, "从XML解析焦点信息时出? e)
+            // 设置默认?           focusInfo.packageName = "android"
             focusInfo.activityName = "ForegroundActivity"
         }
         return focusInfo
@@ -277,7 +277,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                     return@withAccessibilityCheck ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "No matching element found.")
                 }
 
-                // 检查索引是否有�?               if (index < 0 || index >= matchedNodes.size) {
+                // 检查索引是否有?               if (index < 0 || index >= matchedNodes.size) {
                     return@withAccessibilityCheck ToolResult(
                         toolName = tool.name,
                         success = false,
@@ -292,7 +292,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                     return@withAccessibilityCheck ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "Target element has no bounds.")
                 }
 
-                // 解析bounds并点�?               handleClickByBounds(tool, targetNodeBounds)
+                // 解析bounds并点?               handleClickByBounds(tool, targetNodeBounds)
             }
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error clicking element", e)
@@ -446,7 +446,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             // 显示点击反馈
             operationOverlay.showTap(x, y)
 
-            // 使用无障碍服务执行点�?           val result = performAccessibilityClick(x, y)
+            // 使用无障碍服务执行点?           val result = performAccessibilityClick(x, y)
 
                 if (result) {
                 // 成功后主动隐藏overlay
@@ -504,7 +504,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             // 显示长按反馈（复用点击效果）
             operationOverlay.showTap(x, y)
 
-            // 使用无障碍服务执行长�?           val result = performAccessibilityLongPress(x, y)
+            // 使用无障碍服务执行长?           val result = performAccessibilityLongPress(x, y)
 
                 if (result) {
                 // 成功后主动隐藏overlay
@@ -565,7 +565,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
             // 显示滑动反馈
             operationOverlay.showSwipe(startX, startY, endX, endY)
 
-            // 使用无障碍服务执行滑�?           val result = performAccessibilitySwipe(startX, startY, endX, endY, duration)
+            // 使用无障碍服务执行滑?           val result = performAccessibilitySwipe(startX, startY, endX, endY, duration)
 
                 if (result) {
                 // 成功后主动隐藏overlay
@@ -689,7 +689,7 @@ open class AccessibilityUITools(context: Context) : StandardUITools(context) {
                     )
                 }
             } else {
-                // 如果不是标准全局操作，返回不支持的错�?              return ToolResult(
+                // 如果不是标准全局操作，返回不支持的错?              return ToolResult(
                         toolName = tool.name,
                         success = false,
                         result = StringResultData(""),

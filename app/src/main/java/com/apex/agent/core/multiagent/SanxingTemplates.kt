@@ -19,24 +19,24 @@ data class SanxingTaskTemplate(
 enum class TemplateCategory(val displayName: String) {
     SEARCH("深度搜索"),
     CONTENT("内容创作"),
-    CODE("代码开�?),
+    CODE("代码开?),
     ANALYSIS("分析研究"),
-    CUSTOM("自定�?)
+    CUSTOM("自定?)
 }
 
 /**
  * 模板配置
  */
 data class TemplateConfig(
-    // 激活的Agent列表（角色枚举名�?
+    // 激活的Agent列表（角色枚举名?
     val activeAgentRoles: List<String>,
     // 任务初始提示词（用户发送消息前的预设）
     val systemPrompt: String? = null,
-    // 各Agent的特定配置覆�?
+    // 各Agent的特定配置覆?
     val agentOverrides: Map<String, AgentOverride>? = null,
     // 是否启用智能任务分配
     val enableIntelligentAllocation: Boolean = true,
-    // 搜索相关配置（深度搜索模板用�?
+    // 搜索相关配置（深度搜索模板用?
     val searchConfig: SearchConfig? = null
 )
 
@@ -70,7 +70,7 @@ data class SearchConfig(
 object SanxingTemplateLibrary {
 
     /**
-     * 获取所有模�?
+     * 获取所有模?
      */
     fun getAllTemplates(): List<SanxingTaskTemplate> {
         return listOf(
@@ -112,15 +112,15 @@ object SanxingTemplateLibrary {
                     "XINGBU_COMPLIANCE"
                 ),
                 systemPrompt = """
-                    你现在是Apex深度搜索研究助手�?
+                    你现在是Apex深度搜索研究助手?
                     你将启动三省六部制系统：
                     - 中书省：拆解需求，生成搜索计划
-                    - 兵部：多关键词深度搜�?
-                    - 户部：高价值网页爬�?
+                    - 兵部：多关键词深度搜?
+                    - 户部：高价值网页爬?
                     - 刑部+门下省：多源交叉验证
                     - 礼部：内容结构化整合
                     
-                    最终将生成一份完整、准确、有深度的研究报告�?
+                    最终将生成一份完整、准确、有深度的研究报告?
                 """.trimIndent(),
                 enableIntelligentAllocation = true,
                 searchConfig = SearchConfig(
@@ -129,7 +129,7 @@ object SanxingTemplateLibrary {
                     maxFetchPageCount = 6
                 )
             ),
-            usageTips = "适合：最新资讯、行业研究、数据调查、事实核�?
+            usageTips = "适合：最新资讯、行业研究、数据调查、事实核?
         )
     }
 
@@ -152,12 +152,12 @@ object SanxingTemplateLibrary {
                     "XINGBU_COMPLIANCE"
                 ),
                 systemPrompt = """
-                    你现在是Apex专业文案创作助手�?
+                    你现在是Apex专业文案创作助手?
                     将通过三省六部制协作完成文案创作：
                     - 中书省：拆解创作需求，制定方案
                     - 礼部：多版本文案创作
-                    - 门下省：质量审核和优化建�?
-                    - 刑部：合规性审�?
+                    - 门下省：质量审核和优化建?
+                    - 刑部：合规性审?
                     - 最终交付完美文案！
                 """.trimIndent(),
                 enableIntelligentAllocation = true
@@ -167,13 +167,13 @@ object SanxingTemplateLibrary {
     }
 
     /**
-     * ?? 代码开发模�?
+     * ?? 代码开发模?
      */
     private fun codeDevelopmentTemplate(): SanxingTaskTemplate {
         return SanxingTaskTemplate(
             id = "code_development",
-            name = "工程项目开�?,
-            description = "架构设计+代码开�质量检�完整项目交付",
+            name = "工程项目开?,
+            description = "架构设计+代码开质量检完整项目交付",
             icon = "??",
             category = TemplateCategory.CODE,
             config = TemplateConfig(
@@ -185,16 +185,16 @@ object SanxingTemplateLibrary {
                     "XINGBU_COMPLIANCE"
                 ),
                 systemPrompt = """
-                    你现在是Apex工程项目开发助手�?
+                    你现在是Apex工程项目开发助手?
                     将通过三省六部制协作完成完整项目：
-                    - 中书省：需求拆解，技术方案设�?
-                    - 工部：架构设计、代码开�?
-                    - 刑部：代码质量审查、安全检�?
-                    - 门下省：最终验�?
+                    - 中书省：需求拆解，技术方案设?
+                    - 工部：架构设计、代码开?
+                    - 刑部：代码质量审查、安全检?
+                    - 门下省：最终验?
                 """.trimIndent(),
                 enableIntelligentAllocation = true
             ),
-            usageTips = "适合：功能开发、系统重构、技术选型、原型制�?
+            usageTips = "适合：功能开发、系统重构、技术选型、原型制?
         )
     }
 
@@ -218,17 +218,17 @@ object SanxingTemplateLibrary {
                     "LIBU_CONTENT"
                 ),
                 systemPrompt = """
-                    你现在是Apex市场战略分析助手�?
+                    你现在是Apex市场战略分析助手?
                     将通过三省六部制协作：
-                    - 中书省：分析需求拆�?
-                    - 兵部：竞品分析、策略制�?
-                    - 户部：数据收集、统计分�?
-                    - 礼部：最终报告撰�?
+                    - 中书省：分析需求拆?
+                    - 兵部：竞品分析、策略制?
+                    - 户部：数据收集、统计分?
+                    - 礼部：最终报告撰?
                     - 门下省：审核+质量把控
                 """.trimIndent(),
                 enableIntelligentAllocation = true
             ),
-            usageTips = "适合：竞品分析、市场调查、战略规划、投资决�?
+            usageTips = "适合：竞品分析、市场调查、战略规划、投资决?
         )
     }
 
@@ -239,7 +239,7 @@ object SanxingTemplateLibrary {
         return SanxingTaskTemplate(
             id = "research_report",
             name = "学术研究报告",
-            description = "深度研究+多方验证+结构化学术输�?,
+            description = "深度研究+多方验证+结构化学术输?,
             icon = "??",
             category = TemplateCategory.ANALYSIS,
             config = TemplateConfig(
@@ -252,17 +252,17 @@ object SanxingTemplateLibrary {
                     "XINGBU_COMPLIANCE"
                 ),
                 systemPrompt = """
-                    你现在是Apex学术研究助手�?
-                    将通过严谨的三省六部制流程�?
+                    你现在是Apex学术研究助手?
+                    将通过严谨的三省六部制流程?
                     - 中书省：研究方案设计
-                    - 兵部：多源资料搜�?
+                    - 兵部：多源资料搜?
                     - 户部：数据处理和分析
                     - 刑部：事实核查和引用验证
                     - 礼部：结构化报告撰写
                 """.trimIndent(),
                 enableIntelligentAllocation = true
             ),
-            usageTips = "适合：学术研究、行业报告、专题调研、资料汇�?
+            usageTips = "适合：学术研究、行业报告、专题调研、资料汇?
         )
     }
 }

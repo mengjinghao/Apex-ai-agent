@@ -3,7 +3,7 @@ package com.apex.core.tools.javascript
 /** JavaScript Tools 对象定义 提供了一组便捷的工具调用方法，用于在JavaScript脚本中调用Android工具 */
 fun getJsToolsDefinition(): String {
     return """
-        // 工具调用的便捷方�?       var Tools = {
+        // 工具调用的便捷方?       var Tools = {
             // 文件系统操作
             Files: {
                 list: (path, environment) => {
@@ -579,7 +579,7 @@ fun getJsToolsDefinition(): String {
                     }
                     return toolCall("send_notification", params);
                 },
-                // 使用工具�?               usePackage: (packageName) => toolCall("use_package", { package_name: packageName }),
+                // 使用工具?               usePackage: (packageName) => toolCall("use_package", { package_name: packageName }),
                 // 安装应用
                 installApp: (path) => toolCall("install_app", { path }),
                 // 卸载应用
@@ -618,7 +618,7 @@ fun getJsToolsDefinition(): String {
                 getLocation: (highAccuracy = false, timeout = 10) => 
                     toolCall("get_device_location", { high_accuracy: !!highAccuracy, timeout: parseInt(timeout) }),
                 shell: (command) => toolCall("execute_shell", { command }),
-                // 执行终端命令 - 一次性收集输�?               terminal: {
+                // 执行终端命令 - 一次性收集输?               terminal: {
                     create: (sessionName) => toolCall("create_terminal_session", { session_name: sessionName }),
                     exec: (sessionId, command, timeoutMs) => {
                         const params = { session_id: sessionId, command };
@@ -771,9 +771,9 @@ fun getJsToolsDefinition(): String {
                 getPageInfo: () => toolCall("get_page_info"),
                 tap: (x, y) => toolCall("tap", { x, y }),
                 longPress: (x, y) => toolCall("long_press", { x, y }),
-                // 增强的clickElement方法，支持多种参数类�?               clickElement: function(param1, param2, param3) {
-                    // 根据参数类型和数量判断调用方�?                   if (typeof param1 === 'object') {
-                        // 如果第一个参数是对象，直接传递参数对�?                       return toolCall("click_element", param1);
+                // 增强的clickElement方法，支持多种参数类?               clickElement: function(param1, param2, param3) {
+                    // 根据参数类型和数量判断调用方?                   if (typeof param1 === 'object') {
+                        // 如果第一个参数是对象，直接传递参数对?                       return toolCall("click_element", param1);
                     } else if (arguments.length === 1) {
                         // 单参数，假定为resourceId
                         if (param1.startsWith('[') && param1.includes('][')) {
@@ -839,7 +839,7 @@ fun getJsToolsDefinition(): String {
             },
             // 记忆管理
             Memory: {
-                // 查询记忆�?               query: (query, folderPath, limit, startTime, endTime, snapshotId, threshold) => {
+                // 查询记忆?               query: (query, folderPath, limit, startTime, endTime, snapshotId, threshold) => {
                     const params = { query };
                     if (folderPath) params.folder_path = folderPath;
                     if (startTime !== undefined) params.start_time = startTime;
@@ -909,7 +909,7 @@ fun getJsToolsDefinition(): String {
                     if (limit !== undefined) params.limit = limit;
                     return toolCall("query_memory_links", params);
                 },
-                // 更新记忆链接（优先按 linkId�?               updateLink: (linkId, sourceTitle, targetTitle, linkType, newLinkType, weight, description) => {
+                // 更新记忆链接（优先按 linkId?               updateLink: (linkId, sourceTitle, targetTitle, linkType, newLinkType, weight, description) => {
                     const params = {};
                     if (linkId !== undefined && linkId !== null) params.link_id = linkId;
                     if (sourceTitle) params.source_title = sourceTitle;
@@ -920,7 +920,7 @@ fun getJsToolsDefinition(): String {
                     if (description !== undefined) params.description = description;
                     return toolCall("update_memory_link", params);
                 },
-                // 删除记忆链接（优先按 linkId�?               deleteLink: (linkId, sourceTitle, targetTitle, linkType) => {
+                // 删除记忆链接（优先按 linkId?               deleteLink: (linkId, sourceTitle, targetTitle, linkType) => {
                     const params = {};
                     if (linkId !== undefined && linkId !== null) params.link_id = linkId;
                     if (sourceTitle) params.source_title = sourceTitle;
@@ -951,7 +951,7 @@ fun getJsToolsDefinition(): String {
                 }
             },
             
-            // 工作流工�?           Workflow: {
+            // 工作流工?           Workflow: {
                 // 获取所有工作流
                 getAll: () => {
                     return toolCall("get_all_workflows", {});
@@ -963,11 +963,11 @@ fun getJsToolsDefinition(): String {
                     if (connections) params.connections = typeof connections === 'string' ? connections : JSON.stringify(connections);
                     return toolCall("create_workflow", params);
                 },
-                // 获取工作流详�?               get: (workflowId) => {
+                // 获取工作流详?               get: (workflowId) => {
                     const params = { workflow_id: workflowId };
                     return toolCall("get_workflow", params);
                 },
-                // 更新工作�?               update: (workflowId, updates = {}) => {
+                // 更新工作?               update: (workflowId, updates = {}) => {
                     const params = { workflow_id: workflowId };
                     if (updates.name !== undefined) params.name = updates.name;
                     if (updates.description !== undefined) params.description = updates.description;
@@ -976,7 +976,7 @@ fun getJsToolsDefinition(): String {
                     if (updates.enabled !== undefined) params.enabled = updates.enabled.toString();
                     return toolCall("update_workflow", params);
                 },
-                // 差异更新工作流（增量 patch�?               patch: (workflowId, patch = {}) => {
+                // 差异更新工作流（增量 patch?               patch: (workflowId, patch = {}) => {
                     const params = { workflow_id: workflowId };
                     if (patch.name !== undefined) params.name = patch.name;
                     if (patch.description !== undefined) params.description = patch.description;
@@ -993,23 +993,23 @@ fun getJsToolsDefinition(): String {
                     }
                     return toolCall("patch_workflow", params);
                 },
-                // 设置工作流启用状�?               setEnabled: (workflowId, enabled) => {
+                // 设置工作流启用状?               setEnabled: (workflowId, enabled) => {
                     const params = { workflow_id: workflowId };
                     return toolCall(enabled ? "enable_workflow" : "disable_workflow", params);
                 },
-                // 启用工作�?               enable: (workflowId) => {
+                // 启用工作?               enable: (workflowId) => {
                     const params = { workflow_id: workflowId };
                     return toolCall("enable_workflow", params);
                 },
-                // 禁用工作�?               disable: (workflowId) => {
+                // 禁用工作?               disable: (workflowId) => {
                     const params = { workflow_id: workflowId };
                     return toolCall("disable_workflow", params);
                 },
-                // 删除工作�?               delete: (workflowId) => {
+                // 删除工作?               delete: (workflowId) => {
                     const params = { workflow_id: workflowId };
                     return toolCall("delete_workflow", params);
                 },
-                // 触发工作流执�?               trigger: (workflowId) => {
+                // 触发工作流执?               trigger: (workflowId) => {
                     const params = { workflow_id: workflowId };
                     return toolCall("trigger_workflow", params);
                 }
@@ -1018,7 +1018,7 @@ fun getJsToolsDefinition(): String {
             Chat: {
                 // 启动对话服务
                 startService: () => toolCall("start_chat_service", {}),
-                // 创建新对�?               createNew: (group, setAsCurrentChat, characterCardId) => {
+                // 创建新对?               createNew: (group, setAsCurrentChat, characterCardId) => {
                     const params = {};
                     if (group !== undefined && group !== null && String(group).trim() !== "") {
                         params.group = String(group);
@@ -1031,7 +1031,7 @@ fun getJsToolsDefinition(): String {
                     }
                     return toolCall("create_new_chat", params);
                 },
-                // 列出所有对�?               listAll: () => toolCall("list_chats", {}),
+                // 列出所有对?               listAll: () => toolCall("list_chats", {}),
                 listChats: (params = {}) => toolCall("list_chats", params),
                 findChat: (params = {}) => toolCall("find_chat", params),
                 agentStatus: (chatId) => toolCall("agent_status", { chat_id: chatId }),

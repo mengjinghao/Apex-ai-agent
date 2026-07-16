@@ -5,7 +5,7 @@ import com.apex.core.chat.hooks.PromptTurnKind
 import com.apex.core.tools.javascript.not
 
 /**
- * 中间轮次压缩�?- 负责压缩中间区域的轮�? * 
+ * 中间轮次压缩?- 负责压缩中间区域的轮? * 
  * 使用单一 human 摘要消息替换压缩区域
  */
 class MiddleCompression(
@@ -14,8 +14,8 @@ class MiddleCompression(
     /**
      * 压缩中间区域
      * 
-     * @param middleTurns 中间区域的轮�?     * @param targetTokens 目标 token 数量
-     * @param toolPairPreserver 工具调用配对保持�?     * @return 压缩结果
+     * @param middleTurns 中间区域的轮?     * @param targetTokens 目标 token 数量
+     * @param toolPairPreserver 工具调用配对保持?     * @return 压缩结果
      */
     fun compress(
         middleTurns: List<TrajectoryTurn>,
@@ -47,13 +47,13 @@ class MiddleCompression(
         val preservedTokens = preservedPairs.sumOf { it.totalTokens }
         val availableToRemove = tokensToRemove - preservedTokens
         
-        // 压缩非配对轮�?        val (compressedNonPairs, removedTokens) = compressNonPairs(nonPairTurns, availableToRemove)
+        // 压缩非配对轮?        val (compressedNonPairs, removedTokens) = compressNonPairs(nonPairTurns, availableToRemove)
         
         // 生成摘要
         val allRemovedTurns = nonPairTurns.filter { it !in compressedNonPairs }
         val summaryTurn = summarizer.summarize(allRemovedTurns)
         
-        // 重新组合：保留的工具�?+ 压缩的非配对轮次 + 摘要
+        // 重新组合：保留的工具?+ 压缩的非配对轮次 + 摘要
         val finalTurns = buildList {
             addAll(preservedPairs.flatMap { listOf(it.toolCall, it.toolResult).filterNotNull() })
             addAll(compressedNonPairs)
@@ -70,7 +70,7 @@ class MiddleCompression(
     }
 
     /**
-     * 压缩非配对轮�?     */
+     * 压缩非配对轮?     */
     private fun compressNonPairs(
         turns: List<TrajectoryTurn>,
         targetTokensToRemove: Int
@@ -84,7 +84,7 @@ class MiddleCompression(
             return emptyList() to totalTokens
         }
 
-        // 按优先级排序：优先保�?assistant，然后是 user，最后是其他
+        // 按优先级排序：优先保?assistant，然后是 user，最后是其他
         val sortedTurns = turns.sortedByDescending { turn ->
             when (turn.kind) {
                 PromptTurnKind.ASSISTANT -> 3
@@ -115,7 +115,7 @@ class MiddleCompression(
     }
 
     /**
-     * 计算中间区域需要的压缩�?     */
+     * 计算中间区域需要的压缩?     */
     fun calculateCompressionNeeded(
         middleTurns: List<TrajectoryTurn>,
         budget: TokenBudget
@@ -136,15 +136,15 @@ data class CompressionResult(
 )
 
 /**
- * 中间区域摘要器接�? */
+ * 中间区域摘要器接? */
 interface MiddleSummarizer {
     /**
-     * 生成中间区域的摘�?     */
+     * 生成中间区域的摘?     */
     fun summarize(removedTurns: List<TrajectoryTurn>): TrajectoryTurn?
 }
 
 /**
- * 默认中间区域摘要�? */
+ * 默认中间区域摘要? */
 class DefaultMiddleSummarizer : MiddleSummarizer {
     override fun summarize(removedTurns: List<TrajectoryTurn>): TrajectoryTurn? {
         if (removedTurns.isEmpty()) return null
@@ -156,13 +156,13 @@ class DefaultMiddleSummarizer : MiddleSummarizer {
 
         val summaryContent = buildString {
             append("[中间过程压缩摘要] ")
-            append("�?${turnCount} 轮，")
-            append("${totalTokens} tokens�?)
-            append("${toolCallCount} 次工具调�?)
+            append("?${turnCount} 轮，")
+            append("${totalTokens} tokens?)
+            append("${toolCallCount} 次工具调?)
             if (humanCount > 0) {
-                append("${humanCount} 次用户交�?)
+                append("${humanCount} 次用户交?)
             }
-            append("�?)
+            append("?)
         }
 
         return TrajectoryTurn(
@@ -182,7 +182,7 @@ class DefaultMiddleSummarizer : MiddleSummarizer {
 }
 
 /**
- * 基于 LLM 的摘要器（需要外�?LLM 服务�? */
+ * 基于 LLM 的摘要器（需要外?LLM 服务? */
 class LLMSummarizer(
     private val llmSummarize: suspend (List<PromptTurn>) -> String
 ) : MiddleSummarizer {
@@ -198,7 +198,7 @@ class LLMSummarizer(
         }
 
         // 同步版本返回默认摘要
-        // 实际 LLM 摘要需要异步调�?        return DefaultMiddleSummarizer().summarize(removedTurns)
+        // 实际 LLM 摘要需要异步调?        return DefaultMiddleSummarizer().summarize(removedTurns)
     }
 
     /**

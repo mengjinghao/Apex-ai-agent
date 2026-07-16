@@ -36,7 +36,7 @@ class SessionStartHook : SessionLifecycleHook {
     }
 
     /**
-     * 加载上次会话上下文摘�?     * �?filesDir 中查找最新的 session_summary_*.json 文件并解�?     * @return 解析后的摘要 JSONObject，若无则返回 null
+     * 加载上次会话上下文摘?     * ?filesDir 中查找最新的 session_summary_*.json 文件并解?     * @return 解析后的摘要 JSONObject，若无则返回 null
      */
     private suspend fun loadPreviousSessionSummary(context: Context): JSONObject? =
         withContext(Dispatchers.IO) {
@@ -66,13 +66,13 @@ class SessionStartHook : SessionLifecycleHook {
         }
 
     /**
-     * 检测当前环境状�?     * 包括可用模型列表、当前权限模式、网络连接状�?     * @return 环境状态键值对
+     * 检测当前环境状?     * 包括可用模型列表、当前权限模式、网络连接状?     * @return 环境状态键值对
      */
     private suspend fun detectEnvironmentState(context: Context): Map<String, String> =
         withContext(Dispatchers.IO) {
             val envState = mutableMapOf<String, String>()
 
-            // 检测网络连接状�?            try {
+            // 检测网络连接状?            try {
                 val isNetworkAvailable = NetworkUtils.isNetworkAvailable(context)
                 envState["networkAvailable"] = isNetworkAvailable.toString()
                 envState["networkType"] = if (isNetworkAvailable) {
@@ -85,7 +85,7 @@ class SessionStartHook : SessionLifecycleHook {
                 envState["networkAvailable"] = "unknown"
             }
 
-            // 检测可用模型列�?            try {
+            // 检测可用模型列?            try {
                 val modelsDir = File(context.filesDir, "models")
                 if (modelsDir.exists()) {
                     val modelFiles = modelsDir.listFiles { file ->
@@ -102,7 +102,7 @@ class SessionStartHook : SessionLifecycleHook {
                 envState["availableModels"] = "error"
             }
 
-            // 检测当前权限模�?            try {
+            // 检测当前权限模?            try {
                 val prefs = context.getSharedPreferences("permission_mode_prefs", Context.MODE_PRIVATE)
                 val currentMode = prefs.getString("current_permission_mode", "standard") ?: "standard"
                 envState["permissionMode"] = currentMode
@@ -115,7 +115,7 @@ class SessionStartHook : SessionLifecycleHook {
         }
 
     /**
-     * 生成环境报告 JSON 字符串，可用于注入到会话初始上下�?     * @param context Android 上下�?     * @return 环境报告 JSON 字符�?     */
+     * 生成环境报告 JSON 字符串，可用于注入到会话初始上下?     * @param context Android 上下?     * @return 环境报告 JSON 字符?     */
     suspend fun generateEnvironmentReport(context: Context): String = withContext(Dispatchers.IO) {
         val envState = detectEnvironmentState(context)
         val report = JSONObject().apply {

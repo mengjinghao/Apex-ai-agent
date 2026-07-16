@@ -175,7 +175,7 @@ class TokenStatisticsDelegate(
             addAll(boundServicesByChatKey.values)
         }
         services.forEach { it.resetTokenCounters() }
-        AppLogger.d(TAG, "token统计已重�?
+        AppLogger.d(TAG, "token统计已重?
     }
 
     /** 更新累计的token统计信息 */
@@ -188,7 +188,7 @@ class TokenStatisticsDelegate(
                 val currentInputTokens = it.getCurrentInputTokenCount()
                 val currentOutputTokens = it.getCurrentOutputTokenCount()
 
-                // 更新累计token�?               val newInput = (cumulativeInputTokensByChatKey[key] ?: 0) + currentInputTokens
+                // 更新累计token?               val newInput = (cumulativeInputTokensByChatKey[key] ?: 0) + currentInputTokens
                 val newOutput = (cumulativeOutputTokensByChatKey[key] ?: 0) + currentOutputTokens
                 cumulativeInputTokensByChatKey[key] = newInput
                 cumulativeOutputTokensByChatKey[key] = newOutput
@@ -204,7 +204,7 @@ class TokenStatisticsDelegate(
                             "Input: ${newInput}, Output: ${newOutput}"
                 )
             } catch (e: Exception) {
-                AppLogger.e(TAG, "获取累计token计数时出�?${e.message}", e)
+                AppLogger.e(TAG, "获取累计token计数时出?${e.message}", e)
             }
         }
     }
@@ -237,7 +237,7 @@ class TokenStatisticsDelegate(
         )
     }
 
-    /** 获取最近一次的实际上下文窗口大�?/
+    /** 获取最近一次的实际上下文窗口大?/
     fun getLastCurrentWindowSize(chatId: String? = activeChatId): Int {
         val key = chatKey(chatId)
         return lastWindowSizeByChatKey[key] ?: 0

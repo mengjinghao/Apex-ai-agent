@@ -11,7 +11,7 @@ import kotlin.math.abs
 
 /**
  * 行为分析引擎
- * 分析用户对话模式和使用习�?*/
+ * 分析用户对话模式和使用习?*/
 class BehaviorAnalyzer(private val context: Context) {
     private val TAG = "BehaviorAnalyzer"
     
@@ -161,8 +161,8 @@ class BehaviorAnalyzer(private val context: Context) {
         var formalCount = 0
         var casualCount = 0
         
-        val formalWords = listOf("�? "谢谢", "您好", "请问", "麻烦�? "不好意，)
-        val casualWords = listOf("�? "�? "�? "呀", "�? "�? "�? "的）
+        val formalWords = listOf("? "谢谢", "您好", "请问", "麻烦? "不好意，)
+        val casualWords = listOf("? "? "? "呀", "? "? "? "的）
         
         for (message in userMessages) {
             val content = message.content
@@ -209,7 +209,7 @@ class BehaviorAnalyzer(private val context: Context) {
         for (i in messages.indices) {
             currentTurn++
             
-            // 轮次结束条件：用户消息后跟着AI消息，或者是最后一条消�?           if (i == messages.size - 1 || 
+            // 轮次结束条件：用户消息后跟着AI消息，或者是最后一条消?           if (i == messages.size - 1 || 
                 (messages[i].sender == "user" && 
                  (messages[i+1].sender == "ai" || messages[i+1].sender == "assistant"))
             ) {
@@ -247,13 +247,13 @@ class BehaviorAnalyzer(private val context: Context) {
     private fun analyzeUsageScenarios(messages: List<ChatMessage>, profile: UserBehaviorProfile) {
         val userMessages = messages.filter { it.sender == "user" }
         
-        // 分析场景关键�?      val scenarios = mutableMapOf<String, Int>()
+        // 分析场景关键?      val scenarios = mutableMapOf<String, Int>()
         
         val scenarioKeywords = mapOf(
             "工作" to listOf("工作", "职场", "业务", "项目", "任务", "会议", "报告"),
             "学习" to listOf("学习", "教育", "知识", "课程", "考试", "作业", "研究"),
             "生活" to listOf("生活", "日常", "家庭", "朋友", "娱乐", "购物", "旅游"),
-            "技�?to listOf("技�? "编程", "软件", "硬件", "开�? "代码", "问题"),
+            "技?to listOf("技? "编程", "软件", "硬件", "开? "代码", "问题"),
             "创意" to listOf("创意", "想法", "灵感", "设计", "方案", "构，, "创作")
         )
         
@@ -281,7 +281,7 @@ class BehaviorAnalyzer(private val context: Context) {
     }
     
     /**
-     * 解析时时�?    */
+     * 解析时时?    */
     private fun parseTimestamp(timestamp: String): Date? {
         return try {
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -313,8 +313,8 @@ class BehaviorAnalyzer(private val context: Context) {
             appendLine()
             appendLine("## 对话模式")
             appendLine("- 总消息数: ${profile.messageCount}")
-            appendLine("- 用户消息�?${profile.userMessageCount}")
-            appendLine("- AI消息�?${profile.aiMessageCount}")
+            appendLine("- 用户消息?${profile.userMessageCount}")
+            appendLine("- AI消息?${profile.aiMessageCount}")
             appendLine("- 平均消息长度: ${profile.avgMessageLength.toInt()} 字符")
             appendLine("- 平均用户消息长度: ${profile.avgUserMessageLength.toInt()} 字符")
             appendLine("- 平均AI消息长度: ${profile.avgAiMessageLength.toInt()} 字符")
@@ -327,18 +327,18 @@ class BehaviorAnalyzer(private val context: Context) {
             appendLine()
             
             appendLine("## 消息特征")
-            appendLine("- 问题�?${profile.questionCount}")
-            appendLine("- 陈述�?${profile.statementCount}")
-            appendLine("- 命令�?${profile.commandCount}")
-            appendLine("- 正式消息�?${profile.formalMessageCount}")
-            appendLine("- 随意消息�?${profile.casualMessageCount}")
+            appendLine("- 问题?${profile.questionCount}")
+            appendLine("- 陈述?${profile.statementCount}")
+            appendLine("- 命令?${profile.commandCount}")
+            appendLine("- 正式消息?${profile.formalMessageCount}")
+            appendLine("- 随意消息?${profile.casualMessageCount}")
             appendLine("- 主导风格: ${profile.dominantStyle}")
             appendLine()
             
             appendLine("## 交互模式")
             appendLine("- 平均轮次长度: ${profile.avgTurnLength.toInt()} 消息")
-            appendLine("- 最大轮次长�?${profile.maxTurnLength} 消息")
-            appendLine("- 最小轮次长�?${profile.minTurnLength} 消息")
+            appendLine("- 最大轮次长?${profile.maxTurnLength} 消息")
+            appendLine("- 最小轮次长?${profile.minTurnLength} 消息")
             appendLine("- 平均响应时间: ${profile.avgResponseTime.toInt()} 的）
             appendLine()
             

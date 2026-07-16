@@ -224,7 +224,7 @@ object OCRUtils {
         val latinText = if (latinResult is OCRResult.Success) latinResult.getFullText() else ""
         val chineseText = if (chineseResult is OCRResult.Success) chineseResult.getFullText() else ""
 
-        // 常见的包名格式转�?       return when {
+        // 常见的包名格式转?       return when {
             latinText.isEmpty() -> chineseText
             chineseText.isEmpty() -> latinText
             latinText == chineseText -> latinText
@@ -272,7 +272,7 @@ object OCRUtils {
         val latinText = if (latinResult is OCRResult.Success) latinResult.getFullText() else ""
         val chineseText = if (chineseResult is OCRResult.Success) chineseResult.getFullText() else ""
 
-        // 常见的包名格式转�?       return when {
+        // 常见的包名格式转?       return when {
             latinText.isEmpty() -> chineseText
             chineseText.isEmpty() -> latinText
             latinText == chineseText -> latinText

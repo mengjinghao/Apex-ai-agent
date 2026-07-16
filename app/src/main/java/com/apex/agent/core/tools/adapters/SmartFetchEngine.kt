@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * 智能网页正文爬取引擎
- * 轻量无浏览器，自动提纯正文内�?
+ * 轻量无浏览器，自动提纯正文内?
  */
 object SmartFetchEngine {
     private const val TAG = "SmartFetchEngine"
@@ -40,7 +40,7 @@ object SmartFetchEngine {
         val timestamp: Long
     )
 
-    // OkHttp客户�?
+    // OkHttp客户?
     private val client by lazy {
         OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
@@ -62,12 +62,12 @@ object SmartFetchEngine {
         }.keys
         expiredKeys.forEach { contentCache.remove(it) }
         if (expiredKeys.isNotEmpty()) {
-            AppLogger.d(TAG, "清理�?${expiredKeys.size} 个过期缓�?)
+            AppLogger.d(TAG, "清理?${expiredKeys.size} 个过期缓?)
         }
     }
 
     /**
-     * 清理超过大小限制的缓�?
+     * 清理超过大小限制的缓?
      */
     private fun cleanOldCacheIfNeeded() {
         if (contentCache.size >= MAX_CACHE_SIZE) {
@@ -79,7 +79,7 @@ object SmartFetchEngine {
                     .take(CLEANUP_BATCH_SIZE)
                     .map { it.key }
                 sortedKeys.forEach { contentCache.remove(it) }
-                AppLogger.d(TAG, "清理�?${sortedKeys.size} 个旧缓存")
+                AppLogger.d(TAG, "清理?${sortedKeys.size} 个旧缓存")
             }
         }
     }
@@ -131,7 +131,7 @@ object SmartFetchEngine {
             )
         }
 
-        // 检查缓�?
+        // 检查缓?
         contentCache[cleanUrl]?.let { cached ->
             if (System.currentTimeMillis() - cached.timestamp < CACHE_EXPIRE) {
                 AppLogger.d(TAG, "使用缓存: ${cleanUrl}")
@@ -141,7 +141,7 @@ object SmartFetchEngine {
             }
         }
 
-        AppLogger.d(TAG, "开始爬�? ${cleanUrl}")
+        AppLogger.d(TAG, "开始爬? ${cleanUrl}")
 
         try {
             // 构建请求
@@ -155,7 +155,7 @@ object SmartFetchEngine {
             // 执行请求
             val response = client.newCall(request).execute()
             
-            // 检查响应状�?
+            // 检查响应状?
             if (!response.isSuccessful) {
                 return@withContext FetchResult(
                     url = cleanUrl,
@@ -171,7 +171,7 @@ object SmartFetchEngine {
             if (!contentType.contains("text/html") && !contentType.contains("application/xhtml")) {
                 return@withContext FetchResult(
                     url = cleanUrl,
-                    pureContent = "该链接不是HTML网页，无法提取内�?,
+                    pureContent = "该链接不是HTML网页，无法提取内?,
                     fetchTime = getCurrentTime(),
                     mode = "失败",
                     success = false
@@ -184,7 +184,7 @@ object SmartFetchEngine {
             if (html.isEmpty()) {
                 return@withContext FetchResult(
                     url = cleanUrl,
-                    pureContent = "无法获取网页内容，请检查网络连�?,
+                    pureContent = "无法获取网页内容，请检查网络连?,
                     fetchTime = getCurrentTime(),
                     mode = "失败",
                     success = false
@@ -195,7 +195,7 @@ object SmartFetchEngine {
             if (html.length > 5 * 1024 * 1024) {
                 return@withContext FetchResult(
                     url = cleanUrl,
-                    pureContent = "网页过大，无法处�?,
+                    pureContent = "网页过大，无法处?,
                     fetchTime = getCurrentTime(),
                     mode = "失败",
                     success = false
@@ -209,12 +209,12 @@ object SmartFetchEngine {
             val pureContent = try {
                 val sanitizeResult = inputSanitizer.sanitize(rawContent)
                 if (sanitizeResult.findings.isNotEmpty()) {
-                    AppLogger.d(TAG, "网页内容消毒完成: 发现${sanitizeResult.findings.size}个安全问�?)
+                    AppLogger.d(TAG, "网页内容消毒完成: 发现${sanitizeResult.findings.size}个安全问?)
                 }
                 sanitizeResult.sanitizedText
             } catch (e: Exception) {
-                AppLogger.e(TAG, "网页内容消毒失败，使用原始内�?, e)
-                // 消毒失败时使用原始内容，不阻断流�?
+                AppLogger.e(TAG, "网页内容消毒失败，使用原始内?, e)
+                // 消毒失败时使用原始内容，不阻断流?
                 rawContent
             }
 
@@ -226,11 +226,11 @@ object SmartFetchEngine {
                 success = true
             )
 
-            // 清理旧缓存并存储新结�?
+            // 清理旧缓存并存储新结?
             cleanOldCacheIfNeeded()
             contentCache[cleanUrl] = CachedContent(result, System.currentTimeMillis())
 
-            AppLogger.d(TAG, "爬取完成，内容长�? ${pureContent.length}")
+            AppLogger.d(TAG, "爬取完成，内容长? ${pureContent.length}")
             return@withContext result
 
         } catch (e: java.net.SocketTimeoutException) {
@@ -255,7 +255,7 @@ object SmartFetchEngine {
             AppLogger.e(TAG, "URL格式错误", e)
             return@withContext FetchResult(
                 url = cleanUrl,
-                pureContent = "URL格式错误，请输入有效的链�?,
+                pureContent = "URL格式错误，请输入有效的链?,
                 fetchTime = getCurrentTime(),
                 mode = "失败",
                 success = false
@@ -283,17 +283,17 @@ object SmartFetchEngine {
         
         var text = html
 
-        // 步骤1：移除脚本和样式（带异常保护�?
+        // 步骤1：移除脚本和样式（带异常保护?
         try {
             text = text.replace(Regex("""<script[\s\S]*?<\/script>""", RegexOption.IGNORE_CASE), "")
             text = text.replace(Regex("""<style[\s\S]*?<\/style>""", RegexOption.IGNORE_CASE), "")
             text = text.replace(Regex("""<noscript[\s\S]*?<\/noscript>""", RegexOption.IGNORE_CASE), "")
             text = text.replace(Regex("""<iframe[\s\S]*?<\/iframe>""", RegexOption.IGNORE_CASE), "")
         } catch (e: Exception) {
-            AppLogger.w(TAG, "移除脚本样式时出�?, e)
+            AppLogger.w(TAG, "移除脚本样式时出?, e)
         }
 
-        // 步骤2：尝试找到主要内容区�?
+        // 步骤2：尝试找到主要内容区?
         val mainContent = tryExtractMainContent(text)
         if (mainContent.isNotEmpty()) {
             text = mainContent
@@ -303,7 +303,7 @@ object SmartFetchEngine {
         try {
             text = text.replace(Regex("""<[^>]+>"""), " ")
         } catch (e: Exception) {
-            AppLogger.w(TAG, "移除HTML标签时出�?, e)
+            AppLogger.w(TAG, "移除HTML标签时出?, e)
         }
 
         // 步骤4：HTML实体解码
@@ -315,19 +315,19 @@ object SmartFetchEngine {
             text = text.replace(Regex("""&quot;"""), "\"")
             text = text.replace(Regex("""&apos;"""), "'")
         } catch (e: Exception) {
-            AppLogger.w(TAG, "HTML解码时出�?, e)
+            AppLogger.w(TAG, "HTML解码时出?, e)
         }
 
-        // 步骤5：清理空白字�?
+        // 步骤5：清理空白字?
         try {
             text = text.replace(Regex("""[ \t]+"""), " ")
             text = text.replace(Regex("""\n\s*"""), "\n")
             text = text.replace(Regex("""\n{3,}"""), "\n\n")
         } catch (e: Exception) {
-            AppLogger.w(TAG, "清理空白时出�?, e)
+            AppLogger.w(TAG, "清理空白时出?, e)
         }
 
-        // 步骤6：保留有效内�?
+        // 步骤6：保留有效内?
         val lines = text.split("\n")
             .map { it.trim() }
             .filter { it.length > 10 } // 过滤太短的行
@@ -335,12 +335,12 @@ object SmartFetchEngine {
 
         text = lines.joinToString("\n")
 
-        // 步骤7：截断冗�?
+        // 步骤7：截断冗?
         if (text.length > MAX_CONTENT_LENGTH) {
             text = text.take(MAX_CONTENT_LENGTH)
             // 尝试在完整句子处截断
-            val lastPeriod = text.lastIndexOf("�?)
-            val lastComma = text.lastIndexOf("�?)
+            val lastPeriod = text.lastIndexOf("?)
+            val lastComma = text.lastIndexOf("?)
             val lastDot = text.lastIndexOf(".")
             val cutPoint = listOf(lastPeriod, lastComma, lastDot).maxOrNull() ?: MAX_CONTENT_LENGTH
             if (cutPoint > MAX_CONTENT_LENGTH * 0.7) {
@@ -356,7 +356,7 @@ object SmartFetchEngine {
      * 尝试提取主要内容区域
      */
     private fun tryExtractMainContent(html: String): String {
-        // 常见的主要内容区域标�?
+        // 常见的主要内容区域标?
         val contentSelectors = listOf(
             """<article[\s\S]*?<\/article>""",
             """<main[\s\S]*?<\/main>""",
@@ -374,7 +374,7 @@ object SmartFetchEngine {
                 val match = Regex(selector, RegexOption.IGNORE_CASE).find(html)
                 if (match != null) {
                     val content = match.value
-                    // 检查内容长度，确保是有效内容区�?
+                    // 检查内容长度，确保是有效内容区?
                     if (content.length > 500) {
                         return content
                     }
@@ -396,7 +396,7 @@ object SmartFetchEngine {
     }
 
     /**
-     * 格式化爬取结�?
+     * 格式化爬取结?
      */
     fun formatResult(result: FetchResult): String {
         if (!result.success) {
@@ -404,7 +404,7 @@ object SmartFetchEngine {
         }
 
         return buildString {
-            append("📄 网页内容�?{result.fetchTime}）：\n")
+            append("📄 网页内容?{result.fetchTime}）：\n")
             append("🔗 ${result.url}\n")
             append("───────────────────────\n\n")
             append(result.pureContent)

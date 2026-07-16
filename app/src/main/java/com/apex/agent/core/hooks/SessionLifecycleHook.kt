@@ -8,7 +8,7 @@ import org.json.JSONObject
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * 会话上下文数据类，保存会话的运行时状态信�? */
+ * 会话上下文数据类，保存会话的运行时状态信? */
 data class SessionContext(
     val sessionId: String,
     val startTime: Long,
@@ -42,24 +42,24 @@ data class SessionContext(
 
 /**
  * 会话生命周期钩子接口
- * 所有钩子方法使�?suspend 函数以支持异步操�? */
+ * 所有钩子方法使?suspend 函数以支持异步操? */
 interface SessionLifecycleHook {
 
     /** 会话开始时触发 */
     suspend fun onSessionStart(context: Context, sessionContext: SessionContext) {}
 
-    /** 上下文压缩前触发，用于保存关键状�?*/
+    /** 上下文压缩前触发，用于保存关键状?*/
     suspend fun onPreCompact(context: Context, sessionContext: SessionContext): Map<String, Any> = emptyMap()
 
-    /** 会话结束时触�?*/
+    /** 会话结束时触?*/
     suspend fun onSessionEnd(context: Context, sessionContext: SessionContext) {}
 
-    /** 会话空闲时触�?*/
+    /** 会话空闲时触?*/
     suspend fun onIdle(context: Context, sessionContext: SessionContext) {}
 }
 
 /**
- * 钩子注册表单例，支持注册、注销和触发钩�? */
+ * 钩子注册表单例，支持注册、注销和触发钩? */
 object HookRegistry {
 
     private const val TAG = "HookRegistry"
@@ -67,7 +67,7 @@ object HookRegistry {
     private val hooks = CopyOnWriteArrayList<SessionLifecycleHook>()
     private val mutex = Mutex()
 
-    /** 注册一个会话生命周期钩�?*/
+    /** 注册一个会话生命周期钩?*/
     suspend fun register(hook: SessionLifecycleHook) {
         mutex.withLock {
             if (hooks.none { it::class == hook::class }) {
@@ -79,7 +79,7 @@ object HookRegistry {
         }
     }
 
-    /** 注销一个会话生命周期钩�?*/
+    /** 注销一个会话生命周期钩?*/
     suspend fun unregister(hook: SessionLifecycleHook) {
         mutex.withLock {
             hooks.remove(hook)
@@ -99,7 +99,7 @@ object HookRegistry {
         }
     }
 
-    /** 触发 onPreCompact 钩子，收集所有钩子返回的状态数�?*/
+    /** 触发 onPreCompact 钩子，收集所有钩子返回的状态数?*/
     suspend fun triggerPreCompact(context: Context, sessionContext: SessionContext): Map<String, Any> {
         AppLogger.d(TAG, "Triggering onPreCompact for session: ${sessionContext.sessionId}")
         val collected = mutableMapOf<String, Any>()
@@ -138,7 +138,7 @@ object HookRegistry {
         }
     }
 
-    /** 清除所有已注册的钩�?*/
+    /** 清除所有已注册的钩?*/
     suspend fun clearAll() {
         mutex.withLock {
             hooks.clear()

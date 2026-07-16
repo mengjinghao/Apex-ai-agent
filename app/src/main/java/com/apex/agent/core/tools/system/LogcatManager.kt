@@ -12,7 +12,7 @@ import java.util.*
 import com.apex.agent.core.multiagent.LogLevel
 
 /**
- * 日志管理�? 从AppLogger的日志文件读取日�?*/
+ * 日志管理? 从AppLogger的日志文件读取日?*/
 class LogcatManager(private val context: Context) {
     private val TAG = "LogcatManager"
 
@@ -22,7 +22,7 @@ class LogcatManager(private val context: Context) {
 
 
     /**
-     * 加载所有历史日�?    */
+     * 加载所有历史日?    */
     suspend fun loadInitialLogs(): List<LogRecord> = withContext(Dispatchers.IO) {
         val logFile = AppLogger.getLogFile()
         if (logFile == null || !logFile.exists()) {

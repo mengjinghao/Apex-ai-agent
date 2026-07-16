@@ -231,7 +231,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             serviceScope.launch {
                 chatCore.chatHistory.collect { messages ->
                     chatMessages.value = messages
-                    AppLogger.d(TAG, "聊天历史已更�?${messages.size} 条消�?
+                    AppLogger.d(TAG, "聊天历史已更?${messages.size} 条消?
                 }
             }
             
@@ -239,11 +239,11 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             serviceScope.launch {
                 chatCore.attachments.collect { newAttachments ->
                     attachments.value = newAttachments
-                    AppLogger.d(TAG, "附件列表已更�?${newAttachments.size} 个附�?
+                    AppLogger.d(TAG, "附件列表已更?${newAttachments.size} 个附?
                 }
             }
 
-            // 订阅输入处理状态更�?           serviceScope.launch {
+            // 订阅输入处理状态更?           serviceScope.launch {
                 combine(
                     chatCore.currentChatId,
                     chatCore.inputProcessingStateByChatId
@@ -256,7 +256,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
                 }
             }
             
-            // 设置 EnhancedAIService 就绪回调，以便监听输入处理状�?           chatCore.setOnEnhancedAiServiceReady { aiService ->
+            // 设置 EnhancedAIService 就绪回调，以便监听输入处理状?           chatCore.setOnEnhancedAiServiceReady { aiService ->
                 AppLogger.d(TAG, "EnhancedAIService 已就绪，开始监听输入处理状态）
                 serviceScope.launch {
                     try {
@@ -563,7 +563,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             try {
                 // 直接使用 chatCore ，AttachmentDelegate 处理附件
                 chatCore.handleAttachment(request)
-                AppLogger.d(TAG, "附件已添�?${request}")
+                AppLogger.d(TAG, "附件已添?${request}")
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Error handling attachment request", e)
             }
@@ -687,7 +687,7 @@ class FloatingChatService : Service(), FloatingWindowCallback {
         // 直接使用 chatCore 发送消息，不再通过 SharedFlow
         serviceScope.launch {
             try {
-                // 发送消息（包含总结逻辑�?               chatCore.sendUserMessage(
+                // 发送消息（包含总结逻辑?               chatCore.sendUserMessage(
                     promptFunctionType = promptType,
                     messageTextOverride = message
                 )

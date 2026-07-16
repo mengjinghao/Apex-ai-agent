@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.apex.agent.R
 
 /**
- * 全局主题管理�?
+ * 全局主题管理?
  * 支持默认主题/Gemini主题/Material You主题切换，自动适配深色模式
  */
 object ThemeManager {
@@ -37,7 +37,7 @@ object ThemeManager {
         applyDarkMode(getCurrentDarkMode())
     }
 
-    // 获取当前选中的主�?
+    // 获取当前选中的主?
     fun getCurrentTheme(): ThemeType {
         val ordinal = sp.getInt(KEY_THEME_TYPE, ThemeType.MATERIAL_YOU.ordinal)
         return ThemeType.entries.getOrNull(ordinal) ?: ThemeType.MATERIAL_YOU
@@ -48,7 +48,7 @@ object ThemeManager {
         sp.edit().putInt(KEY_THEME_TYPE, themeType.ordinal).apply()
     }
 
-    // 获取/设置 Material You 自定义颜�?
+    // 获取/设置 Material You 自定义颜?
     fun getMaterialYouColor(): Int? {
         val color = sp.getInt(KEY_MATERIAL_YOU_COLOR, -1)
         return if (color == -1) null else color

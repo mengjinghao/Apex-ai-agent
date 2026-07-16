@@ -21,7 +21,7 @@ object PermissionModeIntegration {
     private val integrationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var isInitialized = false
 
-    // 管理器实�?
+    // 管理器实?
     private lateinit var modeManager: PermissionModeManager
     private lateinit var backupManager: PermissionConfigBackupManager
     private lateinit var smartSwitcher: SmartModeSwitcher
@@ -32,12 +32,12 @@ object PermissionModeIntegration {
     val isReady: androidx.compose.runtime.State<Boolean> = _isReady
 
     /**
-     * 初始化权限模式系�?
-     * 应该�?Application.onCreate() 中调�?
+     * 初始化权限模式系?
+     * 应该?Application.onCreate() 中调?
      */
     fun initialize(context: Context) {
         if (isInitialized) {
-            AppLogger.d(TAG, "权限模式系统已初始化，跳�?)
+            AppLogger.d(TAG, "权限模式系统已初始化，跳?)
             return
         }
 
@@ -46,58 +46,58 @@ object PermissionModeIntegration {
 
             // 1. 初始化增强的偏好管理
             initEnhancedPermissionPreferences(context)
-            AppLogger.d(TAG, "�增强偏好管理初始化完�?)
+            AppLogger.d(TAG, "增强偏好管理初始化完?)
 
-            // 2. 初始�?RootManager
+            // 2. 初始?RootManager
             RootManager.initialize(context)
-            AppLogger.d(TAG, "�?RootManager 初始化完�?)
+            AppLogger.d(TAG, "?RootManager 初始化完?)
 
-            // 3. 初始�?ShizukuManager
+            // 3. 初始?ShizukuManager
             ShizukuManager.initialize()
-            AppLogger.d(TAG, "�?ShizukuManager 初始化完�?)
+            AppLogger.d(TAG, "?ShizukuManager 初始化完?)
 
-            // 4. 初始�?PermissionModeManager
+            // 4. 初始?PermissionModeManager
             modeManager = PermissionModeManager.getInstance(context)
-            AppLogger.d(TAG, "�?PermissionModeManager 初始化完�?)
+            AppLogger.d(TAG, "?PermissionModeManager 初始化完?)
 
             // 5. 初始化备份管理器
             backupManager = PermissionConfigBackupManager(context)
-            AppLogger.d(TAG, "�?PermissionConfigBackupManager 初始化完�?)
+            AppLogger.d(TAG, "?PermissionConfigBackupManager 初始化完?)
 
             // 6. 初始化智能切换器
             smartSwitcher = SmartModeSwitcher(modeManager)
-            AppLogger.d(TAG, "�?SmartModeSwitcher 初始化完�?)
+            AppLogger.d(TAG, "?SmartModeSwitcher 初始化完?)
 
             // 7. 初始化建议器
             advisor = PermissionModeAdvisor(modeManager)
-            AppLogger.d(TAG, "�?PermissionModeAdvisor 初始化完�?)
+            AppLogger.d(TAG, "?PermissionModeAdvisor 初始化完?)
 
             // 8. 预加载执行器（不阻塞主线程）
             integrationScope.launch {
                 try {
                     val factory = PermissionModeExecutorFactory.getInstance(context)
                     factory.preloadExecutors()
-                    AppLogger.d(TAG, "�执行器预加载完成")
+                    AppLogger.d(TAG, "执行器预加载完成")
                 } catch (e: Exception) {
                     AppLogger.e(TAG, "执行器预加载失败", e)
                 }
             }
 
-            // 9. 初始检�?
+            // 9. 初始检?
             integrationScope.launch {
                 try {
                     modeManager.checkAllModes(forceRefresh = false)
                     _isReady.value = true
-                    AppLogger.d(TAG, "�初始检测完成，系统已就�?)
+                    AppLogger.d(TAG, "初始检测完成，系统已就?)
                 } catch (e: Exception) {
-                    AppLogger.e(TAG, "初始检测失�?, e)
+                    AppLogger.e(TAG, "初始检测失?, e)
                 }
             }
 
             isInitialized = true
-            AppLogger.d(TAG, "🎉 权限模式系统初始化成�?)
+            AppLogger.d(TAG, "🎉 权限模式系统初始化成?)
         } catch (e: Exception) {
-            AppLogger.e(TAG, "权限模式系统初始化失�?, e)
+            AppLogger.e(TAG, "权限模式系统初始化失?, e)
         }
     }
 
@@ -127,17 +127,17 @@ object PermissionModeIntegration {
     fun getBestAvailableMode(): PermissionMode = modeManager.getBestAvailableMode()
 
     /**
-     * 智能选择并切换到最佳模�?
+     * 智能选择并切换到最佳模?
      */
     suspend fun autoSwitchToBestMode(): Boolean = smartSwitcher.smartSwitchToBestMode()
 
     /**
-     * 检查是否已完全初始�?
+     * 检查是否已完全初始?
      */
     fun isInitialized(): Boolean = isInitialized
 
     /**
-     * 执行完整的系统检�?
+     * 执行完整的系统检?
      */
     suspend fun performFullSystemCheck(context: Context): SystemCheckResult {
         val start = System.currentTimeMillis()
@@ -158,7 +158,7 @@ object PermissionModeIntegration {
 }
 
 /**
- * 系统检测结�?
+ * 系统检测结?
  */
 data class SystemCheckResult(
     val duration: Long,

@@ -94,7 +94,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         lateinit var instance: LogistraAgentApplication
             private set
 
-        // 全局ImageLoader实例，用于高效缓存图�?
+        // 全局ImageLoader实例，用于高效缓存图?
         lateinit var globalImageLoader: ImageLoader
             private set
 
@@ -128,7 +128,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
 
         // Initialize theme manager (critical for UI)
         ThemeManager.init(this)
-        AppLogger.d(TAG, "【启动计时】主题管理器初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】主题管理器初始化完?- ${System.currentTimeMillis() - startTime}ms")
 
         configureOpenMpEnvironment()
         AppIconManager.ensureComponentState(this)
@@ -145,12 +145,12 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
             AppLogger.w(TAG, "检测到崩溃报告启动，保留上一轮日志供崩溃页面导出")
         }
 
-        AppLogger.d(TAG, "【启动计时】应用启动开�?)
+        AppLogger.d(TAG, "【启动计时】应用启动开?)
         AppLogger.d(TAG, "【启动计时】实例初始化完成 - ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize ActivityLifecycleManager (needed for UI tracking)
         ActivityLifecycleManager.initialize(this)
-        AppLogger.d(TAG, "【启动计时】ActivityLifecycleManager初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】ActivityLifecycleManager初始化完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize AIMessageManager (core chat functionality)
         AIMessageManager.initialize(this)
@@ -166,11 +166,11 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                         )
                 )
         )
-        AppLogger.d(TAG, "【启动计时】AIMessageManager初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】AIMessageManager初始化完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Set global exception handler before any other initializations
         Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler(this))
-        AppLogger.d(TAG, "【启动计时】全局异常处理器设置完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】全局异常处理器设置完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize the JSON serializer (needed for many operations)
         json = Json {
@@ -180,16 +180,16 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
             prettyPrint = false
             encodeDefaults = true
         }
-        AppLogger.d(TAG, "【启动计时】JSON序列化器初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】JSON序列化器初始化完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize and apply language settings (must be before getting string resources)
         initializeAppLanguage()
-        AppLogger.d(TAG, "【启动计时】语言设置初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】语言设置初始化完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize user preferences manager
         val defaultProfileName = applicationContext.getString(R.string.default_profile)
         initUserPreferencesManager(applicationContext, defaultProfileName)
-        AppLogger.d(TAG, "【启动计时】用户偏好管理器初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】用户偏好管理器初始化完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize Android permission preferences manager
         initAndroidPermissionPreferences(applicationContext)
@@ -201,7 +201,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
 
         // Initialize AndroidShellExecutor context
         AndroidShellExecutor.setContext(applicationContext)
-        AppLogger.d(TAG, "【启动计时】AndroidShellExecutor初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】AndroidShellExecutor初始化完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize Shower virtual screen client and ShellRunner environment
         ShowerEnvironment.shellRunner = LogistraShowerShellRunner
@@ -233,11 +233,11 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
 
         // Initialize language support
         LanguageFactory.init()
-        AppLogger.d(TAG, "【启动计时】语言工厂初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】语言工厂初始化完?- ${System.currentTimeMillis() - startTime}ms")
         
         // Initialize WaifuMessageProcessor
         WaifuMessageProcessor.initialize(applicationContext)
-        AppLogger.d(TAG, "【启动计时】WaifuMessageProcessor初始化完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】WaifuMessageProcessor初始化完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize global image loader (needed for UI)
         val imageOkHttpClient = OkHttpClient.Builder()
@@ -284,19 +284,19 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
         
         // Start foreground service if needed (can be slightly deferred but important)
         startGlobalAIForegroundServiceIfNeeded()
-        AppLogger.d(TAG, "【启动计时】AIForegroundService检查完�?- ${System.currentTimeMillis() - startTime}ms")
+        AppLogger.d(TAG, "【启动计时】AIForegroundService检查完?- ${System.currentTimeMillis() - startTime}ms")
 
         // Initialize AppInitializer and start phased initialization
         appInitializer = AppInitializer(applicationContext)
         appInitializer.startInitialization()
         
         val totalTime = System.currentTimeMillis() - startTime
-        AppLogger.d(TAG, "【启动计时】应用启动关键路径完�?- 总耗时: ${totalTime}ms")
+        AppLogger.d(TAG, "【启动计时】应用启动关键路径完?- 总耗时: ${totalTime}ms")
     }
 
     /**
      * 实现 ImageLoaderFactory 接口
-     * �?Coil 使用我们配置的全局 ImageLoader（带有自定义超时设置�?
+     * ?Coil 使用我们配置的全局 ImageLoader（带有自定义超时设置?
      */
     override fun newImageLoader(): ImageLoader {
         return globalImageLoader
@@ -350,7 +350,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                 noMediaFile.createNewFile()
             }
         }
-        AppLogger.d(TAG, "开始清理临时文件目�? ${tempDir.absolutePath}")
+        AppLogger.d(TAG, "开始清理临时文件目? ${tempDir.absolutePath}")
         val totalDeleted =
             deleteRecursively(
                 rootDir = tempDir,
@@ -358,7 +358,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                 preserveRootNoMedia = preserveRootNoMedia,
                 isRoot = true
             )
-        AppLogger.d(TAG, "${totalDeleted}个临时文�? ${tempDir.absolutePath}")
+        AppLogger.d(TAG, "${totalDeleted}个临时文? ${tempDir.absolutePath}")
         return totalDeleted
     }
 
@@ -414,7 +414,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                 startService(intent)
             }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "按持久后台职责状态启�?AIForegroundService 失败: ${e.message}", e)
+            AppLogger.e(TAG, "按持久后台职责状态启?AIForegroundService 失败: ${e.message}", e)
         }
     }
 
@@ -486,7 +486,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                 Locale.setDefault(locale)
             }
 
-            // 使用createConfigurationContext创建新的上下�?
+            // 使用createConfigurationContext创建新的上下?
             val context = base.createConfigurationContext(config)
             super.attachBaseContext(context)
             AppLogger.d(TAG, "成功应用基础上下文语言: ${code}")
@@ -511,7 +511,7 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                 AppLogger.d(TAG, "应用终止，已停止 AIForegroundService")
             }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "终止时停�?AIForegroundService 失败: ${e.message}", e)
+            AppLogger.e(TAG, "终止时停?AIForegroundService 失败: ${e.message}", e)
         }
 
         // 清理终端管理器和SSH连接
@@ -521,30 +521,30 @@ class LogistraAgentApplication : Application(), ImageLoaderFactory, WorkConfigur
                 AppLogger.d(TAG, "应用终止，已清理所有终端会话和SSH连接")
             }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "清理终端管理器失�? ${e.message}", e)
+            AppLogger.e(TAG, "清理终端管理器失? ${e.message}", e)
         }
         
-        // 在应用终止时关闭LocalWebServer服务�?
+        // 在应用终止时关闭LocalWebServer服务?
         try {
             val webServer = LocalWebServer.getInstance(applicationContext, LocalWebServer.ServerType.WORKSPACE)
             if (webServer.isRunning()) {
                 webServer.stop()
-                AppLogger.d(TAG, "应用终止，已关闭本地Web服务�?)
+                AppLogger.d(TAG, "应用终止，已关闭本地Web服务?)
             }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "关闭本地Web服务器失�? ${e.message}", e)
+            AppLogger.e(TAG, "关闭本地Web服务器失? ${e.message}", e)
         }
 
         // 在应用终止时，关闭虚拟显示器Overlay并断开Shower WebSocket连接
         try {
             VirtualDisplayOverlay.hideAll()
         } catch (e: Exception) {
-            AppLogger.e(TAG, "终止时隐�?VirtualDisplayOverlay 失败: ${e.message}", e)
+            AppLogger.e(TAG, "终止时隐?VirtualDisplayOverlay 失败: ${e.message}", e)
         }
         try {
             ShowerController.shutdown()
         } catch (e: Exception) {
-            AppLogger.e(TAG, "终止时关�?ShowerController 失败: ${e.message}", e)
+            AppLogger.e(TAG, "终止时关?ShowerController 失败: ${e.message}", e)
         }
     }
 

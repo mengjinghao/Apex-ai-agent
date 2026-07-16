@@ -237,10 +237,10 @@ class MultiModalFusionEngine(
             ))
         }
 
-        if (text.contains("需�?, ignoreCase = true) || text.contains("应该", ignoreCase = true)) {
+        if (text.contains("需?, ignoreCase = true) || text.contains("应该", ignoreCase = true)) {
             insights.add(Insight(
                 type = InsightType.ACTION_ITEM,
-                content = "检测到行动需�? ${text}",
+                content = "检测到行动需? ${text}",
                 sourceModal = ModalType.TEXT,
                 confidence = 0.85f
             ))
@@ -270,7 +270,7 @@ class MultiModalFusionEngine(
     private fun extractSpeechInsights(modalData: ModalData): List<Insight> {
         return listOf(Insight(
             type = InsightType.FACTS,
-            content = "语音输入 - 时长: ${modalData.metadata["duration"]}�?,
+            content = "语音输入 - 时长: ${modalData.metadata["duration"]}?,
             sourceModal = ModalType.SPEECH,
             confidence = modalData.confidence
         ))
@@ -279,7 +279,7 @@ class MultiModalFusionEngine(
     private fun extractVideoInsights(modalData: ModalData): List<Insight> {
         return listOf(Insight(
             type = InsightType.FACTS,
-            content = "视频输入 - 时长: ${modalData.metadata["duration"]}�? 分辨�? ${modalData.metadata["resolution"]}",
+            content = "视频输入 - 时长: ${modalData.metadata["duration"]}? 分辨? ${modalData.metadata["resolution"]}",
             sourceModal = ModalType.VIDEO,
             confidence = modalData.confidence
         ))
@@ -293,7 +293,7 @@ class MultiModalFusionEngine(
         if (textModals.isNotEmpty() && imageModals.isNotEmpty()) {
             insights.add(Insight(
                 type = InsightType.RELATIONSHIP,
-                content = "检测到文本+图像组合输入，可能需要图像理解配合文本分�?,
+                content = "检测到文本+图像组合输入，可能需要图像理解配合文本分?,
                 sourceModal = ModalType.TEXT,
                 confidence = 0.8f,
                 relatedInsights = listOf("text_analysis", "image_analysis")
@@ -305,18 +305,18 @@ class MultiModalFusionEngine(
 
     private fun generateReasoning(input: MultiModalInput, insights: List<Insight>): String {
         return buildString {
-            appendLine("多模态融合推理过�?")
-            appendLine("输入模�? ${input.modalities.joinToString { it.type.name }}")
+            appendLine("多模态融合推理过?")
+            appendLine("输入模? ${input.modalities.joinToString { it.type.name }}")
             appendLine()
-            appendLine("提取的洞�?")
+            appendLine("提取的洞?")
             insights.forEachIndexed { index, insight ->
                 appendLine("${index + 1}. [${insight.type.name}] ${insight.content}")
             }
             appendLine()
             appendLine("推理逻辑:")
             appendLine("- 分析各模态数据，提取关键信息")
-            appendLine("- 建立跨模态关�?)
-            appendLine("- 综合所有信息生成结�?)
+            appendLine("- 建立跨模态关?)
+            appendLine("- 综合所有信息生成结?)
         }
     }
 
@@ -344,7 +344,7 @@ class MultiModalFusionEngine(
 
         FusionReport(
             inputId = input.id,
-            summary = "多模态输入处理完成，�?${input.modalities.size} 种模态，生成 ${result.insights.size} 条洞�?,
+            summary = "多模态输入处理完成，?${input.modalities.size} 种模态，生成 ${result.insights.size} 条洞?,
             keyFindings = result.insights.filter { it.type == InsightType.FACTS || it.type == InsightType.RELATIONSHIP }
                 .map { it.content },
             recommendations = result.insights.filter { it.type == InsightType.ACTION_ITEM }

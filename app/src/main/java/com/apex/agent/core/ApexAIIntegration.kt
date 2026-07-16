@@ -20,7 +20,7 @@ object ApexAIIntegration {
 
     private lateinit var appContext: Context
 
-    // 使用可空类型替代 lateinit，避免未初始化访问风�?
+    // 使用可空类型替代 lateinit，避免未初始化访问风?
     private var _modelProvider: EnhancedModelProvider? = null
     private var _emotionAnalyzer: EnhancedEmotionAnalyzer? = null
     private var _graphReasoning: EnhancedGraphReasoning? = null
@@ -106,17 +106,17 @@ object ApexAIIntegration {
     }
 
     fun generateSystemReport(): String {
-        val modelStatus = "本地模型系统已就�?
-        val emotionStatus = "情感智能系统已就�?
-        val graphStatus = "知识图谱系统已就�?
+        val modelStatus = "本地模型系统已就?
+        val emotionStatus = "情感智能系统已就?
+        val graphStatus = "知识图谱系统已就?
         val streamingStatus = "数据流处理系统已就绪"
-        val codeStatus = "代码工程系统已就�?
-        val collaborationStatus = "代理协作系统已就�?
-        val planningStatus = "强化学习规划系统已就�?
-        val arvrStatus = "AR/VR交互系统已就�?
-        val decentralizedStatus = "去中心化AI网络已就�?
-        val evolutionStatus = "自进化引�?v2.0 已就�?
-        val swarmStatus = "群体智能引擎已就�?
+        val codeStatus = "代码工程系统已就?
+        val collaborationStatus = "代理协作系统已就?
+        val planningStatus = "强化学习规划系统已就?
+        val arvrStatus = "AR/VR交互系统已就?
+        val decentralizedStatus = "去中心化AI网络已就?
+        val evolutionStatus = "自进化引?v2.0 已就?
+        val swarmStatus = "群体智能引擎已就?
 
         return buildString {
             appendLine("=== Apex AI 增强系统 - 完整报告")
@@ -133,7 +133,7 @@ object ApexAIIntegration {
             appendLine(evolutionStatus)
             appendLine(swarmStatus)
             appendLine("=".repeat(50))
-            appendLine("所�?11 大核心模块全部就绪！")
+            appendLine("所?11 大核心模块全部就绪！")
         }
     }
 }

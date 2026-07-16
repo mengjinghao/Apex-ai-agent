@@ -116,7 +116,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                 }
             }
 
-    /** Handles a file or image attachment selected by the user 确保在IO线程执行所有文件操�?/
+    /** Handles a file or image attachment selected by the user 确保在IO线程执行所有文件操?/
     suspend fun handleAttachment(filePath: String) =
             withContext(Dispatchers.IO) {
                 try {
@@ -135,7 +135,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                         }
                     }
 
-                    // 检查是否是媒体选择器特殊路�?                   if (filePath.contains("/sdcard/.transforms/synthetic/picker/") ||
+                    // 检查是否是媒体选择器特殊路?                   if (filePath.contains("/sdcard/.transforms/synthetic/picker/") ||
                                     filePath.contains("/com.android.providers.media.photopicker/")
                     ) {
                         AppLogger.d(TAG, "Detected media picker special path: ${filePath}")
@@ -162,7 +162,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                                                     fileSize = tempFile.length()
                                             )
 
-                                    // 添加到附件列�?                                   val currentList = _attachments.value
+                                    // 添加到附件列?                                   val currentList = _attachments.value
                                     if (!currentList.any { it.filePath == tempFile.absolutePath }) {
                                         _attachments.value = currentList + attachmentInfo
                                     }
@@ -285,14 +285,14 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                 try {
                     val fileExtension = fileName.substringAfterLast('.', "jpg")
 
-                    // 使用外部存储Download/Apex/cleanOnExit目录，而不是缓存目�?                   val externalDir = ApexPaths.cleanOnExitDir()
+                    // 使用外部存储Download/Apex/cleanOnExit目录，而不是缓存目?                   val externalDir = ApexPaths.cleanOnExitDir()
 
                     // 确保目录存在
                     if (!externalDir.exists()) {
                         externalDir.mkdirs()
                     }
 
-                    // 确保.nomedia文件存在，防止媒体扫�?                   val noMediaFile = java.io.File(externalDir, ".nomedia")
+                    // 确保.nomedia文件存在，防止媒体扫?                   val noMediaFile = java.io.File(externalDir, ".nomedia")
                     if (!noMediaFile.exists()) {
                         noMediaFile.createNewFile()
                     }
@@ -337,7 +337,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
 
     /**
      * Captures the current screen content and attaches it to the message Uses the get_page_info
-     * AITool to retrieve UI structure 确保在IO线程中执�?    */
+     * AITool to retrieve UI structure 确保在IO线程中执?    */
     suspend fun captureScreenContent() =
             withContext(Dispatchers.IO) {
                 try {
@@ -410,7 +410,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                 }
             }
 
-    /** 获取设备当前通知并作为附件添加到消息 使用get_notifications AITool获取通知数据 确保在IO线程中执�?/
+    /** 获取设备当前通知并作为附件添加到消息 使用get_notifications AITool获取通知数据 确保在IO线程中执?/
     suspend fun captureNotifications(limit: Int = 10) =
             withContext(Dispatchers.IO) {
                 try {
@@ -443,7 +443,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                                         content = notificationsContent
                                 )
 
-                        // 添加到附件列�?                       val currentList = _attachments.value
+                        // 添加到附件列?                       val currentList = _attachments.value
                         _attachments.value = currentList + attachmentInfo
 
                         _toastEvent.emit(context.getString(R.string.attachment_notifications_added))
@@ -456,7 +456,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                 }
             }
 
-    /** 获取设备当前位置并作为附件添加到消息 使用get_device_location AITool获取位置数据 确保在IO线程中执�?/
+    /** 获取设备当前位置并作为附件添加到消息 使用get_device_location AITool获取位置数据 确保在IO线程中执?/
     suspend fun captureLocation(highAccuracy: Boolean = true) =
             withContext(Dispatchers.IO) {
                 try {
@@ -464,7 +464,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                     val toolParams =
                             listOf(
                                     ToolParameter("high_accuracy", highAccuracy.toString()),
-                                    ToolParameter("timeout", "10") // 10秒超�?                           )
+                                    ToolParameter("timeout", "10") // 10秒超?                           )
 
                     // 创建工具
                     val locationToolTask =
@@ -488,7 +488,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                                         content = locationContent
                                 )
 
-                        // 添加到附件列�?                       val currentList = _attachments.value
+                        // 添加到附件列?                       val currentList = _attachments.value
                         _attachments.value = currentList + attachmentInfo
 
                         _toastEvent.emit(context.getString(R.string.attachment_location_added))
@@ -530,7 +530,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
             }
 
     /**
-     * 捕获记忆文件夹并作为附件添加到消�?    * @param folderPaths 选中的记忆文件夹路径列表
+     * 捕获记忆文件夹并作为附件添加到消?    * @param folderPaths 选中的记忆文件夹路径列表
      */
     suspend fun captureMemoryFolders(folderPaths: List<String>) =
             withContext(Dispatchers.IO) {
@@ -556,7 +556,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                                     content = memoryContext
                             )
 
-                    // 添加到附件列�?                   val currentList = _attachments.value
+                    // 添加到附件列?                   val currentList = _attachments.value
                     _attachments.value = currentList + attachmentInfo
 
                     val folderCountText = if (folderPaths.size == 1) {
@@ -572,7 +572,7 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
             }
 
     /**
-     * 构建记忆上下文XML字符�?    */
+     * 构建记忆上下文XML字符?    */
     private fun buildMemoryContextXml(folderPaths: List<String>): String {
         val foldersText = folderPaths.joinToString("\n") { "  - ${it}" }
         val examplePath = folderPaths.firstOrNull() ?: "some/folder/path"
@@ -591,7 +591,7 @@ ${foldersText}
 </memory_context>""".trimIndent()
     }
 
-    /** 从Content URI获取文件的实际路径，不复制文件内�?/
+    /** 从Content URI获取文件的实际路径，不复制文件内?/
     private fun getFilePathFromUri(uri: Uri): String? {
         try {
             // 尝试直接从URI获取路径
@@ -605,7 +605,7 @@ ${foldersText}
                 if (uri.authority == "com.android.providers.downloads.documents") {
                     val id = android.provider.DocumentsContract.getDocumentId(uri)
 
-                    // 处理raw:前缀，直接解码路�?                   if (id.startsWith("raw:")) {
+                    // 处理raw:前缀，直接解码路?                   if (id.startsWith("raw:")) {
                         val decodedPath = java.net.URLDecoder.decode(id.substring(4), "UTF-8")
                         AppLogger.d(TAG, "Downloads document URI resolved to: ${decodedPath}")
                         return decodedPath
@@ -644,7 +644,7 @@ ${foldersText}
                         return "/sdcard/${split[1]}"
                     }
 
-                    // 对于SD�?                   if ("sdcard".equals(type, ignoreCase = true) && split.size > 1) {
+                    // 对于SD?                   if ("sdcard".equals(type, ignoreCase = true) && split.size > 1) {
                         return "/storage/sdcard1/${split[1]}"
                     }
                 } catch (e: Exception) {

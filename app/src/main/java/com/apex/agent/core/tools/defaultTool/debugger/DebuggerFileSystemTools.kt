@@ -65,7 +65,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
     private val fileManager = FileManager(context)
     
     /**
-     * 判断路径是否为Apex-Agent应用的内部存储路�?    * 仅针？logistra 应用自身数据目录路径返回true
+     * 判断路径是否为Apex-Agent应用的内部存储路?    * 仅针？logistra 应用自身数据目录路径返回true
      */
     protected fun isApex-AgentInternalPath(path: String): Boolean {
         return Companion.isApex-AgentInternalPath(path)
@@ -101,7 +101,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
         val path = tool.parameters.find { it.name == "path" }?.value ?: ""
         PathValidator.validateAndroidPath(path, tool.name)?.let { return it }
         
-        // 如果是Apex-Agent内部存储路径，使用super（AccessibilityFileSystemTools）的高权限方�?       if (isApex-AgentInternalPath(path)) {
+        // 如果是Apex-Agent内部存储路径，使用super（AccessibilityFileSystemTools）的高权限方?       if (isApex-AgentInternalPath(path)) {
             return super.listFiles(tool)
         }
 
@@ -115,9 +115,9 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
         }
 
         return try {
-            // 确保目录路径末尾有斜�?           val normalizedPath = if (path.endsWith("/")) path else "${path}/"
+            // 确保目录路径末尾有斜?           val normalizedPath = if (path.endsWith("/")) path else "${path}/"
 
-            // 使用ls -la命令获取详细的文件列�?           AppLogger.d(TAG, "Using ls -la command for path: ${normalizedPath}")
+            // 使用ls -la命令获取详细的文件列?           AppLogger.d(TAG, "Using ls -la command for path: ${normalizedPath}")
             val listResult = AndroidShellExecutor.executeShellCommand("ls -la '${normalizedPath}'")
 
             if (listResult.success) {
@@ -175,7 +175,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                 val line = lines[i]
                 if (line.isBlank()) continue
 
-                // 打印每一行以便调�?               AppLogger.d(TAG, "Parsing line: ${line}")
+                // 打印每一行以便调?               AppLogger.d(TAG, "Parsing line: ${line}")
 
                 // Android上ls -la输出格式: crwxrw--- 2 u0_a425 media_rw 4056 2025-03-14
                 // 06:04 Android
@@ -188,7 +188,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                 val androidMatch = androidRegex.find(line)
 
                 if (androidMatch != null) {
-                    // 特定于Android的格式解�?                   val permissions = androidMatch.groupValues[1]
+                    // 特定于Android的格式解?                   val permissions = androidMatch.groupValues[1]
                     val size = androidMatch.groupValues[5].toLongOrNull() ?: 0
                     val date = androidMatch.groupValues[6]
                     val time = androidMatch.groupValues[7]
@@ -255,7 +255,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                     // 跳过 . ??.. 条目
                     if (name == "." || name == "..") continue
 
-                    // 尝试解析通用格式的日期时�?                   val timestamp =
+                    // 尝试解析通用格式的日期时?                   val timestamp =
                             try {
                                 if (dateTimeStr.matches(
                                                 """^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}$""".toRegex()
@@ -264,7 +264,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                                     val parsedDate = dateFormat.parse(dateTimeStr)
                                     parsedDate?.time?.toString() ?: "0"
                                 } else {
-                                    // 如果不是YYYY-MM-DD HH:MM格式，返回当前时�?                                   System.currentTimeMillis().toString()
+                                    // 如果不是YYYY-MM-DD HH:MM格式，返回当前时?                                   System.currentTimeMillis().toString()
                                 }
                             } catch (e: Exception) {
                                 AppLogger.e(TAG, "Error parsing generic date: ${dateTimeStr}", e)
@@ -282,7 +282,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                     )
                 } else {
                     // 如果标准正则表达式也不匹配，使用更宽松的解析方法
-                    // 权限字段始终�个字�?                   if (line.length < 10) continue
+                    // 权限字段始终个字?                   if (line.length < 10) continue
 
                     val permissions = line.substring(0, 10).trim()
                     val isDirectory = permissions.startsWith("d") || permissions.startsWith("c")
@@ -304,7 +304,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                         continue
                     }
 
-                    // 日期后面的字段通常是时�?HH:MM)
+                    // 日期后面的字段通常是时?HH:MM)
                     val timeIndex = dateIndex + 1
 
                     // 时间后面的所有内容都是文件名
@@ -330,7 +330,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                     val sizeIndex = dateIndex - 1
                     val size = if (sizeIndex >= 0) parts[sizeIndex].toLongOrNull() ?: 0 else 0
 
-                    // 组合日期和时间，并转换为时间�?                   val dateTimeStr = "${parts[dateIndex]} ${parts[timeIndex]}"
+                    // 组合日期和时间，并转换为时间?                   val dateTimeStr = "${parts[dateIndex]} ${parts[timeIndex]}"
                     val timestamp =
                             try {
                                 val parsedDate = dateFormat.parse(dateTimeStr)
@@ -352,7 +352,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                 }
             } catch (e: Exception) {
                 AppLogger.e(TAG, "Error parsing directory entry: ${lines[i]}", e)
-                // 跳过这一行但继续处理其他�?           }
+                // 跳过这一行但继续处理其他?           }
         }
 
         return entries
@@ -364,11 +364,11 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
             val permInt = octalPerm.toInt(8)
             val permChars = CharArray(9)
 
-            // 所有者权�?           permChars[0] = if (permInt and 0x100 != 0) 'r' else '-'
+            // 所有者权?           permChars[0] = if (permInt and 0x100 != 0) 'r' else '-'
             permChars[1] = if (permInt and 0x80 != 0) 'w' else '-'
             permChars[2] = if (permInt and 0x40 != 0) 'x' else '-'
 
-            // 组权�?           permChars[3] = if (permInt and 0x20 != 0) 'r' else '-'
+            // 组权?           permChars[3] = if (permInt and 0x20 != 0) 'r' else '-'
             permChars[4] = if (permInt and 0x10 != 0) 'w' else '-'
             permChars[5] = if (permInt and 0x8 != 0) 'x' else '-'
 
@@ -618,7 +618,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
         }
     }
 
-    /** 按行号范围读取文件内容（行号从开始，包括开始行和结束行�?/
+    /** 按行号范围读取文件内容（行号从开始，包括开始行和结束行?/
     override suspend fun readFilePart(tool: AITool): ToolResult {
         val environment = tool.parameters.find { it.name == "environment" }?.value
         if (environment == "linux") {
@@ -647,8 +647,8 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
         }
 
         return try {
-            // 0. 特殊文件类型检�?           // 如果是Word/PDF/图片等特殊文件，使用父类（StandardFileSystemTools）的逻辑处理
-            // 因为Shell命令(cat/sed)无法正确解析这些二进制格�?           val fileExt = path.substringAfterLast('.', "").lowercase()
+            // 0. 特殊文件类型检?           // 如果是Word/PDF/图片等特殊文件，使用父类（StandardFileSystemTools）的逻辑处理
+            // 因为Shell命令(cat/sed)无法正确解析这些二进制格?           val fileExt = path.substringAfterLast('.', "").lowercase()
             if (isSpecialFileType(fileExt)) {
                  return super.readFilePart(tool)
             }
@@ -695,7 +695,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                                 FilePartContentData(
                                         path = path,
                                         content = "",
-                                        partIndex = 0, // 保留兼容性，但不再使�?                                       totalParts = 1, // 保留兼容性，但不再使�?                                       startLine = startLine - 1, // 转为0-based
+                                        partIndex = 0, // 保留兼容性，但不再使?                                       totalParts = 1, // 保留兼容性，但不再使?                                       startLine = startLine - 1, // 转为0-based
                                         endLine = endLine,
                                         totalLines = totalLines
                                 ),
@@ -735,7 +735,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                             FilePartContentData(
                                     path = path,
                                     content = contentWithLineNumbers.trimEnd(),
-                                    partIndex = 0, // 保留兼容性，但不再使�?                                   totalParts = 1, // 保留兼容性，但不再使�?                                   startLine = startLine - 1, // To 0-indexed for response
+                                    partIndex = 0, // 保留兼容性，但不再使?                                   totalParts = 1, // 保留兼容性，但不再使?                                   startLine = startLine - 1, // To 0-indexed for response
                                     endLine = endLine,
                                     totalLines = totalLines
                             ),
@@ -755,7 +755,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
     /**
      * 重写特殊文件读取逻辑
      * 对于受保护的路径（如 /Android/data），先通过Shell命令复制到缓存目录，
-     * 再调用父类的解析逻辑�?    */
+     * 再调用父类的解析逻辑?    */
     override suspend fun handleSpecialFileRead(
         tool: AITool,
         path: String,
@@ -767,7 +767,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
             return super.handleSpecialFileRead(tool, path, fileExt)
         }
         
-        // 如果文件可读，直接使用父类逻辑（更高效�?       if (file.exists() && file.canRead()) {
+        // 如果文件可读，直接使用父类逻辑（更高效?       if (file.exists() && file.canRead()) {
             return super.handleSpecialFileRead(tool, path, fileExt)
         }
 
@@ -778,14 +778,14 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
         
         return try {
             // 使用cat命令复制文件内容
-            // 注意：使用cat而不是cp，因为cp可能保留权限属性导致仍然无法读�?           val copyResult = AndroidShellExecutor.executeShellCommand("cat '${path}' > '${tempFile.absolutePath}'")
+            // 注意：使用cat而不是cp，因为cp可能保留权限属性导致仍然无法读?           val copyResult = AndroidShellExecutor.executeShellCommand("cat '${path}' > '${tempFile.absolutePath}'")
             
             if (!copyResult.success) {
                 AppLogger.w(TAG, "Shell copy failed: ${copyResult.stderr}")
-                // 复制失败，回退到父类逻辑（虽然很可能也失败，但能返回一致的错误信息�?               return super.handleSpecialFileRead(tool, path, fileExt)
+                // 复制失败，回退到父类逻辑（虽然很可能也失败，但能返回一致的错误信息?               return super.handleSpecialFileRead(tool, path, fileExt)
             }
             
-            // 检查临时文件是否有�?           if (!tempFile.exists() || tempFile.length() == 0L) {
+            // 检查临时文件是否有?           if (!tempFile.exists() || tempFile.length() == 0L) {
                 AppLogger.w(TAG, "Temp file is empty or does not exist after copy")
                 return super.handleSpecialFileRead(tool, path, fileExt)
             }
@@ -793,7 +793,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
             // 使用临时文件路径调用父类处理逻辑
             val tempToolResult = super.handleSpecialFileRead(tool, tempFile.absolutePath, fileExt)
             
-            // 如果处理成功，修正返回结果中的path 为原始路�?           if (tempToolResult != null && tempToolResult.success) {
+            // 如果处理成功，修正返回结果中的path 为原始路?           if (tempToolResult != null && tempToolResult.success) {
                 val resultData = tempToolResult.result
                 if (resultData is FileContentData) {
                     return tempToolResult.copy(
@@ -864,14 +864,14 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
             }
 
             // 直接使用echo命令写入内容
-            // 对内容进行base64编码，避免特殊字符问�?           val contentBase64 =
+            // 对内容进行base64编码，避免特殊字符问?           val contentBase64 =
                     android.util.Base64.encodeToString(
                             content.toByteArray(),
                             android.util.Base64.NO_WRAP
                     )
 
-            // 使用两种写入方法中的一�?
-            // 方法1: 使用base64命令解码并写入文件（大内容时分块，避免命令行过长�?           val redirectOperator = if (append) ">>" else ">"
+            // 使用两种写入方法中的一?
+            // 方法1: 使用base64命令解码并写入文件（大内容时分块，避免命令行过长?           val redirectOperator = if (append) ">>" else ">"
             val maxInlineBase64 = 32768
             val base64ChunkSize = 16384 // 4的倍数，保证base64解码边界正确
             val writeResult =
@@ -1427,12 +1427,12 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                     )
             val isDirectory = isDirResult.stdout.trim() == "true"
 
-            // 确保目标父目录存�?           val destParentDir = destPath.substringBeforeLast('/')
+            // 确保目标父目录存?           val destParentDir = destPath.substringBeforeLast('/')
             if (destParentDir.isNotEmpty()) {
                 AndroidShellExecutor.executeShellCommand("mkdir -p '${destParentDir}'")
             }
 
-            // 根据是否为目录选择不同的复制命�?           val copyCommand =
+            // 根据是否为目录选择不同的复制命?           val copyCommand =
                     if (isDirectory && recursive) {
                         "cp -r '${sourcePath}' '${destPath}'"
                     } else if (!isDirectory) {
@@ -1595,7 +1595,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
                         error = ""
                 )
             } else {
-                // 创建失败后再次检查是否已存在（可能在执行过程中被创建�?               val recheckDirResult =
+                // 创建失败后再次检查是否已存在（可能在执行过程中被创建?               val recheckDirResult =
                         AndroidShellExecutor.executeShellCommand(
                                 "test -d '${path}' && echo 'exists' || echo 'not exists'"
                         )
@@ -2571,7 +2571,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
         }
 
         return try {
-            // 首先检查文件是否存�?           val existsResult =
+            // 首先检查文件是否存?           val existsResult =
                     AndroidShellExecutor.executeShellCommand(
                             "test -f '${path}' && echo 'exists' || echo 'not exists'"
                     )
@@ -2795,7 +2795,7 @@ open class DebuggerFileSystemTools(context: Context) : AccessibilityFileSystemTo
         }
     }
 
-    /** 下载文件 从网络URL下载文件到指定路�?/
+    /** 下载文件 从网络URL下载文件到指定路?/
     override suspend fun downloadFile(tool: AITool): ToolResult {
         return super.downloadFile(tool)
     }

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 internal class PermissionModeStateCache {
     companion object {
         private const val TAG = "PermissionModeCache"
-        private const val CACHE_TTL_MS = 30_000L // 30�?
+        private const val CACHE_TTL_MS = 30_000L // 30?
     }
 
     private val stateCache = ConcurrentHashMap<PermissionMode, CachedState>()
@@ -22,7 +22,7 @@ internal class PermissionModeStateCache {
     )
 
     /**
-     * 获取缓存的状�?
+     * 获取缓存的状?
      */
     fun get(mode: PermissionMode): PermissionModeState? {
         val cached = stateCache[mode] ?: return null
@@ -37,11 +37,11 @@ internal class PermissionModeStateCache {
     }
 
     /**
-     * 缓存状�?
+     * 缓存状?
      */
     fun put(mode: PermissionMode, state: PermissionModeState) {
         stateCache[mode] = CachedState(state)
-        AppLogger.v(TAG, "缓存状�? ${mode.displayName}")
+        AppLogger.v(TAG, "缓存状? ${mode.displayName}")
     }
 
     /**
@@ -53,7 +53,7 @@ internal class PermissionModeStateCache {
             AppLogger.d(TAG, "清除缓存: ${mode.displayName}")
         } else {
             stateCache.clear()
-            AppLogger.d(TAG, "清除所有缓�?)
+            AppLogger.d(TAG, "清除所有缓?)
         }
     }
 
@@ -69,13 +69,13 @@ internal class PermissionModeStateCache {
         expiredKeys.forEach { stateCache.remove(it) }
 
         if (expiredKeys.isNotEmpty()) {
-            AppLogger.d(TAG, "清除�?${expiredKeys.size} 个过期缓存项")
+            AppLogger.d(TAG, "清除?${expiredKeys.size} 个过期缓存项")
         }
     }
 }
 
 /**
- * 批量检测结�?
+ * 批量检测结?
  */
 data class BatchDetectionResult(
     val modeStates: Map<PermissionMode, PermissionModeState>,
@@ -103,7 +103,7 @@ internal suspend fun PermissionModeManager.checkAllModesOptimized(
             }
         }
 
-        // 检测模式状�?
+        // 检测模式状?
         val state = checkModeInternal(mode)
         states[mode] = state
         stateCache.put(mode, state)
@@ -157,13 +157,13 @@ class PermissionModePerformanceMonitor {
     private var cacheMisses = 0
 
     /**
-     * 记录检测时�?
+     * 记录检测时?
      */
     fun recordCheckTime(duration: Long) {
         checkTimes.add(duration)
         checkCount++
 
-        // 保留最�?00条记�?
+        // 保留最?00条记?
         if (checkTimes.size > 100) {
             checkTimes.removeAt(0)
         }
@@ -177,7 +177,7 @@ class PermissionModePerformanceMonitor {
     }
 
     /**
-     * 记录缓存未命�?
+     * 记录缓存未命?
      */
     fun recordCacheMiss() {
         cacheMisses++
@@ -217,7 +217,7 @@ class PermissionModePerformanceMonitor {
         checkCount = 0
         cacheHits = 0
         cacheMisses = 0
-        AppLogger.d(TAG, "性能统计已重�?)
+        AppLogger.d(TAG, "性能统计已重?)
     }
 }
 
@@ -238,13 +238,13 @@ data class PerformanceStatistics(
 private val performanceMonitor = PermissionModePerformanceMonitor()
 
 /**
- * 获取性能监控�?
+ * 获取性能监控?
  */
 val PermissionModeManager.performanceMonitor: PermissionModePerformanceMonitor
     get() = com.apex.agent.core.tools.system.performanceMonitor
 
 /**
- * 带性能监控的检�?
+ * 带性能监控的检?
  */
 suspend fun PermissionModeManager.checkAllModesWithMonitor(
     forceRefresh: Boolean = false

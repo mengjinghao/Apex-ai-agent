@@ -7,14 +7,14 @@ import com.apex.agent.core.tools.system.shell.ShellExecutorFactory
 import com.apex.agent.core.tools.system.shell.ShellProcess
 import com.apex.agent.data.preferences.androidPermissionPreferences
 
-/** 向后兼容的Shell命令执行工具，通过权限级别委托到相应的Shell执行�?/
+/** 向后兼容的Shell命令执行工具，通过权限级别委托到相应的Shell执行?/
 class AndroidShellExecutor {
     companion object {
         private const val TAG = "AndroidShellExecutor"
         private var context: Context? = null
 
         /**
-         * 设置全局上下文引�?        * @param appContext 应用上下�?        */
+         * 设置全局上下文引?        * @param appContext 应用上下?        */
         fun setContext(appContext: Context) {
             context = appContext.applicationContext
         }
@@ -48,7 +48,7 @@ class AndroidShellExecutor {
         }
 
         /**
-         * 封装执行命令的函�?        * @param command 要执行的命令
+         * 封装执行命令的函?        * @param command 要执行的命令
          * @return 命令执行结果
          */
         suspend fun executeShellCommand(command: String): CommandResult {
@@ -103,7 +103,7 @@ class AndroidShellExecutor {
         }
     }
 
-    /** 命令执行结果数据�?/
+    /** 命令执行结果数据?/
     data class CommandResult(
             val success: Boolean,
             val stdout: String,

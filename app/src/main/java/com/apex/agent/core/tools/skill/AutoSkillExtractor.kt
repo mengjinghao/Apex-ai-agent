@@ -11,7 +11,7 @@ import com.apex.agent.core.normal.export.ToolCallRecord
 
 /**
  * 技能候选数据类
- * 表示从会话中提取的潜在可复用技能模�? */
+ * 表示从会话中提取的潜在可复用技能模? */
 data class SkillCandidate(
     val pattern: List<String>,
     val frequency: Int,
@@ -46,7 +46,7 @@ data class SkillCandidate(
 }
 
 /**
- * 会话工具调用记录数据�? * 用于记录会话期间的工具调用历史，以便模式提取
+ * 会话工具调用记录数据? * 用于记录会话期间的工具调用历史，以便模式提取
  */
 data class SessionToolCallRecord(
     val toolName: String,
@@ -56,7 +56,7 @@ data class SessionToolCallRecord(
 )
 
 /**
- * 自动技能提取引�? * 分析工具调用序列，检测重复模式并生成技能候�? */
+ * 自动技能提取引? * 分析工具调用序列，检测重复模式并生成技能候? */
 class AutoSkillExtractor private constructor(private val context: Context) {
 
     companion object {
@@ -81,9 +81,9 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 从会话中提取技能候�?     * @param sessionId 会话ID
+     * 从会话中提取技能候?     * @param sessionId 会话ID
      * @param toolCallHistory 工具调用历史
-     * @return 提取的技能候选列�?     */
+     * @return 提取的技能候选列?     */
     suspend fun extractFromSession(
         sessionId: String,
         toolCallHistory: List<SessionToolCallRecord>
@@ -127,7 +127,7 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     private fun extractPatterns(toolNames: List<String>): List<PatternMatch> {
         val patternCounts = mutableMapOf<List<String>, Int>()
 
-        // 提取不同长度�?n-gram 模式
+        // 提取不同长度?n-gram 模式
         for (n in MIN_PATTERN_LENGTH..MAX_PATTERN_LENGTH.coerceAtMost(toolNames.size)) {
             for (i in 0..toolNames.size - n) {
                 val ngram = toolNames.subList(i, i + n)
@@ -135,16 +135,16 @@ class AutoSkillExtractor private constructor(private val context: Context) {
             }
         }
 
-        // 过滤出重复出现的模式，并去除子模�?        val frequentPatterns = patternCounts
+        // 过滤出重复出现的模式，并去除子模?        val frequentPatterns = patternCounts
             .filter { it.value >= MIN_FREQUENCY }
             .map { PatternMatch(it.key, it.value) }
             .sortedByDescending { it.sequence.size }
 
-        // 去除被更长模式包含的子模�?        return removeSubPatterns(frequentPatterns)
+        // 去除被更长模式包含的子模?        return removeSubPatterns(frequentPatterns)
     }
 
     /**
-     * 移除被更长模式包含的子模�?     */
+     * 移除被更长模式包含的子模?     */
     private fun removeSubPatterns(patterns: List<PatternMatch>): List<PatternMatch> {
         val result = mutableListOf<PatternMatch>()
 
@@ -161,7 +161,7 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 检�?longer 是否包含 sub 作为子序�?     */
+     * 检?longer 是否包含 sub 作为子序?     */
     private fun containsSubsequence(longer: List<String>, sub: List<String>): Boolean {
         if (sub.size >= longer.size) return false
 
@@ -174,15 +174,15 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 计算模式置信�?     * 基于频率、一致性和通用�?     */
+     * 计算模式置信?     * 基于频率、一致性和通用?     */
     private fun calculateConfidence(
         pattern: List<String>,
         frequency: Int,
         toolCallHistory: List<SessionToolCallRecord>
     ): Float {
-        // 频率分数：出现次数越多，分数越高（归一化到 0-1�?        val frequencyScore = (frequency.toFloat() / MIN_FREQUENCY).coerceAtMost(1.0f)
+        // 频率分数：出现次数越多，分数越高（归一化到 0-1?        val frequencyScore = (frequency.toFloat() / MIN_FREQUENCY).coerceAtMost(1.0f)
 
-        // 一致性分数：模式在历史中完整出现的比�?        val consistencyScore = calculateConsistency(pattern, toolCallHistory)
+        // 一致性分数：模式在历史中完整出现的比?        val consistencyScore = calculateConsistency(pattern, toolCallHistory)
 
         // 通用性分数：模式不依赖特定数据的程度
         val generalityScore = calculateGenerality(pattern, toolCallHistory)
@@ -194,7 +194,7 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 计算一致性分�?     * 模式在历史中完整出现的比�?     */
+     * 计算一致性分?     * 模式在历史中完整出现的比?     */
     private fun calculateConsistency(pattern: List<String>, toolCallHistory: List<SessionToolCallRecord>): Float {
         val toolNames = toolCallHistory.map { it.toolName }
         var occurrences = 0
@@ -205,18 +205,18 @@ class AutoSkillExtractor private constructor(private val context: Context) {
             }
         }
 
-        // 一致�?= 实际出现次数 / 理论最大出现次�?        val maxPossible = (toolNames.size / pattern.size).coerceAtLeast(1)
+        // 一致?= 实际出现次数 / 理论最大出现次?        val maxPossible = (toolNames.size / pattern.size).coerceAtLeast(1)
         return (occurrences.toFloat() / maxPossible).coerceAtMost(1.0f)
     }
 
     /**
-     * 计算通用性分�?     * 基于模式中的工具多样性和参数独立�?     */
+     * 计算通用性分?     * 基于模式中的工具多样性和参数独立?     */
     private fun calculateGenerality(pattern: List<String>, toolCallHistory: List<SessionToolCallRecord>): Float {
         // 工具多样性：模式中包含的不同工具数量
         val uniqueTools = pattern.distinct().size
         val diversityScore = (uniqueTools.toFloat() / pattern.size).coerceAtMost(1.0f)
 
-        // 参数独立性：检查工具调用参数是否变化（简化版�?        val patternOccurrences = findPatternOccurrences(pattern, toolCallHistory)
+        // 参数独立性：检查工具调用参数是否变化（简化版?        val patternOccurrences = findPatternOccurrences(pattern, toolCallHistory)
         val parameterVariation = if (patternOccurrences.size > 1) {
             // 如果同一模式出现多次，检查参数是否有变化
             val hasVariation = patternOccurrences.any { occ ->
@@ -231,7 +231,7 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 查找模式在历史中的所有出现位�?     */
+     * 查找模式在历史中的所有出现位?     */
     private fun findPatternOccurrences(
         pattern: List<String>,
         toolCallHistory: List<ToolCallRecord>
@@ -263,7 +263,7 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 加载已保存的技能候�?     */
+     * 加载已保存的技能候?     */
     suspend fun loadCandidates(): List<SkillCandidate> = withContext(Dispatchers.IO) {
         try {
             if (!candidatesFile.exists()) {
@@ -284,7 +284,7 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 添加新的技能候�?     */
+     * 添加新的技能候?     */
     suspend fun addCandidate(candidate: SkillCandidate) = withContext(Dispatchers.IO) {
         val existing = loadCandidates().toMutableList()
         existing.add(candidate)
@@ -292,7 +292,7 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 移除指定的技能候�?     */
+     * 移除指定的技能候?     */
     suspend fun removeCandidate(index: Int) = withContext(Dispatchers.IO) {
         val existing = loadCandidates().toMutableList()
         if (index in existing.indices) {
@@ -302,7 +302,7 @@ class AutoSkillExtractor private constructor(private val context: Context) {
     }
 
     /**
-     * 清空所有技能候�?     */
+     * 清空所有技能候?     */
     suspend fun clearCandidates() = withContext(Dispatchers.IO) {
         try {
             if (candidatesFile.exists()) {

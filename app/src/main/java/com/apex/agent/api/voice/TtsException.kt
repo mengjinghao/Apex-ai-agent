@@ -3,8 +3,8 @@ package com.apex.api.voice
 /**
  * TTS服务相关的自定义异常
  * @param message 异常信息
- * @param httpStatusCode HTTP状态码 (如果适用�?
- * @param errorBody 错误响应�如果适用�?
+ * @param httpStatusCode HTTP状态码 (如果适用?
+ * @param errorBody 错误响应如果适用?
  * @param cause 原始异常
  */
 class TtsException(

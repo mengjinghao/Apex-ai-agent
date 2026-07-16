@@ -23,27 +23,27 @@ interface ShellExecutor {
 
     /**
      * 检查执行器是否可用
-     * @return 执行器是否可�?    */
+     * @return 执行器是否可?    */
     fun isAvailable(): Boolean
 
     /**
-     * 请求执行器所需的权�?    * @param onResult 权限请求结果回调
+     * 请求执行器所需的权?    * @param onResult 权限请求结果回调
      */
     fun requestPermission(onResult: (Boolean) -> Unit)
 
     /**
-     * 检查是否已有执行器所需的权�?    * @return 权限状态，包含是否有权限及详细的错误原�?    */
+     * 检查是否已有执行器所需的权?    * @return 权限状态，包含是否有权限及详细的错误原?    */
     fun hasPermission(): PermissionStatus
 
     /** 初始化执行器 */
     fun initialize()
 
     /**
-     * 执行一个长期运行的命令，并提供一个交互式进程对象�?    * 主要用于需要持续读取输出流的命令，例如 'logcat' �?getevent'�?    *
-     * @param command 要执行的命令�?    * @return 一，ShellProcess 对象，允许管理进程并读取其输出流�?    * @throws UnsupportedOperationException 如果执行器不支持启动持久进程�?    */
+     * 执行一个长期运行的命令，并提供一个交互式进程对象?    * 主要用于需要持续读取输出流的命令，例如 'logcat' ?getevent'?    *
+     * @param command 要执行的命令?    * @return 一，ShellProcess 对象，允许管理进程并读取其输出流?    * @throws UnsupportedOperationException 如果执行器不支持启动持久进程?    */
     suspend fun startProcess(command: String): ShellProcess
 
-    /** 命令执行结果数据�?/
+    /** 命令执行结果数据?/
     data class CommandResult(
             val success: Boolean,
             val stdout: String,
@@ -64,23 +64,23 @@ interface ShellExecutor {
 }
 
 /**
- * 代表一个正在运行的、可交互的Shell进程�?*/
+ * 代表一个正在运行的、可交互的Shell进程?*/
 interface ShellProcess {
-    /** 从标准输出流读取的文本行 Flow�?/
+    /** 从标准输出流读取的文本行 Flow?/
     val stdout: kotlinx.coroutines.flow.Flow<String>
 
-    /** 从标准错误流读取的文本行 Flow�?/
+    /** 从标准错误流读取的文本行 Flow?/
     val stderr: kotlinx.coroutines.flow.Flow<String>
 
     /**
-     * 强行终止进程�?    */
+     * 强行终止进程?    */
     fun destroy()
 
     /**
-     * 挂起直到进程执行完毕，并返回其退出码�?    */
+     * 挂起直到进程执行完毕，并返回其退出码?    */
     suspend fun waitFor(): Int
 
     /**
-     * 检查进程是否仍在运行的     * @return 如果进程是活跃的，则返回true�?    */
+     * 检查进程是否仍在运行的     * @return 如果进程是活跃的，则返回true?    */
     val isAlive: Boolean
 }

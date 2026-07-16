@@ -78,12 +78,12 @@ class ConversationService(
     private val conversationMutex = Mutex()
 
     /**
-     * 在压缩操作前触发钩子，保存关键状�?
+     * 在压缩操作前触发钩子，保存关键状?
      * @param sessionId 会话ID
      * @param messageCount 消息数量
-     * @param tokenUsage token使用�?
-     * @param environmentState 环境状�?
-     * @return 钩子收集的状态数�?
+     * @param tokenUsage token使用?
+     * @param environmentState 环境状?
+     * @return 钩子收集的状态数?
      */
     suspend fun triggerPreCompactHook(
         sessionId: String,
@@ -109,7 +109,7 @@ class ConversationService(
 
     /**
      * 生成对话总结
-     * @param messages 要总结的消息列�?    * @return 生成的总结文本
+     * @param messages 要总结的消息列?    * @return 生成的总结文本
      */
     suspend fun generateSummary(
             messages: List<Pair<String, String>>,
@@ -120,7 +120,7 @@ class ConversationService(
 
     /**
      * 生成对话总结，并且包含上一次的总结内容
-     * @param messages 要总结的消息列�?    * @param previousSummary 上一次的总结内容，可以为null
+     * @param messages 要总结的消息列?    * @param previousSummary 上一次的总结内容，可以为null
      * @return 生成的总结文本
      */
     suspend fun generateSummary(
@@ -228,7 +228,7 @@ class ConversationService(
                             modelParameters = modelParameters
                     )
 
-            // 收集流中的所有内�?           stream.collect { content ->
+            // 收集流中的所有内?           stream.collect { content ->
                 contentBuilder.append(content)
                 updateStageIfNeeded()
             }
@@ -242,7 +242,7 @@ class ConversationService(
             // 获取完整的总结内容
             val summaryContent = ChatUtils.removeThinkingContent(contentBuilder.toString().trim())
 
-            // 如果内容为空，返回默认消�?           if (summaryContent.isBlank()) {
+            // 如果内容为空，返回默认消?           if (summaryContent.isBlank()) {
                 return "Conversation Summary: Unable to generate valid summary."
             }
 
@@ -251,7 +251,7 @@ class ConversationService(
             val cachedInputTokens = summaryService.cachedInputTokenCount
             val outputTokens = summaryService.outputTokenCount
 
-            // 将总结token计数添加到用户偏好分析的token统计�?           try {
+            // 将总结token计数添加到用户偏好分析的token统计?           try {
                 AppLogger.d(TAG, "总结生成使用了输入token: ${inputTokens}, 缓存token: ${cachedInputTokens}, 输出token: ${outputTokens}")
                 apiPreferences.updateTokensForProviderModel(summaryService.providerModel, inputTokens, outputTokens, cachedInputTokens)
                 
@@ -265,19 +265,19 @@ class ConversationService(
 
             return summaryContent
         } catch (e: Exception) {
-            AppLogger.e(TAG, "生成总结时出�? e)
-            // return "对话摘要：生成摘要时出错，但对话仍在继续�?
+            AppLogger.e(TAG, "生成总结时出? e)
+            // return "对话摘要：生成摘要时出错，但对话仍在继续?
             throw e
         }
     }
 
     /**
-     * 为聊天准备对话历史记�?    * @param chatHistory 原始聊天历史
+     * 为聊天准备对话历史记?    * @param chatHistory 原始聊天历史
      * @param processedInput 处理后的用户输入
      * @param workspacePath 当前绑定的工作区路径，可以为null
      * @param packageManager 包管理器
      * @param promptFunctionType 提示函数类型
-     * @param thinkingGuidance 是否需要思考指�?    * @param enableMemoryQuery Whether the AI is allowed to query memories.
+     * @param thinkingGuidance 是否需要思考指?    * @param enableMemoryQuery Whether the AI is allowed to query memories.
      * @param hasImageRecognition Whether a backend image recognition service is configured
      * @return 准备好的对话历史列表
      */
@@ -349,9 +349,9 @@ class ConversationService(
                     ""
                 }
 
-                // 获取自定义系统提示模�?               val finalCustomSystemPromptTemplate = customSystemPromptTemplate ?: apiPreferences.customSystemPromptTemplateFlow.first()
+                // 获取自定义系统提示模?               val finalCustomSystemPromptTemplate = customSystemPromptTemplate ?: apiPreferences.customSystemPromptTemplateFlow.first()
 
-                // 获取工具启用状�?               val enableTools = apiPreferences.enableToolsFlow.first()
+                // 获取工具启用状?               val enableTools = apiPreferences.enableToolsFlow.first()
                 val disableUserPreferenceDescription =
                         apiPreferences.disableUserPreferenceDescriptionFlow.first()
                 val disableLatexDescription = apiPreferences.disableLatexDescriptionFlow.first()
@@ -367,7 +367,7 @@ class ConversationService(
                 val useEnglish = LocaleUtils.getCurrentLanguage(context).lowercase().startsWith("en")
                 resolvedUseEnglish = useEnglish
 
-                // 获取系统提示词，现在传入workspacePath和识图配置状�?               val systemPrompt = SystemPromptConfig.getSystemPromptWithCustomPrompts(
+                // 获取系统提示词，现在传入workspacePath和识图配置状?               val systemPrompt = SystemPromptConfig.getSystemPromptWithCustomPrompts(
                     context = context,
                     packageManager = packageManager,
                     workspacePath = workspacePath,
@@ -402,7 +402,7 @@ class ConversationService(
                 // 构建waifu特殊规则
                 val waifuRulesText = if(waifuPreferences.enableWaifuModeFlow.first()) buildWaifuRulesText() else ""
 
-                // 构建最终的系统提示�?               val finalSystemPrompt = buildString {
+                // 构建最终的系统提示?               val finalSystemPrompt = buildString {
                     append(systemPrompt)
                     append(waifuRulesText)
                     if (!disableUserPreferenceDescription && preferencesText.isNotEmpty()) {
@@ -508,7 +508,7 @@ class ConversationService(
         return fileRequestContentRegex.find(contentBody)?.groupValues?.getOrNull(1)?.trim()
     }
 
-    /** 处理包含工具结果的聊天消息，并按顺序重新组织消息 任务完成和等待用户响应的status标签算作AI消息，其他status和warning算作用户消息 工具结果为用户消�?/
+    /** 处理包含工具结果的聊天消息，并按顺序重新组织消息 任务完成和等待用户响应的status标签算作AI消息，其他status和warning算作用户消息 工具结果为用户消?/
     suspend fun processChatMessageWithTools(
             content: String,
             xmlTags: List<List<String>>,
@@ -527,7 +527,7 @@ class ConversationService(
             return
         }
 
-        // 按顺序处理标�?       val segments = mutableListOf<PromptTurn>()
+        // 按顺序处理标?       val segments = mutableListOf<PromptTurn>()
 
         for (tag in xmlTags) {
             val tagName = tag[0]
@@ -545,7 +545,7 @@ class ConversationService(
             // 根据标签类型分配角色
             when (normalizedTagName) {
                 "think", "thinking" -> {
-                    // 保留完整的think标签（用于DeepSeek推理模式�?                   segments.add(PromptTurn(kind = PromptTurnKind.ASSISTANT, content = tagContent))
+                    // 保留完整的think标签（用于DeepSeek推理模式?                   segments.add(PromptTurn(kind = PromptTurnKind.ASSISTANT, content = tagContent))
                 }
                 "status" -> {
                     // 判断status类型
@@ -574,7 +574,7 @@ class ConversationService(
             }
         }
 
-        // 合并连续的相同角色消�?       val mergedSegments = mutableListOf<PromptTurn>()
+        // 合并连续的相同角色消?       val mergedSegments = mutableListOf<PromptTurn>()
         var currentKind: PromptTurnKind? = null
         var currentContent = StringBuilder()
         var currentToolName: String? = null
@@ -585,9 +585,9 @@ class ConversationService(
                 segment.kind == currentKind &&
                     segment.kind !in setOf(PromptTurnKind.TOOL_CALL, PromptTurnKind.TOOL_RESULT)
             if (shouldMergeCurrent) {
-                // 如果角色与当前角色相同，则合并内�?               currentContent.append("\n").append(segment.content)
+                // 如果角色与当前角色相同，则合并内?               currentContent.append("\n").append(segment.content)
             } else {
-                // 角色不同，先保存当前内容（如果有�?               if (currentContent.isNotEmpty() && currentKind != null) {
+                // 角色不同，先保存当前内容（如果有?               if (currentContent.isNotEmpty() && currentKind != null) {
                     mergedSegments.add(
                         PromptTurn(
                             kind = currentKind!!,
@@ -598,14 +598,14 @@ class ConversationService(
                     )
                     currentContent.clear()
                 }
-                // 更新当前角色和内�?               currentKind = segment.kind
+                // 更新当前角色和内?               currentKind = segment.kind
                 currentToolName = segment.toolName
                 currentMetadata = segment.metadata
                 currentContent.append(segment.content)
             }
         }
 
-        // 添加最后一条消�?       if (currentContent.isNotEmpty() && currentKind != null) {
+        // 添加最后一条消?       if (currentContent.isNotEmpty() && currentKind != null) {
             mergedSegments.add(
                 PromptTurn(
                     kind = currentKind!!,
@@ -799,7 +799,7 @@ class ConversationService(
     }
 
     /**
-     * 构建waifu模式的特殊规则文�?    * @return 格式化的waifu规则文本，如果没有规则则返回空字符串
+     * 构建waifu模式的特殊规则文?    * @return 格式化的waifu规则文本，如果没有规则则返回空字符串
      */
     private suspend fun buildWaifuRulesText(): String {
         val activePrompt = activePromptManager.getActivePrompt()
@@ -847,7 +847,7 @@ class ConversationService(
     }
 
     /**
-     * 虚拟形象�?mood> 标签规则，已移除�?     */
+     * 虚拟形象?mood> 标签规则，已移除?     */
     private fun buildAvatarMoodRulesText(useEnglish: Boolean): String {
         return ""
     }
@@ -867,9 +867,9 @@ class ConversationService(
     private suspend fun replacePromptPlaceholders(prompt: String, aiName: String): String {
         var finalPrompt = prompt
         
-        // 获取全局用户�?       val globalUserName = displayPreferencesManager.globalUserName.first() ?: "User"
+        // 获取全局用户?       val globalUserName = displayPreferencesManager.globalUserName.first() ?: "User"
         
-        // 替换占位�?       finalPrompt = finalPrompt.replace("{{user}}", globalUserName)
+        // 替换占位?       finalPrompt = finalPrompt.replace("{{user}}", globalUserName)
         finalPrompt = finalPrompt.replace("{{char}}", aiName)
         
         return finalPrompt
@@ -888,7 +888,7 @@ class ConversationService(
         val targetLanguage = when (currentLanguage) {
             "zh" -> context.getString(R.string.conversation_language_chinese)
             "en" -> "English"
-            else -> context.getString(R.string.conversation_language_chinese) // 默认翻译为中�?       }
+            else -> context.getString(R.string.conversation_language_chinese) // 默认翻译为中?       }
         
         val translationPrompt = """
 ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
@@ -927,7 +927,7 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
     }
 
     /**
-     * 自动生成工具包描�?    * @param pluginName 工具包名�?    * @param toolDescriptions 工具描述列表
+     * 自动生成工具包描?    * @param pluginName 工具包名?    * @param toolDescriptions 工具描述列表
      * @param multiServiceManager 多服务管理器
      * @return 生成的工具包描述
      */
@@ -1011,7 +1011,7 @@ ${FunctionalPrompts.translationUserPrompt(targetLanguage, text)}
                 return "Failed to load image: ${imagePath}"
             }
 
-            // 构建提示词，包含用户意图和图片链�?           val imageLink = MediaLinkBuilder.image(context, imageId)
+            // 构建提示词，包含用户意图和图片链?           val imageLink = MediaLinkBuilder.image(context, imageId)
             val prompt = if (userIntent.isNullOrBlank()) {
                 "${imageLink}\n${context.getString(R.string.conversation_analyze_image_prompt)}"
             } else {

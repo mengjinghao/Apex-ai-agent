@@ -28,7 +28,7 @@ class SwarmIntelligenceEngine(
     private val swarmTasks = mutableMapOf<String, SwarmTask>()
 
     /**
-     * AI 驱动调用：通过 PromptTurn 发送消息给真实�?AI 服务并收集完整响�?
+     * AI 驱动调用：通过 PromptTurn 发送消息给真实?AI 服务并收集完整响?
      */
     private suspend fun callAI(prompt: String, systemPrompt: String = "You are a helpful AI assistant."): String {
         return try {
@@ -75,7 +75,7 @@ class SwarmIntelligenceEngine(
         for (round in 1..MAX_DEBATE_ROUNDS) {
             AppLogger.d(TAG, "Debate round ${round} for debate: ${debateId}")
 
-            // 并行生成每个代理的论点（async/awaitAll�?
+            // 并行生成每个代理的论点（async/awaitAll?
             val newArguments = debate.participants.map { agentId ->
                 async {
                     generateArgument(agentId, debate.topic, debate.arguments)
@@ -100,17 +100,17 @@ class SwarmIntelligenceEngine(
     ): Argument {
         val stance = getRandomStance()
 
-        // AI 驱动：如�?AI 失败则回退到模�?
+        // AI 驱动：如?AI 失败则回退到模?
         val aiPrompt = buildString {
             append("请为辩论主题'${topic}'生成一个论点。\n")
-            append("你的立场�? ${stance.name}\n")
+            append("你的立场? ${stance.name}\n")
             append("其他参与者最近的论点:\n")
             existingArguments.takeLast(5).forEach { append("- ${it.content}\n") }
-            append("请给出简短、有根据且不同于其他论点的观点（1-2句话）�?)
+            append("请给出简短、有根据且不同于其他论点的观点（1-2句话）?)
         }
         val aiResponse = callAI(
             prompt = aiPrompt,
-            systemPrompt = "你是一名出色的辩论家。你的回复应该简短、具体，并基于事实进行论证�?
+            systemPrompt = "你是一名出色的辩论家。你的回复应该简短、具体，并基于事实进行论证?
         )
         val content = aiResponse.ifBlank {
             generateArgumentContentFallback(topic, stance, existingArguments)
@@ -146,7 +146,7 @@ class SwarmIntelligenceEngine(
         }
 
         val points = listOf(
-            "从技术角度分�?,
+            "从技术角度分?,
             "考虑用户体验",
             "评估实现难度",
             "分析潜在风险",
@@ -191,13 +191,13 @@ class SwarmIntelligenceEngine(
         val opinions = debate.participants.map { agentId ->
             val aiOpinion = callAI(
                 prompt = "关于辩论主题'${debate.topic}'，请阅读以下论点后给出你的最终意见和投票:\n${debate.arguments.takeLast(10).map { "- [${it.stance.name}] ${it.content}" }.replace("\\n\"},
-                systemPrompt = "你是一名辩论评估员，基于理性思考给出你的最终意见，请以明确表态�?
+                systemPrompt = "你是一名辩论评估员，基于理性思考给出你的最终意见，请以明确表态?
             )
             AgentOpinion(
                 agentId = agentId,
                 opinion = aiOpinion.ifBlank { "基于讨论，我认为..." },
                 confidence = 0.7f + Random().nextFloat() * 0.3f,
-                reasoning = aiOpinion.ifBlank { "综合考虑各方面因�?.." },
+                reasoning = aiOpinion.ifBlank { "综合考虑各方面因?.." },
                 vote = determineVoteFromAI(aiOpinion)
             )
         }
@@ -206,8 +206,8 @@ class SwarmIntelligenceEngine(
 
         // AI 驱动：让 AI 作为辩论主席综合分析生成结论
         val aiConclusion = callAI(
-            prompt = "请作为辩论主席，综合以下讨论，给出最终结论。\n\n辩论主题: ${debate.topic}\n参与者意�?\n${opinions.joinToString("\n") { "- ${it.opinion} (投票: ${it.vote}" },
-            systemPrompt = "你是一名中立的辩论主席。你的回复应该客观、平衡，综合各方观点给出建设性结论�?
+            prompt = "请作为辩论主席，综合以下讨论，给出最终结论。\n\n辩论主题: ${debate.topic}\n参与者意?\n${opinions.joinToString("\n") { "- ${it.opinion} (投票: ${it.vote}" },
+            systemPrompt = "你是一名中立的辩论主席。你的回复应该客观、平衡，综合各方观点给出建设性结论?
         )
         val conclusion = aiConclusion.ifBlank { synthesizeConclusionFallback(debate, opinions) }
         val confidence = calculateConsensusConfidence(opinions)
@@ -223,14 +223,14 @@ class SwarmIntelligenceEngine(
     }
 
     /**
-     * 根据 AI 响应中的关键词自动判定投票类�?
+     * 根据 AI 响应中的关键词自动判定投票类?
      */
     private fun determineVoteFromAI(aiResponse: String): VoteType {
         val lower = aiResponse.lowercase(Locale.getDefault())
         return when {
-            lower.contains("反对") || lower.contains("�?) || lower.contains("�?) || lower.contains("反对") ||
+            lower.contains("反对") || lower.contains("?) || lower.contains("?) || lower.contains("反对") ||
             lower.contains("disagree") || lower.contains("oppose") || lower.contains("no") || lower.contains("refuse") || lower.contains("reject") -> VoteType.DISAGREE
-            lower.contains("支持") || lower.contains("同意") || lower.contains("�?) || lower.contains("同意") ||
+            lower.contains("支持") || lower.contains("同意") || lower.contains("?) || lower.contains("同意") ||
             lower.contains("agree") || lower.contains("support") || lower.contains("yes") || lower.contains("endorse") || lower.contains("approve") -> VoteType.AGREE
             else -> VoteType.ABSTAIN
         }
@@ -267,18 +267,18 @@ class SwarmIntelligenceEngine(
         val disagreeOpinions = opinions.filter { it.vote == VoteType.DISAGREE }
 
         return buildString {
-            appendLine("关于\"${debate.topic}\"的共识结�?")
+            appendLine("关于\"${debate.topic}\"的共识结?")
             appendLine()
             if (agreeOpinions.isNotEmpty()) {
-                appendLine("支持方观�?")
+                appendLine("支持方观?")
                 agreeOpinions.take(3).forEach { appendLine("- ${it.opinion}") }
             }
             if (disagreeOpinions.isNotEmpty()) {
-                appendLine("反对方观�?")
+                appendLine("反对方观?")
                 disagreeOpinions.take(3).forEach { appendLine("- ${it.opinion}") }
             }
             appendLine()
-            appendLine("综合结论: 根据讨论，建议采取平衡方案�?)
+            appendLine("综合结论: 根据讨论，建议采取平衡方案?)
         }
     }
 
@@ -325,8 +325,8 @@ class SwarmIntelligenceEngine(
 
     private suspend fun generateSolution(agentId: String, task: SwarmTask): Solution {
         val solutionContent = when (task.type) {
-            TaskType.PROBLEM_SOLVING -> "针对问题\"${task.description}\"的解决方�?.."
-            TaskType.DECISION_MAKING -> "关于\"${task.description}\"的决策建�?.."
+            TaskType.PROBLEM_SOLVING -> "针对问题\"${task.description}\"的解决方?.."
+            TaskType.DECISION_MAKING -> "关于\"${task.description}\"的决策建?.."
             TaskType.CREATIVE_GENERATION -> "创意方案: ${task.description}..."
             TaskType.CRITICAL_ANALYSIS -> "分析报告: ${task.description}..."
             TaskType.PLANNING -> "行动计划: ${task.description}..."
@@ -348,7 +348,7 @@ class SwarmIntelligenceEngine(
 
         return Consensus(
             debateId = task.id,
-            conclusion = bestSolution?.content ?: "无共�?,
+            conclusion = bestSolution?.content ?: "无共?,
             confidence = bestSolution?.qualityScore ?: 0.5f,
             supportingArguments = solutions.filter { it.qualityScore > 0.7 }.map { it.id },
             dissentingArguments = solutions.filter { it.qualityScore <= 0.5 }.map { it.id },

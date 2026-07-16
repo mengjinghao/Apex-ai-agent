@@ -23,13 +23,13 @@ data class SessionEntity(
     /** 会话标题 */
     val title: String,
     
-    /** 父会话ID - 用于会话分裂�?*/
+    /** 父会话ID - 用于会话分裂?*/
     val parentSessionId: String?,
     
-    /** 分裂点消息ID - 记录从哪个消息开始分�?*/
+    /** 分裂点消息ID - 记录从哪个消息开始分?*/
     val splitFromMessageId: String?,
     
-    /** 创建时间�?*/
+    /** 创建时间?*/
     val createdAt: Long,
     
     /** 最后更新时间戳 */
@@ -38,7 +38,7 @@ data class SessionEntity(
     /** 会话是否活跃 */
     val isActive: Boolean = true,
     
-    /** 会话元数�?(JSON格式�?*/
+    /** 会话元数?(JSON格式?*/
     val metadata: String? = null,
     
     /** LLM摘要 */
@@ -86,16 +86,16 @@ data class MessageEntity(
     /** 工具名称 (如果有） */
     val toolName: String? = null,
     
-    /** 创建时间�?*/
+    /** 创建时间?*/
     val createdAt: Long,
     
     /** 消息token数量 */
     val tokenCount: Int? = null,
     
-    /** 消息是否被压�摘要 */
+    /** 消息是否被压摘要 */
     val isCompressed: Boolean = false,
     
-    /** 关联的父消息ID (用于追踪�?*/
+    /** 关联的父消息ID (用于追踪?*/
     val parentMessageId: String? = null
 )
 
@@ -112,7 +112,7 @@ data class FTSSearchResult(
 )
 
 /**
- * 会话链节�?- 用于追踪会话分裂
+ * 会话链节?- 用于追踪会话分裂
  */
 data class SessionChainNode(
     val sessionId: String,
@@ -143,13 +143,13 @@ data class BatchRunEntity(
     /** 任务描述 */
     val taskDescription: String,
     
-    /** 状�? pending/running/completed/failed */
+    /** 状? pending/running/completed/failed */
     val status: String,
     
     /** 创建时间 */
     val createdAt: Long,
     
-    /** 开始时�?*/
+    /** 开始时?*/
     val startedAt: Long? = null,
     
     /** 完成时间 */
@@ -190,7 +190,7 @@ data class RLTrajectoryEntity(
     /** 步骤序号 */
     val stepIndex: Int,
     
-    /** 状�?*/
+    /** 状?*/
     val state: String,
     
     /** 动作 */
@@ -199,7 +199,7 @@ data class RLTrajectoryEntity(
     /** 奖励 */
     val reward: Double,
     
-    /** 下一个状�?*/
+    /** 下一个状?*/
     val nextState: String,
     
     /** 是否完成 */

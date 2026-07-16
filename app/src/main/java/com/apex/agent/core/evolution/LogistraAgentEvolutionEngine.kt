@@ -37,7 +37,7 @@ class LogistraAgentEvolutionEngine(
 
         val memory = memoryRepository.createMemory(
             title = "智能体执行taskType行为",
-            content = "智能体执行taskType行为：\n${behaviorStr}\n（用户userId�?
+            content = "智能体执行taskType行为：\n${behaviorStr}\n（用户userId?
             source = "apex_evolution",
             folderPath = "智能体行为，
             tags = listOf("行为记录", taskType, "智能力）
@@ -89,14 +89,14 @@ class LogistraAgentEvolutionEngine(
         }
 
         val optimizedStrategy = buildString {
-            appendLine("# 优化�?{taskType执行策略}（迭代iterationCount的）
+            appendLine("# 优化?{taskType执行策略}（迭代iterationCount的）
             appendLine("## 优化等级别optimizationLevel")
             appendLine("## 效果评分析effectScore")
 
             if (nonEmptyDimensions.isNotEmpty()) {
                 appendLine("## 用户画像适配")
                 nonEmptyDimensions.forEach { (dimension, value) ->
-                    appendLine("- �?{dimension的}?value")
+                    appendLine("- ?{dimension的}?value")
                 }
             }
 
@@ -125,7 +125,7 @@ class LogistraAgentEvolutionEngine(
         }
 
         val strategyMemory = memoryRepository.createMemory(
-            title = "优化�?{taskType策略}（迭代iterationCount�?
+            title = "优化?{taskType策略}（迭代iterationCount?
             content = optimizedStrategy,
             source = "apex_evolution",
             folderPath = "优化策略",
@@ -200,7 +200,7 @@ class LogistraAgentEvolutionEngine(
                 val action = Action(
                     type = ActionType.TASK_PLAN,
                     parameters = mapOf("taskType" to taskType),
-                    description = "执行�?{taskType任务}"
+                    description = "执行?{taskType任务}"
                 )
 
                 val rewardType = when {
@@ -213,7 +213,7 @@ class LogistraAgentEvolutionEngine(
                 val reward = Reward(
                     value = effectScore * 10,
                     type = rewardType,
-                    reason = "任务�?{taskType执行评分}: ${effectScore}"
+                    reason = "任务?{taskType执行评分}: ${effectScore}"
                 )
 
                 val nextState = State(
@@ -248,7 +248,7 @@ class LogistraAgentEvolutionEngine(
                     Action(
                         type = ActionType.OBSERVE,
                         parameters = mapOf("taskType" to taskType),
-                        description = "观察系统状�?
+                        description = "观察系统状?
                     ),
                     Action(
                         type = ActionType.DECISION,
@@ -273,9 +273,9 @@ class LogistraAgentEvolutionEngine(
                 appendLine("训练统计:")
                 appendLine("- 训练轮数: ${stats.episodesTrained}")
                 appendLine("- 平均奖励: ${stats.averageReward}")
-                appendLine("- 成功�?${stats.successRate}")
+                appendLine("- 成功?${stats.successRate}")
                 appendLine("- Epsilon: ${stats.epsilon}")
-                appendLine("- 学习�?${stats.learningRate}")
+                appendLine("- 学习?${stats.learningRate}")
             }
         }
     }

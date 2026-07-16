@@ -1,14 +1,14 @@
 package com.apex.agent.core.ai.prompt
 
 /**
- * 提示工程优化�?
+ * 提示工程优化?
  * 
- * 学习�?Codex 的提示工程最佳实践，为不同类型的任务提供优化的提示模�?
+ * 学习?Codex 的提示工程最佳实践，为不同类型的任务提供优化的提示模?
  */
 class PromptOptimizer {
     
     /**
-     * 构建代码生成的优化提�?
+     * 构建代码生成的优化提?
      */
     fun buildCodeGenerationPrompt(
         task: String,
@@ -18,13 +18,13 @@ class PromptOptimizer {
         constraints: List<String> = emptyList()
     ): String {
         return buildString {
-            // 系统指令 - 设定角色和标�?
+            // 系统指令 - 设定角色和标?
             appendLine("You are an expert ${language} developer with deep knowledge of best practices.")
             appendLine("Write clean, efficient, and well-documented code.")
             appendLine("Follow Android/Kotlin conventions and design patterns.")
             appendLine()
             
-            // 上下文信�?
+            // 上下文信?
             if (context != null) {
                 if (context.imports.isNotEmpty()) {
                     appendLine("Available imports:")
@@ -86,7 +86,7 @@ class PromptOptimizer {
     }
     
     /**
-     * 构建代码审查的优化提�?
+     * 构建代码审查的优化提?
      */
     fun buildCodeReviewPrompt(
         code: String,
@@ -137,7 +137,7 @@ class PromptOptimizer {
     }
     
     /**
-     * 构建代码解释的优化提�?
+     * 构建代码解释的优化提?
      */
     fun buildCodeExplanationPrompt(
         code: String,
@@ -177,7 +177,7 @@ class PromptOptimizer {
     }
     
     /**
-     * 构建重构建议的优化提�?
+     * 构建重构建议的优化提?
      */
     fun buildRefactoringPrompt(
         code: String,
@@ -263,7 +263,7 @@ class PromptOptimizer {
 }
 
 /**
- * 代码上下文信�?
+ * 代码上下文信?
  */
 data class CodeContext(
     val imports: List<String> = emptyList(),
@@ -274,7 +274,7 @@ data class CodeContext(
 )
 
 /**
- * 代码示例（用�?Few-shot learning�?
+ * 代码示例（用?Few-shot learning?
  */
 data class CodeExample(
     val input: String,

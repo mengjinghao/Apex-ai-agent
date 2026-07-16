@@ -4,8 +4,8 @@ import android.content.Context
 import java.util.UUID
 
 /**
- * Agent 反思系�?- 参�?GPTeam �?AutoGPT 的反思功�?
- * �?Agent 能够反思过去的行为并改�?
+ * Agent 反思系?- 参?GPTeam ?AutoGPT 的反思功?
+ * ?Agent 能够反思过去的行为并改?
  */
 data class Reflection(
     val id: String = UUID.randomUUID().toString(),

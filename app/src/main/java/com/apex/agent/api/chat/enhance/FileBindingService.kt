@@ -462,7 +462,7 @@ class FileBindingService(context: Context) {
         if (numOldLines == 0) return -1 to -1
         if (originalLines.isEmpty()) return -1 to -1
 
-        AppLogger.d(TAG, "开始查找最佳匹配范围，原始文件行数: ${originalLines.size}, 目标块行�?${numOldLines}")
+        AppLogger.d(TAG, "开始查找最佳匹配范围，原始文件行数: ${originalLines.size}, 目标块行?${numOldLines}")
         val startTime = System.currentTimeMillis()
         var totalWindows = 0
         var lcsCalculations = 0
@@ -486,11 +486,11 @@ class FileBindingService(context: Context) {
                 lineStartIndices.add(length)
                 append(line.replace(Regex("\\s+"), ""))
             }
-            lineStartIndices.add(length) // 添加一个末尾索引，方便计算最后一�?       }
-        AppLogger.d(TAG, "预计算完成，规范化后字符�?${normalizedOriginalContent.length}")
+            lineStartIndices.add(length) // 添加一个末尾索引，方便计算最后一?       }
+        AppLogger.d(TAG, "预计算完成，规范化后字符?${normalizedOriginalContent.length}")
 
-        // --- 阶段一：计算目标窗口尺寸范�?--
-        val delta = (numOldLines * 0.2).toInt() + 2 // 扩大�?0%的容错范围，并确保至少有2行的浮动
+        // --- 阶段一：计算目标窗口尺寸范?--
+        val delta = (numOldLines * 0.2).toInt() + 2 // 扩大?0%的容错范围，并确保至少有2行的浮动
         val targetSizes = (maxOf(1, numOldLines - delta))..(numOldLines + delta)
 
         var bestMatchScore = 0.0
@@ -500,7 +500,7 @@ class FileBindingService(context: Context) {
 
         // --- 阶段二：并行滑动窗口搜索 ---
         val totalIterations = originalLines.size.toLong() * targetSizes.count().toLong()
-        AppLogger.d(TAG, "开始滑动窗口匹配（并行），总迭代次�?${totalIterations}")
+        AppLogger.d(TAG, "开始滑动窗口匹配（并行），总迭代次?${totalIterations}")
 
         val processedWindows = java.util.concurrent.atomic.AtomicLong(0L)
         val lastProgressEmitMs = java.util.concurrent.atomic.AtomicLong(0L)
@@ -592,12 +592,12 @@ class FileBindingService(context: Context) {
                                 val matchPercentage = (localBestScore * 100).toInt()
                                 AppLogger.d(
                                     TAG,
-                                    "并行块[${threadIndex}] 发现更佳匹配: �?{i + 1}-${endLine}, 相似�?${matchPercentage}%"
+                                    "并行块[${threadIndex}] 发现更佳匹配: ?{i + 1}-${endLine}, 相似?${matchPercentage}%"
                                 )
 
                                 if (localBestScore == 1.0 && localBestSizeDiff == 0 && localBestLengthDiff == 0) {
                                     foundPerfectMatch.set(true)
-                                    AppLogger.d(TAG, "并行块[${threadIndex}] 已找�?00%匹配，提前结束该块搜索，)
+                                    AppLogger.d(TAG, "并行块[${threadIndex}] 已找?00%匹配，提前结束该块搜索，)
                                     return@Callable MatchSearchResult(
                                         localBestScore,
                                         localBestStart,
@@ -660,19 +660,19 @@ class FileBindingService(context: Context) {
             executor.shutdown()
         }
 
-        // 记录最终结�?       val totalTime = (System.currentTimeMillis() - startTime) / 1000.0
+        // 记录最终结?       val totalTime = (System.currentTimeMillis() - startTime) / 1000.0
         val result = if (bestMatchScore > 0.9) {
 
             val (start, end) = bestMatchRange
             AppLogger.d(
                 TAG,
-                "匹配完成! 最佳匹�?�?{start + 1}-${end + 1}, 相似�?${(bestMatchScore * 100).toInt()}%, " +
+                "匹配完成! 最佳匹??{start + 1}-${end + 1}, 相似?${(bestMatchScore * 100).toInt()}%, " +
                         "总耗时: ${String.format("%.2f", totalTime)}s, " +
                         "总窗口数: ${totalWindows}, 总LCS计算: ${lcsCalculations}"
             )
             bestMatchRange
         } else {
-            AppLogger.w(TAG, "未找到足够好的匹�最高相似度: ${(bestMatchScore * 100).toInt()}% < 90%)")
+            AppLogger.w(TAG, "未找到足够好的匹最高相似度: ${(bestMatchScore * 100).toInt()}% < 90%)")
             -1 to -1
         }
 

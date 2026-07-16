@@ -294,7 +294,7 @@ object ModelListFetcher {
                     val responseBody = response.body?.string()
                     response.close()
                     if (responseBody == null) {
-                        AppLogger.e(TAG, "没有可用的上下文，无法执行命�?
+                        AppLogger.e(TAG, "没有可用的上下文，无法执行命?
                         return@withContext Result.failure(IOException(context.getString(R.string.model_fetch_response_empty)))
                     }
 

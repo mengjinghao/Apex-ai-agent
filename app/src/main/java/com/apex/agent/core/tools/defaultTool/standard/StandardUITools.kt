@@ -68,11 +68,11 @@ open class StandardUITools(protected val context: Context) : ToolImplementations
                         // E-commerce
                         "淘宝" to "com.taobao.taobao",
                         "京东" to "com.jingdong.app.mall",
-                        "拼多�?to "com.xunmeng.pinduoduo",
+                        "拼多?to "com.xunmeng.pinduoduo",
                         "淘宝闪购" to "com.taobao.taobao",
                         "京东秒， to "com.jingdong.app.mall",
                         // Lifestyle & Social
-                        "小红�?to "com.xingin.xhs",
+                        "小红?to "com.xingin.xhs",
                         "豆瓣" to "com.douban.frodo",
                         "知乎" to "com.zhihu.android",
                         // Maps & Navigation
@@ -81,29 +81,29 @@ open class StandardUITools(protected val context: Context) : ToolImplementations
                         // Food & Services
                         "美团" to "com.sankuai.meituan",
                         "大众点评" to "com.dianping.v1",
-                        "饿了�?to "me.ele",
-                        "肯德�?to "com.yek.android.kfc.activitys",
+                        "饿了?to "me.ele",
+                        "肯德?to "com.yek.android.kfc.activitys",
                         // Travel
                         "携程" to "ctrip.android.view",
                         "铁路12306" to "com.MobileTicket",
                         "12306" to "com.MobileTicket",
-                        "去哪�?to "com.Qunar",
-                        "去哪儿旅�?to "com.Qunar",
+                        "去哪?to "com.Qunar",
+                        "去哪儿旅?to "com.Qunar",
                         "滴滴出行" to "com.sdu.did.psnger",
                         // Video & Entertainment
                         "bilibili" to "tv.danmaku.bili",
                         "哔哩哔哩" to "tv.danmaku.bili",
-                        "B�?to "tv.danmaku.bili",
-                        "b�?to "tv.danmaku.bili",
+                        "B?to "tv.danmaku.bili",
+                        "b?to "tv.danmaku.bili",
                         "抖音" to "com.ss.android.ugc.aweme",
                         "快手" to "com.smile.gifmaker",
                         "腾讯视频" to "com.tencent.qqlive",
-                        "爱奇�?to "com.qiyi.video",
+                        "爱奇?to "com.qiyi.video",
                         "优酷视频" to "com.youku.phone",
                         "芒果TV" to "com.hunantv.imgo.activity",
                         "红果短剧" to "com.phoenix.read",
                         // Music & Audio
-                        "网易云音�?to "com.netease.cloudmusic",
+                        "网易云音?to "com.netease.cloudmusic",
                         "QQ音乐" to "com.tencent.qqmusic",
                         "汽水音乐" to "com.luna.music",
                         "喜马拉雅" to "com.ximalaya.ting.android",
@@ -124,12 +124,12 @@ open class StandardUITools(protected val context: Context) : ToolImplementations
                         "今日头条" to "com.ss.android.article.news",
                         // Real Estate
                         "贝壳找房" to "com.lianjia.beike",
-                        "安居�?to "com.anjuke.android.app",
+                        "安居?to "com.anjuke.android.app",
                         // Finance
-                        "同花�?to "com.hexin.plat.android",
+                        "同花?to "com.hexin.plat.android",
                         // Games
                         "星穹铁道" to "com.miHoYo.hkrpg",
-                        "崩坏：星穹铁�?to "com.miHoYo.hkrpg",
+                        "崩坏：星穹铁?to "com.miHoYo.hkrpg",
                         "恋与深空" to "com.papegames.lysk.cn",
                         // System & Utilities (English mappings)
                         "AndroidSystemSettings" to "com.android.settings",
@@ -426,7 +426,7 @@ open class StandardUITools(protected val context: Context) : ToolImplementations
                 toolName = tool.name,
                 success = false,
                 result = StringResultData(""),
-                error = "当前 UI 控制器模型未启用识图能力，请在设置功能模型中�?UI 控制器功能选择支持图片理解的模型后再试着
+                error = "当前 UI 控制器模型未启用识图能力，请在设置功能模型中?UI 控制器功能选择支持图片理解的模型后再试着
             )
         }
 
@@ -542,17 +542,17 @@ open class StandardUITools(protected val context: Context) : ToolImplementations
                 SimpleDateFormat("yyyy-MM-dd EEEE", Locale.ENGLISH).format(Date())
             } else {
                 val calendar = Calendar.getInstance()
-                val sdf = SimpleDateFormat("yyyy年MM月dd�? Locale.getDefault())
+                val sdf = SimpleDateFormat("yyyy年MM月dd? Locale.getDefault())
                 val datePart = sdf.format(Date())
                 val weekdayNames =
                     arrayOf(
-                        "星期�?
+                        "星期?
                         "星期一",
-                        "星期�?
-                        "星期�?
-                        "星期�?
-                        "星期�?
-                        "星期�?
+                        "星期?
+                        "星期?
+                        "星期?
+                        "星期?
+                        "星期?
                     )
                 val weekday = weekdayNames[calendar.get(Calendar.DAY_OF_WEEK) - 1]
                 "${datePart} ${weekday}"

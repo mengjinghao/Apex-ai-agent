@@ -10,13 +10,13 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- * 工作流可视化编辑�?
+ * 工作流可视化编辑?
  *
- * 功能�?
- * - 可视化拖拽设�?
+ * 功能?
+ * - 可视化拖拽设?
  * - 节点编辑
- * - 连接线管�?
- * - 缩放和平�?
+ * - 连接线管?
+ * - 缩放和平?
  * - 导出/导入
  * - 实时预览
  */
@@ -144,7 +144,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         INFO
     }
 
-    // ========== 状�?==========
+    // ========== 状?==========
 
     private val _editorState = MutableStateFlow<EditorState?>(null)
     val editorState: StateFlow<EditorState?> = _editorState.asStateFlow()
@@ -198,7 +198,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
             // Trigger 节点
             NodeTemplate(
                 type = NodeType.TRIGGER,
-                name = "触发�?,
+                name = "触发?,
                 description = "工作流入口点",
                 icon = "▶️",
                 defaultConfig = mapOf("triggerType" to "MANUAL"),
@@ -212,7 +212,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
                 type = NodeType.EXECUTE,
                 name = "执行动作",
                 description = "执行特定的操作或工具",
-                icon = "�?,
+                icon = "?,
                 defaultConfig = mapOf("actionType" to "log"),
                 outputPorts = 1,
                 inputPorts = 1,
@@ -224,7 +224,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
                 type = NodeType.CONDITION,
                 name = "条件判断",
                 description = "根据条件选择分支",
-                icon = "�?,
+                icon = "?,
                 defaultConfig = mapOf("operator" to "EQ", "left" to "", "right" to ""),
                 outputPorts = 2,
                 inputPorts = 1,
@@ -277,7 +277,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
     }
 
     /**
-     * 加载现有工作�?
+     * 加载现有工作?
      */
     fun loadWorkflow(workflow: WorkflowDefinition): EditorState {
         val state = EditorState(workflow = workflow)
@@ -287,7 +287,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
     }
 
     /**
-     * �?JSON 加载工作�?
+     * ?JSON 加载工作?
      */
     fun loadFromJson(jsonString: String): EditorState? {
         return try {
@@ -533,7 +533,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         val action = state.undoStack.last()
         val newUndoStack = state.undoStack.dropLast(1)
 
-        // 根据操作类型恢复状�?
+        // 根据操作类型恢复状?
         val updatedWorkflow = when (action.type) {
             ActionType.ADD_NODE -> {
                 val nodeId = action.nodeId ?: return false
@@ -547,7 +547,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
                     nodes = state.workflow.nodes + node
                 )
             }
-            ActionType.MOVE_NODE -> state.workflow // 需要更复杂的处�?
+            ActionType.MOVE_NODE -> state.workflow // 需要更复杂的处?
             ActionType.UPDATE_NODE -> {
                 val nodeId = action.nodeId ?: return false
                 val beforeNode = action.before?.let { Json.decodeFromString<WorkflowNode>(it) } ?: return false
@@ -590,10 +590,10 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         val action = state.redoStack.last()
         val newRedoStack = state.redoStack.dropLast(1)
 
-        // 根据操作类型恢复状�?
+        // 根据操作类型恢复状?
         val updatedWorkflow = when (action.type) {
             ActionType.UNDO -> {
-                // 执行相反的操�?
+                // 执行相反的操?
                 when (action.type) {
                     ActionType.ADD_NODE -> {
                         val nodeId = action.nodeId ?: return false
@@ -657,7 +657,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
     }
 
     /**
-     * 全�?
+     * 全?
      */
     fun selectAll() {
         val state = _editorState.value ?: return
@@ -727,13 +727,13 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
         val layers = mutableMapOf<String, Int>()
         val positioned = mutableSetOf<String>()
 
-        // 找出入口节点（没有入边的节点�?
+        // 找出入口节点（没有入边的节点?
         val entryNodes = state.workflow.nodes.filter { node ->
             state.workflow.connections.none { it.targetNodeId == node.id }
         }
 
         if (entryNodes.isEmpty()) {
-            // 如果没有明确的入口，选择第一个节�?
+            // 如果没有明确的入口，选择第一个节?
             entryNodes.firstOrNull()?.let {
                 layers[it.id] = 0
                 positioned.add(it.id)
@@ -782,7 +782,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
     }
 
     /**
-     * 验证工作�?
+     * 验证工作?
      */
     fun validateWorkflow(): List<ValidationIssue> {
         val state = _editorState.value ?: return emptyList()
@@ -797,9 +797,9 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
             ))
         }
 
-        // 检查每个节�?
+        // 检查每个节?
         for (node in state.workflow.nodes) {
-            // 验证触发�?
+            // 验证触发?
             if (node.type == NodeType.TRIGGER) {
                 if (node.config.triggerConfig == null) {
                     issues.add(ValidationIssue(
@@ -835,7 +835,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
             }
         }
 
-        // 检查连�?
+        // 检查连?
         for (conn in state.workflow.connections) {
             val sourceExists = state.workflow.nodes.any { it.id == conn.sourceNodeId }
             val targetExists = state.workflow.nodes.any { it.id == conn.targetNodeId }
@@ -849,7 +849,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
             }
         }
 
-        // 检查循�?
+        // 检查循?
         if (hasCycle(state.workflow)) {
             issues.add(ValidationIssue(
                 severity = IssueSeverity.WARNING,
@@ -863,7 +863,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
     }
 
     /**
-     * 导出�?JSON
+     * 导出?JSON
      */
     fun exportToJson(): String? {
         val state = _editorState.value ?: return null
@@ -876,7 +876,7 @@ class WorkflowVisualEditor private constructor(private val context: Context) {
     }
 
     /**
-     * 导出为图片（占位，实际需�?Canvas 绑定�?
+     * 导出为图片（占位，实际需?Canvas 绑定?
      */
 fun exportToImage(): ByteArray? {
         val state = _editorState.value ?: return null
@@ -955,7 +955,7 @@ fun exportToImage(): ByteArray? {
     }
 
     /**
-     * 执行工作�?
+     * 执行工作?
      */
     suspend fun executeWorkflow(): ExecutionResult? {
         val state = _editorState.value ?: return null
@@ -1016,7 +1016,7 @@ fun exportToImage(): ByteArray? {
     // ========== 私有方法 ==========
 
     private fun wouldCreateCycle(workflow: WorkflowDefinition, sourceId: String, targetId: String): Boolean {
-        // 简单检查：�?target 能否到达 source
+        // 简单检查：?target 能否到达 source
         val visited = mutableSetOf<String>()
         fun canReach(from: String, to: String): Boolean {
             if (from == to) return true
@@ -1080,7 +1080,7 @@ fun exportToImage(): ByteArray? {
         return (value / GRID_SIZE).toInt() * GRID_SIZE
     }
 
-    // ========== 数据�?==========
+    // ========== 数据?==========
 
     data class ExecutionResult(
         val success: Boolean,

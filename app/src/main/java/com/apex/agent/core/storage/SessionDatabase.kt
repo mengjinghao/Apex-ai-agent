@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 /**
- * 会话数据�?- SQLite + Room实现，支持WAL模式
+ * 会话数据?- SQLite + Room实现，支持WAL模式
  */
 @Database(
     entities = [
@@ -63,7 +63,7 @@ abstract class SessionDatabase : RoomDatabase() {
         }
         
         /**
-         * 执行WAL检查点 - 将WAL日志刷新到主数据�?         */
+         * 执行WAL检查点 - 将WAL日志刷新到主数据?         */
         suspend fun checkpoint() {
             withContext(Dispatchers.IO) {
                 INSTANCE?.apply {

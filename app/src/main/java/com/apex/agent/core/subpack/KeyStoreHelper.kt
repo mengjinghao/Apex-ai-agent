@@ -14,10 +14,10 @@ class KeyStoreHelper {
     companion object {
         private const val TAG = "KeyStoreHelper"
 
-        // 保存注册的BouncyCastle提供者引�?       private var bcProvider: Provider? = null
+        // 保存注册的BouncyCastle提供者引?       private var bcProvider: Provider? = null
 
         /**
-         * 注册BouncyCastle提供�?        * @return 是否成功注册
+         * 注册BouncyCastle提供?        * @return 是否成功注册
          */
         @JvmStatic
         fun registerBouncyCastleProvider(): Boolean {
@@ -25,7 +25,7 @@ class KeyStoreHelper {
                 // 先移除再添加，避免重复添加导致的问题
                 Security.removeProvider("BC")
 
-                // 创建新的BouncyCastle提供者实�?               val provider = BouncyCastleProvider()
+                // 创建新的BouncyCastle提供者实?               val provider = BouncyCastleProvider()
 
                 // 添加到安全提供者列表首位确保优先级
                 val position = Security.insertProviderAt(provider, 1)
@@ -41,13 +41,13 @@ class KeyStoreHelper {
         }
 
         /**
-         * 获取密钥库实�?        * @param keyStoreType 密钥库类�?PKCS12, JKS�?
+         * 获取密钥库实?        * @param keyStoreType 密钥库类?PKCS12, JKS?
          * @return 密钥库实例或null
          */
         @JvmStatic
         fun getKeyStoreInstance(keyStoreType: String): KeyStore? {
             try {
-                // 对于PKCS12类型，确保BouncyCastle提供者已注册并在第一�?               if (keyStoreType == "PKCS12") {
+                // 对于PKCS12类型，确保BouncyCastle提供者已注册并在第一?               if (keyStoreType == "PKCS12") {
                     registerBouncyCastleProvider()
 
                     // 尝试直接通过类型获取，因为BC现在是第一位提供，                    return KeyStore.getInstance(keyStoreType)
@@ -56,13 +56,13 @@ class KeyStoreHelper {
                     return KeyStore.getInstance(keyStoreType)
                 }
             } catch (e: Exception) {
-                AppLogger.e(TAG, "获取${keyStoreType}密钥库实例失�?${e.message}", e)
+                AppLogger.e(TAG, "获取${keyStoreType}密钥库实例失?${e.message}", e)
                 return null
             }
         }
 
         /**
-         * 验证密钥库文件是否有�?        * @param file 密钥库文�?        * @param type 密钥库类�?        * @param password 密钥库密�?        * @return 是否有效
+         * 验证密钥库文件是否有?        * @param file 密钥库文?        * @param type 密钥库类?        * @param password 密钥库密?        * @return 是否有效
          */
         @JvmStatic
         fun validateKeystore(file: File, type: String, password: String): Boolean {
@@ -72,22 +72,22 @@ class KeyStoreHelper {
                     registerBouncyCastleProvider()
                 }
 
-                // 获取密钥库实�?               val keyStore = getKeyStoreInstance(type) ?: return false
+                // 获取密钥库实?               val keyStore = getKeyStoreInstance(type) ?: return false
 
-                // 加载密钥�?               FileInputStream(file).use { input ->
+                // 加载密钥?               FileInputStream(file).use { input ->
                     keyStore.load(input, password.toCharArray())
 
-                    // 检查是否包含至少一个别�?                   return keyStore.aliases().hasMoreElements()
+                    // 检查是否包含至少一个别?                   return keyStore.aliases().hasMoreElements()
                 }
             } catch (e: Exception) {
-                AppLogger.e(TAG, "${type} 密钥库验证失�?${e.message}")
+                AppLogger.e(TAG, "${type} 密钥库验证失?${e.message}")
                 return false
             }
         }
 
         /**
          * 从应用assets中加载内置密钥库
-         * @param context 应用上下�?        * @param assetName 资产文件�?        * @param outputFileName 输出文件�?        * @return 密钥库文件或null
+         * @param context 应用上下?        * @param assetName 资产文件?        * @param outputFileName 输出文件?        * @return 密钥库文件或null
          */
         @JvmStatic
         fun loadKeystoreFromAsset(
@@ -98,7 +98,7 @@ class KeyStoreHelper {
             try {
                 val keystoreFile = File(context.filesDir, outputFileName)
 
-                // 如果文件已存在且大小合理，直接返�?               if (keystoreFile.exists() && keystoreFile.length() > 1000) {
+                // 如果文件已存在且大小合理，直接返?               if (keystoreFile.exists() && keystoreFile.length() > 1000) {
                     return keystoreFile
                 }
 
@@ -107,11 +107,11 @@ class KeyStoreHelper {
                     keystoreFile.delete()
                 }
 
-                // 从assets复制密钥库文�?               context.assets.open(assetName).use { input ->
+                // 从assets复制密钥库文?               context.assets.open(assetName).use { input ->
                     val bytes = input.readBytes()
 
                     if (bytes.size < 1000) {
-                        AppLogger.e(TAG, "密钥库文件大小异�?${bytes.size}字节")
+                        AppLogger.e(TAG, "密钥库文件大小异?${bytes.size}字节")
                         return null
                     }
 
@@ -127,14 +127,14 @@ class KeyStoreHelper {
                     null
                 }
             } catch (e: Exception) {
-                AppLogger.e(TAG, "加载内置密钥库失�?${e.message}", e)
+                AppLogger.e(TAG, "加载内置密钥库失?${e.message}", e)
                 return null
             }
         }
 
         /**
          * 获取或创建应用签名密钥库
-         * @param context 应用上下�?        * @return 密钥库文�?        */
+         * @param context 应用上下?        * @return 密钥库文?        */
         @JvmStatic
         fun getOrCreateKeystore(context: Context): File {
             // 确保BouncyCastle提供者已注册
@@ -166,10 +166,10 @@ class KeyStoreHelper {
                         return keyStoreFile
                     }
                 } catch (e: Exception) {
-                    // 忽略单个格式错误，继续尝试下一�?               }
+                    // 忽略单个格式错误，继续尝试下一?               }
             }
 
-            // 如果所有尝试都失败，返回默认文件路�?           return pkcs12KeyStoreFile
+            // 如果所有尝试都失败，返回默认文件路?           return pkcs12KeyStoreFile
         }
     }
 }

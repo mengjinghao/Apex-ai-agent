@@ -3,7 +3,7 @@ package com.apex.agent.orchestration.sanxing
 import com.apex.agent.core.multiagent.AgentPermissions
 
 /**
- * 三星制角色的配置数据类�? */
+ * 三星制角色的配置数据类? */
 data class SanxingRoleConfig(
     val roleId: String,
     val roleName: String,

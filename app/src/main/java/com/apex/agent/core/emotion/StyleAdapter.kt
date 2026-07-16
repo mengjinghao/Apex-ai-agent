@@ -53,7 +53,7 @@ class StyleAdapter(private val context: Context) {
             4
         ),
         TECHNICAL(
-            "技�?,
+            "技?,
             5,
             Verbosity.CONCISE,
             1
@@ -71,7 +71,7 @@ class StyleAdapter(private val context: Context) {
             3
         ),
         SUPPORTIVE(
-            "支持�?,
+            "支持?,
             1,
             Verbosity.DETAILED,
             5
@@ -105,72 +105,72 @@ class StyleAdapter(private val context: Context) {
 
     private val styleTransitionPhrases = mapOf(
         ConversationStyle.FORMAL to listOf(
-            "根据我们的讨�?, "基于上述分析", "就此问题而言", "综上所�?,
-            "从专业角度来�?, "根据您提供的信息"
+            "根据我们的讨?, "基于上述分析", "就此问题而言", "综上所?,
+            "从专业角度来?, "根据您提供的信息"
         ),
         ConversationStyle.PROFESSIONAL to listOf(
-            "从技术角度分�?, "根据我的理解", "这个问题涉及", "建议您考虑",
+            "从技术角度分?, "根据我的理解", "这个问题涉及", "建议您考虑",
             "基于当前情况", "值得注意的是"
         ),
         ConversationStyle.CASUAL to listOf(
-            "话说", "其实", "说起�?, "大概", "可能", "也许",
+            "话说", "其实", "说起?, "大概", "可能", "也许",
             "我觉得吧", "你知道吗"
         ),
         ConversationStyle.FRIENDLY to listOf(
-            "太好了！", "太棒了！", "加油�?, "别担心！", "你一定能行！",
-            "我理解你的感�?, "这很正常"
+            "太好了！", "太棒了！", "加油?, "别担心！", "你一定能行！",
+            "我理解你的感?, "这很正常"
         ),
         ConversationStyle.EMPATHETIC to listOf(
-            "我能理解你的感受", "这确实让人很困扰", "我理解你的难�?,
-            "听起来你最近压力很�?, "我完全能感受到你的心�?,
-            "这一定很不容�?
+            "我能理解你的感受", "这确实让人很困扰", "我理解你的难?,
+            "听起来你最近压力很?, "我完全能感受到你的心?,
+            "这一定很不容?
         ),
         ConversationStyle.HUMOROUS to listOf(
-            "哈哈，这题有意�?, "让我想想怎么解释", "这么说吧",
-            "想象一�?, "说起来好笑的�?, "你有没有想过"
+            "哈哈，这题有意?, "让我想想怎么解释", "这么说吧",
+            "想象一?, "说起来好笑的?, "你有没有想过"
         ),
         ConversationStyle.TECHNICAL to listOf(
-            "从技术实现角�?, "具体来说", "技术细节如�?, "实现原理�?,
-            "核心算法�?, "关键在于", "具体参数�?
+            "从技术实现角?, "具体来说", "技术细节如?, "实现原理?,
+            "核心算法?, "关键在于", "具体参数?
         ),
         ConversationStyle.ACADEMIC to listOf(
-            "根据相关研究", "学术文献表明", "从理论角度分�?, "研究表明",
-            "学术界普遍认�?, "这一观点的理论基础�?
+            "根据相关研究", "学术文献表明", "从理论角度分?, "研究表明",
+            "学术界普遍认?, "这一观点的理论基础?
         ),
         ConversationStyle.CREATIVE to listOf(
             "让我换个角度想想", "或许可以这样理解", "打个比方",
-            "想象一下如�?, "从另一个视角来�?, "这就�?
+            "想象一下如?, "从另一个视角来?, "这就?
         ),
         ConversationStyle.SUPPORTIVE to listOf(
-            "我相信你能做�?, "你已经做得很好了", "继续加油",
-            "不要放弃", "这是一个好的开�?, "相信你自�?
+            "我相信你能做?, "你已经做得很好了", "继续加油",
+            "不要放弃", "这是一个好的开?, "相信你自?
         )
     )
 
     private val styleTemplates = mapOf(
         ConversationStyle.FORMAL to listOf(
-            "尊敬的先�女士�?,
+            "尊敬的先女士?,
             "敬启者，",
             "特此通知您，",
-            "请您知悉�?
+            "请您知悉?
         ),
         ConversationStyle.PROFESSIONAL to listOf(
-            "您好�?,
-            "感谢您的咨询�?,
-            "关于您的问题�?,
-            "根据您的情况�?
+            "您好?,
+            "感谢您的咨询?,
+            "关于您的问题?,
+            "根据您的情况?
         ),
         ConversationStyle.CASUAL to listOf(
             "嘿，",
             "嗨，",
-            "你好呀�?,
-            "Hi�?
+            "你好呀?,
+            "Hi?
         ),
         ConversationStyle.FRIENDLY to listOf(
-            "很高兴见到你�?,
-            "太开心了�?,
-            "欢迎欢迎�?,
-            "好久不见�?
+            "很高兴见到你?,
+            "太开心了?,
+            "欢迎欢迎?,
+            "好久不见?
         )
     )
 
@@ -188,7 +188,7 @@ class StyleAdapter(private val context: Context) {
     private val contextToStyleMapping = mapOf(
         "编程" to Pair(ConversationStyle.TECHNICAL, 0.9f),
         "代码" to Pair(ConversationStyle.TECHNICAL, 0.9f),
-        "开�? to Pair(ConversationStyle.TECHNICAL, 0.8f),
+        "开? to Pair(ConversationStyle.TECHNICAL, 0.8f),
         "学术" to Pair(ConversationStyle.ACADEMIC, 0.9f),
         "研究" to Pair(ConversationStyle.ACADEMIC, 0.8f),
         "论文" to Pair(ConversationStyle.ACADEMIC, 0.9f),
@@ -222,7 +222,7 @@ class StyleAdapter(private val context: Context) {
             val emotionWeight = emotionProfile.confidence
             confidence = emotionWeight
             bestStyle = emotionStyle
-            reasons.add("基于当前情绪�?{emotionProfile.primaryEmotion.displayName}�?)
+            reasons.add("基于当前情绪?{emotionProfile.primaryEmotion.displayName}?)
         }
 
         if (userPreferences != null) {
@@ -256,9 +256,9 @@ class StyleAdapter(private val context: Context) {
 
         val samplePhrases = styleTransitionPhrases[bestStyle] ?: emptyList()
 
-        val reasoning = reasons.joinToString("�?)
+        val reasoning = reasons.joinToString("?)
 
-        AppLogger.d(TAG, "风格适配完成: ${bestStyle} (置信�? ${confidence})")
+        AppLogger.d(TAG, "风格适配完成: ${bestStyle} (置信? ${confidence})")
 
         AdaptationResult(
             suggestedStyle = bestStyle,
@@ -295,13 +295,13 @@ class StyleAdapter(private val context: Context) {
         when (style) {
             ConversationStyle.FORMAL -> {
                 styledContent = styledContent
-                    .replace("�?, "�?)
-                    .replace("我觉�?, "我认�?)
+                    .replace("?, "?)
+                    .replace("我觉?, "我认?)
             }
             ConversationStyle.CASUAL -> {
                 styledContent = styledContent
-                    .replace("我认�?, "我觉�?)
-                    .replace("因此", "所�?)
+                    .replace("我认?, "我觉?)
+                    .replace("因此", "所?)
             }
             else -> {}
         }
@@ -317,30 +317,30 @@ class StyleAdapter(private val context: Context) {
         includeSystemPrompt: Boolean = true
     ): String {
         val styleDescriptions = mapOf(
-            ConversationStyle.FORMAL to "请使用正式、礼貌的语言风格，避免口语化表达�?,
-            ConversationStyle.PROFESSIONAL to "请使用专业但易懂的表达方式，保持专业态度�?,
-            ConversationStyle.CASUAL to "请使用轻松、自然的口吻，像和朋友聊天一样�?,
-            ConversationStyle.FRIENDLY to "请使用热情、友好的语言，多使用鼓励性表达�?,
-            ConversationStyle.EMPATHETIC to "请充分理解用户情感，表达共情和理解，提供情感支持�?,
-            ConversationStyle.HUMOROUS to "请在保持有用性的同时，加入适当的幽默元素�?,
-            ConversationStyle.TECHNICAL to "请使用精确的技术语言，提供详细的技术解释�?,
-            ConversationStyle.ACADEMIC to "请使用学术化的语言，引用相关理论和研究�?,
-            ConversationStyle.CREATIVE to "请使用富有想象力的表达，提供创意性的建议�?,
-            ConversationStyle.SUPPORTIVE to "请多给予鼓励和支持，帮助用户建立信心�?
+            ConversationStyle.FORMAL to "请使用正式、礼貌的语言风格，避免口语化表达?,
+            ConversationStyle.PROFESSIONAL to "请使用专业但易懂的表达方式，保持专业态度?,
+            ConversationStyle.CASUAL to "请使用轻松、自然的口吻，像和朋友聊天一样?,
+            ConversationStyle.FRIENDLY to "请使用热情、友好的语言，多使用鼓励性表达?,
+            ConversationStyle.EMPATHETIC to "请充分理解用户情感，表达共情和理解，提供情感支持?,
+            ConversationStyle.HUMOROUS to "请在保持有用性的同时，加入适当的幽默元素?,
+            ConversationStyle.TECHNICAL to "请使用精确的技术语言，提供详细的技术解释?,
+            ConversationStyle.ACADEMIC to "请使用学术化的语言，引用相关理论和研究?,
+            ConversationStyle.CREATIVE to "请使用富有想象力的表达，提供创意性的建议?,
+            ConversationStyle.SUPPORTIVE to "请多给予鼓励和支持，帮助用户建立信心?
         )
 
         return if (includeSystemPrompt) {
             styleDescriptions[style] ?: ""
         } else {
-            "�?{style.displayName}的方式回�?
+            "?{style.displayName}的方式回?
         }
     }
 
     fun detectStyleFromContent(content: String): ConversationStyle {
         val lowerContent = content.lowercase()
 
-        val formalIndicators = listOf("�?, "�?, "感谢", "尊敬", "特此", "�?)
-        val casualIndicators = listOf("�?, "�?, "呀", "�?, "�?, "�?)
+        val formalIndicators = listOf("?, "?, "感谢", "尊敬", "特此", "?)
+        val casualIndicators = listOf("?, "?, "呀", "?, "?, "?)
         val techIndicators = listOf("代码", "函数", "算法", "api", "接口", "实现")
 
         val formalCount = formalIndicators.count { lowerContent.contains(it) }

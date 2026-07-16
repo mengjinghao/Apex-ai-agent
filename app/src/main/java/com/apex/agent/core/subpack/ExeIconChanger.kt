@@ -11,7 +11,7 @@ import java.nio.ByteOrder
 
 /**
  * Windows可执行文件EXE)图标更换工具
- * 实现了基本的PE文件格式解析和图标资源替换功�?*/
+ * 实现了基本的PE文件格式解析和图标资源替换功?*/
 class ExeIconChanger(private val context: Context) {
     companion object {
         private const val TAG = "ExeIconChanger"
@@ -29,7 +29,7 @@ class ExeIconChanger(private val context: Context) {
     }
 
     /**
-     * 更换EXE文件的图�?    * @param exeFile 要修改的EXE文件
+     * 更换EXE文件的图?    * @param exeFile 要修改的EXE文件
      * @param iconBitmap 新图标的Bitmap对象
      * @param outputFile 输出的EXE文件
      * @return 是否成功
@@ -38,7 +38,7 @@ class ExeIconChanger(private val context: Context) {
         AppLogger.d(TAG, "开始更换EXE图标: ${exeFile.absolutePath}")
         
         try {
-            // 先将文件复制到输出位�?           if (outputFile.exists()) {
+            // 先将文件复制到输出位?           if (outputFile.exists()) {
                 outputFile.delete()
             }
             outputFile.parentFile?.mkdirs()
@@ -48,7 +48,7 @@ class ExeIconChanger(private val context: Context) {
             val tempIconFile = File.createTempFile("temp_icon", ".ico")
             createIcoFile(iconBitmap, tempIconFile)
             
-            // 调用资源替换工具 (在Android上我们只能模拟这个操作，无法实际执行�?
+            // 调用资源替换工具 (在Android上我们只能模拟这个操作，无法实际执行?
             val success = simulateResourceReplacement(outputFile, tempIconFile)
             
             // 清理临时文件
@@ -67,15 +67,15 @@ class ExeIconChanger(private val context: Context) {
      * @param outputFile 输出的ICO文件
      */
     private fun createIcoFile(bitmap: Bitmap, outputFile: File) {
-        // ICO文件格式的简化实�?       try {
+        // ICO文件格式的简化实?       try {
             FileOutputStream(outputFile).use { fos ->
-                // ICO文件�?6字节�?
+                // ICO文件?6字节?
                 val header = ByteBuffer.allocate(6).order(ByteOrder.LITTLE_ENDIAN)
                     .putShort(0) // 保留，必须为0
                     .putShort(1) // 图像类型: 1 = ICO
-                    .putShort(1) // 图像数量: 1�?               fos.write(header.array())
+                    .putShort(1) // 图像数量: 1?               fos.write(header.array())
                 
-                // 图像目录 (16字节�?
+                // 图像目录 (16字节?
                 val width = bitmap.width.coerceAtMost(256)
                 val height = bitmap.height.coerceAtMost(256)
                 val widthByte = if (width == 256) 0 else width
@@ -90,10 +90,10 @@ class ExeIconChanger(private val context: Context) {
                 val directory = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN)
                     .put(widthByte.toByte())  // 宽度
                     .put(heightByte.toByte()) // 高度
-                    .put(0) // 调色板颜色数 (PNG不使用调色板�?
+                    .put(0) // 调色板颜色数 (PNG不使用调色板?
                     .put(0) // 保留，必须为0
-                    .putShort(1) // 颜色平面�?                   .putShort(32) // 每像素位�?                   .putInt(imageSize) // 图像数据大小
-                    .putInt(22) // 图像数据偏移�?6 + 16 = 22)
+                    .putShort(1) // 颜色平面?                   .putShort(32) // 每像素位?                   .putInt(imageSize) // 图像数据大小
+                    .putInt(22) // 图像数据偏移?6 + 16 = 22)
                 fos.write(directory.array())
                 
                 // 写入PNG图像数据
@@ -109,7 +109,7 @@ class ExeIconChanger(private val context: Context) {
     
     /**
      * 模拟资源替换过程
-     * 注意：这个函数只是模拟，实际上无法在Android上直接修改EXE文件的资�?    * 在真实环境中，这需要使用Windows API或专用工具实�?    */
+     * 注意：这个函数只是模拟，实际上无法在Android上直接修改EXE文件的资?    * 在真实环境中，这需要使用Windows API或专用工具实?    */
     private fun simulateResourceReplacement(exeFile: File, iconFile: File): Boolean {
         AppLogger.d(TAG, "模拟替换EXE资源: ${exeFile.absolutePath}")
         AppLogger.d(TAG, "图标文件: ${iconFile.absolutePath}")
@@ -119,7 +119,7 @@ class ExeIconChanger(private val context: Context) {
     }
     
     /**
-     * 检查文件是否是有效的PE(可执行文件格�?
+     * 检查文件是否是有效的PE(可执行文件格?
      * @param file 要检查的文件
      * @return 是否是有效的PE文件
      */
@@ -129,7 +129,7 @@ class ExeIconChanger(private val context: Context) {
                 // 检查DOS头部
                 raf.seek(0)
                 val dosSignature = raf.readShort().toInt() and 0xFFFF
-                if (dosSignature != DOS_SIGNATURE) { // 将Short转为Int再比�?                   return false
+                if (dosSignature != DOS_SIGNATURE) { // 将Short转为Int再比?                   return false
                 }
                 
                 // 获取PE头偏移量

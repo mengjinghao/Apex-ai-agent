@@ -22,13 +22,13 @@ import com.apex.agent.core.tools.system.SELinuxStatus
 import com.apex.agent.core.tools.system.ShizukuDetectionResult
 
 /**
- * 权限模式管理�?- 统一管理所有权限模式的检测、状态、切�?
+ * 权限模式管理?- 统一管理所有权限模式的检测、状态、切?
  */
 class PermissionModeManager private constructor(private val context: Context) {
 
     companion object {
         private const val TAG = "PermissionModeManager"
-        private const val DETECTION_CACHE_DURATION = 30000L // 30�?
+        private const val DETECTION_CACHE_DURATION = 30000L // 30?
         private const val AUTO_CHECK_INTERVAL = 60000L // 1分钟
 
         @Volatile
@@ -46,7 +46,7 @@ class PermissionModeManager private constructor(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val mutex = Mutex()
 
-    // 状态管�?
+    // 状态管?
     private val _modeStates = MutableStateFlow<Map<PermissionMode, PermissionModeState>>(emptyMap())
     val modeStates: StateFlow<Map<PermissionMode, PermissionModeState>> = _modeStates.asStateFlow()
 
@@ -89,13 +89,13 @@ class PermissionModeManager private constructor(private val context: Context) {
                 // 加载用户偏好
                 loadPreferredMode()
 
-                // 初始检�?
+                // 初始检?
                 checkAllModes(forceRefresh = true)
 
                 _isInitialized.value = true
                 AppLogger.d(TAG, "权限模式管理器初始化完成")
 
-                // 启动自动检�?
+                // 启动自动检?
                 startAutoCheck()
             } catch (e: Exception) {
                 AppLogger.e(TAG, "初始化权限模式管理器失败", e)
@@ -107,7 +107,7 @@ class PermissionModeManager private constructor(private val context: Context) {
         try {
             val preferredLevel = androidPermissionPreferences.getPreferredPermissionLevel()
             _currentMode.value = preferredLevel?.let { mapPermissionLevelToMode(it) }
-            AppLogger.d(TAG, "已加载用户偏好权限模�? ${_currentMode.value}")
+            AppLogger.d(TAG, "已加载用户偏好权限模? ${_currentMode.value}")
         } catch (e: Exception) {
             AppLogger.e(TAG, "加载用户偏好权限模式失败", e)
         }
@@ -128,12 +128,12 @@ class PermissionModeManager private constructor(private val context: Context) {
             PermissionMode.ACCESSIBILITY -> AndroidPermissionLevel.ACCESSIBILITY
             PermissionMode.DEBUGGER -> AndroidPermissionLevel.DEBUGGER
             PermissionMode.ADMIN -> AndroidPermissionLevel.ADMIN
-            PermissionMode.SHIZUKU -> AndroidPermissionLevel.ROOT // Shizuku 映射�?Root 级别
+            PermissionMode.SHIZUKU -> AndroidPermissionLevel.ROOT // Shizuku 映射?Root 级别
             PermissionMode.ROOT -> AndroidPermissionLevel.ROOT
         }
 
     /**
-     * 检测所有权限模�?
+     * 检测所有权限模?
      */
     suspend fun checkAllModes(forceRefresh: Boolean = false) = mutex.withLock {
         _isChecking.value = true
@@ -141,16 +141,16 @@ class PermissionModeManager private constructor(private val context: Context) {
         val newStates = mutableMapOf<PermissionMode, PermissionModeState>()
 
         try {
-            AppLogger.d(TAG, "开始检测所有权限模式（强制刷新: ${forceRefresh}�?)
+            AppLogger.d(TAG, "开始检测所有权限模式（强制刷新: ${forceRefresh}?)
 
-            // 优先检�?Root �?Shizuku（可能耗时较长�?
+            // 优先检?Root ?Shizuku（可能耗时较长?
             checkRoot(forceRefresh)
             checkShizuku(forceRefresh)
 
-            // 检测其他模�?
+            // 检测其他模?
             for (mode in PermissionMode.values()) {
                 if (mode == PermissionMode.ROOT || mode == PermissionMode.SHIZUKU) {
-                    // Root �?Shizuku 已单独检�?
+                    // Root ?Shizuku 已单独检?
                     continue
                 }
 
@@ -158,23 +158,23 @@ class PermissionModeManager private constructor(private val context: Context) {
                 newStates[mode] = state
             }
 
-            // �?Root �?Shizuku 结果构建状�?
+            // ?Root ?Shizuku 结果构建状?
             newStates[PermissionMode.ROOT] = buildRootState(timestamp)
             newStates[PermissionMode.SHIZUKU] = buildShizukuState(timestamp)
 
             _modeStates.update { newStates }
             notifyStateChanges(newStates.values)
 
-            AppLogger.d(TAG, "所有权限模式检测完�?)
+            AppLogger.d(TAG, "所有权限模式检测完?)
         } catch (e: Exception) {
-            AppLogger.e(TAG, "检测权限模式失�?, e)
+            AppLogger.e(TAG, "检测权限模式失?, e)
         } finally {
             _isChecking.value = false
         }
     }
 
     /**
-     * 检测指定权限模�?
+     * 检测指定权限模?
      */
     suspend fun checkMode(mode: PermissionMode, forceRefresh: Boolean = false): PermissionModeState {
         val timestamp = System.currentTimeMillis()
@@ -182,7 +182,7 @@ class PermissionModeManager private constructor(private val context: Context) {
         if (!forceRefresh) {
             detectionCache[mode]?.let { cached ->
                 if (timestamp - cached.timestamp < DETECTION_CACHE_DURATION) {
-                    AppLogger.v(TAG, "使用缓存�?${mode.displayName} 状�?)
+                    AppLogger.v(TAG, "使用缓存?${mode.displayName} 状?)
                     return cached.state
                 }
             }
@@ -196,7 +196,7 @@ class PermissionModeManager private constructor(private val context: Context) {
         forceRefresh: Boolean,
         timestamp: Long
     ): PermissionModeState {
-        AppLogger.d(TAG, "检�?${mode.displayName}...")
+        AppLogger.d(TAG, "检?${mode.displayName}...")
 
         val state = when (mode) {
             PermissionMode.STANDARD -> checkStandardMode(timestamp)
@@ -322,7 +322,7 @@ class PermissionModeManager private constructor(private val context: Context) {
     }
 
     /**
-     * 检�?Root 状�?
+     * 检?Root 状?
      */
     suspend fun checkRoot(forceRefresh: Boolean = false): RootDetectionResult {
         val timestamp = System.currentTimeMillis()
@@ -331,21 +331,21 @@ class PermissionModeManager private constructor(private val context: Context) {
         if (!forceRefresh && cached.detectionTimestamp > 0 &&
             timestamp - cached.detectionTimestamp < DETECTION_CACHE_DURATION
         ) {
-            AppLogger.v(TAG, "使用缓存�?Root 检测结�?)
+            AppLogger.v(TAG, "使用缓存?Root 检测结?)
             return cached
         }
 
-        AppLogger.d(TAG, "检�?Root 状�?..")
+        AppLogger.d(TAG, "检?Root 状?..")
 
         val result = try {
-            // 使用 RootAuthorizer 检�?
+            // 使用 RootAuthorizer 检?
             val isRooted = RootAuthorizer.isDeviceRooted()
             val hasRootAccess = RootAuthorizer.hasRootAccess()
 
-            // 检�?Root 方案
+            // 检?Root 方案
             val rootScheme = detectRootScheme()
 
-            // 检�?SELinux 状�?
+            // 检?SELinux 状?
             val seLinuxStatus = detectSELinuxStatus()
 
             RootDetectionResult(
@@ -356,7 +356,7 @@ class PermissionModeManager private constructor(private val context: Context) {
                 detectionTimestamp = timestamp
             )
         } catch (e: Exception) {
-            AppLogger.e(TAG, "检�?Root 状态失�?, e)
+            AppLogger.e(TAG, "检?Root 状态失?, e)
             RootDetectionResult(
                 isRooted = false,
                 hasRootAccess = false,
@@ -394,13 +394,13 @@ class PermissionModeManager private constructor(private val context: Context) {
             process.waitFor()
             SELinuxStatus.fromString(output)
         } catch (e: Exception) {
-            AppLogger.e(TAG, "检�?SELinux 状态失�?, e)
+            AppLogger.e(TAG, "检?SELinux 状态失?, e)
             SELinuxStatus.UNKNOWN
         }
     }
 
     /**
-     * 检�?Shizuku 状�?
+     * 检?Shizuku 状?
      */
     suspend fun checkShizuku(forceRefresh: Boolean = false): ShizukuDetectionResult {
         val timestamp = System.currentTimeMillis()
@@ -409,11 +409,11 @@ class PermissionModeManager private constructor(private val context: Context) {
         if (!forceRefresh && cached.detectionTimestamp > 0 &&
             timestamp - cached.detectionTimestamp < DETECTION_CACHE_DURATION
         ) {
-            AppLogger.v(TAG, "使用缓存�?Shizuku 检测结�?)
+            AppLogger.v(TAG, "使用缓存?Shizuku 检测结?)
             return cached
         }
 
-        AppLogger.d(TAG, "检�?Shizuku 状�?..")
+        AppLogger.d(TAG, "检?Shizuku 状?..")
 
         val result = try {
             val isShizukuInstalled = ShizukuAuthorizer.isShizukuInstalled(context)
@@ -429,7 +429,7 @@ class PermissionModeManager private constructor(private val context: Context) {
                 detectionTimestamp = timestamp
             )
         } catch (e: Exception) {
-            AppLogger.e(TAG, "检�?Shizuku 状态失�?, e)
+            AppLogger.e(TAG, "检?Shizuku 状态失?, e)
             ShizukuDetectionResult(
                 isAvailable = false,
                 isGranted = false,
@@ -458,14 +458,14 @@ class PermissionModeManager private constructor(private val context: Context) {
     }
 
     /**
-     * 切换到指定权限模�?
+     * 切换到指定权限模?
      */
     suspend fun switchToMode(mode: PermissionMode): Boolean = mutex.withLock {
-        AppLogger.d(TAG, "切换�?${mode.displayName}...")
+        AppLogger.d(TAG, "切换?${mode.displayName}...")
 
         val state = checkMode(mode, forceRefresh = true)
         if (!state.isUsable && mode != PermissionMode.STANDARD) {
-            AppLogger.w(TAG, "无法切换�?${mode.displayName}: 模式不可�?)
+            AppLogger.w(TAG, "无法切换?${mode.displayName}: 模式不可?)
             return false
         }
 
@@ -473,7 +473,7 @@ class PermissionModeManager private constructor(private val context: Context) {
             androidPermissionPreferences.savePreferredPermissionLevel(mapModeToPermissionLevel(mode))
             _currentMode.value = mode
 
-            // 更新所有模式的 isPreferred 状�?
+            // 更新所有模式的 isPreferred 状?
             _modeStates.update { current ->
                 current.mapValues { (m, s) ->
                     s.copy(isPreferred = m == mode)
@@ -481,16 +481,16 @@ class PermissionModeManager private constructor(private val context: Context) {
             }
 
             notifyModeChange(mode)
-            AppLogger.d(TAG, "成功切换�?${mode.displayName}")
+            AppLogger.d(TAG, "成功切换?${mode.displayName}")
             return true
         } catch (e: Exception) {
-            AppLogger.e(TAG, "切换�?${mode.displayName} 失败", e)
+            AppLogger.e(TAG, "切换?${mode.displayName} 失败", e)
             return false
         }
     }
 
     /**
-     * 自动选择最佳可用模�?
+     * 自动选择最佳可用模?
      */
     suspend fun autoSelectBestMode(): PermissionMode? {
         checkAllModes(forceRefresh = true)
@@ -507,7 +507,7 @@ class PermissionModeManager private constructor(private val context: Context) {
     }
 
     /**
-     * 获取最佳可用模�?
+     * 获取最佳可用模?
      */
     fun getBestAvailableMode(): PermissionMode? {
         return PermissionMode.sortedByLevelDesc().firstOrNull { mode ->
@@ -516,12 +516,12 @@ class PermissionModeManager private constructor(private val context: Context) {
     }
 
     /**
-     * 获取指定模式的状�?
+     * 获取指定模式的状?
      */
     fun getModeState(mode: PermissionMode): PermissionModeState? = _modeStates.value[mode]
 
     /**
-     * 获取所有可用模�?
+     * 获取所有可用模?
      */
     fun getAvailableModes(): List<PermissionModeState> =
         _modeStates.value.values.filter { it.isAvailable }
@@ -547,14 +547,14 @@ class PermissionModeManager private constructor(private val context: Context) {
     }
 
     /**
-     * 添加模式变更监听�?
+     * 添加模式变更监听?
      */
     fun addModeChangeListener(listener: (PermissionMode) -> Unit) {
         modeChangeListeners.add(listener)
     }
 
     /**
-     * 移除模式变更监听�?
+     * 移除模式变更监听?
      */
     fun removeModeChangeListener(listener: (PermissionMode) -> Unit) {
         modeChangeListeners.remove(listener)
@@ -579,7 +579,7 @@ class PermissionModeManager private constructor(private val context: Context) {
                         checkAllModes(forceRefresh = false)
                     }
                 } catch (e: Exception) {
-                    AppLogger.e(TAG, "自动检测失�?, e)
+                    AppLogger.e(TAG, "自动检测失?, e)
                 }
             }
         }
@@ -592,6 +592,6 @@ class PermissionModeManager private constructor(private val context: Context) {
         detectionCache.clear()
         _rootResult.value = RootDetectionResult()
         _shizukuResult.value = ShizukuDetectionResult()
-        AppLogger.d(TAG, "已清除权限模式检测缓�?)
+        AppLogger.d(TAG, "已清除权限模式检测缓?)
     }
 }

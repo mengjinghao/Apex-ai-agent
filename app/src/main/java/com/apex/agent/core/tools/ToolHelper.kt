@@ -56,7 +56,7 @@ object ToolHelper {
     }
 
     /**
-     * 格式化错误信�?    */
+     * 格式化错误信?    */
     fun formatError(
         toolName: String,
         errorType: String,
@@ -68,7 +68,7 @@ object ToolHelper {
         sb.appendLine("错误信息，errorMessage")
         
         if (details != null && details.isNotEmpty()) {
-            sb.appendLine("详细信息�?
+            sb.appendLine("详细信息?
             details.forEach { (key, value) ->
                 sb.appendLine("  ${key}: ${value}")
             }
@@ -78,13 +78,13 @@ object ToolHelper {
     }
 
     /**
-     * 创建友好的工具使用说�?    */
+     * 创建友好的工具使用说?    */
     fun createUsageGuide(toolName: String, parameters: List<ToolParameter>): String {
         val sb = StringBuilder()
         sb.appendLine("=== ${toolName} 使用说明 ===")
         sb.appendLine()
         
-        sb.appendLine("参数列表�?
+        sb.appendLine("参数列表?
         parameters.forEach { param ->
             val required = if (param.required) "[必需]" else "[可选]"
             val defaultValue = if (param.defaultValue != null) "(默认，{param.defaultValue})" else ""
@@ -93,8 +93,8 @@ object ToolHelper {
         }
         
         sb.appendLine()
-        sb.appendLine("示例用法�?
-        sb.appendLine("  请根据具体工具查看示�?
+        sb.appendLine("示例用法?
+        sb.appendLine("  请根据具体工具查看示?
         
         return sb.toString()
     }
@@ -130,7 +130,7 @@ object ToolHelper {
     }
 
     /**
-     * 工具执行状�?    */
+     * 工具执行状?    */
     enum class ExecutionStatus {
         PENDING,
         RUNNING,

@@ -24,7 +24,7 @@ enum class MessageRole {
 @Parcelize
 data class AgentConversation(
     val id: String = UUID.randomUUID().toString(),
-    val title: String = "新对�?,
+    val title: String = "新对?,
     val agentId: String? = null,
     val templateId: String? = null,
     val messages: MutableList<ConversationMessage> = mutableListOf(),

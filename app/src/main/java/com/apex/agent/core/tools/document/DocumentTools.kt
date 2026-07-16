@@ -48,11 +48,11 @@ class DocumentTools(private val context: Context) {
                             val sanitizeResult = inputSanitizer.sanitize(result.textContent)
                             sanitizedTextContent = sanitizeResult.sanitizedText
                             if (sanitizeResult.findings.isNotEmpty()) {
-                                AppLogger.d(TAG, "文档内容消毒完成: 发现${sanitizeResult.findings.size}个安全问�?)
+                                AppLogger.d(TAG, "文档内容消毒完成: 发现${sanitizeResult.findings.size}个安全问?)
                             }
                         } catch (e: Exception) {
-                            AppLogger.e(TAG, "文档内容消毒失败，使用原始内�?, e)
-                            // 消毒失败时使用原始内容，不阻断流�?
+                            AppLogger.e(TAG, "文档内容消毒失败，使用原始内?, e)
+                            // 消毒失败时使用原始内容，不阻断流?
                         }
                     }
 
@@ -110,12 +110,12 @@ class DocumentTools(private val context: Context) {
                 val sanitizedText = try {
                     val sanitizeResult = inputSanitizer.sanitize(text)
                     if (sanitizeResult.findings.isNotEmpty()) {
-                        AppLogger.d(TAG, "文档提取内容消毒完成: 发现${sanitizeResult.findings.size}个安全问�?)
+                        AppLogger.d(TAG, "文档提取内容消毒完成: 发现${sanitizeResult.findings.size}个安全问?)
                     }
                     sanitizeResult.sanitizedText
                 } catch (e: Exception) {
-                    AppLogger.e(TAG, "文档提取内容消毒失败，使用原始内�?, e)
-                    // 消毒失败时使用原始内容，不阻断流�?
+                    AppLogger.e(TAG, "文档提取内容消毒失败，使用原始内?, e)
+                    // 消毒失败时使用原始内容，不阻断流?
                     text
                 }
 
@@ -152,8 +152,8 @@ class DocumentTools(private val context: Context) {
                     success = true,
                     result = StringResultData(
                         buildString {
-                            appendLine("视频时长: ${result.duration}�?)
-                            appendLine("关键帧数�? ${result.keyFrames.size}")
+                            appendLine("视频时长: ${result.duration}?)
+                            appendLine("关键帧数? ${result.keyFrames.size}")
                             appendLine("\n字幕内容:")
                             appendLine(result.transcript.take(3000))
                             if (result.summary.isNotBlank()) {
@@ -238,7 +238,7 @@ class DocumentTools(private val context: Context) {
                     buildString {
                         appendLine("识别结果:")
                         appendLine(result.text)
-                        appendLine("\n置信�? ${(result.confidence * 100).toInt()}%")
+                        appendLine("\n置信? ${(result.confidence * 100).toInt()}%")
                         if (result.words.isNotEmpty()) {
                             appendLine("\n词汇详情:")
                             result.words.take(20).forEach { word ->

@@ -7,23 +7,23 @@ import com.apex.util.AppLogger
 import com.apex.agent.core.tools.defaultTool.debugger.name
 
 /**
- * 增强功能集成�?* 统一管理三个核心增强功能的集成点
+ * 增强功能集成?* 统一管理三个核心增强功能的集成点
  */
 object EnhancedFeatureIntegrator {
     private const val TAG = "EnhancedIntegrator"
 
     /**
-     * 应用动态模型参数到现有的参数列�?    * @param existingParams 现有的模型参数列�?    * @param userInput 用户输入
+     * 应用动态模型参数到现有的参数列?    * @param existingParams 现有的模型参数列?    * @param userInput 用户输入
      * @return 更新后的模型参数列表
      */
     fun applyDynamicParams(
         existingParams: List<ModelParameter<*>>,
         userInput: String
     ): List<ModelParameter<*>> {
-        // 获取动态参�?       val dynamicParams = DynamicModelParamsAdapter.getDynamicModelParams(userInput)
+        // 获取动态参?       val dynamicParams = DynamicModelParamsAdapter.getDynamicModelParams(userInput)
         val scenario = DynamicModelParamsAdapter.getScenarioDescription(userInput)
         
-        AppLogger.d(TAG, "应用动态参�场景=${scenario}, temp=${dynamicParams.temperature}")
+        AppLogger.d(TAG, "应用动态参场景=${scenario}, temp=${dynamicParams.temperature}")
         
         // 创建可修改的副本
         val mutableParams = existingParams.toMutableList()
@@ -34,7 +34,7 @@ object EnhancedFeatureIntegrator {
             id = "dynamic_temperature",
             name = "温度 (动，",
             apiName = "temperature",
-            description = "根据输入自动调整的温度参�?${scenario}",
+            description = "根据输入自动调整的温度参?${scenario}",
             defaultValue = 0.6,
             currentValue = dynamicParams.temperature,
             valueType = ParameterValueType.FLOAT,
@@ -64,7 +64,7 @@ object EnhancedFeatureIntegrator {
             id = "dynamic_frequency_penalty",
             name = "频率惩罚 (动，",
             apiName = "frequency_penalty",
-            description = "根据输入自动调整的频率惩�?${scenario}",
+            description = "根据输入自动调整的频率惩?${scenario}",
             defaultValue = 0.2,
             currentValue = dynamicParams.frequency_penalty,
             valueType = ParameterValueType.FLOAT,
@@ -79,7 +79,7 @@ object EnhancedFeatureIntegrator {
             id = "dynamic_presence_penalty",
             name = "存在惩罚 (动，",
             apiName = "presence_penalty",
-            description = "根据输入自动调整的存在惩�?${scenario}",
+            description = "根据输入自动调整的存在惩?${scenario}",
             defaultValue = 0.1,
             currentValue = dynamicParams.presence_penalty,
             valueType = ParameterValueType.FLOAT,
@@ -92,7 +92,7 @@ object EnhancedFeatureIntegrator {
     }
 
     /**
-     * 更新或添加参�?    */
+     * 更新或添加参?    */
     private fun <T> updateOrAddParam(
         params: MutableList<ModelParameter<*>>,
         id: String,
@@ -106,12 +106,12 @@ object EnhancedFeatureIntegrator {
         minValue: Any? = null,
         maxValue: Any? = null
     ) {
-        // 检查是否已存在该参数（通过apiName匹配�?       val existingIndex = params.indexOfFirst { 
+        // 检查是否已存在该参数（通过apiName匹配?       val existingIndex = params.indexOfFirst { 
             it.apiName == apiName || it.id == id
         }
         
         if (existingIndex >= 0) {
-            // 更新现有参数 - 注意：这里我们创建一个新的参数对�?           val existing = params[existingIndex]
+            // 更新现有参数 - 注意：这里我们创建一个新的参数对?           val existing = params[existingIndex]
             
             @Suppress("UNCHECKED_CAST")
             val updatedParam = when (valueType) {
@@ -130,7 +130,7 @@ object EnhancedFeatureIntegrator {
             
             params[existingIndex] = updatedParam
         } else {
-            // 添加新参�?           val newParam = createParameter(
+            // 添加新参?           val newParam = createParameter(
                 id = id,
                 name = name,
                 apiName = apiName,
@@ -178,7 +178,7 @@ object EnhancedFeatureIntegrator {
     }
 
     /**
-     * 获取当前使用的场景（用于UI显示�?    */
+     * 获取当前使用的场景（用于UI显示?    */
     fun getCurrentScenario(userInput: String): String {
         return DynamicModelParamsAdapter.getScenarioDescription(userInput)
     }

@@ -16,7 +16,7 @@ data class MCPToolParameter(
 ) {
     /**
      * 尝试根据参数类型自动转换字符串，     *
-     * @param value 输入值（通常是字符串�?    * @return 经过类型转换的，     */
+     * @param value 输入值（通常是字符串?    * @return 经过类型转换的，     */
     fun convertParameterValue(value: Any): Any {
         if (value !is String) return value
 
@@ -43,10 +43,10 @@ data class MCPToolParameter(
                 }
             }
             "array" -> {
-                // 尝试将字符串解析为数�?               Companion.parseArray(value)
+                // 尝试将字符串解析为数?               Companion.parseArray(value)
             }
             "object" -> {
-                // 尝试将字符串解析为对�?               Companion.parseObject(value)
+                // 尝试将字符串解析为对?               Companion.parseObject(value)
             }
             else -> value // 其他类型保持原样
         }
@@ -54,9 +54,9 @@ data class MCPToolParameter(
 
     companion object {
         /**
-         * 尝试智能转换参数类型（无需MCPToolParameter实例�?        *
-         * @param value 输入值（通常是字符串�?        * @param typeName 类型名称
-         * @return 转换后的�?        */
+         * 尝试智能转换参数类型（无需MCPToolParameter实例?        *
+         * @param value 输入值（通常是字符串?        * @param typeName 类型名称
+         * @return 转换后的?        */
         fun smartConvert(value: Any, typeName: String): Any {
             // 如果已经，List ，Array，递归处理元素
             if (value is List<*>) {
@@ -101,10 +101,10 @@ data class MCPToolParameter(
                 else -> {
                     // 如果未指定类型，尝试智能猜测
                     when {
-                        // 检测是否为对象格式（JSON对象�?                       value.trimStart().startsWith("{") && value.trimEnd().endsWith("}") -> {
+                        // 检测是否为对象格式（JSON对象?                       value.trimStart().startsWith("{") && value.trimEnd().endsWith("}") -> {
                             parseObject(value)
                         }
-                        // 检测是否为数组格式（JSON数组或逗号分隔�?                       value.trimStart().startsWith("[") && value.trimEnd().endsWith("]") -> {
+                        // 检测是否为数组格式（JSON数组或逗号分隔?                       value.trimStart().startsWith("[") && value.trimEnd().endsWith("]") -> {
                             parseArray(value)
                         }
                         value.matches(Regex("-?\\d+(\\.\\d+)?")) -> {
@@ -124,9 +124,9 @@ data class MCPToolParameter(
         }
 
         /**
-         * 解析数组字符串，支持 JSON 格式和简单格�?        * 递归处理数组内的元素
+         * 解析数组字符串，支持 JSON 格式和简单格?        * 递归处理数组内的元素
          *
-         * @param value 字符串，         * @return 解析后的列表，如果无法解析则返回原始字符�?        */
+         * @param value 字符串，         * @return 解析后的列表，如果无法解析则返回原始字符?        */
         private fun parseArray(value: String): Any {
             val trimmed = value.trim()
             
@@ -167,13 +167,13 @@ data class MCPToolParameter(
                 
                 return result
             } catch (e: JSONException) {
-                // JSON 解析失败，尝试修复常见的非标准格�?               if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                // JSON 解析失败，尝试修复常见的非标准格?               if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
                     try {
                         // 尝试修复格式：将逗号分隔的无引号标识符转换为带引号的 JSON 数组
                         val content = trimmed.substring(1, trimmed.length - 1).trim()
                         
-                        // 检查是否是简单的标识符列表（只包含字母、数字、下划线和逗号�?                       if (content.matches(Regex("[\\w\\s,_-]+"))) {
-                            // 分割元素并添加引�?                           val elements = content.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                        // 检查是否是简单的标识符列表（只包含字母、数字、下划线和逗号?                       if (content.matches(Regex("[\\w\\s,_-]+"))) {
+                            // 分割元素并添加引?                           val elements = content.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                             
                             // 如果元素看起来像标识符（非数字），则保留为字符串
                             return elements.map { element -> 
@@ -203,8 +203,8 @@ data class MCPToolParameter(
         
         /**
          * 解析对象字符串，支持 JSON 格式
-         * 递归处理对象内的�?        *
-         * @param value 字符串，         * @return 解析后的 Map，如果无法解析则返回原始字符�?        */
+         * 递归处理对象内的?        *
+         * @param value 字符串，         * @return 解析后的 Map，如果无法解析则返回原始字符?        */
         private fun parseObject(value: String): Any {
             val trimmed = value.trim()
             
@@ -229,7 +229,7 @@ data class MCPToolParameter(
                         is Number -> rawValue
                         is Boolean -> rawValue
                         is String -> {
-                            // 对字符串值进行智能转�?                           smartConvert(rawValue, null)
+                            // 对字符串值进行智能转?                           smartConvert(rawValue, null)
                         }
                         else -> rawValue
                     }

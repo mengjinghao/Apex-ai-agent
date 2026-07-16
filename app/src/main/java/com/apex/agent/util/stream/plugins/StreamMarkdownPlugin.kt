@@ -82,12 +82,12 @@ class StreamMarkdownFencedCodeBlockPlugin(private val includeFences: Boolean = t
                     is StreamKmpMatchResult.InProgress -> return includeFences
                     is StreamKmpMatchResult.NoMatch -> {
                         // 匹配失败，说明这一行不是结束符
-                        // 禁用后续字符的匹配，直到下一�?                       isMatchingEndFence = false
+                        // 禁用后续字符的匹配，直到下一?                       isMatchingEndFence = false
                         return true
                     }
                 }
             } else {
-                // 这一行已经确定不是结束符，直接作为内�?               return true
+                // 这一行已经确定不是结束符，直接作为内?               return true
             }
         } else { // IDLE or TRYING
             when (val result = startMatcher.processChar(c)) {
@@ -288,7 +288,7 @@ class StreamMarkdownBoldPlugin(private val includeAsterisks: Boolean = true) : S
 }
 
 /**
- * A stream plugin for identifying italic text using single asterisks (`*text*`)�?*
+ * A stream plugin for identifying italic text using single asterisks (`*text*`)?*
  * @param includeAsterisks If true, the `*` delimiters are included in the output.
  */
 class StreamMarkdownItalicPlugin(private val includeAsterisks: Boolean = true) : StreamPlugin {
@@ -671,7 +671,7 @@ class StreamMarkdownBlockQuotePlugin(private val includeMarker: Boolean = true) 
                     .build(
                             kmpPattern {
                                 char('>')
-                                char(' ') // 符合 Markdown 规范的引用块后面应该有一个空�?                           }
+                                char(' ') // 符合 Markdown 规范的引用块后面应该有一个空?                           }
                     )
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
@@ -968,7 +968,7 @@ class StreamMarkdownOrderedListPlugin(private val includeMarker: Boolean = true)
             StreamKmpGraphBuilder()
                     .build(
                             kmpPattern {
-                                digit() // 至少一个数�?                               greedyStar { digit() }
+                                digit() // 至少一个数?                               greedyStar { digit() }
                                 char('.')
                                 char(' ')
                             }
@@ -1105,7 +1105,7 @@ class StreamMarkdownInlineLaTeXPlugin(private val includeDelimiters: Boolean = t
     override var state: PluginState = PluginState.IDLE
         private set
 
-    // 模式匹配器用于查找单个美元符�? ... $
+    // 模式匹配器用于查找单个美元符? ... $
     private var startMatcher: StreamKmpGraph =
             StreamKmpGraphBuilder()
                     .build(
@@ -1119,7 +1119,7 @@ class StreamMarkdownInlineLaTeXPlugin(private val includeDelimiters: Boolean = t
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
         if (state == PluginState.PROCESSING) {
-            // 处理结束匹配�?           when (endMatcher.processChar(c)) {
+            // 处理结束匹配?           when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
                     return includeDelimiters
@@ -1148,7 +1148,7 @@ class StreamMarkdownInlineLaTeXPlugin(private val includeDelimiters: Boolean = t
                 }
             }
         }
-        return true // 不应该到达这�?   }
+        return true // 不应该到达这?   }
 
     override fun initPlugin(): Boolean {
         reset()
@@ -1186,7 +1186,7 @@ class StreamMarkdownInlineParenLaTeXPlugin(private val includeDelimiters: Boolea
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
         if (state == PluginState.PROCESSING) {
-            // 处理结束匹配�?           when (endMatcher.processChar(c)) {
+            // 处理结束匹配?           when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
                     return includeDelimiters
@@ -1215,7 +1215,7 @@ class StreamMarkdownInlineParenLaTeXPlugin(private val includeDelimiters: Boolea
                 }
             }
         }
-        return true // 不应该到达这�?   }
+        return true // 不应该到达这?   }
 
     override fun initPlugin(): Boolean {
         reset()
@@ -1248,7 +1248,7 @@ class StreamMarkdownBlockLaTeXPlugin(private val includeDelimiters: Boolean = tr
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
         if (state == PluginState.PROCESSING) {
-            // 处理结束匹配�?           when (endMatcher.processChar(c)) {
+            // 处理结束匹配?           when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
                     return includeDelimiters
@@ -1277,7 +1277,7 @@ class StreamMarkdownBlockLaTeXPlugin(private val includeDelimiters: Boolean = tr
                 }
             }
         }
-        return true // 不应该到达这�?   }
+        return true // 不应该到达这?   }
 
     override fun initPlugin(): Boolean {
         reset()
@@ -1309,7 +1309,7 @@ class StreamMarkdownBlockBracketLaTeXPlugin(private val includeDelimiters: Boole
 
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
         if (state == PluginState.PROCESSING) {
-            // 处理结束匹配�?           when (endMatcher.processChar(c)) {
+            // 处理结束匹配?           when (endMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match -> {
                     reset()
                     return includeDelimiters
@@ -1338,7 +1338,7 @@ class StreamMarkdownBlockBracketLaTeXPlugin(private val includeDelimiters: Boole
                 }
             }
         }
-        return true // 不应该到达这�?   }
+        return true // 不应该到达这?   }
 
     override fun initPlugin(): Boolean {
         reset()
@@ -1364,15 +1364,15 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
     override var state: PluginState = PluginState.IDLE
         private set
     
-    // 用于记录表格状�?   private var tableRowCount = 0
+    // 用于记录表格状?   private var tableRowCount = 0
     private var foundHeaderSeparator = false
     private var emptyLineCount = 0 // 用于检测表格结束的空行计数
     
-    // 用于匹配表格行开�?   private val tableRowMatcher = 
+    // 用于匹配表格行开?   private val tableRowMatcher = 
             StreamKmpGraphBuilder()
                     .build(
                             kmpPattern {
-                                char('|') // 表格行必须以竖线开�?                           }
+                                char('|') // 表格行必须以竖线开?                           }
                     )
     
     // 用于匹配表头分隔符行
@@ -1385,12 +1385,12 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
                             }
                     )
     
-    // 用于检测其他块元素开始符�?   private val otherBlockStarters = setOf('$', '`', '#', '>', '*', '-', '+')
+    // 用于检测其他块元素开始符?   private val otherBlockStarters = setOf('$', '`', '#', '>', '*', '-', '+')
     
     override fun processChar(c: Char, atStartOfLine: Boolean): Boolean {
-        // 处理换行�?       if (c == '\n') {
+        // 处理换行?       if (c == '\n') {
             if (state == PluginState.PROCESSING) {
-                // 在表格处理模式下遇到换行�?               // 进入WAITFOR状态，等待下一行决定去�?               state = PluginState.WAITFOR
+                // 在表格处理模式下遇到换行?               // 进入WAITFOR状态，等待下一行决定去?               state = PluginState.WAITFOR
                 return true
             }
             return true
@@ -1405,25 +1405,25 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
                     tableRowCount++
                     return includeDelimiters
                 } else if (c in otherBlockStarters) {
-                    // 遇到其他块元素的起始符号，结束表格处�?                   reset()
+                    // 遇到其他块元素的起始符号，结束表格处?                   reset()
                     return true
                 } else {
-                    // 其他非表格行，结束表格处�?                   reset()
+                    // 其他非表格行，结束表格处?                   reset()
                     return true
                 }
             }
         }
         
-        // 处理行开�?       if (atStartOfLine) {
-            // 检查是否是表格行开�?           when (val result = tableRowMatcher.processChar(c)) {
+        // 处理行开?       if (atStartOfLine) {
+            // 检查是否是表格行开?           when (val result = tableRowMatcher.processChar(c)) {
                 is StreamKmpMatchResult.Match, is StreamKmpMatchResult.InProgress -> {
                     if (state == PluginState.IDLE) {
-                        // 开始新的表�?                       state = PluginState.PROCESSING
+                        // 开始新的表?                       state = PluginState.PROCESSING
                         tableRowCount = 1
                         emptyLineCount = 0
                         tableRowMatcher.reset()
                     } else if (state == PluginState.PROCESSING) {
-                        // 继续处理表格的下一�?                       tableRowCount++
+                        // 继续处理表格的下一?                       tableRowCount++
                         emptyLineCount = 0
                     }
                     
@@ -1436,7 +1436,7 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
                 }
                 else -> {
                     if (state == PluginState.PROCESSING) {
-                        // 在表格处理模式下遇到不是表格行开始的�?                       // 立即结束表格处理
+                        // 在表格处理模式下遇到不是表格行开始的?                       // 立即结束表格处理
                         reset()
                     }
                     return true
@@ -1447,12 +1447,12 @@ class StreamMarkdownTablePlugin(private val includeDelimiters: Boolean = true) :
             
             // 如果是第二行且可能是分隔符行
             if (tableRowCount == 2 && !foundHeaderSeparator) {
-                // 处理头部分隔符检�?               when (val result = headerSeparatorMatcher.processChar(c)) {
+                // 处理头部分隔符检?               when (val result = headerSeparatorMatcher.processChar(c)) {
                     is StreamKmpMatchResult.Match -> {
                         foundHeaderSeparator = true
                     }
                     is StreamKmpMatchResult.NoMatch -> {
-                        // 如果第二行不是分隔符，继续正常处�?                   }
+                        // 如果第二行不是分隔符，继续正常处?                   }
                     else -> { /* 继续收集字符 */ }
                 }
             }

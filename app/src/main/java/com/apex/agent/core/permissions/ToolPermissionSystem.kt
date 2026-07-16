@@ -74,7 +74,7 @@ class ToolPermissionSystem private constructor(private val context: Context) {
         }
     }
     
-    // 工具权限存储：使�?tool_permission_<tool_name>" 作为key
+    // 工具权限存储：使?tool_permission_<tool_name>" 作为key
     private fun toolPermissionKey(toolName: String) = stringPreferencesKey("tool_permission_${toolName}")
     
     // Permission request management
@@ -87,7 +87,7 @@ class ToolPermissionSystem private constructor(private val context: Context) {
     private var currentColorScheme: ColorScheme? = null
     
     /**
-     * 设置当前使用的颜色方�?    */
+     * 设置当前使用的颜色方?    */
     fun setColorScheme(colorScheme: ColorScheme) {
         this.currentColorScheme = colorScheme
         permissionRequestOverlay.setColorScheme(colorScheme)

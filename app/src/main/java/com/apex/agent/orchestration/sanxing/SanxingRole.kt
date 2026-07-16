@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flow
 import java.util.UUID
 
 /**
- * 三星制（中书�?/ 门下�?/ 尚书省及六部）角色接�? */
+ * 三星制（中书?/ 门下?/ 尚书省及六部）角色接? */
 interface SanxingRole {
     val roleId: String
     val roleName: String
@@ -22,7 +22,7 @@ interface SanxingRole {
 }
 
 /**
- * 共享的基础实现，具体角色只需提供 [SanxingRoleConfig]�? */
+ * 共享的基础实现，具体角色只需提供 [SanxingRoleConfig]? */
 abstract class BaseSanxingRole : SanxingRole {
     abstract val config: SanxingRoleConfig
 
@@ -35,7 +35,7 @@ abstract class BaseSanxingRole : SanxingRole {
     override fun getAgent(): Agent = Agent(
         id = roleId,
         name = roleName,
-        role = "${config.roleName}�?{config.title}",
+        role = "${config.roleName}?{config.title}",
         systemPrompt = systemPrompt,
         modelConfig = ModelConfig(
             provider = config.provider,
@@ -55,7 +55,7 @@ abstract class BaseSanxingRole : SanxingRole {
                     id = UUID.randomUUID().toString(),
                     senderId = roleId,
                     receiverId = message.senderId,
-                    content = "�?{config.roleName}�?{config.title}】已处理消息�?{message.content}",
+                    content = "?{config.roleName}?{config.title}】已处理消息?{message.content}",
                     timestamp = System.currentTimeMillis()
                 )
             )

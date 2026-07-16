@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 /**
  * Root级别的UI工具类（重构版）
  * 
- * 使用shell命令(uiautomator, input)实现强大的UI自动�? * 不依赖无障碍服务，直接通过系统shell执行操作
+ * 使用shell命令(uiautomator, input)实现强大的UI自动? * 不依赖无障碍服务，直接通过系统shell执行操作
  */
 open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
 
@@ -30,7 +30,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
     /** Shell身份标识 */
     override val uiShellIdentity: ShellIdentity = ShellIdentity.SHELL
 
-    /** XML布局解析�?/
+    /** XML布局解析?/
     private val xmlParser = XmlLayoutParser()
 
     // ==================== 核心功能 ====================
@@ -74,7 +74,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
                 ).toToolResult(tool.name)
             }
 
-            // 5. 隐藏overlay并返回结�?            hideOverlay()
+            // 5. 隐藏overlay并返回结?            hideOverlay()
             
             UIToolsResult.Success(
                 UIActionResultData(
@@ -113,7 +113,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
             // 3. 显示长按效果
             showTapOverlay(x, y)
 
-            // 4. 执行长按命令（使用swipe模拟长按�?            val displayArg = getDisplayArg(tool)
+            // 4. 执行长按命令（使用swipe模拟长按?            val displayArg = getDisplayArg(tool)
             val command = "input ${displayArg}swipe ${x} ${y} ${x} ${y} ${durationMs}"
             val result = executeUiShellCommand(command)
 
@@ -125,7 +125,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
                 ).toToolResult(tool.name)
             }
 
-            // 5. 隐藏overlay并返回结�?            hideOverlay()
+            // 5. 隐藏overlay并返回结?            hideOverlay()
             
             UIToolsResult.Success(
                 UIActionResultData(
@@ -179,7 +179,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
                 ).toToolResult(tool.name)
             }
 
-            // 5. 隐藏overlay并返回结�?            hideOverlay()
+            // 5. 隐藏overlay并返回结?            hideOverlay()
             
             UIToolsResult.Success(
                 UIActionResultData(
@@ -208,7 +208,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
             // 3. 显示输入效果
             showTextInputOverlay(text)
 
-            // 4. 清空输入�?            executeUiShellCommand("input ${getDisplayArg(tool)}keyevent KEYCODE_CLEAR")
+            // 4. 清空输入?            executeUiShellCommand("input ${getDisplayArg(tool)}keyevent KEYCODE_CLEAR")
             kotlinx.coroutines.delay(300)
 
             // 5. 如果文本为空，只清空
@@ -233,7 +233,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
                 ).toToolResult(tool.name)
             }
 
-            // 7. 隐藏overlay并返回结�?            hideOverlay()
+            // 7. 隐藏overlay并返回结?            hideOverlay()
             
             UIToolsResult.Success(
                 UIActionResultData(
@@ -431,7 +431,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
     }
 
     /**
-     * 设置剪贴板文�?     */
+     * 设置剪贴板文?     */
     private suspend fun setClipboardText(text: String) {
         withContext(Dispatchers.Main) {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -476,7 +476,7 @@ open class RootUIToolsRefactored(context: Context) : BaseUITools(context) {
         }
     }
 
-    // ==================== 数据�?===================
+    // ==================== 数据?===================
 
     /**
      * UI数据

@@ -32,7 +32,7 @@ import okhttp3.ResponseBody
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** HTTP网络请求工具 提供直接访问网页和发送HTTP请求的能�?
+/** HTTP网络请求工具 提供直接访问网页和发送HTTP请求的能?
 class StandardHttpTools(private val context: Context) {
 
     companion object {
@@ -200,7 +200,7 @@ class StandardHttpTools(private val context: Context) {
         }
 
         return try {
-            // 解析请请�?           val headers = parseHeaders(headersParam)
+            // 解析请请?           val headers = parseHeaders(headersParam)
 
             // 解析自定义Cookie
             val customCookies =
@@ -208,7 +208,7 @@ class StandardHttpTools(private val context: Context) {
                         parseCookies(customCookiesParam, url)
                     } else null
 
-            // 配置客户�?           val client =
+            // 配置客户?           val client =
                     buildConfigurableClient(
                             connectTimeout = connectTimeoutParam?.toLongOrNull() ?: 15,
                             readTimeout = readTimeoutParam?.toLongOrNull() ?: 20,
@@ -272,7 +272,7 @@ class StandardHttpTools(private val context: Context) {
                                 bodyParam.toRequestBody(mediaType)
                             }
                             "multipart" -> {
-                                // 这里简化处理，实际使用multipart应该更复�?                               return ToolResult(
+                                // 这里简化处理，实际使用multipart应该更复?                               return ToolResult(
                                         toolName = tool.name,
                                         success = false,
                                         result = StringResultData(""),
@@ -329,7 +329,7 @@ class StandardHttpTools(private val context: Context) {
 
             val response = client.newCall(request).execute()
 
-            // 检查响应类�?          val contentType = response.header("Content-Type") ?: ""
+            // 检查响应类?          val contentType = response.header("Content-Type") ?: ""
 
             // 处理响应
             val responseHeadersMap =
@@ -383,7 +383,7 @@ class StandardHttpTools(private val context: Context) {
 
             ToolResult(toolName = tool.name, success = true, result = httpResponseData, error = "")
         } catch (e: Exception) {
-            AppLogger.e(TAG, "执行HTTP请求时出�? e)
+            AppLogger.e(TAG, "执行HTTP请求时出? e)
             ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -404,7 +404,7 @@ class StandardHttpTools(private val context: Context) {
         }
     }
 
-    /** 解析请请�?/
+    /** 解析请请?/
     private fun parseHeaders(headersJson: String): Map<String, String> {
         return try {
             val result = mutableMapOf<String, String>()
@@ -421,7 +421,7 @@ class StandardHttpTools(private val context: Context) {
         }
     }
 
-    /** 解析Cookie字符�?
+    /** 解析Cookie字符?
     private fun parseCookies(cookiesJson: String, urlString: String): List<Cookie>? {
         return try {
             val cookieList = mutableListOf<Cookie>()
@@ -459,7 +459,7 @@ class StandardHttpTools(private val context: Context) {
                         cookieBuilder.domain(requestCookieUrl.host)
                     }
 
-                    // 其他可选属�?                  val path = value.optString("path", "")
+                    // 其他可选属?                  val path = value.optString("path", "")
                     if (path.isNotBlank()) cookieBuilder.path(path)
 
                     val expiresAt = value.optLong("expiresAt", 0)
@@ -474,12 +474,12 @@ class StandardHttpTools(private val context: Context) {
 
             cookieList
         } catch (e: Exception) {
-            AppLogger.e(TAG, "解析Cookie时出�? e)
+            AppLogger.e(TAG, "解析Cookie时出? e)
             null
         }
     }
 
-    /** 管理Cookie的方�?
+    /** 管理Cookie的方?
     suspend fun manageCookies(tool: AITool): ToolResult {
         val action = tool.parameters.find { it.name == "action" }?.value?.lowercase() ?: "get"
         val domain = tool.parameters.find { it.name == "domain" }?.value ?: ""
@@ -497,7 +497,7 @@ class StandardHttpTools(private val context: Context) {
                                 cookieStore.values.flatten()
                             }
 
-                    // 转换为可读格�?                   val cookiesMap =
+                    // 转换为可读格?                   val cookiesMap =
                             cookies.associate {
                                 it.name to
                                         mapOf(
@@ -576,7 +576,7 @@ class StandardHttpTools(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "管理Cookie时出�? e)
+            AppLogger.e(TAG, "管理Cookie时出? e)
             ToolResult(
                     toolName = tool.name,
                     success = false,
@@ -586,7 +586,7 @@ class StandardHttpTools(private val context: Context) {
         }
     }
 
-    /** 发送包含文件的多部分表单请�?/
+    /** 发送包含文件的多部分表单请?/
     suspend fun multipartRequest(tool: AITool): ToolResult {
         val url = tool.parameters.find { it.name == "url" }?.value ?: ""
         val methodParam = tool.parameters.find { it.name == "method" }?.value
@@ -636,7 +636,7 @@ class StandardHttpTools(private val context: Context) {
         }
 
         return try {
-            // 解析请请�?           val headers = parseHeaders(headersParam)
+            // 解析请请?           val headers = parseHeaders(headersParam)
 
             // 解析自定义Cookie
             val customCookies =
@@ -644,7 +644,7 @@ class StandardHttpTools(private val context: Context) {
                         parseCookies(customCookiesParam, url)
                     } else null
 
-            // 配置客户�?           val client =
+            // 配置客户?           val client =
                     buildConfigurableClient(
                             connectTimeout = connectTimeoutParam?.toLongOrNull() ?: 15,
                             readTimeout = readTimeoutParam?.toLongOrNull() ?: 20,
@@ -668,7 +668,7 @@ class StandardHttpTools(private val context: Context) {
             // 构建多部分请求体
             val multipartBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
 
-            // 解析并添加表单数�?          try {
+            // 解析并添加表单数?          try {
                 val formData = JSONObject(formDataParam)
                 val formKeys = formData.keys()
                 while (formKeys.hasNext()) {
@@ -685,7 +685,7 @@ class StandardHttpTools(private val context: Context) {
                 )
             }
 
-            // 解析并添加文�?          try {
+            // 解析并添加文?          try {
                 val filesArray = JSONArray(filesParam)
                 for (i in 0 until filesArray.length()) {
                     val fileObj = filesArray.getJSONObject(i)
@@ -704,7 +704,7 @@ class StandardHttpTools(private val context: Context) {
                         )
                     }
 
-                    // 添加文件到多部分表单�?                   val fileBody = file.asRequestBody(contentType.toMediaType())
+                    // 添加文件到多部分表单?                   val fileBody = file.asRequestBody(contentType.toMediaType())
                     multipartBodyBuilder.addFormDataPart(fieldName, fileName, fileBody)
                 }
             } catch (e: Exception) {
@@ -722,14 +722,14 @@ class StandardHttpTools(private val context: Context) {
             // 添加自定义请求头
             headers.forEach { (name, value) -> requestBuilder.header(name, value) }
 
-            // 构建multipart请请�?           val requestBody = multipartBodyBuilder.build()
+            // 构建multipart请请?           val requestBody = multipartBodyBuilder.build()
             requestBuilder.method(method, requestBody)
 
             // 执行请求
             val request = requestBuilder.build()
             val response = client.newCall(request).execute()
 
-            // 检查响应类�?          val contentType = response.header("Content-Type") ?: ""
+            // 检查响应类?          val contentType = response.header("Content-Type") ?: ""
 
             // 处理响应
             val responseHeadersMap =

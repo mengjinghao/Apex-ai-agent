@@ -23,7 +23,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.firstOrNull
 
 /**
- * 三星�?Agent 系统的编排入口，管理三省六部一台的全部角色�? */
+ * 三星?Agent 系统的编排入口，管理三省六部一台的全部角色? */
 @Singleton
 class SanxingAgentSystem constructor(
     @ApplicationContext private val context: Context,
@@ -113,7 +113,7 @@ class SanxingAgentSystem constructor(
     }
 
     /**
-     * 激活三星制系统并处理用户输入�?     * 当前为最小占位实现，将输入路由给中书省角色处理�?     */
+     * 激活三星制系统并处理用户输入?     * 当前为最小占位实现，将输入路由给中书省角色处理?     */
     suspend fun activate(input: String): Result<String> {
         val message = AgentMessage(
             id = UUID.randomUUID().toString(),
@@ -125,7 +125,7 @@ class SanxingAgentSystem constructor(
         val response = zhongshuSheng.handleMessage(message).firstOrNull()
         return when (response) {
             is Result.Success -> Result.Success(response.data.content)
-            else -> Result.Success("三星制系统已激�?)
+            else -> Result.Success("三星制系统已激?)
         }
     }
 
@@ -140,7 +140,7 @@ class SanxingAgentSystem constructor(
         }
         if (missing.isNotEmpty()) {
             throw PermissionDeniedException(
-                "用户缺少创建 ${role.roleName} Agent 所需的权�? ${missing.joinToString(", ")}"
+                "用户缺少创建 ${role.roleName} Agent 所需的权? ${missing.joinToString(", ")}"
             )
         }
         return createAgent(role)

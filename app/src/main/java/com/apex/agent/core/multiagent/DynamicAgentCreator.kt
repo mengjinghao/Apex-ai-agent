@@ -20,19 +20,19 @@ class DynamicAgentCreator {
     )
 
     private val rolePatterns = mapOf(
-        "code" to listOf("程序�?, "开发�?, "工程�?, "coding", "code", "写代�?, "开�?, "程序"),
-        "design" to listOf("设计�?, "设计", "design", "UI", "UX", "界面", "美术"),
+        "code" to listOf("程序?, "开发?, "工程?, "coding", "code", "写代?, "开?, "程序"),
+        "design" to listOf("设计?, "设计", "design", "UI", "UX", "界面", "美术"),
         "writer" to listOf("作家", "写作", "写手", "writer", "content", "内容", "文案", "编辑"),
-        "research" to listOf("研究�?, "研究", "research", "分析", "分析�?, "调研"),
-        "test" to listOf("测试", "测试�?, "tester", "QA", "质量", "验证"),
-        "data" to listOf("数据", "分析�?, "data", "统计", "大数�?, "数据科学"),
+        "research" to listOf("研究?, "研究", "research", "分析", "分析?, "调研"),
+        "test" to listOf("测试", "测试?, "tester", "QA", "质量", "验证"),
+        "data" to listOf("数据", "分析?, "data", "统计", "大数?, "数据科学"),
         "pm" to listOf("产品", "经理", "PM", "product", "项目经理", "产品经理"),
         "devops" to listOf("运维", "DevOps", "部署", "devops", "SRE", "运营"),
-        "security" to listOf("安全", "Security", "审计", "风控", "security", "渗�?),
+        "security" to listOf("安全", "Security", "审计", "风控", "security", "渗?),
         "pm" to listOf("项目经理", "PM", "协调", "管理", "manager"),
-        "coordinator" to listOf("协调", "协调�?, "coordinator", "对接", "联络"),
+        "coordinator" to listOf("协调", "协调?, "coordinator", "对接", "联络"),
         "reviewer" to listOf("审核", "审查", "reviewer", "审批", "监察"),
-        "supervisor" to listOf("主管", "监督", "supervisor", "负责�?, "leader")
+        "supervisor" to listOf("主管", "监督", "supervisor", "负责?, "leader")
     )
 
     private val capabilityKeywords = mapOf(
@@ -40,10 +40,10 @@ class DynamicAgentCreator {
         "design" to listOf("设计", "UI", "原型", "layout", "wireframe", "mockup", "视觉"),
         "writing" to listOf("写作", "文章", "文档", "report", "总结", "撰写", "起草"),
         "research" to listOf("研究", "调研", "分析", "investigate", "survey", "评估"),
-        "testing" to listOf("测试", "验证", "test", "check", "验证", "检�?),
+        "testing" to listOf("测试", "验证", "test", "check", "验证", "检?),
         "data" to listOf("数据", "分析", "统计", "data", "chart", "报表", "指标"),
         "planning" to listOf("规划", "计划", "plan", "方案", "策划", "策略"),
-        "communication" to listOf("沟�?, "协调", "会议", "meeting", "汇报", "演示"),
+        "communication" to listOf("沟?, "协调", "会议", "meeting", "汇报", "演示"),
         "documentation" to listOf("文档", "说明", "doc", "manual", "规范", "标准"),
         "security" to listOf("安全", "漏洞", "风险", "security", "threat", "加密")
     )
@@ -130,7 +130,7 @@ class DynamicAgentCreator {
 
         val toolIndicators = mapOf(
             "tools" to listOf("工具", "调用", "tool", "execute", "执行"),
-            "internet" to listOf("搜索", "查询", "互联�?, "browse", "search", "web", "爬虫"),
+            "internet" to listOf("搜索", "查询", "互联?, "browse", "search", "web", "爬虫"),
             "file" to listOf("文件", "读取", "写入", "file", "read", "write", "文档")
         )
 
@@ -155,32 +155,32 @@ class DynamicAgentCreator {
 
     private fun generateSystemPrompt(role: String, description: String, context: String): String {
         val basePrompt = when {
-            role.contains("代码") || role.contains("开�?) ->
-                "你是一位专业的软件开发工程师，擅长编写高质量的代码。你需要遵循最佳实践，注重代码的可读性、可维护性和性能�?
+            role.contains("代码") || role.contains("开?) ->
+                "你是一位专业的软件开发工程师，擅长编写高质量的代码。你需要遵循最佳实践，注重代码的可读性、可维护性和性能?
 
             role.contains("设计") ->
-                "你是一位专业的UI/UX设计师，擅长创建美观且易用的界面设计。你需要注重用户体验，考虑交互逻辑和视觉层次�?
+                "你是一位专业的UI/UX设计师，擅长创建美观且易用的界面设计。你需要注重用户体验，考虑交互逻辑和视觉层次?
 
             role.contains("写作") || role.contains("内容") ->
-                "你是一位专业的内容创作者，擅长撰写各类文章和文案。你需要注重表达的清晰度和吸引力�?
+                "你是一位专业的内容创作者，擅长撰写各类文章和文案。你需要注重表达的清晰度和吸引力?
 
             role.contains("研究") || role.contains("分析") ->
-                "你是一位专业的研究分析师，擅长深入调研和分析问题。你需要注重数据的准确性和结论的可靠性�?
+                "你是一位专业的研究分析师，擅长深入调研和分析问题。你需要注重数据的准确性和结论的可靠性?
 
             role.contains("测试") ->
-                "你是一位专业的测试工程师，擅长发现和验证问题。你需要注重细节，追求高质量的交付�?
+                "你是一位专业的测试工程师，擅长发现和验证问题。你需要注重细节，追求高质量的交付?
 
             role.contains("数据") ->
-                "你是一位专业的数据分析师，擅长处理和分析数据。你需要注重数据的准确性和可视化的清晰度�?
+                "你是一位专业的数据分析师，擅长处理和分析数据。你需要注重数据的准确性和可视化的清晰度?
 
             role.contains("协调") || role.contains("主管") ->
-                "你是一位经验丰富的项目协调�主管，擅长组织和协调多方面的工作。你需要注重整体进度和各方协作�?
+                "你是一位经验丰富的项目协调主管，擅长组织和协调多方面的工作。你需要注重整体进度和各方协作?
 
             role.contains("审核") || role.contains("审查") ->
-                "你是一位专业的审核人员，擅长审查和评估工作成果。你需要注重细节和合规性�?
+                "你是一位专业的审核人员，擅长审查和评估工作成果。你需要注重细节和合规性?
 
             else ->
-                "你是一位专业的AI助手，擅长协助完成各类任务�?
+                "你是一位专业的AI助手，擅长协助完成各类任务?
         }
 
         val customContext = if (context.isNotEmpty()) {
@@ -206,7 +206,7 @@ class DynamicAgentCreator {
         }
 
         if (role == "通用助手") {
-            warnings.add("未能明确识别具体角色，可能影响任务分配的准确�?)
+            warnings.add("未能明确识别具体角色，可能影响任务分配的准确?)
         }
 
         if (capabilities.contains("security") && !capabilities.contains("coding")) {
@@ -264,7 +264,7 @@ class DynamicAgentCreator {
 
     private fun getRoleDisplayName(role: String): String {
         return when (role) {
-            "code" -> "代码开�?
+            "code" -> "代码开?
             "design" -> "界面设计"
             "writer" -> "内容创作"
             "research" -> "研究分析"

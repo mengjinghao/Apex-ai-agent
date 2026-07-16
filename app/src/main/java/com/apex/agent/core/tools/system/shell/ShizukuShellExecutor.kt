@@ -34,7 +34,7 @@ class ShizukuShellExecutor(private val context: Context) : ShellExecutor {
     override fun isAvailable(): Boolean = try {
         ShizukuAuthorizer.isShizukuServiceRunning()
     } catch (e: Exception) {
-        AppLogger.e(TAG, "检�?Shizuku 可用性失�?, e)
+        AppLogger.e(TAG, "检?Shizuku 可用性失?, e)
         false
     }
 
@@ -47,12 +47,12 @@ class ShizukuShellExecutor(private val context: Context) : ShellExecutor {
 
         val status = try {
             when {
-                !isAvailable() -> ShellExecutor.PermissionStatus.denied("Shizuku 服务未运�?)
-                !ShizukuAuthorizer.hasShizukuPermission() -> ShellExecutor.PermissionStatus.denied("未获�?Shizuku 权限")
+                !isAvailable() -> ShellExecutor.PermissionStatus.denied("Shizuku 服务未运?)
+                !ShizukuAuthorizer.hasShizukuPermission() -> ShellExecutor.PermissionStatus.denied("未获?Shizuku 权限")
                 else -> ShellExecutor.PermissionStatus.granted()
             }
         } catch (e: Exception) {
-            ShellExecutor.PermissionStatus.denied("检查权限失�? ${e.message}")
+            ShellExecutor.PermissionStatus.denied("检查权限失? ${e.message}")
         }
 
         cachedPermissionStatus = status
@@ -63,7 +63,7 @@ class ShizukuShellExecutor(private val context: Context) : ShellExecutor {
     override fun initialize() {
         if (isInitialized) return
 
-        AppLogger.d(TAG, "初始�?Shizuku Shell 执行�?..")
+        AppLogger.d(TAG, "初始?Shizuku Shell 执行?..")
         isInitialized = true
     }
 

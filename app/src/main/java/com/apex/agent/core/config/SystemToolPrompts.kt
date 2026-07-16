@@ -15,13 +15,12 @@ object SystemToolPrompts {
     private fun buildSafBookmarksSectionEn(safBookmarkNames: List<String>): String {
         val names = safBookmarkNames.map { it.trim() }.filter { it.isNotEmpty() }.distinct().sorted()
         if (names.isEmpty()) return ""
-        val listed = names.joinToString(", ") { "repo:${it}" }
+        val listed = names.joinToString("
+") { "repo:${it}" }
         return """
-
-**Attached Local Storage Repository:**
-- environment (optional): you can also use `environment="repo:<repositoryName>"` to operate in an attached local storage repository.
-- Paths are absolute (e.g., `/`, `/work/index.html`).
-- Available repositories: ${listed}
+**附加本地储存仓库**
+- environment（可选）：也可以使用 `environment="repo:<仓库>"` 在附加本地储存仓库中操作。
+- 路径使用绝对路径（例如：`/`、`/work/index.html`）。
 """.trimEnd()
     }
 
@@ -1486,7 +1485,8 @@ object SystemToolPrompts {
                 )
             )
         var prompt = beforeContext.toolPrompt
-            ?: applyToolVisibility(categories, toolVisibility).joinToString("\n\n") { it.toString() }
+            ?: applyToolVisibility(categories, toolVisibility).joinToString("
+") { it.toString() }
         val filterContext =
             dispatchToolPromptComposeHooks(
                 beforeContext.copy(
@@ -1564,7 +1564,8 @@ object SystemToolPrompts {
                 )
             )
         var prompt = beforeContext.toolPrompt
-            ?: applyToolVisibility(categories, toolVisibility).joinToString("\n\n") { it.toString() }
+            ?: applyToolVisibility(categories, toolVisibility).joinToString("
+") { it.toString() }
         val filterContext =
             dispatchToolPromptComposeHooks(
                 beforeContext.copy(

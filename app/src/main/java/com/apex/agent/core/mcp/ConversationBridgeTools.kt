@@ -17,12 +17,12 @@ import java.util.UUID
 /**
  * 对话桥接工具 - 提供 MCP 协议对话接口
  * 
- * 实现以下工具�? * - conversations_list: 列出对话
+ * 实现以下工具? * - conversations_list: 列出对话
  * - conversation_get: 获取对话
  * - messages_read: 读取消息
- * - messages_send: 发送消�? * - events_poll: 轮询事件
+ * - messages_send: 发送消? * - events_poll: 轮询事件
  * - events_wait: 等待事件
- * - permissions_list_open: 列出待批准权�? * - permissions_respond: 响应权限
+ * - permissions_list_open: 列出待批准权? * - permissions_respond: 响应权限
  */
 class ConversationBridgeTools(private val context: Context) {
     
@@ -43,10 +43,10 @@ class ConversationBridgeTools(private val context: Context) {
         SessionDatabase.getInstance(context)
     }
     
-    /** 待处理事件队�?*/
+    /** 待处理事件队?*/
     private val eventQueue = mutableListOf<MCPCEvent>()
     
-    /** 待批准权限队�?*/
+    /** 待批准权限队?*/
     private val pendingPermissions = mutableListOf<MCPCPermission>()
 
     private val rbacManager: RbacManager? by lazy {
@@ -54,9 +54,9 @@ class ConversationBridgeTools(private val context: Context) {
     }
     
     /**
-     * 列出所有对�?     * 
+     * 列出所有对?     * 
      * @param limit 返回数量限制
-     * @param offset 偏移�?     * @return 对话列表结果
+     * @param offset 偏移?     * @return 对话列表结果
      */
     suspend fun conversationsList(limit: Int = 50, offset: Int = 0): ConversationListResult {
         return withContext(Dispatchers.IO) {
@@ -147,7 +147,7 @@ class ConversationBridgeTools(private val context: Context) {
      * 
      * @param conversationId 对话ID
      * @param limit 消息数量限制
-     * @param beforeId 只获取此消息之前的消�?     * @return 消息列表
+     * @param beforeId 只获取此消息之前的消?     * @return 消息列表
      */
     suspend fun messagesRead(conversationId: String, limit: Int = 50, beforeId: String? = null): MessagesReadResult {
         return withContext(Dispatchers.IO) {
@@ -160,7 +160,7 @@ class ConversationBridgeTools(private val context: Context) {
                 }
                 
                 val messages = if (beforeId != null) {
-                    // 获取指定消息之前的消�?                    val allMessages = sessionDatabase.messageDao().getMessagesBySessionIdSync(conversationId)
+                    // 获取指定消息之前的消?                    val allMessages = sessionDatabase.messageDao().getMessagesBySessionIdSync(conversationId)
                     val beforeIndex = allMessages.indexOfFirst { it.id == beforeId }
                     if (beforeIndex > 0) {
                         allMessages.subList(0, minOf(beforeIndex, limit))
@@ -203,7 +203,7 @@ class ConversationBridgeTools(private val context: Context) {
      * @param conversationId 对话ID
      * @param content 消息内容
      * @param role 消息角色 (user/assistant/system)
-     * @return 发送结�?     */
+     * @return 发送结?     */
     suspend fun messagesSend(conversationId: String, content: String, role: String = "user"): MessageSendResult {
         return withContext(Dispatchers.IO) {
             try {
@@ -214,7 +214,7 @@ class ConversationBridgeTools(private val context: Context) {
                     )
                 }
                 
-                // 检查对话是否存�?                val session = sessionDatabase.sessionDao().getSessionById(conversationId)
+                // 检查对话是否存?                val session = sessionDatabase.sessionDao().getSessionById(conversationId)
                 if (session == null) {
                     return@withContext MessageSendResult(
                         success = false,
@@ -254,7 +254,7 @@ class ConversationBridgeTools(private val context: Context) {
                     createdAt = timestamp
                 )
             } catch (e: Exception) {
-                AppLogger.e(TAG, "发送消息失�? ${e.message}", e)
+                AppLogger.e(TAG, "发送消息失? ${e.message}", e)
                 MessageSendResult(
                     success = false,
                     error = "Failed to send message: ${e.message}"
@@ -267,7 +267,7 @@ class ConversationBridgeTools(private val context: Context) {
      * 轮询事件
      * 
      * @param timeout 超时时间（毫秒）
-     * @param since 从指定时间戳之后的事�?     * @return 事件列表
+     * @param since 从指定时间戳之后的事?     * @return 事件列表
      */
     suspend fun eventsPoll(timeout: Int = 1000, since: Long? = null): EventsResult {
         return withContext(Dispatchers.IO) {
@@ -325,7 +325,7 @@ class ConversationBridgeTools(private val context: Context) {
                         )
                     }
                     
-                    // 短暂等待后重�?                    kotlinx.coroutines.delay(100)
+                    // 短暂等待后重?                    kotlinx.coroutines.delay(100)
                 }
                 
                 // 超时，返回空列表
@@ -400,7 +400,7 @@ class ConversationBridgeTools(private val context: Context) {
                     )
                 }
                 
-                // 批准时持久化�?RBAC
+                // 批准时持久化?RBAC
                 if (approve) {
                     rbacManager?.let { rbac ->
                         try {
@@ -446,7 +446,7 @@ class ConversationBridgeTools(private val context: Context) {
     }
     
     /**
-     * 添加事件到队�?     */
+     * 添加事件到队?     */
     private fun addEvent(event: MCPCEvent) {
         synchronized(eventQueue) {
             eventQueue.add(event)
@@ -458,7 +458,7 @@ class ConversationBridgeTools(private val context: Context) {
     }
     
     /**
-     * 添加待批准权�?     */
+     * 添加待批准权?     */
     fun addPendingPermission(permission: MCPCPermission) {
         synchronized(pendingPermissions) {
             pendingPermissions.add(permission)
@@ -466,7 +466,7 @@ class ConversationBridgeTools(private val context: Context) {
     }
     
     /**
-     * 解析元数�?JSON
+     * 解析元数?JSON
      */
     private fun parseMetadata(metadata: String): Map<String, Any>? {
         return try {
@@ -490,7 +490,7 @@ class ConversationBridgeTools(private val context: Context) {
     }
     
     /**
-     * JSONObject 转换�?Map
+     * JSONObject 转换?Map
      */
     private fun JSONObject.toMap(): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
@@ -508,14 +508,14 @@ class ConversationBridgeTools(private val context: Context) {
     }
     
     /**
-     * JSONArray 转换�?List
+     * JSONArray 转换?List
      */
     private fun JSONArray.toMapList(): List<Any> {
         return (0 until length()).map { get(it) }
     }
 }
 
-// ==================== 数据�?====================
+// ==================== 数据?====================
 
 /**
  * MCP 事件
@@ -539,7 +539,7 @@ data class MCPCPermission(
     val createdAt: Long
 )
 
-// ==================== 结果数据�?====================
+// ==================== 结果数据?====================
 
 /**
  * 对话信息
@@ -580,7 +580,7 @@ data class MessageInfo(
     val toolCalls: List<Map<String, Any>>?
 )
 
-// ==================== 结果�?====================
+// ==================== 结果?====================
 
 /**
  * 对话列表结果
@@ -612,7 +612,7 @@ data class MessagesReadResult(
 )
 
 /**
- * 消息发送结�? */
+ * 消息发送结? */
 data class MessageSendResult(
     val success: Boolean,
     val messageId: String? = null,

@@ -6,7 +6,7 @@ import java.util.UUID
 
 /**
  * 任务规划系统 - 参数GitHub Agentic Workflows
- * ，Agent 能够规划和分解复杂任�? */
+ * ，Agent 能够规划和分解复杂任? */
 data class TaskPlan(
     val planId: String = UUID.randomUUID().toString(),
     val originalGoal: String,
@@ -70,7 +70,7 @@ class TaskPlanner(private val context: Context) {
             PlanStep(1, "分析需求和理解任务", AgentRole.RESEARCHER, 120, emptyList(), listOf("analysis", "web_search")),
             PlanStep(2, "设计解决方案", AgentRole.DESIGNER, 180, listOf("1"), listOf("design", "planning")),
             PlanStep(3, "实现代码", AgentRole.DEVELOPER, 600, listOf("2"), listOf("coding", "debugging")),
-            PlanStep(4, "测试和验�? AgentRole.EXECUTOR, 300, listOf("3"), listOf("testing", "review"))
+            PlanStep(4, "测试和验? AgentRole.EXECUTOR, 300, listOf("3"), listOf("testing", "review"))
         )
     }
 
@@ -88,13 +88,13 @@ class TaskPlanner(private val context: Context) {
             PlanStep(1, "收集相关信息", AgentRole.RESEARCHER, 120, emptyList(), listOf("research")),
             PlanStep(2, "构思大纲和结构", AgentRole.DESIGNER, 120, listOf("1"), listOf("outline")),
             PlanStep(3, "撰写内容", AgentRole.EXECUTOR, 600, listOf("2"), listOf("writing")),
-            PlanStep(4, "编辑和润�? AgentRole.EXECUTOR, 300, listOf("3"), listOf("editing"))
+            PlanStep(4, "编辑和润? AgentRole.EXECUTOR, 300, listOf("3"), listOf("editing"))
         )
     }
 
     private fun createGenericSteps(goal: String): List<PlanStep> {
         return listOf(
-            PlanStep(1, "理解和分析需�? AgentRole.COORDINATOR, 60, emptyList(), listOf("analysis")),
+            PlanStep(1, "理解和分析需? AgentRole.COORDINATOR, 60, emptyList(), listOf("analysis")),
             PlanStep(2, "制定计划", AgentRole.COORDINATOR, 120, listOf("1"), listOf("planning")),
             PlanStep(3, "执行任务", AgentRole.EXECUTOR, 300, listOf("2"), listOf("execution"))
         )
@@ -120,7 +120,7 @@ class TaskPlanner(private val context: Context) {
     fun shouldUsePipeline(goal: String): Boolean {
         if (goal.length > 200) return true
 
-        val pipelineKeywords = listOf("复杂", "多步�? "完整", "全流�? "complex", "multi-step")
+        val pipelineKeywords = listOf("复杂", "多步? "完整", "全流? "complex", "multi-step")
         return pipelineKeywords.any { goal.contains(it, ignoreCase = true) }
     }
 
@@ -130,7 +130,7 @@ class TaskPlanner(private val context: Context) {
      */
     suspend fun executeWithPipeline(goal: String): PipelineResult? {
         if (!shouldUsePipeline(goal)) {
-            AppLogger.d(TAG, "任务不需要管道执�?${goal}")
+            AppLogger.d(TAG, "任务不需要管道执?${goal}")
             return null
         }
 

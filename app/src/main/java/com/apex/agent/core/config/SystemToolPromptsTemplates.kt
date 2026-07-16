@@ -605,7 +605,7 @@ object SystemToolPromptsTemplates {
                                 ToolParameterSchema(name = "destination", type = "string", description = "destination path", required = true),
                                 ToolParameterSchema(name = "recursive", type = "boolean", description = "boolean", required = false, default = "false"),
                                 ToolParameterSchema(name = "source_environment", type = "string", description = "optional, \"android\" or \"linux\"", required = false, default = "\"android\""),
-                                ToolParameterSchema(name = "dest_environment", type = "string", description = "optional, \"android\" or \"linux\". For cross-environment copy (e.g., Android �?Linux or Linux �?Android), specify both source_environment and dest_environment", required = false, default = "\"android\""
+                                ToolParameterSchema(name = "dest_environment", type = "string", description = "optional, \"android\" or \"linux\". For cross-environment copy (e.g., Android ?Linux or Linux ?Android), specify both source_environment and dest_environment", required = false, default = "\"android\""
                             )
                         ),
                         ToolPrompt(
@@ -709,12 +709,12 @@ object SystemToolPromptsTemplates {
                     listOf(
                         ToolPrompt(
                             name = "battery_info",
-                            description = "获取电池状态、电量、健康度等详细信�?,
+                            description = "获取电池状态、电量、健康度等详细信?,
                             parametersStructured = listOf()
                         ),
                         ToolPrompt(
                             name = "network_info",
-                            description = "获取网络连接状态、Wi-Fi信息、移动数据信�?,
+                            description = "获取网络连接状态、Wi-Fi信息、移动数据信?,
                             parametersStructured = listOf()
                         ),
                         ToolPrompt(
@@ -730,7 +730,7 @@ object SystemToolPromptsTemplates {
             )
         )
 
-    // 其他语言的工具类别定义将在此处添�?
+    // 其他语言的工具类别定义将在此处添?
     val internalToolCategoriesZh: List<SystemToolPromptCategory> = internalToolCategoriesEn
     val internalToolCategoriesEs: List<SystemToolPromptCategory> = internalToolCategoriesEn
     val internalToolCategoriesJp: List<SystemToolPromptCategory> = internalToolCategoriesEn

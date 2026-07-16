@@ -390,7 +390,7 @@ class CollaborationHistoryManager {
             }
             appendLine()
 
-            appendLine("=== 数据流分析报�?===")
+            appendLine("=== 数据流分析报?===")
             history.events.forEach { event ->
                 appendLine("[${formatTime(event.timestamp)}] ${event.type}: ${event.description}")
             }

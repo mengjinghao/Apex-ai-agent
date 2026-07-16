@@ -21,7 +21,7 @@ class CompressionStrategy(
     }
 
     /**
-     * 分析轨迹并确定哪些轮次需要保�?     */
+     * 分析轨迹并确定哪些轮次需要保?     */
     fun analyzeProtection(trajectory: TrajectoryData): ProtectionPlan {
         val turns = trajectory.turns
         if (turns.isEmpty()) {
@@ -52,17 +52,17 @@ class CompressionStrategy(
             }
         }
 
-        // 如果没有找到 human，找到第一�?assistant
+        // 如果没有找到 human，找到第一?assistant
         if (protectedIndices.isEmpty() && turns.isNotEmpty()) {
             protectedIndices.add(0)
             headEnd = 0
         }
 
-        // 保护第一个工具调用（如果启用�?        if (preserveFirstToolCall) {
+        // 保护第一个工具调用（如果启用?        if (preserveFirstToolCall) {
             val firstToolCallIndex = turns.indexOfFirst { it.isToolCall }
             if (firstToolCallIndex >= 0 && firstToolCallIndex <= headEnd + 2) {
                 protectedIndices.add(firstToolCallIndex)
-                // 同时保护对应�?tool result
+                // 同时保护对应?tool result
                 val toolResultIndex = findMatchingToolResult(turns, firstToolCallIndex)
                 if (toolResultIndex != null) {
                     protectedIndices.add(toolResultIndex)
@@ -86,7 +86,7 @@ class CompressionStrategy(
                     }
                 }
             }
-            // 找到至少一�?assistant 就停�?            if (turn.kind == PromptTurnKind.ASSISTANT && i < turns.size - 1) {
+            // 找到至少一?assistant 就停?            if (turn.kind == PromptTurnKind.ASSISTANT && i < turns.size - 1) {
                 break
             }
         }
@@ -103,7 +103,7 @@ class CompressionStrategy(
             protectedIndices.add(i)
         }
 
-        // 计算中间区域的边�?        val sortedProtected = protectedIndices.sorted()
+        // 计算中间区域的边?        val sortedProtected = protectedIndices.sorted()
         val middleStart = if (sortedProtected.isNotEmpty()) sortedProtected.last() + 1 else 0
         val middleEnd = if (sortedProtected.isNotEmpty()) sortedProtected.first() - 1 else turns.size - 1
 
@@ -116,7 +116,7 @@ class CompressionStrategy(
     }
 
     /**
-     * 查找匹配�?tool result
+     * 查找匹配?tool result
      */
     private fun findMatchingToolResult(turns: List<TrajectoryTurn>, toolCallIndex: Int): Int? {
         if (toolCallIndex >= turns.size - 1) return null
@@ -135,14 +135,14 @@ class CompressionStrategy(
             return TrajectoryPartition(emptyList(), emptyList(), emptyList())
         }
 
-        // 找到分界�?        val headEnd = plan.headProtectedIndices.maxOrNull() ?: 0
+        // 找到分界?        val headEnd = plan.headProtectedIndices.maxOrNull() ?: 0
         val tailStart = plan.tailProtectedIndices.minOrNull() ?: (turns.size - 1)
 
         val headTurns = if (headEnd >= 0) turns.subList(0, headEnd + 1) else emptyList()
         val middleTurns = if (tailStart > headEnd + 1) {
             turns.subList(headEnd + 1, tailStart)
         } else if (tailStart > 0 && headEnd < turns.size - 1) {
-            // 如果中间区域太小，尝试获取一些轮�?            val midStart = minOf(headEnd + 1, turns.size - 1)
+            // 如果中间区域太小，尝试获取一些轮?            val midStart = minOf(headEnd + 1, turns.size - 1)
             val midEnd = maxOf(tailStart, midStart + 1)
             if (midEnd <= turns.size) turns.subList(midStart, midEnd) else emptyList()
         } else {
@@ -158,7 +158,7 @@ class CompressionStrategy(
     }
 
     /**
-     * 计算保护�?token 数量
+     * 计算保护?token 数量
      */
     fun calculateProtectedTokens(trajectory: TrajectoryData): Int {
         val plan = analyzeProtection(trajectory)

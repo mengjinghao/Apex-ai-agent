@@ -93,12 +93,12 @@ class AgentInstance(private val agent: Agent) {
         messageChannel.trySend(message)
     }
 
-    /** 获取 Agent 的任务历�?*/
+    /** 获取 Agent 的任务历?*/
     fun getTaskHistory(): List<AgentTaskRecord> {
         return taskHistory.toList()
     }
 
-    /** 初始�?Agent 环境 */
+    /** 初始?Agent 环境 */
     private fun initializeAgent() {
         taskHistory.add(
             AgentTaskRecord(
@@ -110,7 +110,7 @@ class AgentInstance(private val agent: Agent) {
         )
     }
 
-    /** 处理一条消�?*/
+    /** 处理一条消?*/
     private fun processMessage(message: String) {
         val taskRecord = AgentTaskRecord(
             task = message.take(30),
@@ -124,7 +124,7 @@ class AgentInstance(private val agent: Agent) {
         taskRecord.result = processedResult
     }
 
-    /** 空闲思�?- 轻量级自我检�?*/
+    /** 空闲思?- 轻量级自我检?*/
     private fun performIdleThought() {
         if (System.currentTimeMillis() % 10000 < 100) {
             taskHistory.add(

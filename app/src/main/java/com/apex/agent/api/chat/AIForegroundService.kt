@@ -103,13 +103,13 @@ class.methods.firstOrNull {
 }/** 前台服务，用于在AI进行长时间处理时保持应用活跃，防止被系统杀死？该服务不执行实际工作，仅通过显示一个持久通知来提升应用的进程优先级？*/
 class AIForegroundService : Service() {
     companion object {
-        private const val TAG = "AIForegroundService"        private const val NOTIFICATION_ID = 1        private const val REPLY_NOTIFICATION_ID = 2001        private const val CHANNEL_ID = "AI_SERVICE_CHANNEL"        private const val REPLY_CHANNEL_ID_PREFIX = "AI_REPLY_COMPLETE_CHANNEL"        private val REPLY_VIBRATION_PATTERN = longArrayOf(0L, 250L, 150L, 250L)        private const val ACTION_CANCEL_CURRENT_OPERATION = "com.apex.action.CANCEL_CURRENT_OPERATION"        private const val REQUEST_CODE_CANCEL_CURRENT_OPERATION = 9002        private const val ACTION_EXIT_APP = "com.apex.action.EXIT_APP"        private const val REQUEST_CODE_EXIT_APP = 9003        private const val ACTION_TOGGLE_WAKE_LISTENING = "com.apex.action.TOGGLE_WAKE_LISTENING"        private const val REQUEST_CODE_TOGGLE_WAKE_LISTENING = 9006        private const val REPLY_NOTIFICATION_TAG_PREFIX = "ai_reply:"        private const val ACTION_SET_WAKE_LISTENING_SUSPENDED_FOR_IME =            "com.apex.action.SET_WAKE_LISTENING_SUSPENDED_FOR_IME"        private const val EXTRA_IME_VISIBLE = "extra_ime_visible"        private const val ACTION_SET_WAKE_LISTENING_SUSPENDED_FOR_FLOATING_FULLSCREEN =            "com.apex.action.SET_WAKE_LISTENING_SUSPENDED_FOR_FLOATING_FULLSCREEN"        private const val EXTRA_FLOATING_FULLSCREEN_ACTIVE = "extra_floating_fullscreen_active"        const val ACTION_PREPARE_WAKE_HANDOFF =            "com.apex.action.PREPARE_WAKE_HANDOFF"        private const val ACTION_ENSURE_MICROPHONE_FOREGROUND =            "com.apex.action.ENSURE_MICROPHONE_FOREGROUND"        private const val ACTION_START_OR_REFRESH_EXTERNAL_HTTP =            "com.apex.action.START_OR_REFRESH_EXTERNAL_HTTP"        private const val ACTION_STOP_EXTERNAL_HTTP =            "com.apex.action.STOP_EXTERNAL_HTTP"        @Volatile        private var lastRequestedImeVisible: Boolean = false        // 静态标志，用于从外部检查服务是否正在运�?       val isRunning = java.util.concurrent.atomic.AtomicBoolean(false)        private val activeReplyNotificationTags = ConcurrentHashMap.newKeySet<String>()        private val externalHttpStateFlow = MutableStateFlow(ExternalChatHttpState())        val externalHttpState = externalHttpStateFlow.asStateFlow()                // Intent extras keys        const val EXTRA_CHARACTER_NAME = "extra_character_name"        const val EXTRA_AVATAR_URI = "extra_avatar_uri"        const val EXTRA_STATE = "extra_state"        const val STATE_RUNNING = "running"        const val STATE_IDLE = "idle"        private fun buildReplyNotificationTag(chatId: String): String {
+        private const val TAG = "AIForegroundService"        private const val NOTIFICATION_ID = 1        private const val REPLY_NOTIFICATION_ID = 2001        private const val CHANNEL_ID = "AI_SERVICE_CHANNEL"        private const val REPLY_CHANNEL_ID_PREFIX = "AI_REPLY_COMPLETE_CHANNEL"        private val REPLY_VIBRATION_PATTERN = longArrayOf(0L, 250L, 150L, 250L)        private const val ACTION_CANCEL_CURRENT_OPERATION = "com.apex.action.CANCEL_CURRENT_OPERATION"        private const val REQUEST_CODE_CANCEL_CURRENT_OPERATION = 9002        private const val ACTION_EXIT_APP = "com.apex.action.EXIT_APP"        private const val REQUEST_CODE_EXIT_APP = 9003        private const val ACTION_TOGGLE_WAKE_LISTENING = "com.apex.action.TOGGLE_WAKE_LISTENING"        private const val REQUEST_CODE_TOGGLE_WAKE_LISTENING = 9006        private const val REPLY_NOTIFICATION_TAG_PREFIX = "ai_reply:"        private const val ACTION_SET_WAKE_LISTENING_SUSPENDED_FOR_IME =            "com.apex.action.SET_WAKE_LISTENING_SUSPENDED_FOR_IME"        private const val EXTRA_IME_VISIBLE = "extra_ime_visible"        private const val ACTION_SET_WAKE_LISTENING_SUSPENDED_FOR_FLOATING_FULLSCREEN =            "com.apex.action.SET_WAKE_LISTENING_SUSPENDED_FOR_FLOATING_FULLSCREEN"        private const val EXTRA_FLOATING_FULLSCREEN_ACTIVE = "extra_floating_fullscreen_active"        const val ACTION_PREPARE_WAKE_HANDOFF =            "com.apex.action.PREPARE_WAKE_HANDOFF"        private const val ACTION_ENSURE_MICROPHONE_FOREGROUND =            "com.apex.action.ENSURE_MICROPHONE_FOREGROUND"        private const val ACTION_START_OR_REFRESH_EXTERNAL_HTTP =            "com.apex.action.START_OR_REFRESH_EXTERNAL_HTTP"        private const val ACTION_STOP_EXTERNAL_HTTP =            "com.apex.action.STOP_EXTERNAL_HTTP"        @Volatile        private var lastRequestedImeVisible: Boolean = false        // 静态标志，用于从外部检查服务是否正在运?       val isRunning = java.util.concurrent.atomic.AtomicBoolean(false)        private val activeReplyNotificationTags = ConcurrentHashMap.newKeySet<String>()        private val externalHttpStateFlow = MutableStateFlow(ExternalChatHttpState())        val externalHttpState = externalHttpStateFlow.asStateFlow()                // Intent extras keys        const val EXTRA_CHARACTER_NAME = "extra_character_name"        const val EXTRA_AVATAR_URI = "extra_avatar_uri"        const val EXTRA_STATE = "extra_state"        const val STATE_RUNNING = "running"        const val STATE_IDLE = "idle"        private fun buildReplyNotificationTag(chatId: String): String {
             val suffix = chatId?.ifBlank {
  "default"
 }
- ?: "default"            return "�?{
+ ?: "default"            return "?{
 REPLY_NOTIFICATION_TAG_PREFIX
-}�?{
+}?{
 suffix
 }"
 }
@@ -207,7 +207,7 @@ e.message
 }
         fun notifyReplyCompleted(            context: Context,            chatId: String?,            characterName: String?,            rawReplyContent: String?,            avatarUri: String?        ) {
             try {
-                AppLogger.d(TAG, "检查是否需要发送会话完成通知: chatId=�?{
+                AppLogger.d(TAG, "检查是否需要发送会话完成通知: chatId=?{
 chatId
 }")                if (ActivityLifecycleManager.getCurrentActivity() != null) {
                     AppLogger.d(TAG, "应用在前台，无需发送会话完成通知")                    return
@@ -219,7 +219,7 @@ chatId
                     AppLogger.d(TAG, "回复通知已禁用，跳过发）                    return
 }
                 if (rawReplyContent.isNullOrBlank()) {
-                    AppLogger.d(TAG, "回复内容为空，跳过发送回复通知: chatId=�?{
+                    AppLogger.d(TAG, "回复内容为空，跳过发送回复通知: chatId=?{
 chatId
 }")                    return
 }
@@ -247,9 +247,9 @@ chatId
 }
 
 }
-                val manager =                    appContext.getSystemService(Context.NOTIFICATION_SERVICE)                        as NotificationManager                val tag = buildReplyNotificationTag(chatId)                activeReplyNotificationTags.add(tag)                manager.notify(tag, REPLY_NOTIFICATION_ID, notificationBuilder.build())                AppLogger.d(TAG, "AI回复通知已发�?chatId=�?{
+                val manager =                    appContext.getSystemService(Context.NOTIFICATION_SERVICE)                        as NotificationManager                val tag = buildReplyNotificationTag(chatId)                activeReplyNotificationTags.add(tag)                manager.notify(tag, REPLY_NOTIFICATION_ID, notificationBuilder.build())                AppLogger.d(TAG, "AI回复通知已发?chatId=?{
 chatId
-}, tag=�?{
+}, tag=?{
 tag
 }")
 }
@@ -345,7 +345,7 @@ class.java).apply {
 
 }
  catch (e: Exception) {
-                AppLogger.e(TAG, "Failed to start action �?{
+                AppLogger.e(TAG, "Failed to start action ?{
 action
 }: ${
 e.message
@@ -369,17 +369,17 @@ e.message
 
 }
     private fun updateWakeListeningSuspendedForIme(imeVisible: Boolean) {
-        if (wakeListeningSuspendedForIme == imeVisible) return        wakeListeningSuspendedForIme = imeVisible        AppLogger.d(TAG, "Wake listening suspended by IME: �?{
+        if (wakeListeningSuspendedForIme == imeVisible) return        wakeListeningSuspendedForIme = imeVisible        AppLogger.d(TAG, "Wake listening suspended by IME: ?{
 wakeListeningSuspendedForIme
 }")        applyWakeListeningState()
 }
     private fun updateWakeListeningSuspendedForExternalRecording(externalRecording: Boolean) {
-        if (wakeListeningSuspendedForExternalRecording == externalRecording) return        wakeListeningSuspendedForExternalRecording = externalRecording        AppLogger.d(TAG, "Wake listening suspended by external recording: �?{
+        if (wakeListeningSuspendedForExternalRecording == externalRecording) return        wakeListeningSuspendedForExternalRecording = externalRecording        AppLogger.d(TAG, "Wake listening suspended by external recording: ?{
 wakeListeningSuspendedForExternalRecording
 }")        applyWakeListeningState()
 }
     private fun updateWakeListeningSuspendedForFloatingFullscreen(active: Boolean) {
-        if (wakeListeningSuspendedForFloatingFullscreen == active) return        wakeListeningSuspendedForFloatingFullscreen = active        AppLogger.d(TAG, "Wake listening suspended by floating fullscreen: �?{
+        if (wakeListeningSuspendedForFloatingFullscreen == active) return        wakeListeningSuspendedForFloatingFullscreen = active        AppLogger.d(TAG, "Wake listening suspended by floating fullscreen: ?{
 wakeListeningSuspendedForFloatingFullscreen
 }")        applyWakeListeningState()
 }
@@ -443,34 +443,34 @@ class.methods.any {
  catch (_: Exception) {
                                     ""
 }
-                                val rawShort = if (raw.length > 220) raw.substring(0, 220) else raw                                "#�?{
+                                val rawShort = if (raw.length > 220) raw.substring(0, 220) else raw                                "#?{
 idx
 }
  uid=${
 uid ?: "?"
 },pkg=${
 pkg ?: "?"
-},mUid=�?{
+},mUid=?{
 hasUidMethod
-},mPkg=�?{
+},mPkg=?{
 hasPkgMethod
 }
- cfg=�?{
+ cfg=?{
 rawShort
 }"
-}.joinToString(" | ")                        AppLogger.d(                            TAG,                            "Recording configs changed: wakeRunning=�?{
+}.joinToString(" | ")                        AppLogger.d(                            TAG,                            "Recording configs changed: wakeRunning=?{
 isWakeListeningRunning
 }
- micFlag=�?{
+ micFlag=?{
 wakeListeningMicActiveForRecordingDetection
 }
- external=�?{
+ external=?{
 hasExternal
 }
  count=${
 configs.size
 }
- configs=[�?{
+ configs=[?{
 summary
 }]"                        )
 }
@@ -632,7 +632,7 @@ override ?: externalHttpCurrentPort ?: externalHttpStateFlow.value.port        e
         stopSelf()
 }
     override fun onCreate() {
-        super.onCreate()        isRunning.set(true)        wakeListeningSuspendedForIme = lastRequestedImeVisible        AppLogger.d(TAG, "AI 前台服务创建�?       chatRuntimeHolder        createNotificationChannel()        val notification = createNotification()        ForegroundServiceCompat.startForeground(            service = this,            notificationId = NOTIFICATION_ID,            notification = notification,            types = ForegroundServiceCompat.buildTypes(                dataSync = true,                specialUse = runCatching {
+        super.onCreate()        isRunning.set(true)        wakeListeningSuspendedForIme = lastRequestedImeVisible        AppLogger.d(TAG, "AI 前台服务创建?       chatRuntimeHolder        createNotificationChannel()        val notification = createNotification()        ForegroundServiceCompat.startForeground(            service = this,            notificationId = NOTIFICATION_ID,            notification = notification,            types = ForegroundServiceCompat.buildTypes(                dataSync = true,                specialUse = runCatching {
  externalHttpPreferences.getEnabled()
 }.getOrDefault(false)            )        )        observeRuntimeTaskViewPreference()        observeChatRuntimeStats()        startWakeMonitoring()        startExternalHttpMonitoring()        AppLogger.d(TAG, "AI 前台服务已启动）
 }
@@ -645,7 +645,7 @@ override ?: externalHttpCurrentPort ?: externalHttpStateFlow.value.port        e
 
 }
  catch (e: Exception) {
-                AppLogger.e(TAG, "监听运行时任务视图隐藏设置失�?${
+                AppLogger.e(TAG, "监听运行时任务视图隐藏设置失?${
 e.message
 }", e)
 }
@@ -659,7 +659,7 @@ e.message
     private fun updateRuntimeTaskViewVisibility() {
         val shouldHide = hideRuntimeTaskViewEnabled && isAiBusy        if (lastAppliedRuntimeTaskViewHidden == shouldHide) return        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return        try {
             val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager            val appTasks = activityManager?.appTasks.orEmpty()            if (appTasks.isEmpty()) {
-                AppLogger.d(TAG, "更新运行时任务视图隐藏状态时未找到任�?hidden=�?{
+                AppLogger.d(TAG, "更新运行时任务视图隐藏状态时未找到任?hidden=?{
 shouldHide
 }")                return
 }
@@ -668,20 +668,20 @@ shouldHide
                     task.setExcludeFromRecents(shouldHide)
 }
  catch (e: Exception) {
-                    AppLogger.e(TAG, "设置任务最近任务可见性失�?hidden=�?{
+                    AppLogger.e(TAG, "设置任务最近任务可见性失?hidden=?{
 shouldHide
 }", e)
 }
 
 }
-            lastAppliedRuntimeTaskViewHidden = shouldHide            AppLogger.d(TAG, "运行时任务视图隐藏状态已更新: hidden=�?{
+            lastAppliedRuntimeTaskViewHidden = shouldHide            AppLogger.d(TAG, "运行时任务视图隐藏状态已更新: hidden=?{
 shouldHide
 }, taskCount=${
 appTasks.size
 }")
 }
  catch (e: Exception) {
-            AppLogger.e(TAG, "更新运行时任务视图隐藏状态失�?hidden=�?{
+            AppLogger.e(TAG, "更新运行时任务视图隐藏状态失?hidden=?{
 shouldHide
 }", e)
 }
@@ -824,7 +824,7 @@ override = configuredPort, lastError = null)            stopSelfIfIdle(ignoreApp
         if (intent?.action == ACTION_TOGGLE_WAKE_LISTENING) {
             AppLogger.d(TAG, "收到 ACTION_TOGGLE_WAKE_LISTENING")            serviceScope.launch {
                 try {
-                    val current = wakePrefs.alwaysListeningEnabledFlow.first()                    AppLogger.d(TAG, "切换唤醒监听: �?{
+                    val current = wakePrefs.alwaysListeningEnabledFlow.first()                    AppLogger.d(TAG, "切换唤醒监听: ?{
 current
 }
  -> ${
@@ -848,11 +848,11 @@ e.message
 }
         if (intent?.action == ACTION_PREPARE_WAKE_HANDOFF) {
             val now = System.currentTimeMillis()            val triggeredAt = pendingWakeTriggeredAtMs            if (triggeredAt > 0L && wakeHandoffPending) {
-                val elapsedMs = (now - triggeredAt).coerceAtLeast(0L)                val dynamicMarginMs = (elapsedMs / 4L).coerceIn(150L, 650L)                val windowMs = (elapsedMs + dynamicMarginMs).coerceIn(200L, 2500L)                AppLogger.d(                    TAG,                    "Wake handoff prepare: elapsedMs=�?{
+                val elapsedMs = (now - triggeredAt).coerceAtLeast(0L)                val dynamicMarginMs = (elapsedMs / 4L).coerceIn(150L, 650L)                val windowMs = (elapsedMs + dynamicMarginMs).coerceIn(200L, 2500L)                AppLogger.d(                    TAG,                    "Wake handoff prepare: elapsedMs=?{
 elapsedMs
-}, marginMs=�?{
+}, marginMs=?{
 dynamicMarginMs
-}, captureWindowMs=�?{
+}, captureWindowMs=?{
 windowMs
 }"                )                SpeechPrerollStore.capturePending(windowMs = windowMs.toInt())                SpeechPrerollStore.armPending()                if (!wakeStopInProgress) {
                     wakeStopInProgress = true                    serviceScope.launch {
@@ -869,9 +869,9 @@ windowMs
 
 }
  else {
-                AppLogger.d(TAG, "Wake handoff prepare ignored: pending=�?{
+                AppLogger.d(TAG, "Wake handoff prepare ignored: pending=?{
 wakeHandoffPending
-}, triggeredAt=�?{
+}, triggeredAt=?{
 triggeredAt
 }")
 }
@@ -879,7 +879,7 @@ triggeredAt
 }
         if (intent?.action == ACTION_CANCEL_CURRENT_OPERATION) {
             try {
-                AIMessageManager.cancelCurrentOperation()                // 立即刷新通知状态（真正的状态重置由 EnhancedAIService.cancelConversation/stopAiService 完成�?               updateAiBusyState(false)
+                AIMessageManager.cancelCurrentOperation()                // 立即刷新通知状态（真正的状态重置由 EnhancedAIService.cancelConversation/stopAiService 完成?               updateAiBusyState(false)
 }
  catch (e: Exception) {
                 AppLogger.e(TAG, "取消当前AI任务失败: ${
@@ -889,9 +889,9 @@ e.message
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager            manager.notify(NOTIFICATION_ID, createNotification())            return START_NOT_STICKY
 }
         // 从Intent中提取通知信息        intent?.let {
-            characterName = it.getStringExtra(EXTRA_CHARACTER_NAME)            avatarUri = it.getStringExtra(EXTRA_AVATAR_URI)            AppLogger.d(TAG, "收到通知数据 - 角色: �?{
+            characterName = it.getStringExtra(EXTRA_CHARACTER_NAME)            avatarUri = it.getStringExtra(EXTRA_AVATAR_URI)            AppLogger.d(TAG, "收到通知数据 - 角色: ?{
 characterName
-}, 头像: �?{
+}, 头像: ?{
 avatarUri
 }")            val state = it.getStringExtra(EXTRA_STATE)            if (state != null) {
                 updateAiBusyState(state == STATE_RUNNING)                val alwaysListeningEnabled = isAlwaysListeningEnabledNow()                val externalHttpEnabled =                    externalHttpStateFlow.value.isRunning || isExternalHttpEnabledNow()                if (!isAiBusy &&                    !alwaysListeningEnabled &&                    !externalHttpEnabled                ) {
@@ -901,7 +901,7 @@ avatarUri
 }
 
 }
-                // ??External HTTP 处于启用状态时，使？START_STICKY 提高后台保活强度�?       // 其他场景仍由 EnhancedAIService 与前台交互精确控制生命周期？        return if (isExternalHttpEnabledNow()) START_STICKY else START_NOT_STICKY
+                // ??External HTTP 处于启用状态时，使？START_STICKY 提高后台保活强度?       // 其他场景仍由 EnhancedAIService 与前台交互精确控制生命周期？        return if (isExternalHttpEnabledNow()) START_STICKY else START_NOT_STICKY
 }
     override fun onDestroy() {
         val stoppedPort = externalHttpCurrentPort ?: externalHttpStateFlow.value.port        runCatching {
@@ -912,7 +912,7 @@ avatarUri
         externalHttpServer = null        externalHttpCurrentPort = null        updateExternalHttpState(            ExternalChatHttpState(                isRunning = false,                port = stoppedPort,                lastError = null            ),            refreshNotification = false        )        super.onDestroy()        isRunning.set(false)        updateAiBusyState(false)        hideKeepAliveOverlay()        stopWakeMonitoring()        AppLogger.d(TAG, "AI 前台服务已销毁）
 }
     override fun onBind(intent: Intent): IBinder? {
-        // 该服务是启动服务，不提供绑定功能�?       return null
+        // 该服务是启动服务，不提供绑定功能?       return null
 }
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -937,9 +937,9 @@ class.java)            manager.createNotificationChannel(serviceChannel)
                 combine(                    externalHttpPreferences.enabledFlow,                    externalHttpPreferences.portFlow                ) {
  enabled, port ->                    enabled to port
 }.collectLatest {
- (enabled, port) ->                    AppLogger.d(TAG, "External HTTP config updated: enabled=�?{
+ (enabled, port) ->                    AppLogger.d(TAG, "External HTTP config updated: enabled=?{
 enabled
-}, port=�?{
+}, port=?{
 port
 }")                    if (enabled) {
                         startOrRefreshExternalHttpServer(                            config = externalHttpPreferences.getConfigSync()                        )
@@ -961,7 +961,7 @@ override = port, lastError = null)                        stopSelfIfIdle(ignoreA
  phrase ->                        currentWakePhrase = phrase.ifBlank {
  WakeWordPreferences.DEFAULT_WAKE_PHRASE
 }
-                        AppLogger.d(TAG, "唤醒词更�?'�?{
+                        AppLogger.d(TAG, "唤醒词更?'?{
 currentWakePhrase
 }'")
 }
@@ -969,7 +969,7 @@ currentWakePhrase
 }
                 launch {
                     wakePrefs.wakePhraseRegexEnabledFlow.collectLatest {
- enabled ->                        wakePhraseRegexEnabled = enabled                        AppLogger.d(TAG, "唤醒词正则开关更�?enabled=�?{
+ enabled ->                        wakePhraseRegexEnabled = enabled                        AppLogger.d(TAG, "唤醒词正则开关更?enabled=?{
 enabled
 }")
 }
@@ -977,7 +977,7 @@ enabled
 }
                 launch {
                     wakePrefs.wakeRecognitionModeFlow.collectLatest {
- mode ->                        wakeRecognitionMode = mode                        AppLogger.d(TAG, "唤醒识别模式更新: �?{
+ mode ->                        wakeRecognitionMode = mode                        AppLogger.d(TAG, "唤醒识别模式更新: ?{
 mode
 }")                        applyWakeListeningState()
 }
@@ -988,14 +988,14 @@ mode
  templates ->                        personalWakeTemplates = templates.mapNotNull {
  t ->                            val feats = t.features                            if (feats.isEmpty()) null else feats.toFloatArray()
 }
-                        AppLogger.d(TAG, "个人化唤醒模板更�?count=${
+                        AppLogger.d(TAG, "个人化唤醒模板更?count=${
 personalWakeTemplates.size
 }")                        applyWakeListeningState()
 }
 
 }
                 wakePrefs.alwaysListeningEnabledFlow.collectLatest {
- enabled ->                    wakeListeningEnabled = enabled                    AppLogger.d(TAG, "唤醒监听开关更�?enabled=�?{
+ enabled ->                    wakeListeningEnabled = enabled                    AppLogger.d(TAG, "唤醒监听开关更?enabled=?{
 enabled
 }")                    if (enabled) {
                         showKeepAliveOverlayIfPossible()
@@ -1116,7 +1116,7 @@ e.message
         if (wakeRecognitionMode == WakeWordPreferences.WakeRecognitionMode.PERSONAL_TEMPLATE) {
             startPersonalWakeListening()            return
 }
-        AppLogger.d(TAG, "startWakeListening: phrase='�?{
+        AppLogger.d(TAG, "startWakeListening: phrase='?{
 currentWakePhrase
 }'")        if (wakeHandoffPending && !wakeStopInProgress && FloatingChatService.getInstance() == null) {
             AppLogger.d(TAG, "Clearing stale wake handoff pending state before starting wake listening")            wakeHandoffPending = false            wakeStopInProgress = false            pendingWakeTriggeredAtMs = 0L            SpeechPrerollStore.clearPendingWakePhrase()
@@ -1134,9 +1134,9 @@ currentWakePhrase
             tryPromoteToMicrophoneForeground()
 }
         wakeResumeJob?.cancel()        wakeResumeJob = null        try {
-            val provider = ensureWakeSpeechProvider()            val initOk = provider.initialize()            AppLogger.d(TAG, "唤醒识别？initialize: ok=�?{
+            val provider = ensureWakeSpeechProvider()            val initOk = provider.initialize()            AppLogger.d(TAG, "唤醒识别？initialize: ok=?{
 initOk
-}")            wakeListeningMicActiveForRecordingDetection = true            val startOk = provider.startRecognition(                languageCode = "zh-CN",                continuousMode = true,                partialResults = true            )            AppLogger.d(TAG, "唤醒识别？startRecognition: ok=�?{
+}")            wakeListeningMicActiveForRecordingDetection = true            val startOk = provider.startRecognition(                languageCode = "zh-CN",                continuousMode = true,                partialResults = true            )            AppLogger.d(TAG, "唤醒识别？startRecognition: ok=?{
 startOk
 }")            if (!startOk) {
                 val alreadyRunning =                    provider.isRecognizing ||                        provider.currentState == SpeechService.RecognitionState.PREPARING ||                        provider.currentState == SpeechService.RecognitionState.PROCESSING ||                        provider.currentState == SpeechService.RecognitionState.RECOGNIZING                if (!alreadyRunning) {
@@ -1162,7 +1162,7 @@ e.message
                 var lastText = ""                var lastIsFinal = false                val provider = ensureWakeSpeechProvider()                provider.recognitionResultFlow.collectLatest {
  result ->                    val text = result.text                    if (text.isBlank()) return@collectLatest                    if (text == lastText && result.isFinal == lastIsFinal) return@collectLatest                    lastText = text                    lastIsFinal = result.isFinal                    AppLogger.d(                        TAG,                        "唤醒识别输出(${
 if (result.isFinal) "final" else "partial"
-}): '�?{
+}): '?{
 text
 }'"                    )                    if (wakeHandoffPending) {
                         val floatingAlive = FloatingChatService.getInstance() != null                        if (!wakeStopInProgress && !floatingAlive) {
@@ -1185,9 +1185,9 @@ e.message
 }", e)
 }
                     if (matchWakePhrase(text, currentWakePhrase, wakePhraseRegexEnabled)) {
-                        val now = System.currentTimeMillis()                        if (now - lastWakeTriggerAtMs < 3000L) return@collectLatest                        lastWakeTriggerAtMs = now                        pendingWakeTriggeredAtMs = now                        wakeHandoffPending = true                        wakeStopInProgress = false                        AppLogger.d(TAG, "命中唤醒�?'�?{
+                        val now = System.currentTimeMillis()                        if (now - lastWakeTriggerAtMs < 3000L) return@collectLatest                        lastWakeTriggerAtMs = now                        pendingWakeTriggeredAtMs = now                        wakeHandoffPending = true                        wakeStopInProgress = false                        AppLogger.d(TAG, "命中唤醒?'?{
 currentWakePhrase
-}' in '�?{
+}' in '?{
 text
 }'")                        SpeechPrerollStore.setPendingWakePhrase(                            phrase = currentWakePhrase,                            regexEnabled = wakePhraseRegexEnabled,                        )                        triggerWakeLaunch()                        scheduleWakeResume()
 }
@@ -1206,7 +1206,7 @@ personalWakeTemplates.size
         wakeListeningMicActiveForRecordingDetection = true        val listener =            PersonalWakeListener(                context = applicationContext,                templatesProvider = {
  personalWakeTemplates
 },                onTriggered = onTriggered@{
- similarity ->                    val now = System.currentTimeMillis()                    if (now - lastWakeTriggerAtMs < 3000L) return@onTriggered                    lastWakeTriggerAtMs = now                    pendingWakeTriggeredAtMs = now                    wakeHandoffPending = true                    wakeStopInProgress = false                    AppLogger.d(TAG, "命中个人化唤�?similarity=�?{
+ similarity ->                    val now = System.currentTimeMillis()                    if (now - lastWakeTriggerAtMs < 3000L) return@onTriggered                    lastWakeTriggerAtMs = now                    pendingWakeTriggeredAtMs = now                    wakeHandoffPending = true                    wakeStopInProgress = false                    AppLogger.d(TAG, "命中个人化唤?similarity=?{
 similarity
 }")                    SpeechPrerollStore.setPendingWakePhrase(                        phrase = currentWakePhrase,                        regexEnabled = wakePhraseRegexEnabled,                    )                    triggerWakeLaunch()                    scheduleWakeResume()
 }
@@ -1249,14 +1249,14 @@ e.message
                 var waitedMs = 0L                while (isActive && waitedMs < 5000L) {
                     if (!wakeListeningEnabled) return@launch                    if (FloatingChatService.getInstance() != null) break                    delay(250)                    waitedMs += 250
 }
-                AppLogger.d(TAG, "等待悬浮窗启�?waitedMs=�?{
+                AppLogger.d(TAG, "等待悬浮窗启?waitedMs=?{
 waitedMs
 }, instance=${
 FloatingChatService.getInstance() != null
 }")                while (isActive) {
                     if (!wakeListeningEnabled) return@launch                    if (FloatingChatService.getInstance() == null) break                    delay(500)
 }
-                AppLogger.d(TAG, "检测到悬浮窗已关闭，准备恢复唤醒监�?               if (wakeHandoffPending) {
+                AppLogger.d(TAG, "检测到悬浮窗已关闭，准备恢复唤醒监?               if (wakeHandoffPending) {
                     AppLogger.d(TAG, "Wake handoff aborted, clearing pending state")                    wakeHandoffPending = false                    wakeStopInProgress = false                    pendingWakeTriggeredAtMs = 0L                    SpeechPrerollStore.clearPendingWakePhrase()
 }
                 wakeStateMutex.withLock {
@@ -1281,7 +1281,7 @@ class.java).apply {
 
 }
  catch (e: Exception) {
-            AppLogger.e(TAG, "唤醒打开悬浮窗失�?${
+            AppLogger.e(TAG, "唤醒打开悬浮窗失?${
 e.message
 }", e)
 }
@@ -1293,7 +1293,7 @@ e.message
                 Regex(phrase).containsMatchIn(recognized)
 }
  catch (e: Exception) {
-                AppLogger.w(TAG, "Invalid wake phrase regex: '�?{
+                AppLogger.w(TAG, "Invalid wake phrase regex: '?{
 phrase
 }' (${
 e.message
@@ -1343,7 +1343,7 @@ Punct
  else {
                 getString(R.string.service_Apex_running)
 }
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)            .setContentTitle(title)            .setContentText(contentText)            .setSmallIcon(android.R.drawable.ic_dialog_info)            .setPriority(NotificationCompat.PRIORITY_LOW)            .setOngoing(true) // 使通知不可被用户清�?       val contentIntent = Intent(this, MainActivity::
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)            .setContentTitle(title)            .setContentText(contentText)            .setSmallIcon(android.R.drawable.ic_dialog_info)            .setPriority(NotificationCompat.PRIORITY_LOW)            .setOngoing(true) // 使通知不可被用户清?       val contentIntent = Intent(this, MainActivity::
 class.java).apply {
             flags =                Intent.FLAG_ACTIVITY_NEW_TASK or                    Intent.FLAG_ACTIVITY_CLEAR_TOP or                    Intent.FLAG_ACTIVITY_SINGLE_TOP
 }

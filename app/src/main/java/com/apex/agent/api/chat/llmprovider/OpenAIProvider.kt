@@ -53,7 +53,7 @@ import com.apex.api.chat.llmprovider.ModelListFetcher
  *
  * ## enableToolCall 参数说明
  *
- * `enableToolCall` 用于启用/禁用 OpenAI Tool Call API 原生格式�?*
+ * `enableToolCall` 用于启用/禁用 OpenAI Tool Call API 原生格式?*
  * ### 工作原理
  *
  * ，`enableToolCall = true` 时，本Provider会执行双向格式转换：
@@ -62,7 +62,7 @@ import com.apex.api.chat.llmprovider.ModelListFetcher
  *    - `<tool name="xxx"><param name="yyy">value</param></tool>`
  *    - ，`{"tool_calls": [{"function": {"name": "xxx", "arguments": "{\"yyy\": \"value\"}"}}]}`
  *
- * 2. **接收响应�?：将API返回的Tool Call格式转换回XML格式
+ * 2. **接收响应?：将API返回的Tool Call格式转换回XML格式
  *    - API返回的tool_calls对象 ，XML格式
  *    - 保持上层代码对XML格式的兼容， *
  * ### 历史记录处理
@@ -79,9 +79,9 @@ import com.apex.api.chat.llmprovider.ModelListFetcher
  *
  * ### 注意事项
  *
- * - 默认值为 `false`，需要显式启�?* - 启用后会自动添加 `tools` ，`tool_choice` 到请求体
- * - 流式响应中也支持增量工具调用数据的处�?*
- * @param enableToolCall 是否启用Tool Call API格式转换（默认false�?*/
+ * - 默认值为 `false`，需要显式启?* - 启用后会自动添加 `tools` ，`tool_choice` 到请求体
+ * - 流式响应中也支持增量工具调用数据的处?*
+ * @param enableToolCall 是否启用Tool Call API格式转换（默认false?*/
 open class OpenAIProvider(
     private val apiEndpoint: String,
     private val apiKeyProvider: ApiKeyProvider,
@@ -98,7 +98,7 @@ open class OpenAIProvider(
 
     protected val JSON = "application/json".toMediaType()
 
-    // 当前活跃的Call对象，用于取消流式传�?   private var activeCall: Call? = null
+    // 当前活跃的Call对象，用于取消流式传?   private var activeCall: Call? = null
 
     // 当前活跃的Response对象，用于强制关闭流
     private var activeResponse: Response? = null
@@ -112,7 +112,7 @@ open class OpenAIProvider(
     class NonRetriableException(message: String, cause: Throwable? = null) :
         IOException(message, cause)
 
-    // Token缓存管理�?   val tokenCacheManager = TokenCacheManager()
+    // Token缓存管理?   val tokenCacheManager = TokenCacheManager()
 
     protected open val useResponsesApi: Boolean = false
 
@@ -237,8 +237,8 @@ open class OpenAIProvider(
          }
      }
 
-    // 工具函数：分块打印大型文本日�?   protected fun logLargeString(tag: String, message: String, prefix: String = "") {
-        // 设置单次日志输出的最大长度（Android日志上限约为4000字符�?       val maxLogSize = 3000
+    // 工具函数：分块打印大型文本日?   protected fun logLargeString(tag: String, message: String, prefix: String = "") {
+        // 设置单次日志输出的最大长度（Android日志上限约为4000字符?       val maxLogSize = 3000
 
         // 如果消息长度超过限制，分块打开        if (message.length > maxLogSize) {
             // 计算需要分多少块打开            val chunkCount = message.length / maxLogSize + 1
@@ -248,7 +248,7 @@ open class OpenAIProvider(
                 val end = minOf((i + 1) * maxLogSize, message.length)
                 val chunkMessage = message.substring(start, end)
 
-                // 打印带有编号的日�?               AppLogger.d(tag, "${prefix} Part ${i + 1}/${chunkCount}: ${chunkMessage}")
+                // 打印带有编号的日?               AppLogger.d(tag, "${prefix} Part ${i + 1}/${chunkCount}: ${chunkMessage}")
             }
 
         } else {
@@ -503,7 +503,7 @@ open class OpenAIProvider(
         return content
     }
 
-    // 创建请求�?   protected open fun createRequestBody(
+    // 创建请求?   protected open fun createRequestBody(
         context: Context,
         chatHistory: List<PromptTurn>,
         modelParameters: List<ModelParameter<*>> = emptyList(),
@@ -591,8 +591,8 @@ open class OpenAIProvider(
             val tools = buildToolDefinitions(availableTools!!)
             if (tools.length() > 0) {
                 jsonObject.put("tools", tools)
-                jsonObject.put("tool_choice", "auto") // 让模型自动决定是否使用工�?               toolsJson = tools.toString() // 保存工具定义用于token计算
-                AppLogger.d("AIService", "Tool Call已启用，添加�?{tools.length()} 个工具定义）
+                jsonObject.put("tool_choice", "auto") // 让模型自动决定是否使用工?               toolsJson = tools.toString() // 保存工具定义用于token计算
+                AppLogger.d("AIService", "Tool Call已启用，添加?{tools.length()} 个工具定义）
             }
         }
 
@@ -615,7 +615,7 @@ open class OpenAIProvider(
 
         customizeFinalRequestObject(finalRequestObject, messagesArray, toolsJson)
 
-        // 使用分块日志函数记录请求体（省略过长的tools字段�?       val logJson = JSONObject(finalRequestObject.toString())
+        // 使用分块日志函数记录请求体（省略过长的tools字段?       val logJson = JSONObject(finalRequestObject.toString())
         if (logJson.has("tools")) {
             val toolsArray = logJson.getJSONArray("tools")
             logJson.put("tools", "[${toolsArray.length()} tools omitted for brevity]")
@@ -678,7 +678,7 @@ open class OpenAIProvider(
     }
 
     /**
-     * 构建content字段（可能是字符串或数组�?    * @param text 要处理的文本内容
+     * 构建content字段（可能是字符串或数组?    * @param text 要处理的文本内容
      * @return 纯文本字符串或包含图片和文本的JSONArray
      */
     fun buildContentField(context: Context, text: String): Any {
@@ -704,13 +704,13 @@ open class OpenAIProvider(
         textWithoutLinks = textWithoutLinks.trim()
 
         if (audioLinks.isNotEmpty() && !supportsAudio) {
-            AppLogger.w("AIService", "检测到音频链接，但当前Provider不支持音频多模态输入，已移除音频。原始文本长�?${text.length}, 处理�?${textWithoutLinks.length}")
+            AppLogger.w("AIService", "检测到音频链接，但当前Provider不支持音频多模态输入，已移除音频。原始文本长?${text.length}, 处理?${textWithoutLinks.length}")
         }
         if (videoLinks.isNotEmpty() && !supportsVideo) {
-            AppLogger.w("AIService", "检测到视频链接，但当前Provider不支持视频多模态输入，已移除视频。原始文本长�?${text.length}, 处理�?${textWithoutLinks.length}")
+            AppLogger.w("AIService", "检测到视频链接，但当前Provider不支持视频多模态输入，已移除视频。原始文本长?${text.length}, 处理?${textWithoutLinks.length}")
         }
         if (imageLinks.isNotEmpty() && !supportsVision) {
-            AppLogger.w("AIService", "检测到图片链接，但当前Provider不支持图片处理，已移除图片。原始文本长�?${text.length}, 处理�?${textWithoutLinks.length}")
+            AppLogger.w("AIService", "检测到图片链接，但当前Provider不支持图片处理，已移除图片。原始文本长?${text.length}, 处理?${textWithoutLinks.length}")
         }
 
         val hasAnySupportedRichContent = hasSupportedMedia || (supportsVision && imageLinks.isNotEmpty())
@@ -787,11 +787,11 @@ open class OpenAIProvider(
     }
 
     /**
-     * 构建消息列表并计算token（核心逻辑�?    * @param message 用户消息
+     * 构建消息列表并计算token（核心逻辑?    * @param message 用户消息
      * @param chatHistory 聊天历史
      * @param useToolCall 是否启用Tool Call格式转换（会根据工具可用性动态决定）
      * @param toolsJson 工具定义的JSON字符串，用于token计算
-     * @return Pair(消息列表JSONArray, 输入token计数�?
+     * @return Pair(消息列表JSONArray, 输入token计数?
      */
     protected fun buildMessagesAndCountTokens(
         context: Context,
@@ -882,7 +882,7 @@ open class OpenAIProvider(
         if (effectiveHistory.isNotEmpty()) {
             for (turn in effectiveHistory) {
                 val content = comparableContentForTurn(turn, preserveThinkInHistory)
-                // 当启用Tool Call API时，转换XML格式的工具调�?               if (useToolCall) {
+                // 当启用Tool Call API时，转换XML格式的工具调?               if (useToolCall) {
                     when (turn.kind) {
                         PromptTurnKind.SYSTEM -> {
                             flushOpenToolCallsAsCancelled("system_boundary")
@@ -1045,7 +1045,7 @@ open class OpenAIProvider(
         chatHistory: List<PromptTurn>,
         availableTools: List<ToolPrompt>?
     ): Int {
-        // 构建工具定义的JSON字符�?       val toolsJson =
+        // 构建工具定义的JSON字符?       val toolsJson =
             if (enableToolCall && availableTools != null && availableTools.isNotEmpty()) {
                 val tools = buildToolDefinitions(availableTools)
                 if (tools.length() > 0) tools.toString() else null
@@ -1129,7 +1129,7 @@ open class OpenAIProvider(
      * 将API返回的tool_calls转换为XML格式
      * 这样上层代码无需修改，继续使用XML解析逻辑
      * @param toolCalls tool_calls JSON数组
-     * @param isStreaming 是否为流式响应（流式响应中tool_calls是增量的�?    */
+     * @param isStreaming 是否为流式响应（流式响应中tool_calls是增量的?    */
     private fun convertToolCallsToXml(toolCalls: JSONArray, _isStreaming: Boolean = false): String {
         val xml = StringBuilder()
 
@@ -1137,7 +1137,7 @@ open class OpenAIProvider(
             val toolCall = toolCalls.getJSONObject(i)
             val function = toolCall.optJSONObject("function") ?: continue
 
-            // 流式响应中，name和arguments可能不在同一个delta�?           val name = function.optString("name", "")
+            // 流式响应中，name和arguments可能不在同一个delta?           val name = function.optString("name", "")
             if (name.isEmpty()) {
                 // 如果没有name，说明这是增量更新，跳过
                 continue
@@ -1161,7 +1161,7 @@ open class OpenAIProvider(
             val toolTagName = ChatMarkupRegex.generateRandomToolTagName()
             xml.append("<${toolTagName} name=\"${name}\">")
 
-            // 添加所有参�?           val keys = params.keys()
+            // 添加所有参?           val keys = params.keys()
             while (keys.hasNext()) {
                 val key = keys.next()
                 val value = params.get(key)
@@ -1177,7 +1177,7 @@ open class OpenAIProvider(
     }
 
     /**
-     * XML转义/反转义工�?    */
+     * XML转义/反转义工?    */
     private object XmlEscaper {
         fun escape(text: String): String {
             return text.replace("&", "&amp;")
@@ -1220,14 +1220,14 @@ open class OpenAIProvider(
         return if (base.isEmpty()) "0" else base
     }
 
-    // 向后兼容的快捷方�?   private fun escapeXml(text: String) = XmlEscaper.escape(text)
+    // 向后兼容的快捷方?   private fun escapeXml(text: String) = XmlEscaper.escape(text)
 
     /**
-     * 字符串非空且，null"检�?    */
+     * 字符串非空且，null"检?    */
     private fun String.isNotNullOrEmpty() = this.isNotEmpty() && this != "null"
 
     /**
-     * Tool Call流式输出状态管�?    */
+     * Tool Call流式输出状态管?    */
     private data class ToolCallState(
         val emitted: MutableMap<Int, Boolean> = mutableMapOf(),
         val nameEmitted: MutableMap<Int, Boolean> = mutableMapOf(),
@@ -1343,7 +1343,7 @@ open class OpenAIProvider(
      */
     private fun checkCancellation(context: Context, exception: Exception? = null) {
         if (isManuallyCancelled) {
-            AppLogger.d("AIService", "请求被用户取消，停止重试着�?
+            AppLogger.d("AIService", "请求被用户取消，停止重试着?
             throw UserCancellationException(context.getString(R.string.openai_error_request_cancelled), exception)
         }
     }
@@ -1390,7 +1390,7 @@ open class OpenAIProvider(
         }
 
         val retryDelayMs = LlmRetryPolicy.nextDelayMs(newRetryCount)
-        AppLogger.w("AIService", "【发送消息，errorText${retryDelayMs}ms 后进行第 ${newRetryCount} 次重�?.", exception)
+        AppLogger.w("AIService", "【发送消息，errorText${retryDelayMs}ms 后进行第 ${newRetryCount} 次重?.", exception)
         onNonFatalError(buildRetryMessage(errorText, newRetryCount))
         delay(retryDelayMs)
 
@@ -1496,7 +1496,7 @@ open class OpenAIProvider(
      * @return List<Pair<tool_call_id, result_content>>
      */
     fun parseXmlToolResults(content: String): Pair<String, List<Pair<String, String>>?> {
-        // 匹配带属性的tool_result标签，例�?<tool_result name="..." status="...">...</tool_result>
+        // 匹配带属性的tool_result标签，例?<tool_result name="..." status="...">...</tool_result>
         val matches = ChatMarkupRegex.toolResultAnyPattern.findAll(content)
 
         if (!matches.any()) {
@@ -1517,14 +1517,14 @@ open class OpenAIProvider(
                 fullContent
             }
 
-            // 生成一个tool_call_id（这里需要与之前的call对应，但因为历史记录可能不完整，我们使用索引�?           results.add(Pair("call_result_${resultIndex}", resultContent))
+            // 生成一个tool_call_id（这里需要与之前的call对应，但因为历史记录可能不完整，我们使用索引?           results.add(Pair("call_result_${resultIndex}", resultContent))
 
             // 从文本内容中移除tool_result标签（包括前后的空白符）
             textContent = textContent.replace(match.value, "").trim()
             resultIndex++
         }
 
-        // trim 确保移除所有空白字�?       return Pair(textContent.trim(), results)
+        // trim 确保移除所有空白字?       return Pair(textContent.trim(), results)
     }
 
     // 创建请求
@@ -1549,7 +1549,7 @@ open class OpenAIProvider(
     }
 
     /**
-     * 流式响应处理状�?    */
+     * 流式响应处理状?    */
     private data class StreamingState(
         var chunkCount: Int = 0,
         var lastLogTime: Long = System.currentTimeMillis(),
@@ -1564,7 +1564,7 @@ open class OpenAIProvider(
     )
 
     /**
-     * 处理工具切换：关闭前一个工�?    */
+     * 处理工具切换：关闭前一个工?    */
     private suspend fun handleToolSwitch(
         prevIndex: Int,
         state: StreamingState,
@@ -1578,14 +1578,14 @@ open class OpenAIProvider(
     }
 
     /**
-     * 处理单个工具调用的增量数�?    */
+     * 处理单个工具调用的增量数?    */
     private suspend fun processToolCallChunk(
         index: Int,
         deltaCall: JSONObject,
         state: StreamingState,
         emitter: StreamEmitter
     ) {
-        // 获取或创建该index的累积对�?       val accumulated = state.accumulatedToolCalls.getOrPut(index) {
+        // 获取或创建该index的累积对?       val accumulated = state.accumulatedToolCalls.getOrPut(index) {
             createToolCallAccumulator(index)
         }
 
@@ -1601,10 +1601,10 @@ open class OpenAIProvider(
         val deltaFunction = deltaCall.optJSONObject("function") ?: return
         val accFunction = accumulated.getJSONObject("function")
         
-        // 处理工具�?       val name = deltaFunction.optString("name", "")
+        // 处理工具?       val name = deltaFunction.optString("name", "")
         if (name.isNotEmpty()) {
             accFunction.put("name", name)
-            // 流式输出开始标�?           if (state.toolCallState.nameEmitted[index] != true) {
+            // 流式输出开始标?           if (state.toolCallState.nameEmitted[index] != true) {
                 val toolTagName = state.toolCallState.getTagName(index)
                 val toolStartTag = if (state.toolCallState.emitted[index] != true) {
                     state.toolCallState.emitted[index] = true
@@ -1642,7 +1642,7 @@ open class OpenAIProvider(
 
     /**
      * 合并 tool arguments（单一路径）：
-     * - 默认，incoming 视为增量追加�?    * - ，incoming 为前缀扩展快照（incoming startsWith existing），则直接替换为快照�?    */
+     * - 默认，incoming 视为增量追加?    * - ，incoming 为前缀扩展快照（incoming startsWith existing），则直接替换为快照?    */
     private fun mergeCanonicalArgs(existing: String, incoming: String): String {
         if (incoming.isEmpty()) return existing
         if (existing.isEmpty()) return incoming
@@ -1651,7 +1651,7 @@ open class OpenAIProvider(
     }
 
     /**
-     * 基于 canonical arguments ，fedLength 游标，向解析器仅喂入新增部分�?    */
+     * 基于 canonical arguments ，fedLength 游标，向解析器仅喂入新增部分?    */
     private suspend fun feedParserFromCanonical(
         index: Int,
         canonicalArgs: String,
@@ -1680,13 +1680,13 @@ open class OpenAIProvider(
     }
 
     /**
-     * 处理工具调用的增量数�?    */
+     * 处理工具调用的增量数?    */
     private suspend fun processToolCallsDelta(
         toolCallsDeltas: JSONArray,
         state: StreamingState,
         emitter: StreamEmitter
     ) {
-        // 如果正在思考模式，收到工具调用时应先关闭思考标�?       if (state.isInReasoningMode) {
+        // 如果正在思考模式，收到工具调用时应先关闭思考标?       if (state.isInReasoningMode) {
             state.isInReasoningMode = false
             emitter.emitTag("</think>")
             state.hasEmittedThinkStart = false
@@ -1697,7 +1697,7 @@ open class OpenAIProvider(
             val index = deltaCall.optInt("index", -1)
             if (index < 0) continue
 
-            // 检测工具切�?           if (state.lastProcessedToolIndex != null && state.lastProcessedToolIndex != index) {
+            // 检测工具切?           if (state.lastProcessedToolIndex != null && state.lastProcessedToolIndex != index) {
                 handleToolSwitch(state.lastProcessedToolIndex!!, state, emitter)
             }
             state.lastProcessedToolIndex = index
@@ -1827,9 +1827,9 @@ open class OpenAIProvider(
                     put("function", functionObj)
                 }
 
-                // 对于 output_item 事件，仅更新工具元信息（name/id），                // 参数统一，response.function_call_arguments.delta 通道累积，避免快，增量混拼导�?JSON 破坏�?               processToolCallChunk(outputIndex, deltaCall, state, emitter)
+                // 对于 output_item 事件，仅更新工具元信息（name/id），                // 参数统一，response.function_call_arguments.delta 通道累积，避免快，增量混拼导?JSON 破坏?               processToolCallChunk(outputIndex, deltaCall, state, emitter)
                 state.lastProcessedToolIndex = outputIndex
-                // 某些供应商会先发送output_item.done，随后才发送function_call_arguments.delta�?               // 因此不在 output_item.done 阶段关闭工具调用，改�?               // response.function_call_arguments.done / response.completed 统一收口�?           }
+                // 某些供应商会先发送output_item.done，随后才发送function_call_arguments.delta?               // 因此不在 output_item.done 阶段关闭工具调用，改?               // response.function_call_arguments.done / response.completed 统一收口?           }
 
             "response.function_call_arguments.delta" -> {
                 if (!enableToolCall) return
@@ -1927,13 +1927,13 @@ open class OpenAIProvider(
                 tokenCacheManager.outputTokenCount
             )
 
-            // 清空累积�?           state.accumulatedToolCalls.clear()
+            // 清空累积?           state.accumulatedToolCalls.clear()
             state.lastProcessedToolIndex = null
         }
     }
 
     /**
-     * 处理内容增量（思考和常规内容�?    */
+     * 处理内容增量（思考和常规内容?    */
     private suspend fun processContentDelta(
         reasoningContent: String,
         regularContent: String,
@@ -1943,7 +1943,7 @@ open class OpenAIProvider(
         val hasReasoning = reasoningContent.isNotNullOrEmpty()
         val hasRegular = regularContent.isNotNullOrEmpty()
 
-        // 处理思考内�?       if (hasReasoning && !state.hasEmittedRegularContent) {
+        // 处理思考内?       if (hasReasoning && !state.hasEmittedRegularContent) {
             if (!state.isInReasoningMode) {
                 state.isInReasoningMode = true
                 if (!state.hasEmittedThinkStart) {
@@ -1955,18 +1955,18 @@ open class OpenAIProvider(
         }
         // 处理常规内容
         if (hasRegular) {
-            // 如果之前在思考模式，现在切换到了常规内容，需要关闭思考标�?           if (state.isInReasoningMode) {
+            // 如果之前在思考模式，现在切换到了常规内容，需要关闭思考标?           if (state.isInReasoningMode) {
                 state.isInReasoningMode = false
                 emitter.emitTag("</think>")
                 state.hasEmittedThinkStart = false
             }
 
-            // 硬切策略：正文一旦开始输出，后续到达的推理内容全部忽�?           state.hasEmittedRegularContent = true
+            // 硬切策略：正文一旦开始输出，后续到达的推理内容全部忽?           state.hasEmittedRegularContent = true
 
             // 当收到第一个有效内容时，标记不再是首次响应
             if (state.isFirstResponse) {
                 state.isFirstResponse = false
-                AppLogger.d("AIService", "【发送消息】收到首个有效内容片�?
+                AppLogger.d("AIService", "【发送消息】收到首个有效内容片?
             }
 
             emitter.emitContent(regularContent)
@@ -1974,7 +1974,7 @@ open class OpenAIProvider(
     }
 
     /**
-     * 处理单个响应�?    */
+     * 处理单个响应?    */
     private suspend fun processResponseChunk(
         jsonResponse: JSONObject,
         state: StreamingState,
@@ -2018,7 +2018,7 @@ open class OpenAIProvider(
             val regularContent = delta.optString("content", "")
             processContentDelta(reasoningContent, regularContent, state, emitter)
         }
-        // 处理message格式（非流式响应�?       else {
+        // 处理message格式（非流式响应?       else {
             val message = choice.optJSONObject("message")
             if (message != null) {
                 val reasoningContent = message.optString("reasoning_content", "").ifBlank {
@@ -2065,7 +2065,7 @@ open class OpenAIProvider(
                 if (data == "[DONE]") {
                     flushImageBuffers(state, emitter)
                     closeAllOpenToolCalls(state, emitter)
-                    // 收到流结束标记，关闭思考标�?                   if (state.isInReasoningMode) {
+                    // 收到流结束标记，关闭思考标?                   if (state.isInReasoningMode) {
                         state.isInReasoningMode = false
                         emitter.emitTag("</think>")
                     }
@@ -2074,7 +2074,7 @@ open class OpenAIProvider(
                 }
 
                 state.chunkCount++
-                // �个块�?0ms记录一次日�?               val currentTime = System.currentTimeMillis()
+                // 个块?0ms记录一次日?               val currentTime = System.currentTimeMillis()
                 if (state.chunkCount % 10 == 0 || currentTime - state.lastLogTime > 500) {
                     state.lastLogTime = currentTime
                 }
@@ -2107,10 +2107,10 @@ open class OpenAIProvider(
 
             AppLogger.d(
                 "AIService",
-                "【发送消息】响应流处理完成，总块�?${state.chunkCount}，输出token: ${tokenCacheManager.outputTokenCount}"
+                "【发送消息】响应流处理完成，总块?${state.chunkCount}，输出token: ${tokenCacheManager.outputTokenCount}"
             )
         } catch (e: kotlinx.coroutines.CancellationException) {
-            // 协程被取消（外层 scope 取消），直接退�?           AppLogger.d("AIService", "【发送消息】协程已取消")
+            // 协程被取消（外层 scope 取消），直接退?           AppLogger.d("AIService", "【发送消息】协程已取消")
             throw e
         } catch (e: IOException) {
             // 捕获IO异常，可能是由于 response.close() 导致的取消，也可能是网络中断
@@ -2118,12 +2118,12 @@ open class OpenAIProvider(
                 AppLogger.d("AIService", "【发送消息】流式传输已被用户取消）
                 throw UserCancellationException(context.getString(R.string.openai_error_request_cancelled), e)
             } else {
-                // 网络中断，准备重�?               AppLogger.e("AIService", "【发送消息】流式读取时发生IO异常，准备重�? e)
+                // 网络中断，准备重?               AppLogger.e("AIService", "【发送消息】流式读取时发生IO异常，准备重? e)
                 throw e
             }
         } finally {
             runCatching { flushImageBuffers(state, emitter) }
-            // 确保 reader 被关�?           try {
+            // 确保 reader 被关?           try {
                 reader.close()
             } catch (ignored: Exception) {
             }
@@ -2145,7 +2145,7 @@ open class OpenAIProvider(
         val eventChannel = MutableSharedStream<TextStreamEvent>(replay = Int.MAX_VALUE)
         val responseStream = stream {
             isManuallyCancelled = false
-            // 重置输出token计数（输入token由TokenCacheManager管理�?           tokenCacheManager.addOutputTokens(-tokenCacheManager.outputTokenCount)
+            // 重置输出token计数（输入token由TokenCacheManager管理?           tokenCacheManager.addOutputTokens(-tokenCacheManager.outputTokenCount)
             onTokensUpdated(
                 tokenCacheManager.totalInputTokenCount,
                 tokenCacheManager.cachedInputTokenCount,
@@ -2154,7 +2154,7 @@ open class OpenAIProvider(
 
             AppLogger.d(
                 "AIService",
-                "【发送消息】开始处理sendMessage请求，历史记录数�?${chatHistory.size}，最后一条长�?${chatHistory.lastOrNull()?.content?.length ?: 0}"
+                "【发送消息】开始处理sendMessage请求，历史记录数?${chatHistory.size}，最后一条长?${chatHistory.lastOrNull()?.content?.length ?: 0}"
             )
 
             val maxRetries = LlmRetryPolicy.MAX_RETRY_ATTEMPTS
@@ -2168,7 +2168,7 @@ open class OpenAIProvider(
             emitter.emitSavepoint(requestSavepointId)
 
             while (retryCount <= maxRetries) {
-                // 在循环开始时检查是否已被取�?               checkCancellation(context)
+                // 在循环开始时检查是否已被取?               checkCancellation(context)
 
                 try {
                     if (retryCount > 0) {
@@ -2182,9 +2182,9 @@ open class OpenAIProvider(
 
                 AppLogger.d(
                     "AIService",
-                    "【发送消息】准备构建请求体，模型参数数�?${modelParameters.size}，已启用参数: ${modelParameters.count { it.isEnabled }}"
+                    "【发送消息】准备构建请求体，模型参数数?${modelParameters.size}，已启用参数: ${modelParameters.count { it.isEnabled }}"
                 )
-                // 直接传递原始历史记录给createRequestBody，让具体的Provider决定如何处理（例如Deepseek需要保存think>标签�?               val requestBody = createRequestBody(
+                // 直接传递原始历史记录给createRequestBody，让具体的Provider决定如何处理（例如Deepseek需要保存think>标签?               val requestBody = createRequestBody(
                     context,
                     currentHistory,
                     modelParameters,
@@ -2201,7 +2201,7 @@ open class OpenAIProvider(
                 val request = createRequest(requestBody)
                 AppLogger.d(
                     "AIService",
-                    "【发送消息】请求体构建完成，目标模�?${modelName}，API端点: ${apiEndpoint}"
+                    "【发送消息】请求体构建完成，目标模?${modelName}，API端点: ${apiEndpoint}"
                 )
 
                 AppLogger.d("AIService", "【发送消息】准备连接到AI服务...")
@@ -2210,14 +2210,14 @@ open class OpenAIProvider(
                 val call = client.newCall(request)
                 activeCall = call
 
-                AppLogger.d("AIService", "【发送消息】正在建立连接到服务�?.")
+                AppLogger.d("AIService", "【发送消息】正在建立连接到服务?.")
 
                 // 确保在IO线程执行网络请求和响应体读取
                 AppLogger.d("AIService", "【发送消息】切换到IO线程执行网络请求")
                 withContext(Dispatchers.IO) {
                     val response = call.execute()
 
-                    // 保存response引用，以便取消时能强制关�?                   activeResponse = response
+                    // 保存response引用，以便取消时能强制关?                   activeResponse = response
 
                     try {
                         if (!response.isSuccessful) {
@@ -2226,24 +2226,24 @@ open class OpenAIProvider(
                                     ?: context.getString(R.string.openai_error_no_error_details)
                             AppLogger.e(
                                 "AIService",
-                                "【发送消息】API请求失败，状态码: ${response.code}，错误信�?${errorBody}"
+                                "【发送消息】API请求失败，状态码: ${response.code}，错误信?${errorBody}"
                             )
                             // 4xx错误仍保留单独的异常类型，具体是否重试由统一策略决定
                             if (response.code in 400..499) {
                                 throw NonRetriableException(context.getString(R.string.openai_error_api_request_failed_with_status, response.code, errorBody))
                             }
-                            // 对于5xx等服务端错误，允许重�?                           throw IOException(context.getString(R.string.openai_error_api_request_failed_with_status, response.code, errorBody))
+                            // 对于5xx等服务端错误，允许重?                           throw IOException(context.getString(R.string.openai_error_api_request_failed_with_status, response.code, errorBody))
                         }
 
                         AppLogger.d(
                             "AIService",
-                            "【发送消息】连接成功状态码: ${response.code})，准备处理响�?."
+                            "【发送消息】连接成功状态码: ${response.code})，准备处理响?."
                         )
                         val responseBody = response.body ?: throw IOException(context.getString(R.string.openai_error_response_empty))
 
                         // 根据stream参数处理响应
                         if (stream) {
-                            AppLogger.d("AIService", "【发送消息】开始读取流式响�?
+                            AppLogger.d("AIService", "【发送消息】开始读取流式响?
                             val reader = responseBody.charStream().buffered()
                             processStreamingResponse(
                                 reader,
@@ -2254,7 +2254,7 @@ open class OpenAIProvider(
                         } else {
                             AppLogger.d("AIService", "【发送消息】开始读取非流式响应")
                             val responseText = responseBody.string()
-                            AppLogger.d("AIService", "收到完整响应，长�?${responseText.length}")
+                            AppLogger.d("AIService", "收到完整响应，长?${responseText.length}")
 
                             var hasEmittedRegularContent = false
 
@@ -2287,7 +2287,7 @@ open class OpenAIProvider(
                                             emitter.emitContent("\n" + xmlToolCalls)
                                             AppLogger.d(
                                                 "AIService",
-                                                "Tool Call转XML (Responses非流�? ${xmlToolCalls}"
+                                                "Tool Call转XML (Responses非流? ${xmlToolCalls}"
                                             )
                                         }
                                     }
@@ -2299,14 +2299,14 @@ open class OpenAIProvider(
                                         val messageObj = choice.optJSONObject("message")
 
                                         if (messageObj != null) {
-                                            // 检查是否有tool_calls（Tool Call API�?                                           val toolCalls = messageObj.optJSONArray("tool_calls")
+                                            // 检查是否有tool_calls（Tool Call API?                                           val toolCalls = messageObj.optJSONArray("tool_calls")
                                             if (toolCalls != null && toolCalls.length() > 0 && enableToolCall) {
                                                 val xmlToolCalls = convertToolCallsToXml(toolCalls)
                                                 if (xmlToolCalls.isNotEmpty()) {
                                                     emitter.emitContent("\n" + xmlToolCalls)
                                                     AppLogger.d(
                                                         "AIService",
-                                                        "Tool Call转XML (非流�? ${xmlToolCalls}"
+                                                        "Tool Call转XML (非流? ${xmlToolCalls}"
                                                     )
                                                 }
                                             }
@@ -2341,16 +2341,16 @@ open class OpenAIProvider(
                         }
                     } finally {
                         response.close()
-                        AppLogger.d("AIService", "【发送消息】关闭响应连�?
+                        AppLogger.d("AIService", "【发送消息】关闭响应连?
                     }
                 }
 
                 // 清理活跃引用
                 activeCall = null
                 activeResponse = null
-                AppLogger.d("AIService", "【发送消息】响应处理完成，已清理活跃引�?
+                AppLogger.d("AIService", "【发送消息】响应处理完成，已清理活跃引?
 
-                // 成功处理后返�?               AppLogger.d(
+                // 成功处理后返?               AppLogger.d(
                     "AIService",
                     "【发送消息】请求成功完成，输入token: ${tokenCacheManager.totalInputTokenCount}(缓存:${tokenCacheManager.cachedInputTokenCount})，输出token: ${tokenCacheManager.outputTokenCount}"
                 )
@@ -2366,7 +2366,7 @@ open class OpenAIProvider(
                     enableRetry,
                     onNonFatalError
                 ) { errorText, retryNumber ->
-                    "，{context.getString(R.string.openai_retry_with_count, errorText, retryNumber)}�?
+                    "，{context.getString(R.string.openai_retry_with_count, errorText, retryNumber)}?
                 }
             }
             }
@@ -2375,12 +2375,12 @@ open class OpenAIProvider(
             lastException?.let { ex ->
                 AppLogger.e(
                     "AIService",
-                    "【发送消息】重试失败，请检查网络连接，最大重试次�?${maxRetries}",
+                    "【发送消息】重试失败，请检查网络连接，最大重试次?${maxRetries}",
                     ex
                 )
             } ?: AppLogger.e(
                 "AIService",
-                "【发送消息】重试失败，请检查网络连接，最大重试次�?${maxRetries}"
+                "【发送消息】重试失败，请检查网络连接，最大重试次?${maxRetries}"
             )
             throw IOException(
                 context.getString(

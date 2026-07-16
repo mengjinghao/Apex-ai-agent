@@ -23,12 +23,12 @@ import com.apex.agent.core.tools.defaultTool.standard.StandardFFmpegConvertToolE
 import com.apex.agent.core.tools.defaultTool.standard.StandardFFmpegInfoToolExecutor
 import com.apex.agent.core.tools.defaultTool.standard.StandardHttpTools
 
-/** 工具获取�? 根据首选权限级别获取对应的工具实现 如果特定权限级别下没有对应工具实现，则回退到标准权限级别的工具 */
+/** 工具获取? 根据首选权限级别获取对应的工具实现 如果特定权限级别下没有对应工具实现，则回退到标准权限级别的工具 */
 object ToolGetter {
 
     /**
      * 获取文件系统工具
-     * @param context 应用上下�?    * @return 根据首选权限级别的文件系统工具实现
+     * @param context 应用上下?    * @return 根据首选权限级别的文件系统工具实现
      */
     fun getFileSystemTools(context: Context): StandardFileSystemTools {
         return when (androidPermissionPreferences.getPreferredPermissionLevel()) {
@@ -42,14 +42,14 @@ object ToolGetter {
     }
 
     /**
-     * 获取Shell工具执行�?    * @param context 应用上下�?    * @return 根据首选权限级别的Shell工具执行器实�?    */
+     * 获取Shell工具执行?    * @param context 应用上下?    * @return 根据首选权限级别的Shell工具执行器实?    */
     fun getShellToolExecutor(context: Context): StandardShellToolExecutor {
         return StandardShellToolExecutor(context)
     }
 
     /**
      * 获取UI工具
-     * @param context 应用上下�?    * @return 根据首选权限级别的UI工具实现
+     * @param context 应用上下?    * @return 根据首选权限级别的UI工具实现
      */
     fun getUITools(context: Context): StandardUITools {
         return when (androidPermissionPreferences.getPreferredPermissionLevel()) {
@@ -64,7 +64,7 @@ object ToolGetter {
 
     /**
      * 获取系统操作工具
-     * @param context 应用上下�?    * @return 根据首选权限级别的系统操作工具实现
+     * @param context 应用上下?    * @return 根据首选权限级别的系统操作工具实现
      */
     fun getSystemOperationTools(context: Context): StandardSystemOperationTools {
         return when (androidPermissionPreferences.getPreferredPermissionLevel()) {
@@ -78,7 +78,7 @@ object ToolGetter {
     }
 
     /**
-     * 获取设备信息工具执行�?    * @param context 应用上下�?    * @return 根据首选权限级别的设备信息工具执行器实�?    */
+     * 获取设备信息工具执行?    * @param context 应用上下?    * @return 根据首选权限级别的设备信息工具执行器实?    */
     fun getDeviceInfoToolExecutor(context: Context): StandardDeviceInfoToolExecutor {
         return when (androidPermissionPreferences.getPreferredPermissionLevel()) {
             AndroidPermissionLevel.ROOT -> RootDeviceInfoToolExecutor(context)
@@ -92,7 +92,7 @@ object ToolGetter {
 
     /**
      * 获取HTTP工具
-     * @param context 应用上下�?    * @return HTTP工具实现（只有标准版本）
+     * @param context 应用上下?    * @return HTTP工具实现（只有标准版本）
      */
     fun getHttpTools(context: Context): StandardHttpTools {
         return StandardHttpTools(context)
@@ -100,7 +100,7 @@ object ToolGetter {
 
     /**
      * 获取Web访问工具
-     * @param context 应用上下�?    * @return Web访问工具实现（只有标准版本）
+     * @param context 应用上下?    * @return Web访问工具实现（只有标准版本）
      */
     fun getWebVisitTool(context: Context): StandardWebVisitTool {
         return StandardWebVisitTool(context)
@@ -108,70 +108,70 @@ object ToolGetter {
 
     /**
      * 获取会话，Web 工具
-     * @param context 应用上下�?    * @return 会话，Web 工具实现（标准权限级别）
+     * @param context 应用上下?    * @return 会话，Web 工具实现（标准权限级别）
      */
     fun getBrowserSessionTools(context: Context): StandardBrowserSessionTools {
         return StandardBrowserSessionTools(context)
     }
 
     /**
-     * 获取Intent工具执行�?    * @param context 应用上下�?    * @return Intent工具执行器实现（只有标准版本�?    */
+     * 获取Intent工具执行?    * @param context 应用上下?    * @return Intent工具执行器实现（只有标准版本?    */
     fun getIntentToolExecutor(context: Context): StandardIntentToolExecutor {
         return StandardIntentToolExecutor(context)
     }
 
     /**
      * 获取发送广播工具执行器
-     * @param context 应用上下�?    * @return 发送广播工具执行器实现（只有标准版本）
+     * @param context 应用上下?    * @return 发送广播工具执行器实现（只有标准版本）
      */
     fun getSendBroadcastToolExecutor(context: Context): StandardSendBroadcastToolExecutor {
         return StandardSendBroadcastToolExecutor(context)
     }
 
     /**
-     * 获取终端命令执行�?    * @param context 应用上下�?    * @return 终端命令执行器实现（只有标准版本�?    */
+     * 获取终端命令执行?    * @param context 应用上下?    * @return 终端命令执行器实现（只有标准版本?    */
     fun getTerminalCommandExecutor(context: Context): StandardTerminalCommandExecutor {
         return StandardTerminalCommandExecutor(context)
     }
 
     /**
-     * 获取内存查询工具执行�?    * @param context 应用上下�?    * @return 内存查询工具执行器实现（只有标准版本�?    */
+     * 获取内存查询工具执行?    * @param context 应用上下?    * @return 内存查询工具执行器实现（只有标准版本?    */
     fun getMemoryQueryToolExecutor(context: Context): MemoryQueryToolExecutor {
         return MemoryQueryToolExecutor(context)
     }
 
     /**
-     * 获取FFmpeg工具执行�?    * @param context 应用上下�?    * @return FFmpeg工具执行器实现（只有标准版本�?    */
+     * 获取FFmpeg工具执行?    * @param context 应用上下?    * @return FFmpeg工具执行器实现（只有标准版本?    */
     fun getFFmpegToolExecutor(context: Context): StandardFFmpegToolExecutor {
         return StandardFFmpegToolExecutor(context)
     }
 
 
     /**
-     * 获取FFmpeg信息工具执行�?    * @return FFmpeg信息工具执行器实现（只有标准版本�?    */
+     * 获取FFmpeg信息工具执行?    * @return FFmpeg信息工具执行器实现（只有标准版本?    */
     fun getFFmpegInfoToolExecutor(): StandardFFmpegInfoToolExecutor {
         return StandardFFmpegInfoToolExecutor()
     }
 
     /**
-     * 获取FFmpeg转换工具执行�?    * @param context 应用上下�?    * @return FFmpeg转换工具执行器实现（只有标准版本�?    */
+     * 获取FFmpeg转换工具执行?    * @param context 应用上下?    * @return FFmpeg转换工具执行器实现（只有标准版本?    */
     fun getFFmpegConvertToolExecutor(context: Context): StandardFFmpegConvertToolExecutor {
         return StandardFFmpegConvertToolExecutor(context)
     }
 
     /**
-     * 获取计算�?    * @return 计算器实现（只有标准版本�?    */
+     * 获取计算?    * @return 计算器实现（只有标准版本?    */
     fun getCalculator() = StandardCalculator
 
     /**
-     * 获取工作流工�?    * @param context 应用上下�?    * @return 工作流工具实现（只有标准版本�?    */
+     * 获取工作流工?    * @param context 应用上下?    * @return 工作流工具实现（只有标准版本?    */
     fun getWorkflowTools(context: Context): StandardWorkflowTools {
         return StandardWorkflowTools(context)
     }
 
     /**
      * 获取对话管理工具
-     * @param context 应用上下�?    * @return 对话管理工具实现（只有标准版本）
+     * @param context 应用上下?    * @return 对话管理工具实现（只有标准版本）
      */
     fun getChatManagerTool(context: Context): StandardChatManagerTool {
         return StandardChatManagerTool(context)
@@ -179,7 +179,7 @@ object ToolGetter {
 
     /**
      * 获取软件设置修改工具
-     * @param context 应用上下�?    * @return 软件设置修改工具实现（标准版本）
+     * @param context 应用上下?    * @return 软件设置修改工具实现（标准版本）
      */
     fun getSoftwareSettingsModifyTools(context: Context): StandardSoftwareSettingsModifyTools {
         return StandardSoftwareSettingsModifyTools(context)

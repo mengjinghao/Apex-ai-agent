@@ -4,9 +4,9 @@ package com.apex.util
  * 省Token模式力度级别配置
  * @param level 级别 (1-10)
  * @param minMessages 最小保留消息数
- * @param importanceThreshold 重要性阈�?
+ * @param importanceThreshold 重要性阈?
  * @param windowMultiplier 自适应窗口乘数
- * @param estimatedSavingsPercent 预估节省百分�?
+ * @param estimatedSavingsPercent 预估节省百分?
  * @param description 描述文案
  */
 data class TokenSavingIntensity(
@@ -19,7 +19,7 @@ data class TokenSavingIntensity(
 ) {
     companion object {
         /**
-         * 1-10级力度配�?
+         * 1-10级力度配?
          */
         val intensityLevels = listOf(
             TokenSavingIntensity(
@@ -28,7 +28,7 @@ data class TokenSavingIntensity(
                 importanceThreshold = 0.2f,
                 windowMultiplier = 1.0f,
                 estimatedSavingsPercent = 5,
-                description = "保守：保留完整上下文，轻微优�?
+                description = "保守：保留完整上下文，轻微优?
             ),
             TokenSavingIntensity(
                 level = 2,
@@ -36,7 +36,7 @@ data class TokenSavingIntensity(
                 importanceThreshold = 0.25f,
                 windowMultiplier = 0.9f,
                 estimatedSavingsPercent = 15,
-                description = "轻微：主要保留近期消�?
+                description = "轻微：主要保留近期消?
             ),
             TokenSavingIntensity(
                 level = 3,
@@ -44,7 +44,7 @@ data class TokenSavingIntensity(
                 importanceThreshold = 0.3f,
                 windowMultiplier = 0.8f,
                 estimatedSavingsPercent = 25,
-                description = "较轻：开始裁剪低价值消�?
+                description = "较轻：开始裁剪低价值消?
             ),
             TokenSavingIntensity(
                 level = 4,
@@ -52,7 +52,7 @@ data class TokenSavingIntensity(
                 importanceThreshold = 0.35f,
                 windowMultiplier = 0.7f,
                 estimatedSavingsPercent = 35,
-                description = "轻度：平衡性能和质�?
+                description = "轻度：平衡性能和质?
             ),
             TokenSavingIntensity(
                 level = 5,
@@ -60,7 +60,7 @@ data class TokenSavingIntensity(
                 importanceThreshold = 0.5f,
                 windowMultiplier = 0.6f,
                 estimatedSavingsPercent = 45,
-                description = "标准：推荐配�?
+                description = "标准：推荐配?
             ),
             TokenSavingIntensity(
                 level = 6,
@@ -68,7 +68,7 @@ data class TokenSavingIntensity(
                 importanceThreshold = 0.55f,
                 windowMultiplier = 0.5f,
                 estimatedSavingsPercent = 55,
-                description = "中度：显著节�?
+                description = "中度：显著节?
             ),
             TokenSavingIntensity(
                 level = 7,
@@ -92,7 +92,7 @@ data class TokenSavingIntensity(
                 importanceThreshold = 0.7f,
                 windowMultiplier = 0.3f,
                 estimatedSavingsPercent = 85,
-                description = "极度：最小化上下�?
+                description = "极度：最小化上下?
             ),
             TokenSavingIntensity(
                 level = 10,
@@ -124,14 +124,14 @@ data class TokenSavingIntensity(
         }
 
         /**
-         * 检查是否为高力度级�?
+         * 检查是否为高力度级?
          */
         fun isHighIntensity(level: Int): Boolean {
             return level >= 7
         }
 
         /**
-         * 检查是否为超高度级�?
+         * 检查是否为超高度级?
          */
         fun isUltraIntensity(level: Int): Boolean {
             return level >= 9

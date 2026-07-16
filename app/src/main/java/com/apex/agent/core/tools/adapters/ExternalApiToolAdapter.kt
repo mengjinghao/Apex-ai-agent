@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
  */
 class ExternalApiToolAdapter : ToolAdapter {
 
-    // 配置化的HTTP客户�?   private val client: OkHttpClient by lazy {
+    // 配置化的HTTP客户?   private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -41,7 +41,7 @@ class ExternalApiToolAdapter : ToolAdapter {
     }
 
     override fun getDescription(): String {
-        return "调用外部API服务，支持GET、POST、PUT、DELETE、PATCH等HTTP方法，包含连接池、请求缓存、重试机�?
+        return "调用外部API服务，支持GET、POST、PUT、DELETE、PATCH等HTTP方法，包含连接池、请求缓存、重试机?
     }
 
     override suspend fun execute(parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
@@ -65,7 +65,7 @@ class ExternalApiToolAdapter : ToolAdapter {
         val followRedirects = parameters["follow_redirects"] as? Boolean ?: true
 
         try {
-            // 检查缓存（仅GET请求�?           val cacheKey = if (method.uppercase() == "GET") {
+            // 检查缓存（仅GET请求?           val cacheKey = if (method.uppercase() == "GET") {
                 "${method}:${url}:${headers.hashCode()}"
             } else {
                 null
@@ -86,7 +86,7 @@ class ExternalApiToolAdapter : ToolAdapter {
             // 执行请求（支持重试）
             val response = executeWithRetry(url, method, headers, body, contentType, timeout, maxRetries, followRedirects)
 
-            // 缓存响应（仅GET请求�?           if (useCache && cacheKey != null && response.statusCode in 200..299) {
+            // 缓存响应（仅GET请求?           if (useCache && cacheKey != null && response.statusCode in 200..299) {
                 if (requestCache.size >= MAX_CACHE_SIZE) {
                     val oldestKey = requestCache.keys.firstOrNull()
                     oldestKey?.let { requestCache.remove(it) }
@@ -124,11 +124,11 @@ class ExternalApiToolAdapter : ToolAdapter {
             ToolParameter("method", "string", "HTTP方法：GET, POST, PUT, DELETE, PATCH", false, "GET"),
             ToolParameter("headers", "object", "请求头（可选）", false),
             ToolParameter("body", "string", "请求体（POST/PUT/PATCH需要）", false),
-            ToolParameter("content_type", "string", "内容类型（默认：application/json�? false, "application/json"),
-            ToolParameter("use_cache", "boolean", "是否使用请求缓存（仅GET请求，默认：true�? false, true),
-            ToolParameter("timeout", "int", "超时时间（秒，默认：30�? false, 30),
-            ToolParameter("max_retries", "int", "最大重试次数（默认，，不重试着�?false, 0),
-            ToolParameter("follow_redirects", "boolean", "是否跟随重定向（默认：true�? false, true)
+            ToolParameter("content_type", "string", "内容类型（默认：application/json? false, "application/json"),
+            ToolParameter("use_cache", "boolean", "是否使用请求缓存（仅GET请求，默认：true? false, true),
+            ToolParameter("timeout", "int", "超时时间（秒，默认：30? false, 30),
+            ToolParameter("max_retries", "int", "最大重试次数（默认，，不重试着?false, 0),
+            ToolParameter("follow_redirects", "boolean", "是否跟随重定向（默认：true? false, true)
         )
     }
 
@@ -149,7 +149,7 @@ class ExternalApiToolAdapter : ToolAdapter {
         var lastException: Exception? = null
         var retryCount = 0
 
-        // 创建自定义超时的客户�?       val customClient = client.newBuilder()
+        // 创建自定义超时的客户?       val customClient = client.newBuilder()
             .connectTimeout(timeout.toLong(), TimeUnit.SECONDS)
             .readTimeout(timeout.toLong(), TimeUnit.SECONDS)
             .writeTimeout(timeout.toLong(), TimeUnit.SECONDS)
@@ -161,11 +161,11 @@ class ExternalApiToolAdapter : ToolAdapter {
                 val requestBuilder = Request.Builder()
                     .url(url)
 
-                // 添加请求�?               headers.forEach { (key, value) ->
+                // 添加请求?               headers.forEach { (key, value) ->
                     requestBuilder.addHeader(key, value)
                 }
 
-                // 添加请求�?               val request = if (body != null && 
+                // 添加请求?               val request = if (body != null && 
                     (method.uppercase() == "POST" || 
                      method.uppercase() == "PUT" || 
                      method.uppercase() == "PATCH")) {

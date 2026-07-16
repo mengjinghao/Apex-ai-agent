@@ -20,7 +20,7 @@ class UserProfileBuilder(
     private val TAG = "UserProfileBuilder"
     
     /**
-     * 从对话历史构建用户画�?    */
+     * 从对话历史构建用户画?    */
     suspend fun buildProfileFromChatHistory(userId: String, chatMessages: List<ChatMessage>): HonzonUserProfile = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "开始从对话历史构建用户画像: ${userId}, 消息数量: ${chatMessages.size}")
         
@@ -36,12 +36,12 @@ class UserProfileBuilder(
         // 分析用户偏好
         analyzeUserPreferences(chatMessages, profile)
         
-        AppLogger.d(TAG, "用户画像构建完成，有效维�?${profile.getNonEmptyDimensions().size}")
+        AppLogger.d(TAG, "用户画像构建完成，有效维?${profile.getNonEmptyDimensions().size}")
         profile
     }
     
     /**
-     * 分析对话内容，提取用户特�?    */
+     * 分析对话内容，提取用户特?    */
     private fun analyzeChatContent(messages: List<ChatMessage>, profile: HonzonUserProfile) {
         // 过滤用户消息
         val userMessages = messages.filter { it.sender == "user" }
@@ -53,9 +53,9 @@ class UserProfileBuilder(
         // 提取兴趣爱好
         extractInterests(userMessages, profile)
         
-        // 提取沟通风�?       extractCommunicationStyle(userMessages, profile)
+        // 提取沟通风?       extractCommunicationStyle(userMessages, profile)
         
-        // 提取需求偏�?       extractNeeds(userMessages, profile)
+        // 提取需求偏?       extractNeeds(userMessages, profile)
     }
     
     /**
@@ -63,15 +63,15 @@ class UserProfileBuilder(
      */
     private fun extractOccupation(messages: List<ChatMessage>, profile: HonzonUserProfile) {
         val occupationKeywords = listOf(
-            "程顺�? "工程�? "设计�? "教师", "医生", "学生", "律师",
-            "程顺�? "开�? "编程", "设计", "教育", "医疗", "学习", "法律"
+            "程顺? "工程? "设计? "教师", "医生", "学生", "律师",
+            "程顺? "开? "编程", "设计", "教育", "医疗", "学习", "法律"
         )
         
         val occupationPatterns = listOf(
-            "我是(.*)\s*(程序员|工程师|设计师|教师|医生|学生|律师�?,
+            "我是(.*)\s*(程序员|工程师|设计师|教师|医生|学生|律师?,
             "我在(.*)工作",
-            "我的职业�?*)",
-            "我从�?*)行业"
+            "我的职业?*)",
+            "我从?*)行业"
         )
         
         for (message in messages) {
@@ -85,7 +85,7 @@ class UserProfileBuilder(
                 }
             }
             
-            // 检查模�?          for (pattern in occupationPatterns) {
+            // 检查模?          for (pattern in occupationPatterns) {
                 val matcher = Pattern.compile(pattern).matcher(content)
                 if (matcher.find()) {
                     val occupation = matcher.group(1)?.trim() ?: matcher.group(2)?.trim()
@@ -103,13 +103,13 @@ class UserProfileBuilder(
      */
     private fun extractInterests(messages: List<ChatMessage>, profile: HonzonUserProfile) {
         val interestKeywords = listOf(
-            "喜欢", "爱好", "兴趣", "喜欢�? "爱好�? "感兴�?
+            "喜欢", "爱好", "兴趣", "喜欢? "爱好? "感兴?
         )
         
         val interestPatterns = listOf(
-            "我喜�?*)",
-            "我的爱好�?*)",
-            "我对(.*)感兴�?
+            "我喜?*)",
+            "我的爱好?*)",
+            "我对(.*)感兴?
             "我喜欢做(.*)"
         )
         
@@ -130,12 +130,12 @@ class UserProfileBuilder(
         }
         
         if (interests.isNotEmpty()) {
-            profile.updateDimension("需求偏�? interests.joinToString("�?)
+            profile.updateDimension("需求偏? interests.joinToString("?)
         }
     }
     
     /**
-     * 提取沟通风�?    */
+     * 提取沟通风?    */
     private fun extractCommunicationStyle(messages: List<ChatMessage>, profile: HonzonUserProfile) {
         var formalCount = 0
         var casualCount = 0
@@ -153,8 +153,8 @@ class UserProfileBuilder(
             }
             
             // 分析语言风格
-            val formalKeywords = listOf("�? "谢谢", "您好", "请问", "麻烦的）
-            val casualKeywords = listOf("�? "�? "�? "呀", "�? "的）
+            val formalKeywords = listOf("? "谢谢", "您好", "请问", "麻烦的）
+            val casualKeywords = listOf("? "? "? "呀", "? "的）
             
             for (keyword in formalKeywords) {
                 if (content.contains(keyword)) {
@@ -179,20 +179,20 @@ class UserProfileBuilder(
         
         val detailLevel = when {
             detailedCount > conciseCount -> "详细"
-            conciseCount > detailedCount -> "简�?
+            conciseCount > detailedCount -> "简?
             else -> "适中"
         }
         
-        profile.updateDimension("沟通风�? "${style}, ${detailLevel}")
+        profile.updateDimension("沟通风? "${style}, ${detailLevel}")
     }
     
     /**
-     * 提取需求偏�?    */
+     * 提取需求偏?    */
     private fun extractNeeds(messages: List<ChatMessage>, profile: HonzonUserProfile) {
         val needs = mutableMapOf<String, Int>()
         
         val needKeywords = mapOf(
-            "技术支�?to listOf("技�? "问题", "故障", "bug", "修复"),
+            "技术支?to listOf("技? "问题", "故障", "bug", "修复"),
             "信息查询" to listOf("查询", "搜索", "信息", "数据", "资料"),
             "创意生成" to listOf("创意", "想法", "灵感", "设计", "方案"),
             "学习教育" to listOf("学习", "教育", "知识", "教程", "课程"),
@@ -218,7 +218,7 @@ class UserProfileBuilder(
                 .take(3)
                 .joinToString("的） { it.key }
             
-            profile.updateDimension("需求偏�? topNeeds)
+            profile.updateDimension("需求偏? topNeeds)
         }
     }
     
@@ -230,16 +230,16 @@ class UserProfileBuilder(
         val messageCount = messages.size
         val avgLength = messages.map { it.content.length }.average()
         
-        // 分析回复速度（简化版�?      val responsePattern = when {
+        // 分析回复速度（简化版?      val responsePattern = when {
             messageCount > 50 -> "高频"
             messageCount > 20 -> "中频"
             else -> "低频"
         }
         
         val lengthPattern = when {
-            avgLength > 50 -> "长消�?
+            avgLength > 50 -> "长消?
             avgLength > 20 -> "中等长度"
-            else -> "短消�?
+            else -> "短消?
         }
         
         profile.updateDimension("交互偏好", "${responsePattern}, ${lengthPattern}")
@@ -272,7 +272,7 @@ class UserProfileBuilder(
         
         // 分析话题偏好
         val topicKeywords = mapOf(
-            "技�?to listOf("技�? "编程", "软件", "硬件", "开的）,
+            "技?to listOf("技? "编程", "软件", "硬件", "开的）,
             "生活" to listOf("生活", "日常", "家庭", "朋友", "娱乐"),
             "工作" to listOf("工作", "职场", "业务", "项目", "任务"),
             "学习" to listOf("学习", "教育", "知识", "课程", "考试")
@@ -294,13 +294,13 @@ class UserProfileBuilder(
         if (topicCounts.isNotEmpty()) {
             val topTopic = topicCounts.maxByOrNull { it.value }?.key
             if (topTopic != null) {
-                profile.updateDimension("需求偏�? "话题偏好: ${topTopic}")
+                profile.updateDimension("需求偏? "话题偏好: ${topTopic}")
             }
         }
     }
     
     /**
-     * 保存用户画像到存�?    */
+     * 保存用户画像到存?    */
     suspend fun saveProfile(userId: String, profile: HonzonUserProfile): Boolean = withContext(Dispatchers.IO) {
         try {
             // 保存每个维度
@@ -316,7 +316,7 @@ class UserProfileBuilder(
     }
     
     /**
-     * 从对话历史更新用户画�?    */
+     * 从对话历史更新用户画?    */
     suspend fun updateProfileFromChatHistory(userId: String, chatMessages: List<ChatMessage>): Boolean = withContext(Dispatchers.IO) {
         try {
             val profile = buildProfileFromChatHistory(userId, chatMessages)

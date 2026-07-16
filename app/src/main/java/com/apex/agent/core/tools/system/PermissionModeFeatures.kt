@@ -74,7 +74,7 @@ class PermissionConfigBackupManager(
             val backupFile = getBackupFile()
 
             if (!backupFile.exists()) {
-                return RestoreResult.Error("备份文件不存�?)
+                return RestoreResult.Error("备份文件不存?)
             }
 
             val jsonString = backupFile.readText()
@@ -94,7 +94,7 @@ class PermissionConfigBackupManager(
     }
 
     /**
-     * �?JSON 字符串恢复配�?
+     * ?JSON 字符串恢复配?
      */
     suspend fun restoreConfigFromJson(jsonString: String): RestoreResult {
         return try {
@@ -102,7 +102,7 @@ class PermissionConfigBackupManager(
             restoreConfigFromData(config)
             RestoreResult.Success
         } catch (e: Exception) {
-            AppLogger.e(TAG, "�?JSON 恢复配置失败", e)
+            AppLogger.e(TAG, "?JSON 恢复配置失败", e)
             RestoreResult.Error(e.message ?: "未知错误")
         }
     }
@@ -159,7 +159,7 @@ class PermissionConfigBackupManager(
     }
 
     /**
-     * 检查是否存在备�?
+     * 检查是否存在备?
      */
     fun hasBackup(): Boolean {
         return getBackupFile().exists()
@@ -174,7 +174,7 @@ class PermissionConfigBackupManager(
             if (file.exists()) {
                 val deleted = file.delete()
                 if (deleted) {
-                    AppLogger.d(TAG, "备份已删�?)
+                    AppLogger.d(TAG, "备份已删?)
                 }
                 deleted
             } else {
@@ -187,7 +187,7 @@ class PermissionConfigBackupManager(
     }
 
     /**
-     * 导出配置�?JSON
+     * 导出配置?JSON
      */
     fun exportConfigToJson(): String {
         val config = getCurrentConfig()
@@ -212,7 +212,7 @@ sealed class RestoreResult {
 }
 
 /**
- * 智能模式切换�?
+ * 智能模式切换?
  */
 class SmartModeSwitcher(
     private val modeManager: PermissionModeManager
@@ -232,7 +232,7 @@ class SmartModeSwitcher(
      */
     fun enableAutoSwitch() {
         _autoSwitchEnabled.value = true
-        AppLogger.d(TAG, "自动切换已启�?)
+        AppLogger.d(TAG, "自动切换已启?)
     }
 
     /**
@@ -240,15 +240,15 @@ class SmartModeSwitcher(
      */
     fun disableAutoSwitch() {
         _autoSwitchEnabled.value = false
-        AppLogger.d(TAG, "自动切换已禁�?)
+        AppLogger.d(TAG, "自动切换已禁?)
     }
 
     /**
-     * 智能选择最佳模�?
+     * 智能选择最佳模?
      */
     suspend fun smartSwitchToBestMode(): Boolean {
         if (!_autoSwitchEnabled.value) {
-            AppLogger.d(TAG, "自动切换未启�?)
+            AppLogger.d(TAG, "自动切换未启?)
             return false
         }
 
@@ -291,7 +291,7 @@ class SmartModeSwitcher(
         )
 
         _switchHistory.update { history ->
-            val newHistory = (listOf(item) + history).take(20) // 保留最�?0�?
+            val newHistory = (listOf(item) + history).take(20) // 保留最?0?
             newHistory
         }
 
@@ -303,7 +303,7 @@ class SmartModeSwitcher(
      */
     fun clearHistory() {
         _switchHistory.update { emptyList() }
-        AppLogger.d(TAG, "切换历史已清�?)
+        AppLogger.d(TAG, "切换历史已清?)
     }
 }
 
@@ -312,13 +312,13 @@ class SmartModeSwitcher(
  */
 enum class UsageScenario {
     STANDARD, // 标准使用
-    AUTOMATION, // 自动�?
+    AUTOMATION, // 自动?
     DEBUG, // 调试
     SYSTEM_ADMIN // 系统管理
 }
 
 /**
- * 切换历史�?
+ * 切换历史?
  */
 data class SwitchHistoryItem(
     val mode: PermissionMode,
@@ -335,7 +335,7 @@ data class SwitchHistoryItem(
 }
 
 /**
- * 权限模式建议�?
+ * 权限模式建议?
  */
 class PermissionModeAdvisor(
     private val modeManager: PermissionModeManager
@@ -345,7 +345,7 @@ class PermissionModeAdvisor(
     }
 
     /**
-     * 获取推荐的模�?
+     * 获取推荐的模?
      */
     fun getRecommendedMode(): PermissionMode {
         val states = modeManager.modeStates.value
@@ -419,10 +419,10 @@ class PermissionModeAdvisor(
     private fun getModeFeatures(mode: PermissionMode): List<String> {
         return when (mode) {
             PermissionMode.STANDARD -> listOf("安全稳定", "无需额外权限", "适合日常使用")
-            PermissionMode.ACCESSIBILITY -> listOf("UI自动�?, "无障碍服�?, "无需Root")
-            PermissionMode.DEBUGGER -> listOf("ADB调试", "开发测�?, "系统访问")
+            PermissionMode.ACCESSIBILITY -> listOf("UI自动?, "无障碍服?, "无需Root")
+            PermissionMode.DEBUGGER -> listOf("ADB调试", "开发测?, "系统访问")
             PermissionMode.ADMIN -> listOf("设备管理", "安全策略", "系统控制")
-            PermissionMode.SHIZUKU -> listOf("系统级权�?, "无需Root", "安全可控")
+            PermissionMode.SHIZUKU -> listOf("系统级权?, "无需Root", "安全可控")
             PermissionMode.ROOT -> listOf("完全Root权限", "系统完全控制", "强大功能")
         }
     }
@@ -430,9 +430,9 @@ class PermissionModeAdvisor(
     private fun getModeLimitations(mode: PermissionMode): List<String> {
         return when (mode) {
             PermissionMode.STANDARD -> listOf("功能受限", "无法访问系统文件")
-            PermissionMode.ACCESSIBILITY -> listOf("需要用户授�?, "部分功能受限")
+            PermissionMode.ACCESSIBILITY -> listOf("需要用户授?, "部分功能受限")
             PermissionMode.DEBUGGER -> listOf("需要ADB连接", "权限有限")
-            PermissionMode.ADMIN -> listOf("需要设备管理权�?, "设置复杂")
+            PermissionMode.ADMIN -> listOf("需要设备管理权?, "设置复杂")
             PermissionMode.SHIZUKU -> listOf("需要Shizuku服务", "初次设置复杂")
             PermissionMode.ROOT -> listOf("安全风险", "可能导致保修失效")
         }

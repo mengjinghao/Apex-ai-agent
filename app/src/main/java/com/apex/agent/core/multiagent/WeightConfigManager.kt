@@ -36,14 +36,14 @@ class WeightConfigManager {
     private fun initPredefinedConfigs() {
         predefinedConfigs["balanced"] = WeightConfig(
             name = "balanced",
-            description = "平衡配置，综合考虑各因�?
+            description = "平衡配置，综合考虑各因?
             weights = defaultWeights,
             isDefault = true
         )
 
         predefinedConfigs["performance-focused"] = WeightConfig(
             name = "performance-focused",
-            description = "性能优先，重视历史执行表�?
+            description = "性能优先，重视历史执行表?
             weights = mapOf(
                 "capability" to 0.3,
                 "performance" to 0.5,
@@ -65,7 +65,7 @@ class WeightConfigManager {
 
         predefinedConfigs["resource-optimized"] = WeightConfig(
             name = "resource-optimized",
-            description = "资源优化，重视资源利用效�?
+            description = "资源优化，重视资源利用效?
             weights = mapOf(
                 "capability" to 0.2,
                 "performance" to 0.3,
@@ -198,7 +198,7 @@ class WeightConfigManager {
         return Pair(predefinedConfigs.size, userConfigs.size)
     }
 
-    // 为特定任务类型推荐权重配�?   fun recommendConfigForTaskType(taskType: String): String {
+    // 为特定任务类型推荐权重配?   fun recommendConfigForTaskType(taskType: String): String {
         return when (taskType) {
             "coding", "development" -> "capability-focused"
             "writing", "content" -> "skill-matched"

@@ -89,7 +89,7 @@ class StandardFFmpegToolExecutor(private val context: Context) : ToolExecutor {
     }
 }
 
-/** FFmpeg信息工具执行为获取有关系统FFmpeg配置的信�?/
+/** FFmpeg信息工具执行为获取有关系统FFmpeg配置的信?/
 class StandardFFmpegInfoToolExecutor : ToolExecutor {
     companion object {
         private const val TAG = "FFmpegInfoToolExecutor"
@@ -104,7 +104,7 @@ class StandardFFmpegInfoToolExecutor : ToolExecutor {
             info.appendLine("FFmpeg version: ${FFmpegKitConfig.getVersion()}")
             info.appendLine("Build configuration: ${FFmpegKitConfig.getBuildDate()}")
 
-            // 列出支持的编解码�?           val codecsSession = FFmpegKit.execute("-codecs")
+            // 列出支持的编解码?           val codecsSession = FFmpegKit.execute("-codecs")
             val codecsOutput = codecsSession.output ?: ""
             val duration = System.currentTimeMillis() - startTime
 
@@ -133,11 +133,11 @@ class StandardFFmpegInfoToolExecutor : ToolExecutor {
     }
 
     override fun validateParameters(tool: AITool): ToolValidationResult {
-        // 不需要参�?      return ToolValidationResult(valid = true)
+        // 不需要参?      return ToolValidationResult(valid = true)
     }
 }
 
-/** FFmpeg转换视频工具执行为提供一个简化的接口用于常见的视频转换操�?/
+/** FFmpeg转换视频工具执行为提供一个简化的接口用于常见的视频转换操?/
 class StandardFFmpegConvertToolExecutor(private val context: Context) : ToolExecutor {
     companion object {
         private const val TAG = "FFmpegConvertToolExecutor"
@@ -174,7 +174,7 @@ class StandardFFmpegConvertToolExecutor(private val context: Context) : ToolExec
         // 构建FFmpeg命令
         val commandBuilder = StringBuilder("-i \"${inputPath}\"")
 
-        // 添加可选参�?      if (!videoCodec.isNullOrEmpty()) {
+        // 添加可选参?      if (!videoCodec.isNullOrEmpty()) {
             commandBuilder.append(" -c:v ${videoCodec}")
         }
 
@@ -205,7 +205,7 @@ class StandardFFmpegConvertToolExecutor(private val context: Context) : ToolExec
             val duration = System.currentTimeMillis() - startTime
 
             if (ReturnCode.isSuccess(returnCode)) {
-                // 获取输出文件的媒体信�?               val mediaSession = FFprobeKit.getMediaInformation(outputPath)
+                // 获取输出文件的媒体信?               val mediaSession = FFprobeKit.getMediaInformation(outputPath)
                 val mediaInfo = mediaSession?.mediaInformation
 
                 val ffmpegResult =

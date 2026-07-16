@@ -596,7 +596,7 @@ class MessageProcessingDelegate(
                     // 使用消毒后的文本
                     sanitizedMessageContent = sanitizeResult.sanitizedText
                     if (sanitizeResult.findings.isNotEmpty()) {
-                        AppLogger.d(TAG, "文档提取内容消毒完成: 发现${sanitizeResult.findings.size}个安全问�?)
+                        AppLogger.d(TAG, "文档提取内容消毒完成: 发现${sanitizeResult.findings.size}个安全问?)
                     }
                 } catch (e: Exception) {
                     AppLogger.e(TAG, "输入安全检查失败，使用原始内容", e)

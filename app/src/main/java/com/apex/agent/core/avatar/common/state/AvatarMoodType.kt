@@ -19,7 +19,7 @@ object AvatarMoodTypes {
             AvatarMoodTypeDefinition(
                 key = "angry",
                 displayName = "Angry",
-                promptHint = "用户表达侮辱、不公、责备、生气或强烈不满时使用了�?
+                promptHint = "用户表达侮辱、不公、责备、生气或强烈不满时使用了?
                 fallbackEmotion = AvatarEmotion.SAD,
                 builtIn = true
             ),
@@ -40,7 +40,7 @@ object AvatarMoodTypes {
             AvatarMoodTypeDefinition(
                 key = "aojiao",
                 displayName = "Aojiao",
-                promptHint = "用户调侃、轻微争执、角色嘴硬又软化时使用了�?
+                promptHint = "用户调侃、轻微争执、角色嘴硬又软化时使用了?
                 fallbackEmotion = AvatarEmotion.CONFUSED,
                 builtIn = true
             ),

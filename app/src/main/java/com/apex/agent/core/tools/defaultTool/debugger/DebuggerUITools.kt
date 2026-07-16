@@ -40,7 +40,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         return AndroidShellExecutor.executeShellCommand(command, uiShellIdentity)
     }
 
-    /** 是否包含 display 相关参数（有的话强制？ADB，不走无障碍�?/
+    /** 是否包含 display 相关参数（有的话强制？ADB，不走无障碍?/
     private fun hasDisplayParam(tool: AITool): Boolean {
         return tool.parameters.any { param ->
             param.name.equals("display", ignoreCase = true)
@@ -331,7 +331,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             }
         }
 
-        // 使用uiautomator获取和点击元�?       return clickElementWithUiautomator(tool)
+        // 使用uiautomator获取和点击元?       return clickElementWithUiautomator(tool)
     }
 
     /** 使用Shell命令设置输入文本 */
@@ -344,13 +344,13 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         val text = tool.parameters.find { it.name == "text" }?.value ?: ""
 
         try {
-            // 获取屏幕中心作为文本输入的位�?           val displayMetrics = context.resources.displayMetrics
+            // 获取屏幕中心作为文本输入的位?           val displayMetrics = context.resources.displayMetrics
             val centerX = displayMetrics.widthPixels / 2
             val centerY = displayMetrics.heightPixels / 2
 
             // 显示文本输入反馈（在主线程上执行            withContext(Dispatchers.Main) { operationOverlay.showTextInput(centerX, centerY, text) }
 
-            // 使用KEYCODE_CLEAR清除字段，这比模拟CTRL+A和DEL更直�?           AppLogger.d(TAG, "Clearing text field with KEYCODE_CLEAR")
+            // 使用KEYCODE_CLEAR清除字段，这比模拟CTRL+A和DEL更直?           AppLogger.d(TAG, "Clearing text field with KEYCODE_CLEAR")
             val clearCommand = "input ${getDisplayArg(tool)}keyevent KEYCODE_CLEAR"
             executeUiShellCommand(clearCommand)
 
@@ -374,7 +374,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 )
             }
 
-            // 使用原生复制和ADB粘贴来输入文本，这比'input text'更可�?           AppLogger.d(TAG, "Setting text to clipboard and pasting via ADB: ${text}")
+            // 使用原生复制和ADB粘贴来输入文本，这比'input text'更可?           AppLogger.d(TAG, "Setting text to clipboard and pasting via ADB: ${text}")
             withContext(Dispatchers.Main) {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("apex-agent_input", text)
@@ -500,7 +500,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 return Pair(file.absolutePath, dimensions)
             }
 
-            // 2) 如果 Shell 失败，作为回退尝试无障碍截�调用父类�?
+            // 2) 如果 Shell 失败，作为回退尝试无障碍截调用父类?
             AppLogger.w(TAG, "captureScreenshotToFile: Shell screencap failed, falling back to accessibility")
             super.captureScreenshotToFile(tool)
         } catch (e: Exception) {
@@ -562,7 +562,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             // 简化布局信息
             val simplifiedLayout = simplifyLayoutFromXml(uiData.uiXml)
 
-            // 创建结构化数�?           val resultData =
+            // 创建结构化数?           val resultData =
                     UIPageResultData(
                             packageName = focusInfo.packageName ?: "Unknown",
                             activityName = focusInfo.activityName ?: "Unknown",
@@ -581,7 +581,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         }
     }
 
-    /** UI数据类，保存XML和窗口信�?/
+    /** UI数据类，保存XML和窗口信?/
     private data class UIData(val uiXml: String, val windowInfo: String)
 
     /** 获取UI数据，使用Shell命令，严格遵守工具参数中？display（如有） */
@@ -626,8 +626,8 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             // 获取窗口信息
             var windowInfo = getWindowInfoFromShell()
 
-            // 如果窗口信息为空，尝试延迟后重试一�?           if (windowInfo.isEmpty()) {
-                AppLogger.w(TAG, "首次获取窗口信息失败，延�?0ms后重�?
+            // 如果窗口信息为空，尝试延迟后重试一?           if (windowInfo.isEmpty()) {
+                AppLogger.w(TAG, "首次获取窗口信息失败，延?0ms后重?
                 kotlinx.coroutines.delay(500)
                 windowInfo = getWindowInfoFromShell()
             }
@@ -639,9 +639,9 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         }
     }
 
-    /** 获取窗口信息，使用多种命令尝�?/
+    /** 获取窗口信息，使用多种命令尝?/
     private suspend fun getWindowInfoFromShell(): String {
-        // 尝试多种命令来获取窗口信�?       val commands =
+        // 尝试多种命令来获取窗口信?       val commands =
                 listOf(
                         // 标准命令，获取当前焦点和焦点应用
                         "dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'",
@@ -649,22 +649,22 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                         "dumpsys window | grep -E 'mCurrentFocus'",
                         // 备用命令，只获取焦点应用
                         "dumpsys window | grep -E 'mFocusedApp'",
-                        // 最后的备用命令，尝试获取任何窗口信�?                       "dumpsys window | grep -E 'Window #|Focus'",
+                        // 最后的备用命令，尝试获取任何窗口信?                       "dumpsys window | grep -E 'Window #|Focus'",
                         // 极端情况下，尝试获取前台应用包名
                         "dumpsys activity recents | grep 'Recent #0' -A2"
                 )
 
-        // 依次尝试每个命令，直到有一个成�?       for (command in commands) {
+        // 依次尝试每个命令，直到有一个成?       for (command in commands) {
             try {
                 val result = executeUiShellCommand(command)
                 if (result.success && result.stdout.isNotEmpty()) {
                     AppLogger.d(TAG, "成功获取窗口信息: ${result.stdout.take(100)}")
                     return result.stdout
                 }
-                // 如果命令执行失败或返回空结果，尝试下一个命�?               AppLogger.w(TAG, "窗口信息命令 '${command}' 失败或返回空结果")
+                // 如果命令执行失败或返回空结果，尝试下一个命?               AppLogger.w(TAG, "窗口信息命令 '${command}' 失败或返回空结果")
             } catch (e: Exception) {
                 AppLogger.e(TAG, "执行窗口信息命令 '${command}' 出错", e)
-                // 继续尝试下一个命�?           }
+                // 继续尝试下一个命?           }
         }
 
         // 所有命令都失败时，尝试获取topActivity作为最后的手段
@@ -684,7 +684,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         return ""
     }
 
-    /** UI节点数据类，仅在Shell实现中使�?/
+    /** UI节点数据类，仅在Shell实现中使?/
     private data class UINodeShell(
             val className: String?,
             val text: String?,
@@ -753,7 +753,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
     }
 
     private fun createNodeShell(parser: XmlPullParser): UINodeShell {
-        // 解析关键�?       val className = parser.getAttributeValue(null, "class")?.substringAfterLast('.')
+        // 解析关键?       val className = parser.getAttributeValue(null, "class")?.substringAfterLast('.')
         val text = parser.getAttributeValue(null, "text")?.replace("&#10;", "\n")
         val contentDesc = parser.getAttributeValue(null, "content-desc")
         val resourceId = parser.getAttributeValue(null, "resource-id")
@@ -770,7 +770,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         )
     }
 
-    /** 窗口焦点信息数据�?/
+    /** 窗口焦点信息数据?/
     private data class FocusInfoShell(
             var packageName: String? = null,
             var activityName: String? = null
@@ -791,7 +791,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
 
             AppLogger.d(TAG, "Window info for extraction: ${windowInfo.take(200)}")
 
-            // 尝试不同的提取方法，按照特异性顺�?           if (!extractFromCurrentFocusShell(windowInfo, result) &&
+            // 尝试不同的提取方法，按照特异性顺?           if (!extractFromCurrentFocusShell(windowInfo, result) &&
                             !extractFromFocusedAppShell(windowInfo, result) &&
                             !extractFromLauncherInfoShell(windowInfo, result) &&
                             !extractFromTopActivityShell(windowInfo, result) &&
@@ -801,7 +801,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                 AppLogger.w(TAG, "Could not extract focus information using any method")
             }
 
-            // 最后的回退：如果我们仍然无法确定任何信息，使用默认�?           if (result.packageName == null) {
+            // 最后的回退：如果我们仍然无法确定任何信息，使用默认?           if (result.packageName == null) {
                 if (windowInfo.contains("statusbar") || windowInfo.contains("SystemUI")) {
                     result.packageName = "com.android.systemui"
                     result.activityName = "SystemUI"
@@ -850,14 +850,14 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             val match = pattern.find(windowInfo)
             if (match != null) {
                 if (match.groupValues.size >= 3) {
-                    // 包含包和活动的模�?                   result.packageName = match.groupValues[1]
+                    // 包含包和活动的模?                   result.packageName = match.groupValues[1]
                     result.activityName = match.groupValues[2]
                     AppLogger.d(TAG, "Extracted from mCurrentFocus pattern (full): ${pattern.pattern}")
                     return true
                 } else if (match.groupValues.size >= 2) {
-                    // 只有包名的模�?                   result.packageName = match.groupValues[1]
+                    // 只有包名的模?                   result.packageName = match.groupValues[1]
                     AppLogger.d(TAG, "Extracted package from mCurrentFocus pattern: ${pattern.pattern}")
-                    // 返回false以允许其他方法提取活动名�?                   return false
+                    // 返回false以允许其他方法提取活动名?                   return false
                 }
             }
         }
@@ -869,20 +869,20 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
      * com.example.app/.MainActivity t123}}}
      */
     private fun extractFromFocusedAppShell(windowInfo: String, result: FocusInfoShell): Boolean {
-        // mFocusedApp格式的多种模�?       val focusedAppPatterns =
+        // mFocusedApp格式的多种模?       val focusedAppPatterns =
                 listOf(
-                        // 带有ActivityRecord的标准格�?                       "mFocusedApp=.*?ActivityRecord\\{.*?\\s+([a-zA-Z0-9_.]+)/\\.?([^\\s}]+)".toRegex(),
-                        // 处理类似 mFocusedApp=null 后的真实输出�?                       "ActivityRecord\\{.*?\\s+([a-zA-Z0-9_.]+)/\\.?([^\\s}]+)".toRegex(),
+                        // 带有ActivityRecord的标准格?                       "mFocusedApp=.*?ActivityRecord\\{.*?\\s+([a-zA-Z0-9_.]+)/\\.?([^\\s}]+)".toRegex(),
+                        // 处理类似 mFocusedApp=null 后的真实输出?                       "ActivityRecord\\{.*?\\s+([a-zA-Z0-9_.]+)/\\.?([^\\s}]+)".toRegex(),
                         // 有时会看到的替代格式
                         "mFocusedApp=.*?\\s+([a-zA-Z0-9_.]+)/\\.?([^\\s}]+)\\s".toRegex(),
-                        // 只有包名的格�?                       "mFocusedApp=.*?\\s+([a-zA-Z0-9_.]+)(?:/|\\s)".toRegex()
+                        // 只有包名的格?                       "mFocusedApp=.*?\\s+([a-zA-Z0-9_.]+)(?:/|\\s)".toRegex()
                 )
 
         for (pattern in focusedAppPatterns) {
             val match = pattern.find(windowInfo)
             if (match != null) {
                 if (match.groupValues.size >= 3) {
-                    // 包含包和活动的完全匹�?                   result.packageName = match.groupValues[1]
+                    // 包含包和活动的完全匹?                   result.packageName = match.groupValues[1]
                     result.activityName = match.groupValues[2]
                     AppLogger.d(TAG, "Extracted from mFocusedApp pattern (full): ${pattern.pattern}")
                     return true
@@ -900,7 +900,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
 
     /** 为启动器窗口提取信息 例如：mCurrentFocus=Window{1a23bc4 u0 Launcher} */
     private fun extractFromLauncherInfoShell(windowInfo: String, result: FocusInfoShell): Boolean {
-        // 查找启动器特定模�?       if (windowInfo.contains("mCurrentFocus") && windowInfo.contains("Launcher")) {
+        // 查找启动器特定模?       if (windowInfo.contains("mCurrentFocus") && windowInfo.contains("Launcher")) {
             val launcherPatterns =
                     listOf(
                             "\\{.*?\\s+([a-zA-Z0-9_.]+\\.launcher)/".toRegex(),
@@ -933,7 +933,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
      * 例如：topActivity=ComponentInfo{com.example.app/.MainActivity}
      */
     private fun extractFromTopActivityShell(windowInfo: String, result: FocusInfoShell): Boolean {
-        // topActivity格式的模�?       val topActivityPatterns =
+        // topActivity格式的模?       val topActivityPatterns =
                 listOf(
                         "topActivity=ComponentInfo\\{([a-zA-Z0-9_.]+)/\\.?([^}]+)\\}".toRegex(),
                         "topResumedActivity=ComponentInfo\\{([a-zA-Z0-9_.]+)/\\.?([^}]+)\\}".toRegex(),
@@ -963,19 +963,19 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         return false
     }
 
-    /** 作为后备使用更通用的模式提�?/
+    /** 作为后备使用更通用的模式提?/
     private fun extractUsingGenericPatternsShell(
             windowInfo: String,
             result: FocusInfoShell
     ): Boolean {
         var foundAny = false
 
-        // 尝试用各种模式提取包�?       if (result.packageName == null) {
+        // 尝试用各种模式提取包?       if (result.packageName == null) {
             // 查找常见的包模式，如com.android.something
             val packagePatterns =
                     listOf(
                             "\\s([a-zA-Z][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){2,})/".toRegex(), // com.example.app/
-                            "\\s([a-zA-Z][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){2,})\\s".toRegex(), // com.example.app (空格�?
+                            "\\s([a-zA-Z][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){2,})\\s".toRegex(), // com.example.app (空格?
                             "([a-zA-Z][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+){2,})".toRegex() // 只查找任何包名类似的名称
                     )
 
@@ -999,13 +999,13 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             }
         }
 
-        // 如果我们还没有活动名称，尝试提取�?       if (result.activityName == null) {
+        // 如果我们还没有活动名称，尝试提取?       if (result.activityName == null) {
             // 查找活动名称模式
             val activityPatterns =
                     listOf(
                             "/\\.?([A-Z][a-zA-Z0-9_]+Activity)".toRegex(), // /.MainActivity or
                             // /MainActivity
-                            "/([^\\s/}]+)".toRegex(), // 斜杠后的任何�?                           "\\.([A-Z][a-zA-Z0-9_]+)".toRegex() // .MainActivity
+                            "/([^\\s/}]+)".toRegex(), // 斜杠后的任何?                           "\\.([A-Z][a-zA-Z0-9_]+)".toRegex() // .MainActivity
                     )
 
             for (pattern in activityPatterns) {
@@ -1027,7 +1027,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             }
         }
 
-        // 特殊情况处理：如果我们有包名但没有活动名�?       if (result.packageName != null && result.activityName == null) {
+        // 特殊情况处理：如果我们有包名但没有活动名?       if (result.packageName != null && result.activityName == null) {
             // 尝试根据包猜测主活动名称
             val packageParts = result.packageName!!.split(".")
             if (packageParts.isNotEmpty()) {
@@ -1085,7 +1085,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
 
             val xml = readResult.stdout
 
-            // 使用XML Parser查找匹配的元素（取代有问题的正则方式�?           val hasSelectors = resourceId != null || className != null || contentDesc != null
+            // 使用XML Parser查找匹配的元素（取代有问题的正则方式?           val hasSelectors = resourceId != null || className != null || contentDesc != null
             if (!hasSelectors) {
                 return ToolResult(
                         toolName = tool.name,
@@ -1129,7 +1129,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
                             } else if (partialMatch) {
                                 matches = actualClass.contains(className)
                             } else {
-                                // 支持短类�?ImageView) 和完整类�?android.widget.ImageView)
+                                // 支持短类?ImageView) 和完整类?android.widget.ImageView)
                                 matches = actualClass == className || actualClass.endsWith(".${className}")
                             }
                         }
@@ -1211,7 +1211,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             // 计算中心坐标            val centerX = (x1 + x2) / 2
             val centerY = (y1 + y2) / 2
 
-            // 执行点击（在主线程上显示反馈�?           withContext(Dispatchers.Main) { operationOverlay.showTap(centerX, centerY) }
+            // 执行点击（在主线程上显示反馈?           withContext(Dispatchers.Main) { operationOverlay.showTap(centerX, centerY) }
 
             val tapCommand = "input tap ${centerX} ${centerY}"
             val tapResult = executeUiShellCommand(tapCommand)

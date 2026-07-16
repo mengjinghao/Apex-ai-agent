@@ -15,7 +15,7 @@ class CalculatorTest {
             testExpression("10 / 2 - 3", "2")
 
             // JavaScript特，            testExpression("2 ** 3", "8") // 指数运算
-            testExpression("true ? 10 : 20", "10") // 三元运算�?           testExpression("false ? 10 : 20", "20")
+            testExpression("true ? 10 : 20", "10") // 三元运算?           testExpression("false ? 10 : 20", "20")
             testExpression("Math.sin(Math.PI / 2)", "1") // Math函数
 
             // 变量
@@ -23,25 +23,25 @@ class CalculatorTest {
             testExpression("x + 10", "15")
             testExpression("x *= 2", "10") // 复合赋，            testExpression("x", "10") // 检查变量值是否已更新
 
-            // 模板字符�?           testExpression("\${10 + 20}", "30")
+            // 模板字符?           testExpression("\${10 + 20}", "30")
 
             // 日期函数
-            testExpression("now() > 0", "1") // 当前时间戳必须大�?
+            testExpression("now() > 0", "1") // 当前时间戳必须大?
 
             // 清理
             JsCalculator.clearVariables()
 
-            println("所有测试完�?)
+            println("所有测试完?)
         }
 
-        /** 测试单个表达�?/
+        /** 测试单个表达?/
         private fun testExpression(expression: String, expected: String) {
             try {
                 val result = JsCalculator.calc(expression)
                 if (result == expected) {
                     println("测试通过: ${expression} = ${result}")
                 } else {
-                    println("测试失败: ${expression} = ${result}, 期望�?${expected}")
+                    println("测试失败: ${expression} = ${result}, 期望?${expected}")
                 }
             } catch (e: Exception) {
                 println("测试出错: ${expression}, 错误: ${e.message}")

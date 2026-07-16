@@ -142,7 +142,7 @@ class SupervisorExecutionMode constructor(
 
     private fun buildCodingSubtasks(task: String, count: Int): List<String> = when {
         count <= 3 -> listOf(
-            "需求分�? $task",
+            "需求分? $task",
             "核心实现: $task",
             "测试验证: $task"
         )
@@ -150,47 +150,47 @@ class SupervisorExecutionMode constructor(
             "需求与架构分析: $task",
             "数据模型设计",
             "核心功能实现: $task",
-            "错误处理与边界情�?,
-            "测试与文�?
+            "错误处理与边界情?,
+            "测试与文?
         )
         else -> listOf(
-            "需求分�? $task",
+            "需求分? $task",
             "系统架构设计",
-            "数据模型与接口设�?,
+            "数据模型与接口设?,
             "核心模块实现: $task",
             "辅助功能实现",
             "集成测试",
-            "性能优化与文�?
+            "性能优化与文?
         )
     }
 
     private fun buildDebuggingSubtasks(task: String, count: Int): List<String> = when {
         count <= 3 -> listOf(
-            "问题复现与日志分�? $task",
-            "根因定位与修�? $task",
+            "问题复现与日志分? $task",
+            "根因定位与修? $task",
             "回归验证: $task"
         )
         else -> listOf(
             "环境检查与问题复现: $task",
-            "日志与堆栈分�?,
+            "日志与堆栈分?,
             "根因定位: $task",
-            "修复方案设计与实�?,
-            "单元测试与回归验�?
+            "修复方案设计与实?,
+            "单元测试与回归验?
         )
     }
 
     private fun buildTestingSubtasks(task: String, count: Int): List<String> = when {
         count <= 3 -> listOf(
             "测试计划制定: $task",
-            "测试用例编写与执�?,
+            "测试用例编写与执?,
             "测试报告生成: $task"
         )
         else -> listOf(
             "需求分析与测试计划: $task",
             "单元测试编写",
             "集成测试场景设计",
-            "测试执行与缺陷跟�?,
-            "测试报告与质量评�?
+            "测试执行与缺陷跟?,
+            "测试报告与质量评?
         )
     }
 
@@ -198,27 +198,27 @@ class SupervisorExecutionMode constructor(
         count <= 3 -> listOf(
             "内容大纲规划: $task",
             "内容撰写: $task",
-            "编辑与润�?
+            "编辑与润?
         )
         else -> listOf(
-            "主题调研与大�? $task",
+            "主题调研与大? $task",
             "初稿撰写: $task",
-            "配图与排版设�?,
-            "内容审核与修�?,
-            "最终定�?
+            "配图与排版设?,
+            "内容审核与修?,
+            "最终定?
         )
     }
 
     private fun buildResearchSubtasks(task: String, count: Int): List<String> = when {
         count <= 3 -> listOf(
             "信息收集: $task",
-            "分析与综�? $task",
-            "结论与建�?
+            "分析与综? $task",
+            "结论与建?
         )
         else -> listOf(
             "研究范围确定: $task",
             "文献/信息收集",
-            "数据分析与整�?,
+            "数据分析与整?,
             "洞察提炼",
             "研究报告撰写"
         )
@@ -226,8 +226,8 @@ class SupervisorExecutionMode constructor(
 
     private fun buildDataSubtasks(task: String, count: Int): List<String> = when {
         count <= 3 -> listOf(
-            "数据理解与探�? $task",
-            "数据清洗与转�?,
+            "数据理解与探? $task",
+            "数据清洗与转?,
             "数据处理实施: $task"
         )
         else -> listOf(
@@ -235,7 +235,7 @@ class SupervisorExecutionMode constructor(
             "数据清洗规则制定",
             "ETL管道实现",
             "数据质量验证",
-            "结果输出与文�?
+            "结果输出与文?
         )
     }
 
@@ -243,14 +243,14 @@ class SupervisorExecutionMode constructor(
         count <= 3 -> listOf(
             "需求分析与设计思路: $task",
             "原型设计: $task",
-            "设计评审与交�?
+            "设计评审与交?
         )
         else -> listOf(
             "需求梳理与用户研究: $task",
             "信息架构设计",
             "交互流程设计",
             "视觉设计: $task",
-            "设计规范与交�?
+            "设计规范与交?
         )
     }
 
@@ -261,8 +261,8 @@ class SupervisorExecutionMode constructor(
             "风险评估"
         )
         else -> listOf(
-            "背景与现状调�? $task",
-            "目标与关键结果设�?,
+            "背景与现状调? $task",
+            "目标与关键结果设?,
             "执行计划制定: $task",
             "资源配置规划",
             "风险预案制定"
@@ -278,9 +278,9 @@ class SupervisorExecutionMode constructor(
         else -> listOf(
             "基础设施评估: $task",
             "CI/CD管道配置",
-            "容器�部署实施",
-            "监控与告警设�?,
-            "运维文档与交�?
+            "容器部署实施",
+            "监控与告警设?,
+            "运维文档与交?
         )
     }
 
@@ -291,11 +291,11 @@ class SupervisorExecutionMode constructor(
             "修复建议报告"
         )
         else -> listOf(
-            "资产盘点与范围界�? $task",
+            "资产盘点与范围界? $task",
             "威胁建模分析",
             "安全测试执行: $task",
             "漏洞评估与优先级排序",
-            "修复方案与安全加固建�?
+            "修复方案与安全加固建?
         )
     }
 
@@ -306,10 +306,10 @@ class SupervisorExecutionMode constructor(
             "结果验证"
         )
         else -> listOf(
-            "任务拆解与分�? $task",
+            "任务拆解与分? $task",
             "实施方案设计",
             "分步实施: $task",
-            "质量检�?,
+            "质量检?,
             "结果汇总与交付"
         )
     }

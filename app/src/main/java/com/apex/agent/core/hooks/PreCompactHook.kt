@@ -9,7 +9,7 @@ import org.json.JSONObject
 import java.io.File
 
 /**
- * 压缩前钩子实�? * 负责在上下文压缩前提取并保存关键状态，支持压缩后恢�? */
+ * 压缩前钩子实? * 负责在上下文压缩前提取并保存关键状态，支持压缩后恢? */
 class PreCompactHook : SessionLifecycleHook {
 
     companion object {
@@ -31,7 +31,7 @@ class PreCompactHook : SessionLifecycleHook {
     }
 
     /**
-     * 提取关键状态信�?     * 包括未完成任务列表、重要决策记录、关键变量�?     * @param sessionContext 当前会话上下�?     * @return 提取的关键状态数�?     */
+     * 提取关键状态信?     * 包括未完成任务列表、重要决策记录、关键变量?     * @param sessionContext 当前会话上下?     * @return 提取的关键状态数?     */
     private fun extractKeyState(sessionContext: SessionContext): Map<String, Any> {
         val state = mutableMapOf<String, Any>()
 
@@ -41,9 +41,9 @@ class PreCompactHook : SessionLifecycleHook {
         state["tokenUsage"] = sessionContext.tokenUsage
         state["lastActivity"] = sessionContext.lastActivity
 
-        // 提取环境状�?        state["environmentState"] = sessionContext.environmentState
+        // 提取环境状?        state["environmentState"] = sessionContext.environmentState
 
-        // 提取未完成任务列表（从环境状态中解析�?        val pendingTasks = extractPendingTasks(sessionContext.environmentState)
+        // 提取未完成任务列表（从环境状态中解析?        val pendingTasks = extractPendingTasks(sessionContext.environmentState)
         if (pendingTasks.isNotEmpty()) {
             state["pendingTasks"] = pendingTasks
         }
@@ -54,7 +54,7 @@ class PreCompactHook : SessionLifecycleHook {
             state["importantDecisions"] = decisions
         }
 
-        // 提取关键变量�?        val keyVariables = extractKeyVariables(sessionContext.environmentState)
+        // 提取关键变量?        val keyVariables = extractKeyVariables(sessionContext.environmentState)
         if (keyVariables.isNotEmpty()) {
             state["keyVariables"] = keyVariables
         }
@@ -64,7 +64,7 @@ class PreCompactHook : SessionLifecycleHook {
     }
 
     /**
-     * 从未完成任务列表中提取任�?     */
+     * 从未完成任务列表中提取任?     */
     private fun extractPendingTasks(envState: Map<String, String>): List<String> {
         val tasksJson = envState["pendingTasks"] ?: return emptyList()
         return try {
@@ -94,7 +94,7 @@ class PreCompactHook : SessionLifecycleHook {
     }
 
     /**
-     * 提取关键变量�?     */
+     * 提取关键变量?     */
     private fun extractKeyVariables(envState: Map<String, String>): Map<String, String> {
         val variablesJson = envState["keyVariables"] ?: return emptyMap()
         return try {
@@ -107,8 +107,8 @@ class PreCompactHook : SessionLifecycleHook {
     }
 
     /**
-     * 序列化保�?checkpoint 到文�?     * 使用 context.filesDir 存储
-     * @param context Android 上下�?     * @param sessionId 会话 ID
+     * 序列化保?checkpoint 到文?     * 使用 context.filesDir 存储
+     * @param context Android 上下?     * @param sessionId 会话 ID
      * @param checkpointData 要保存的 checkpoint 数据
      */
     private suspend fun saveCheckpoint(
@@ -130,7 +130,7 @@ class PreCompactHook : SessionLifecycleHook {
     }
 
     /**
-     * �?Map 转换�?JSONObject
+     * ?Map 转换?JSONObject
      */
     private fun convertMapToJson(map: Map<String, Any>): JSONObject {
         val json = JSONObject()
@@ -165,8 +165,8 @@ class PreCompactHook : SessionLifecycleHook {
     }
 
     /**
-     * �?checkpoint 文件恢复状�?     * @param context Android 上下�?     * @param sessionId 会话 ID
-     * @return 恢复的状态数据，若文件不存在则返�?null
+     * ?checkpoint 文件恢复状?     * @param context Android 上下?     * @param sessionId 会话 ID
+     * @return 恢复的状态数据，若文件不存在则返?null
      */
     suspend fun restoreFromCheckpoint(context: Context, sessionId: String): Map<String, Any>? =
         withContext(Dispatchers.IO) {
@@ -191,7 +191,7 @@ class PreCompactHook : SessionLifecycleHook {
         }
 
     /**
-     * �?JSONObject 解析�?Map
+     * ?JSONObject 解析?Map
      */
     private fun parseJsonToMap(json: JSONObject): Map<String, Any> {
         val map = mutableMapOf<String, Any>()

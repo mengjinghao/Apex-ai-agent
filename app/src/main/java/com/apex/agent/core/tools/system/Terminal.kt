@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.collect
 import java.util.UUID
 
 /**
- * 终端管理�?* 提供应用程序级别的终端服务管理和访问
+ * 终端管理?* 提供应用程序级别的终端服务管理和访问
  */
 @RequiresApi(Build.VERSION_CODES.O)
 class Terminal private constructor(private val context: Context) {
@@ -45,7 +45,7 @@ class Terminal private constructor(private val context: Context) {
     private val terminalManager = TerminalManager.getInstance(context)
     private val scope = CoroutineScope(Dispatchers.Main)
 
-    // ，TerminalManager 暴露状态和事件�?   val commandEvents: SharedFlow<CommandExecutionEvent> = terminalManager.commandExecutionEvents
+    // ，TerminalManager 暴露状态和事件?   val commandEvents: SharedFlow<CommandExecutionEvent> = terminalManager.commandExecutionEvents
     val directoryEvents: SharedFlow<SessionDirectoryEvent> = terminalManager.directoryChangeEvents
     val terminalState: StateFlow<TerminalState> = terminalManager.terminalState
     val sessions = terminalManager.sessions
@@ -70,7 +70,7 @@ class Terminal private constructor(private val context: Context) {
     }
 
     /**
-     * 创建新的终端会话 - 同步等待初始化完�?    */
+     * 创建新的终端会话 - 同步等待初始化完?    */
     suspend fun createSession(title: String? = null): String {
         AppLogger.d(TAG, "Creating new terminal session and waiting for initialization")
         val newSession = terminalManager.createNewSession(title)
@@ -79,7 +79,7 @@ class Terminal private constructor(private val context: Context) {
     }
     
     /**
-     * 切换到指定会�?    */
+     * 切换到指定会?    */
     fun switchToSession(sessionId: String) {
         terminalManager.switchToSession(sessionId)
     }
@@ -92,7 +92,7 @@ class Terminal private constructor(private val context: Context) {
     }
 
     /**
-     * 执行命令并等待其完成（不切换当前会话�?    */
+     * 执行命令并等待其完成（不切换当前会话?    */
     suspend fun executeCommand(sessionId: String, command: String): String? {
         val deferred = CompletableDeferred<String>()
         val output = StringBuilder()
@@ -103,10 +103,10 @@ class Terminal private constructor(private val context: Context) {
         
         val collectorReady = CompletableDeferred<Unit>()
         
-        // 先开始订阅事件流，然后再发送命�?       val job = scope.launch {
+        // 先开始订阅事件流，然后再发送命?       val job = scope.launch {
             commandEvents
                 .filter { it.sessionId == sessionId && it.commandId == commandId }
-                .onStart { collectorReady.complete(Unit) } // 发出信号，表示已准备好收�?               .collect { event ->
+                .onStart { collectorReady.complete(Unit) } // 发出信号，表示已准备好收?               .collect { event ->
                     if (event.isCompleted) {
                         completionOutput = event.outputChunk
                     } else {
@@ -118,9 +118,9 @@ class Terminal private constructor(private val context: Context) {
                 }
         }
 
-        // 等待收集器准备就�?       collectorReady.await()
+        // 等待收集器准备就?       collectorReady.await()
         
-        // 直接向指定会话发送命令，不切换当前会�?       terminalManager.sendCommandToSession(sessionId, command, commandId)
+        // 直接向指定会话发送命令，不切换当前会?       terminalManager.sendCommandToSession(sessionId, command, commandId)
 
         val result = deferred.await()
         
@@ -178,7 +178,7 @@ class Terminal private constructor(private val context: Context) {
     }
 
     /**
-     * 发送中断信�?Ctrl+C)
+     * 发送中断信?Ctrl+C)
      */
     fun sendInterruptSignal(sessionId: String) {
         terminalManager.switchToSession(sessionId)

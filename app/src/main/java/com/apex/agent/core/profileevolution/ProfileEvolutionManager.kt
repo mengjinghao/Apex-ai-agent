@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * 画像演化管理�?* 基于用户反馈自动更新用户画像
+ * 画像演化管理?* 基于用户反馈自动更新用户画像
  */
 class ProfileEvolutionManager private constructor(
     private val context: Context,
@@ -39,7 +39,7 @@ class ProfileEvolutionManager private constructor(
      * 演化用户画像
      */
     suspend fun evolveUserProfile(userId: String, messages: List<ChatMessage>): Boolean = withContext(Dispatchers.IO) {
-        AppLogger.d(TAG, "开始演化用户画�?${userId}")
+        AppLogger.d(TAG, "开始演化用户画?${userId}")
         
         try {
             // 获取当前用户画像
@@ -56,7 +56,7 @@ class ProfileEvolutionManager private constructor(
             // 应用更新建议
             var updated = false
             for (suggestion in suggestions) {
-                if (suggestion.confidence > 0.6) { // 只应用置信度高于0.6的创�?                   val success = userProfileManager.updateProfileDimension(
+                if (suggestion.confidence > 0.6) { // 只应用置信度高于0.6的创?                   val success = userProfileManager.updateProfileDimension(
                         userId = userId,
                         dimension = suggestion.dimension,
                         value = suggestion.newValue
@@ -101,7 +101,7 @@ class ProfileEvolutionManager private constructor(
             appendLine("## 画像更新建议")
             if (suggestions.isNotEmpty()) {
                 suggestions.forEachIndexed { index, suggestion ->
-                    appendLine("${index + 1}. ${suggestion.dimension}: ${suggestion.newValue} (置信�?${(suggestion.confidence * 100).toInt()}%)")
+                    appendLine("${index + 1}. ${suggestion.dimension}: ${suggestion.newValue} (置信?${(suggestion.confidence * 100).toInt()}%)")
                 }
             } else {
                 appendLine("无更新建的）
@@ -129,7 +129,7 @@ class ProfileEvolutionManager private constructor(
     }
     
     /**
-     * 检查画像是否需要演�?    */
+     * 检查画像是否需要演?    */
     suspend fun needsEvolution(userId: String, messages: List<ChatMessage>): Boolean = withContext(Dispatchers.IO) {
         val suggestions = feedbackAnalyzer.extractProfileUpdateSuggestions(messages, userProfileManager.getUserProfile(userId))
         suggestions.isNotEmpty() && suggestions.any { it.confidence > 0.6 }

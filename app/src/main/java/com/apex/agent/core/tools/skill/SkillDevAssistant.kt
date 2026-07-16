@@ -33,14 +33,14 @@ class SkillDevAssistant private constructor(private val context: Context) {
         )
 
         private val SNIPPETS = mapOf(
-            "func" to "function ${1:name}(${2:params}) {\n\t�?{0}\n}",
-            "arrow" to "const ${1:name} = (${2:params}) => {\n\t�?{0}\n}",
+            "func" to "function ${1:name}(${2:params}) {\n\t?{0}\n}",
+            "arrow" to "const ${1:name} = (${2:params}) => {\n\t?{0}\n}",
             "log" to "console.log(${1:message})",
-            "async" to "async function ${1:name}(${2:params}) {\n\t�?{0}\n}",
-            "try" to "try {\n\t�?{0}\n} catch (error) {\n\tconsole.error(error)\n}",
-            "if" to "if (${1:condition}) {\n\t�?{0}\n}",
-            "for" to "for (let ${1:i} = 0; ${1:i} < ${2:length}; ${1:i}++) {\n\t�?{0}\n}",
-            "class" to "class ${1:ClassName} {\n\tconstructor(${2:params}) {\n\t\t�?{0}\n\t}\n}"
+            "async" to "async function ${1:name}(${2:params}) {\n\t?{0}\n}",
+            "try" to "try {\n\t?{0}\n} catch (error) {\n\tconsole.error(error)\n}",
+            "if" to "if (${1:condition}) {\n\t?{0}\n}",
+            "for" to "for (let ${1:i} = 0; ${1:i} < ${2:length}; ${1:i}++) {\n\t?{0}\n}",
+            "class" to "class ${1:ClassName} {\n\tconstructor(${2:params}) {\n\t\t?{0}\n\t}\n}"
         )
 
         @Volatile private var INSTANCE: SkillDevAssistant? = null

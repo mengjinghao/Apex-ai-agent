@@ -33,12 +33,12 @@ class SemanticEvaluator(private val context: Context) {
         finalOutput: String
     ): SemanticEvaluationResult {
         val prompt = """
-            请作为自进化系统�语义评估�?，分析以下任务的执行情况�?
+            请作为自进化系统语义评估?，分析以下任务的执行情况?
 
-            任务目标�?
+            任务目标?
             ${taskGoal}
 
-            执行日志�?
+            执行日志?
             ${executionLogs.joinToString("\n")}
 
             最终输出：
@@ -47,8 +47,8 @@ class SemanticEvaluator(private val context: Context) {
             请回答以下核心问题：
             1. 任务目标是否真正达成？（给出0-10的评分，10为完美达成）
             2. 如果未达成或有瑕疵，失败的根本原因是什么？
-            3. 应该如何改进该技能的逻辑或参数？请给出具体的建议�?
-            4. 识别到的执行模式（例如：重复搜索、无效工具调用等）�?
+            3. 应该如何改进该技能的逻辑或参数？请给出具体的建议?
+            4. 识别到的执行模式（例如：重复搜索、无效工具调用等）?
 
             请以JSON格式返回结果，包含以下字段：
             {

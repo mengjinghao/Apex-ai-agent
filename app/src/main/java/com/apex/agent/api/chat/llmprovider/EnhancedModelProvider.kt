@@ -87,7 +87,7 @@ object EnhancedModelProvider {
             appendLine("模型总数: ${allModels.size}")
             appendLine("  - Llama.cpp: ${llamaModels.size}")
             appendLine("  - MNN: ${mnnModels.size}")
-            appendLine("总大�? ${totalSizeFormatted}")
+            appendLine("总大? ${totalSizeFormatted}")
             appendLine()
             appendLine("量化格式分布:")
             quantizationCounts.forEach { (format, count) ->

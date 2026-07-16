@@ -84,7 +84,7 @@ interface Stream<T> {
         collect(
             object : StreamCollector<T> {
                 override suspend fun emit(value: T) {
-                    StreamLogger.v("Stream", "收集到元�?${value}")
+                    StreamLogger.v("Stream", "收集到元?${value}")
                     onEach(value)
                 }
             }
@@ -212,7 +212,7 @@ abstract class AbstractStream<T> : Stream<T> {
             if (isLockedFlag.compareAndSet(true, false)) {
                 val bufferSize = buffer.size
                 unlockedCount.incrementAndGet()
-                StreamLogger.d("Stream", "流已解锁，发送缓存数�?�?{bufferSize项}�?)
+                StreamLogger.d("Stream", "流已解锁，发送缓存数??{bufferSize项}?)
                 notifyUnlock(bufferSize)
                 
                 val tempList = ArrayList<T>(buffer)
@@ -240,7 +240,7 @@ abstract class AbstractStream<T> : Stream<T> {
     override fun clearBuffer() {
         val size = buffer.size
         buffer.clear()
-        StreamLogger.d("Stream", "已清空缓冲区 (�?{size项}�?)
+        StreamLogger.d("Stream", "已清空缓冲区 (?{size项}?)
     }
     
     protected suspend fun tryBuffer(value: T, policy: OverflowPolicy = OverflowPolicy.SUSPEND): Boolean {
@@ -520,7 +520,7 @@ fun <T> Stream<T>.launchIn(scope: CoroutineScope, onEach: suspend (T) -> Unit = 
     StreamLogger.d("Stream.launchIn", "在协程作用域中启动Stream收集")
     return scope.launch {
         collect { value ->
-            StreamLogger.v("Stream.launchIn", "收集到元�?${value}")
+            StreamLogger.v("Stream.launchIn", "收集到元?${value}")
             onEach(value)
         }
     }

@@ -8,7 +8,7 @@ import com.apex.util.AssetCopyUtils
 import java.io.File
 import java.io.InputStream
 
-/** EXE编辑�? 提供链式调用API 支持EXE图标更换功能 */
+/** EXE编辑? 提供链式调用API 支持EXE图标更换功能 */
 class ExeEditor
 private constructor(
         private val context: Context,
@@ -19,8 +19,8 @@ private constructor(
         private const val TAG = "ExeEditor"
 
         /**
-         * 从资产文件创建EXE编辑�?        * @param context 上下�?        * @param assetPath 资产路径
-         * @return EXE编辑器实�?        */
+         * 从资产文件创建EXE编辑?        * @param context 上下?        * @param assetPath 资产路径
+         * @return EXE编辑器实?        */
         @JvmStatic
         fun fromAsset(context: Context, assetPath: String): ExeEditor {
             val fileName = assetPath.substringAfterLast('/')
@@ -31,8 +31,8 @@ private constructor(
         }
 
         /**
-         * 从文件创建EXE编辑�?        * @param context 上下�?        * @param exeFile EXE文件
-         * @return EXE编辑器实�?        */
+         * 从文件创建EXE编辑?        * @param context 上下?        * @param exeFile EXE文件
+         * @return EXE编辑器实?        */
         @JvmStatic
         fun fromFile(context: Context, exeFile: File): ExeEditor {
             val exeIconChanger = ExeIconChanger(context)
@@ -40,8 +40,8 @@ private constructor(
         }
 
         /**
-         * 从文件路径创建EXE编辑�?        * @param context 上下�?        * @param exeFilePath EXE文件路径
-         * @return EXE编辑器实�?        */
+         * 从文件路径创建EXE编辑?        * @param context 上下?        * @param exeFilePath EXE文件路径
+         * @return EXE编辑器实?        */
         @JvmStatic
         fun fromPath(context: Context, exeFilePath: String): ExeEditor {
             val exeFile = File(exeFilePath)
@@ -49,7 +49,7 @@ private constructor(
         }
 
         /**
-         * 复制资产文件到缓存目�?        * @param context 上下�?        * @param assetPath 资产路径
+         * 复制资产文件到缓存目?        * @param context 上下?        * @param assetPath 资产路径
          * @return 缓存文件
          */
     }
@@ -58,8 +58,8 @@ private constructor(
     private var outputFile: File? = null
 
     /**
-     * 更改图标（从位图�?    * @param iconBitmap 图标位图
-     * @return 当前EXE编辑器实�?    */
+     * 更改图标（从位图?    * @param iconBitmap 图标位图
+     * @return 当前EXE编辑器实?    */
     fun changeIcon(iconBitmap: Bitmap): ExeEditor {
         this.newIconBitmap = iconBitmap
         return this
@@ -67,15 +67,15 @@ private constructor(
 
     /**
      * 更改图标（从输入流）
-     * @param iconInputStream 图标输入�?    * @return 当前EXE编辑器实�?    */
+     * @param iconInputStream 图标输入?    * @return 当前EXE编辑器实?    */
     fun changeIcon(iconInputStream: InputStream): ExeEditor {
         val bitmap = BitmapFactory.decodeStream(iconInputStream)
         return changeIcon(bitmap)
     }
 
     /**
-     * 更改图标（从资产文件�?    * @param iconAssetPath 图标资产路径
-     * @return 当前EXE编辑器实�?    */
+     * 更改图标（从资产文件?    * @param iconAssetPath 图标资产路径
+     * @return 当前EXE编辑器实?    */
     fun changeIconFromAsset(iconAssetPath: String): ExeEditor {
         context.assets.open(iconAssetPath).use { input ->
             return changeIcon(input)
@@ -85,7 +85,7 @@ private constructor(
     /**
      * 设置输出文件
      * @param outputFile 输出文件
-     * @return 当前EXE编辑器实�?    */
+     * @return 当前EXE编辑器实?    */
     fun setOutput(outputFile: File): ExeEditor {
         this.outputFile = outputFile
         return this
@@ -94,7 +94,7 @@ private constructor(
     /**
      * 设置输出文件路径
      * @param outputPath 输出文件路径
-     * @return 当前EXE编辑器实�?    */
+     * @return 当前EXE编辑器实?    */
     fun setOutput(outputPath: String): ExeEditor {
         return setOutput(File(outputPath))
     }

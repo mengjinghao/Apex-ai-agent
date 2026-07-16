@@ -194,7 +194,7 @@ class AgentCollaborationFramework(
             agentFile.writeText(json.toString(2))
             activeAgents[agent.id] = agent
 
-            AppLogger.d(TAG, "代理已注�? ${agent.name}")
+            AppLogger.d(TAG, "代理已注? ${agent.name}")
             true
         } catch (e: Exception) {
             AppLogger.e(TAG, "注册代理失败", e)
@@ -535,22 +535,22 @@ class AgentCollaborationFramework(
     }
 
     suspend fun generateSessionReport(sessionId: String): String = withContext(Dispatchers.IO) {
-        val session = activeSessions[sessionId] ?: return@withContext "会话不存�?
+        val session = activeSessions[sessionId] ?: return@withContext "会话不存?
 
         buildString {
             appendLine("=== 协作会话报告 ===")
             appendLine()
-            appendLine("【会话信息�?)
+            appendLine("【会话信息?)
             appendLine("名称: ${session.name}")
             appendLine("类型: ${session.type.name}")
-            appendLine("状�? ${session.status.name}")
+            appendLine("状? ${session.status.name}")
             appendLine("目标: ${session.goal}")
             appendLine("代理数量: ${session.agents.size}")
             appendLine("任务数量: ${session.tasks.size}")
             appendLine()
 
             val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-            appendLine("开始时�? ${timeFormat.format(Date(session.startTime))}")
+            appendLine("开始时? ${timeFormat.format(Date(session.startTime))}")
             session.endTime?.let {
                 appendLine("结束时间: ${timeFormat.format(Date(it))}")
             }
@@ -633,7 +633,7 @@ class AgentCollaborationFramework(
     }
 
     /**
-     * 共享知识库：存储和检索代理协作中的知�?
+     * 共享知识库：存储和检索代理协作中的知?
      */
     suspend fun storeKnowledge(
         sessionId: String,
@@ -653,7 +653,7 @@ class AgentCollaborationFramework(
                 put("timestamp", System.currentTimeMillis())
             }
             knowledgeFile.writeText(json.toString(2))
-            AppLogger.d(TAG, "知识已存�? ${key} (来自 ${agentId})")
+            AppLogger.d(TAG, "知识已存? ${key} (来自 ${agentId})")
             true
         } catch (e: Exception) {
             AppLogger.e(TAG, "存储知识失败", e)
@@ -682,7 +682,7 @@ class AgentCollaborationFramework(
     }
 
     /**
-     * 冲突解决器：处理代理之间的意见冲�?
+     * 冲突解决器：处理代理之间的意见冲?
      */
     suspend fun resolveConflict(
         topic: String,
@@ -690,37 +690,37 @@ class AgentCollaborationFramework(
     ): String = withContext(Dispatchers.IO) {
         AppLogger.d(TAG, "正在解决冲突: ${topic}")
 
-        val systemPrompt = "你是一个中立且专业的仲裁专家。你的任务是分析多个 AI 代理之间的观点冲突，并给出一个公平、合理的折中方案或最终决定�?
+        val systemPrompt = "你是一个中立且专业的仲裁专家。你的任务是分析多个 AI 代理之间的观点冲突，并给出一个公平、合理的折中方案或最终决定?
         val userPrompt = buildString {
             appendLine("冲突主题：的${topic}")
-            appendLine("各方观点�?)
+            appendLine("各方观点?)
             agentOpinions.forEach { (agentId, opinion) ->
                 appendLine("- [${agentId}]: ${opinion}")
             }
-            appendLine("\n请分析这些观点并给出建议的解决方案�?)
+            appendLine("\n请分析这些观点并给出建议的解决方案?)
         }
 
         val resolution = callAI(systemPrompt, userPrompt)
-        AppLogger.d(TAG, "冲突已解�? ${resolution}")
+        AppLogger.d(TAG, "冲突已解? ${resolution}")
         resolution
     }
 
     /**
-     * 任务分解器：将复杂任务分解为子任�?
+     * 任务分解器：将复杂任务分解为子任?
      */
     suspend fun decomposeTask(taskId: String): List<Task> = withContext(Dispatchers.IO) {
         val task = activeTasks[taskId] ?: return@withContext emptyList()
 
         AppLogger.d(TAG, "正在分解任务: ${task.title}")
 
-        val systemPrompt = "你是一个专业的项目经理和任务分解专家。你的任务是将一个复杂任务分解为多个具体的、可执行的子任务�?
+        val systemPrompt = "你是一个专业的项目经理和任务分解专家。你的任务是将一个复杂任务分解为多个具体的、可执行的子任务?
         val userPrompt = """
-            请将以下任务分解�?3-5 个具体的子任务�?
-            任务标题�?{task.title}
-            任务描述�?{task.description}
+            请将以下任务分解?3-5 个具体的子任务?
+            任务标题?{task.title}
+            任务描述?{task.description}
 
-            请严格以 JSON 数组格式返回，每个对象包�?"title" (String) �?"description" (String)�?
-            仅返�?JSON，不要有任何其他解释文字�?
+            请严格以 JSON 数组格式返回，每个对象包?"title" (String) ?"description" (String)?
+            仅返?JSON，不要有任何其他解释文字?
         """.trimIndent()
 
         val response = callAI(systemPrompt, userPrompt)
@@ -744,7 +744,7 @@ class AgentCollaborationFramework(
                 subtasks.add(subtask)
             }
 
-            // 更新原任务，关联子任�?
+            // 更新原任务，关联子任?
             val updatedTask = task.copy(
                 subtasks = subtasks.map { it.id },
                 updatedAt = System.currentTimeMillis()
@@ -766,7 +766,7 @@ class AgentCollaborationFramework(
         messagesDir.listFiles()?.forEach { file ->
             if (file.lastModified() < cutoffTime) {
                 file.delete()
-                AppLogger.d(TAG, "清理旧消�? ${file.name}")
+                AppLogger.d(TAG, "清理旧消? ${file.name}")
             }
         }
 
@@ -777,7 +777,7 @@ class AgentCollaborationFramework(
 
                 if (updatedAt < cutoffTime) {
                     file.delete()
-                    AppLogger.d(TAG, "清理旧任�? ${file.name}")
+                    AppLogger.d(TAG, "清理旧任? ${file.name}")
                 }
             } catch (e: Exception) {
                 file.delete()
@@ -787,7 +787,7 @@ class AgentCollaborationFramework(
 
     // ===================== AI 驱动增强方法 =====================
 
-    private suspend fun callForCollaboration(prompt: String, system: String = "你是一名专业的多代理协作协调者�?): String {
+    private suspend fun callForCollaboration(prompt: String, system: String = "你是一名专业的多代理协作协调者?): String {
         return try {
             val ai = EnhancedAIService.getInstance(context)
             val turns = listOf(
@@ -810,23 +810,23 @@ class AgentCollaborationFramework(
     }
 
     /**
-     * AI 驱动的任务分解：将复杂任务拆分为 3-5 个可执行子任�?(JSON 解析�?
+     * AI 驱动的任务分解：将复杂任务拆分为 3-5 个可执行子任?(JSON 解析?
      */
     suspend fun decomposeTask(taskId: String): List<String> = withContext(Dispatchers.IO) {
         val task = activeTasks[taskId]
             ?: return@withContext emptyList()
 
         val prompt = """
-            请将以下复杂任务分解�?3-5 个可直接执行的子任务，每个子任务一行即可：
+            请将以下复杂任务分解?3-5 个可直接执行的子任务，每个子任务一行即可：
             标题: ${task.title}
             描述: ${task.description}
 
             输出格式:
             {
               "subtasks": [
-                "子任�?",
-                "子任�?",
-                "子任�?"
+                "子任?",
+                "子任?",
+                "子任?"
               ]
             }
         """.trimIndent()
@@ -834,10 +834,10 @@ class AgentCollaborationFramework(
         val response = callForCollaboration(prompt)
         parseJsonStringList(response, "subtasks").ifEmpty {
             listOf(
-                "分析任务 ${task.title} 的核心需�?,
-                "确定执行 ${task.title} 所需资源和约�?,
-                "制定执行计划并分配代理角�?,
-                "执行并验�?${task.title} 的结�?
+                "分析任务 ${task.title} 的核心需?,
+                "确定执行 ${task.title} 所需资源和约?,
+                "制定执行计划并分配代理角?,
+                "执行并验?${task.title} 的结?
             )
         }
     }
@@ -856,12 +856,12 @@ class AgentCollaborationFramework(
             }
 
             callForCollaboration(prompt).ifBlank {
-                "冲突暂无法自动解决，建议由协调者代理主持会议或直接由用户决策�?
+                "冲突暂无法自动解决，建议由协调者代理主持会议或直接由用户决策?
             }
         }
 
     /**
-     * 会话级共享知识库：写�?JSON 文件
+     * 会话级共享知识库：写?JSON 文件
      */
     suspend fun storeKnowledge(
         sessionId: String,
@@ -884,7 +884,7 @@ class AgentCollaborationFramework(
             }
             json.getJSONArray("entries").put(entry)
             sessionFile.writeText(json.toString())
-            AppLogger.d(TAG, "知识库写�?[${sessionId}/${key}]")
+            AppLogger.d(TAG, "知识库写?[${sessionId}/${key}]")
             true
         } catch (e: Exception) {
             AppLogger.w(TAG, "storeKnowledge failed: ${e.message}")

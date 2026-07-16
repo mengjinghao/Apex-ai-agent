@@ -37,7 +37,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         private const val TAG = "LinuxFileSystemTools"
     }
 
-    // 动态获取文件系统（支持SSH切换�?   private val fs get() = getLinuxFileSystem()
+    // 动态获取文件系统（支持SSH切换?   private val fs get() = getLinuxFileSystem()
 
     /** 列出Linux目录中的文件 */
     override suspend fun listFiles(tool: AITool): ToolResult {
@@ -111,7 +111,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         }
     }
 
-    /** 读取Linux文件的完整内�?
+    /** 读取Linux文件的完整内?
     override suspend fun readFileFull(tool: AITool): ToolResult {
         val path = tool.parameters.find { it.name == "path" }?.value ?: ""
         val textOnly = tool.parameters.find { it.name == "text_only" }?.value?.toBoolean() ?: false
@@ -158,7 +158,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
                 )
             }
 
-            // 检查文件是否是文本文件（如果启用了 text_only�?           if (textOnly) {
+            // 检查文件是否是文本文件（如果启用了 text_only?           if (textOnly) {
                 val sample = fs.readFileSample(path, 512)
                 if (sample == null || !FileUtils.isTextLike(sample)) {
                     return ToolResult(
@@ -329,7 +329,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         }
     }
 
-    /** 读取Linux文件（基础版本，带大小限控�?/
+    /** 读取Linux文件（基础版本，带大小限控?/
     override suspend fun readFile(tool: AITool): ToolResult {
         val path = tool.parameters.find { it.name == "path" }?.value ?: ""
         PathValidator.validateLinuxPath(path, tool.name)?.let { return it }
@@ -364,16 +364,16 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
 
             val fileExt = path.substringAfterLast('.', "").lowercase()
 
-            // 特殊文件类型不支�?           if (fileExt in listOf("doc", "docx", "pdf", "jpg", "jpeg", "png", "gif", "bmp")) {
+            // 特殊文件类型不支?           if (fileExt in listOf("doc", "docx", "pdf", "jpg", "jpeg", "png", "gif", "bmp")) {
                 // 对于特殊类型，先尝试读取完整文件
                 return readFileFull(tool)
             }
 
-            // 检查文件大�?           val fileSize = fs.getFileSize(path)
+            // 检查文件大?           val fileSize = fs.getFileSize(path)
             val maxFileSizeBytes = ToolExecutionLimits.MAX_FILE_READ_BYTES
 
             if (fileSize > maxFileSizeBytes) {
-                // 文件过大，读取限制大�?               val content = fs.readFileWithLimit(path, maxFileSizeBytes.toInt())
+                // 文件过大，读取限制大?               val content = fs.readFileWithLimit(path, maxFileSizeBytes.toInt())
                 if (content == null) {
                     return ToolResult(
                         toolName = tool.name,
@@ -410,7 +410,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         }
     }
 
-    /** 按行号范围读取Linux文件内容（行号从1开始，包括开始行和结束行�?
+    /** 按行号范围读取Linux文件内容（行号从1开始，包括开始行和结束行?
     override suspend fun readFilePart(tool: AITool): ToolResult {
         val path = tool.parameters.find { it.name == "path" }?.value ?: ""
         val startLineParam = tool.parameters.find { it.name == "start_line" }?.value?.toIntOrNull() ?: 1
@@ -445,7 +445,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
                 )
             }
 
-            // 获取总行�?          val totalLines = fs.getLineCount(path)
+            // 获取总行?          val totalLines = fs.getLineCount(path)
 
             // 计算实际的行号范围（行号。开始）
             val startLine = maxOf(1, startLineParam).coerceIn(1, maxOf(1, totalLines))
@@ -478,7 +478,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
                 result = FilePartContentData(
                     path = path,
                     content = contentWithLineNumbers,
-                    partIndex = 0, // 保留兼容性，但不再使�?                   totalParts = 1, // 保留兼容性，但不再使�?                   startLine = startLine - 1, // 转为0-based
+                    partIndex = 0, // 保留兼容性，但不再使?                   totalParts = 1, // 保留兼容性，但不再使?                   startLine = startLine - 1, // 转为0-based
                     endLine = endLine,
                     totalLines = totalLines,
                     env = "linux"
@@ -640,7 +640,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         }
     }
 
-    /** 删除Linux文件或目�?
+    /** 删除Linux文件或目?
     override suspend fun deleteFile(tool: AITool): ToolResult {
         val path = tool.parameters.find { it.name == "path" }?.value ?: ""
         val recursive = tool.parameters.find { it.name == "recursive" }?.value?.toBoolean() ?: false
@@ -811,7 +811,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         }
     }
 
-    /** 复制Linux文件或目�?
+    /** 复制Linux文件或目?
     override suspend fun copyFile(tool: AITool): ToolResult {
         val sourcePath = tool.parameters.find { it.name == "source" }?.value ?: ""
         val destPath = tool.parameters.find { it.name == "destination" }?.value ?: ""
@@ -953,7 +953,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         }
     }
 
-    /** 在Linux文件系统中查找文�?
+    /** 在Linux文件系统中查找文?
     override suspend fun findFiles(tool: AITool): ToolResult {
         val basePath = tool.parameters.find { it.name == "path" }?.value ?: ""
         val pattern = tool.parameters.find { it.name == "pattern" }?.value ?: ""
@@ -1138,7 +1138,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         )
     }
 
-    /** 在Linux代码中搜索（grep�?/
+    /** 在Linux代码中搜索（grep?/
     override suspend fun grepCode(tool: AITool): ToolResult {
         val path = tool.parameters.find { it.name == "path" }?.value ?: ""
         val pattern = tool.parameters.find { it.name == "pattern" }?.value ?: ""
@@ -1179,7 +1179,7 @@ class LinuxFileSystemTools(context: Context) : StandardFileSystemTools(context) 
         )
     }
 
-    /** Linux上下文搜�? 基于意图字符串查找相关文件或文件内的相关代码�?/
+    /** Linux上下文搜? 基于意图字符串查找相关文件或文件内的相关代码?/
     override suspend fun grepContext(tool: AITool): ToolResult {
         val path = tool.parameters.find { it.name == "path" }?.value ?: ""
         val intent = tool.parameters.find { it.name == "intent" }?.value ?: ""

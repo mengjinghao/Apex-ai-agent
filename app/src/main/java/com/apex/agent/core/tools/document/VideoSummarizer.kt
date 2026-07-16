@@ -169,7 +169,7 @@ class VideoSummarizer {
             transcript
         }
 
-        return "视频时长: ${minutes}${seconds}秒。主要内�? ${summary}"
+        return "视频时长: ${minutes}${seconds}秒。主要内? ${summary}"
     }
 
     private fun generateTimestamps(frames: List<ByteArray>, durationMs: Long): List<VideoTimestamp> {
@@ -180,7 +180,7 @@ class VideoSummarizer {
 
         frames.forEachIndexed { index, frame ->
             val time = index * interval
-            val description = "关键�?${index + 1}"
+            val description = "关键?${index + 1}"
             timestamps.add(
                 VideoTimestamp(
                     time = time,

@@ -40,7 +40,7 @@ import com.apex.core.tools.javascript.not
 import com.apex.core.workflow.WorkflowRunLogger
 
 /**
- * 节点执行状�?*/
+ * 节点执行状?*/
 sealed class NodeExecutionState {
     object Pending : NodeExecutionState()
     object Running : NodeExecutionState()
@@ -50,14 +50,14 @@ sealed class NodeExecutionState {
 }
 
 /**
- * 依赖图数据结�?*/
+ * 依赖图数据结?*/
 data class DependencyGraph(
     val adjacencyList: Map<String, List<String>>,  // 节点ID -> 后继节点列表
     val inDegree: Map<String, Int>                 // 节点ID -> 入度
 )
 
 /**
- * 工作流执行结�?*/
+ * 工作流执行结?*/
 data class WorkflowExecutionResult(
     val workflowId: String,
     val success: Boolean,
@@ -495,7 +495,7 @@ class WorkflowExecutor(private val context: Context) {
     }
     
     /**
-     * 执行工作�?    * @param workflow 要执行的工作�?    * @param triggerNodeId 指定要触发的节点ID，如果为null则触发所有触发节�?    * @param onNodeStateChange 节点状态变化回�?    * @return 工作流执行结�?    */
+     * 执行工作?    * @param workflow 要执行的工作?    * @param triggerNodeId 指定要触发的节点ID，如果为null则触发所有触发节?    * @param onNodeStateChange 节点状态变化回?    * @return 工作流执行结?    */
     suspend fun executeWorkflow(
         workflow: Workflow,
         triggerNodeId: String? = null,
@@ -537,7 +537,7 @@ class WorkflowExecutor(private val context: Context) {
         )
 
         try {
-            // 1. 找到所有触发节点作为入�?           val allTriggerNodes = workflow.nodes.filterIsInstance<TriggerNode>()
+            // 1. 找到所有触发节点作为入?           val allTriggerNodes = workflow.nodes.filterIsInstance<TriggerNode>()
             
             if (allTriggerNodes.isEmpty()) {
                 runLogger.w(context.getString(R.string.workflow_log_no_trigger_node))
@@ -547,8 +547,8 @@ class WorkflowExecutor(private val context: Context) {
                 )
             }
             
-            // 2. 根据 triggerNodeId 决定要执行哪些触发节�?           val triggerNodes = if (triggerNodeId != null) {
-                // 如果指定了触发节点ID（通常是定时任务），只执行该触发节�?               val specificNode = allTriggerNodes.find { it.id == triggerNodeId }
+            // 2. 根据 triggerNodeId 决定要执行哪些触发节?           val triggerNodes = if (triggerNodeId != null) {
+                // 如果指定了触发节点ID（通常是定时任务），只执行该触发节?               val specificNode = allTriggerNodes.find { it.id == triggerNodeId }
                 if (specificNode == null) {
                     runLogger.w(context.getString(R.string.workflow_log_trigger_node_not_exist, triggerNodeId))
                     return@withContext buildResult(
@@ -586,7 +586,7 @@ class WorkflowExecutor(private val context: Context) {
             
             currentCoroutineContext().ensureActive()
 
-            // 3. 构建依赖�?           val dependencyGraph = buildDependencyGraph(workflow)
+            // 3. 构建依赖?           val dependencyGraph = buildDependencyGraph(workflow)
             
             // 4. 检测环
             if (detectCycle(dependencyGraph.adjacencyList, workflow.nodes)) {
@@ -609,7 +609,7 @@ class WorkflowExecutor(private val context: Context) {
                 onNodeStateChange(triggerNode.id, NodeExecutionState.Success(triggerPayload))
             }
             
-            // 6. 使用拓扑排序执行所有后续节�?           val executionResult = executeTopologicalOrder(
+            // 6. 使用拓扑排序执行所有后续节?           val executionResult = executeTopologicalOrder(
                 startNodeIds = triggerNodes.map { it.id },
                 workflow = workflow,
                 dependencyGraph = dependencyGraph,
@@ -619,7 +619,7 @@ class WorkflowExecutor(private val context: Context) {
                 runLogger = runLogger
             )
             
-            // 如果执行失败，停止整个流�?           if (!executionResult) {
+            // 如果执行失败，停止整个流?           if (!executionResult) {
                 return@withContext buildResult(
                     success = false,
                     message = "Workflow execution failed"
@@ -646,7 +646,7 @@ class WorkflowExecutor(private val context: Context) {
     }
     
     /**
-     * 构建邻接�?    */
+     * 构建邻接?    */
     private fun buildAdjacencyList(connections: List<WorkflowNodeConnection>): Map<String, List<String>> {
         val adjacencyList = mutableMapOf<String, MutableList<String>>()
         
@@ -659,12 +659,12 @@ class WorkflowExecutor(private val context: Context) {
     }
     
     /**
-     * 构建依赖图（包含入度信息�?    */
+     * 构建依赖图（包含入度信息?    */
     private fun buildDependencyGraph(workflow: Workflow): DependencyGraph {
         val adjacencyList = mutableMapOf<String, MutableList<String>>()
         val inDegree = mutableMapOf<String, Int>()
         
-        // 初始化所有节点的入度�?
+        // 初始化所有节点的入度?
         for (node in workflow.nodes) {
             inDegree[node.id] = 0
             adjacencyList[node.id] = mutableListOf()
@@ -678,7 +678,7 @@ class WorkflowExecutor(private val context: Context) {
             inDegree[targetId] = (inDegree[targetId] ?: 0) + 1
         }
 
-        // 构建邻接表并计算入度（包含显式连接与参数引用依赖�?       for (connection in workflow.connections) {
+        // 构建邻接表并计算入度（包含显式连接与参数引用依赖?       for (connection in workflow.connections) {
             addEdge(connection.sourceNodeId, connection.targetNodeId)
         }
 
@@ -690,21 +690,21 @@ class WorkflowExecutor(private val context: Context) {
     }
     
     /**
-     * 使用DFS检测有向图中的�?    * @return true 表示存在环，false 表示无环
+     * 使用DFS检测有向图中的?    * @return true 表示存在环，false 表示无环
      */
     private fun detectCycle(adjacencyList: Map<String, List<String>>, nodes: List<WorkflowNode>): Boolean {
-        val visitState = mutableMapOf<String, Int>() // 0=未访�?1=访问�?2=已完�?       
-        // 初始化所有节点为未访�?       for (node in nodes) {
+        val visitState = mutableMapOf<String, Int>() // 0=未访?1=访问?2=已完?       
+        // 初始化所有节点为未访?       for (node in nodes) {
             visitState[node.id] = 0
         }
         
         fun dfs(nodeId: String): Boolean {
             visitState[nodeId] = 1 // 标记为访问中
             
-            // 访问所有后继节�?           for (nextNodeId in adjacencyList[nodeId] ?: emptyList()) {
+            // 访问所有后继节?           for (nextNodeId in adjacencyList[nodeId] ?: emptyList()) {
                 when (visitState[nextNodeId]) {
-                    1 -> return true // 访问，访问，的节点，发现�?                   0 -> if (dfs(nextNodeId)) return true // 递归访问未访问的节点
-                    // 2 -> 已完成的节点，跳�?               }
+                    1 -> return true // 访问，访问，的节点，发现?                   0 -> if (dfs(nextNodeId)) return true // 递归访问未访问的节点
+                    // 2 -> 已完成的节点，跳?               }
             }
             
             visitState[nodeId] = 2 // 标记为已完成
@@ -724,7 +724,7 @@ class WorkflowExecutor(private val context: Context) {
     }
     
     /**
-     * 使用拓扑排序执行节点（替换原来的BFS�?    * 确保所有前置依赖节点都完成后才执行当前节点
+     * 使用拓扑排序执行节点（替换原来的BFS?    * 确保所有前置依赖节点都完成后才执行当前节点
      * @return 是否执行成功
      */
     private suspend fun executeTopologicalOrder(
@@ -780,7 +780,7 @@ class WorkflowExecutor(private val context: Context) {
             currentCoroutineContext().ensureActive()
             val currentNodeId = queue.poll() ?: break
             
-            // 检查节点是否已经被执行�?           if (nodeResults.containsKey(currentNodeId)) {
+            // 检查节点是否已经被执行?           if (nodeResults.containsKey(currentNodeId)) {
                 runLogger.d(context.getString(R.string.workflow_log_node_already_executed, currentNodeId), nodeId = currentNodeId)
                 continue
             }
@@ -894,7 +894,7 @@ class WorkflowExecutor(private val context: Context) {
                     runLogger
                 )
             
-            // 如果执行失败，停止整个流�?           if (!executionSuccess) {
+            // 如果执行失败，停止整个流?           if (!executionSuccess) {
                 runLogger.e(
                     context.getString(R.string.workflow_log_node_failed, node.name),
                     nodeId = node.id,
@@ -903,7 +903,7 @@ class WorkflowExecutor(private val context: Context) {
                 hasFailure = true
             }
             
-            // 将后继节点的入度，，如果入度变量则加入队�?           for (nextNodeId in dependencyGraph.adjacencyList[currentNodeId] ?: emptyList()) {
+            // 将后继节点的入度，，如果入度变量则加入队?           for (nextNodeId in dependencyGraph.adjacencyList[currentNodeId] ?: emptyList()) {
                 if (!currentInDegree.containsKey(nextNodeId)) {
                     continue
                 }
@@ -1179,7 +1179,7 @@ class WorkflowExecutor(private val context: Context) {
                 return false
             }
             
-            // 解析参数（支持静态值和节点引用�?           val parameters = resolveParameters(node, nodeResults, triggerExtras)
+            // 解析参数（支持静态值和节点引用?           val parameters = resolveParameters(node, nodeResults, triggerExtras)
             
             // 构，AITool
             val tool = AITool(

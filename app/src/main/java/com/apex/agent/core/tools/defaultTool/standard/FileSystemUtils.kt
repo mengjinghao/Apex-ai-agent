@@ -23,7 +23,7 @@ import android.webkit.MimeTypeMap
 object FileSystemUtils {
     private const val TAG = "FileSystemUtils"
 
-    // 特殊文件类型扩展名列表（需要特殊处理提取文本的文件类型�?
+    // 特殊文件类型扩展名列表（需要特殊处理提取文本的文件类型?
     val SPECIAL_FILE_EXTENSIONS = listOf(
         "doc", "docx",      // Word documents
         "pdf",              // PDF documents
@@ -43,7 +43,7 @@ object FileSystemUtils {
         }.joinToString("\n")
     }
 
-    /** 添加行号到内容字符串，从指定行号开�?*/
+    /** 添加行号到内容字符串，从指定行号开?*/
     fun addLineNumbers(content: String, startLine: Int, totalLines: Int): String {
         val lines = content.lines()
         if (lines.isEmpty()) return ""
@@ -58,7 +58,7 @@ object FileSystemUtils {
         return fileExtension.lowercase() in SPECIAL_FILE_EXTENSIONS
     }
 
-    /** 统计文件总行�?*/
+    /** 统计文件总行?*/
     fun countFileLines(file: File): Int {
         var totalLines = 0
         file.bufferedReader().use {
@@ -89,7 +89,7 @@ object FileSystemUtils {
         return partContent.toString()
     }
 
-    /** 压缩文件或目�?*/
+    /** 压缩文件或目?*/
     fun zipFiles(source: File, destination: File): Boolean {
         try {
             ZipOutputStream(FileOutputStream(destination)).use { zos ->

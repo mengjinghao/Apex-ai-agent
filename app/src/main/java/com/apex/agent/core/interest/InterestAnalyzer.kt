@@ -8,7 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * 兴趣分析�?* 分析用户的兴趣偏�?*/
+ * 兴趣分析?* 分析用户的兴趣偏?*/
 class InterestAnalyzer(private val context: Context) {
     private val TAG = "InterestAnalyzer"
     
@@ -44,13 +44,13 @@ class InterestAnalyzer(private val context: Context) {
     private fun analyzeInterestTopics(messages: List<ChatMessage>, profile: InterestProfile) {
         val interestScores = mutableMapOf<String, Int>()
         
-        // 兴趣主题关键�?      val interestKeywords = mapOf(
-            "技�?to listOf(
-                "技�? "编程", "软件", "硬件", "开�? "代码", "算法", "数据库， "网络", "安全",
+        // 兴趣主题关键?      val interestKeywords = mapOf(
+            "技?to listOf(
+                "技? "编程", "软件", "硬件", "开? "代码", "算法", "数据库， "网络", "安全",
                 "python", "java", "kotlin", "javascript", "c++", "go", "rust", "swift", "php", "ruby"
             ),
             "科技" to listOf(
-                "科技", "人工智能", "AI", "机器学习", "深度学习", "大数据， "云计�? "区块�? "元宇�? "虚拟现实"
+                "科技", "人工智能", "AI", "机器学习", "深度学习", "大数据， "云计? "区块? "元宇? "虚拟现实"
             ),
             "娱乐" to listOf(
                 "娱乐", "电影", "音乐", "游戏", "体育", "旅游", "美食", "购物", "时尚", "艺术"
@@ -107,9 +107,9 @@ class InterestAnalyzer(private val context: Context) {
         
         for ((interest, score) in profile.interestScores) {
             val intensity = when {
-                score > 10 -> "�?
-                score > 5 -> "�?
-                else -> "�?
+                score > 10 -> "?
+                score > 5 -> "?
+                else -> "?
             }
             profile.interestIntensities[interest] = intensity
         }
@@ -117,9 +117,9 @@ class InterestAnalyzer(private val context: Context) {
         // 计算总体兴趣强度
         val totalScore = profile.interestScores.values.sum()
         profile.overallInterestLevel = when {
-            totalScore > 30 -> "�?
-            totalScore > 15 -> "�?
-            else -> "�?
+            totalScore > 30 -> "?
+            totalScore > 15 -> "?
+            else -> "?
         }
     }
     
@@ -129,7 +129,7 @@ class InterestAnalyzer(private val context: Context) {
     private fun analyzeInterestTrend(messages: List<ChatMessage>, profile: InterestProfile) {
         if (messages.size < 10) return
         
-        // 按时间分割消�?       val midPoint = messages.size / 2
+        // 按时间分割消?       val midPoint = messages.size / 2
         val earlyMessages = messages.subList(0, midPoint)
         val recentMessages = messages.subList(midPoint, messages.size)
         
@@ -161,7 +161,7 @@ class InterestAnalyzer(private val context: Context) {
         val interestScores = mutableMapOf<String, Int>()
         
         val interestKeywords = mapOf(
-            "技�?to listOf("技�? "编程", "软件", "硬件", "开�? "代码"),
+            "技?to listOf("技? "编程", "软件", "硬件", "开? "代码"),
             "科技" to listOf("科技", "人工智能", "AI", "机器学习"),
             "娱乐" to listOf("娱乐", "电影", "音乐", "游戏"),
             "学习" to listOf("学习", "教育", "知识", "课程"),
@@ -205,8 +205,8 @@ class InterestAnalyzer(private val context: Context) {
         // 从职业场景中提取兴趣
         profile.getDimension("职业场景")?.let { occupation ->
             val occupationInterests = mapOf(
-                "程顺序to listOf("技�? "科技"),
-                "设计�?to listOf("创意", "设计"),
+                "程顺序to listOf("技? "科技"),
+                "设计?to listOf("创意", "设计"),
                 "教师" to listOf("学习", "教育"),
                 "医生" to listOf("健康", "医学"),
                 "学生" to listOf("学习", "教育")

@@ -32,7 +32,7 @@ class TokenSavingManager private constructor(private val context: Context) {
         @Volatile
         private var INSTANCE: TokenSavingManager? = null
 
-        // 默认力度级别索引（对�?level 5，索引从 0 开始）
+        // 默认力度级别索引（对?level 5，索引从 0 开始）
         private const val DEFAULT_INTENSITY_INDEX = 4
         
         // 默认最大消息数
@@ -49,9 +49,9 @@ class TokenSavingManager private constructor(private val context: Context) {
         // 复杂任务关键词（用于检测是否需要自动降级）
         private val COMPLEX_TASK_KEYWORDS = listOf(
             "调试", "debug", "修复", "fix", "错误", "exception", "崩溃", "crash",
-            "代码", "function", "函数", "方法", "�?, "class", "algorithm", "算法",
+            "代码", "function", "函数", "方法", "?, "class", "algorithm", "算法",
             "重构", "refactor", "优化", "optimize", "分析", "analyze", "比较", "compare",
-            "复杂", "complex", "数据�?, "database", "查询", "query", "事务", "transaction",
+            "复杂", "complex", "数据?, "database", "查询", "query", "事务", "transaction",
             "系统", "system", "架构", "architecture", "设计", "design", "实现", "implement"
         )
     }
@@ -268,7 +268,7 @@ class TokenSavingManager private constructor(private val context: Context) {
         val effectiveConfig = TokenSavingIntensity.getDegradedIntensity(tokenSavingIntensity, isComplex)
         val wasDegraded = effectiveConfig.level != tokenSavingIntensity
 
-        // 预估节省�?
+        // 预估节省?
         val estimatedSavings = (originalTokens * (effectiveConfig.estimatedSavingsPercent.toFloat() / 100)).toInt()
         
         return TokenSavingStats(

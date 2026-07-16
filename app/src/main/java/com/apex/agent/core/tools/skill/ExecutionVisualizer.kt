@@ -14,10 +14,10 @@ import com.apex.agent.core.tools.skill.WorkflowTriggered
 /**
  * 技能执行可视化模块
  *
- * 功能�?
- * - 实时执行流程可视�?
+ * 功能?
+ * - 实时执行流程可视?
  * - 节点耗时分析
- * - 执行状态追�?
+ * - 执行状态追?
  * - 性能瓶颈定位
  * - 执行历史回放
  */
@@ -114,7 +114,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
     )
 
     /**
-     * 可视化数�?
+     * 可视化数?
      */
     data class VisualizationData(
         val record: ExecutionRecord,
@@ -219,7 +219,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
         LOW
     }
 
-    // ========== 状�?==========
+    // ========== 状?==========
 
     private val _currentExecution = MutableStateFlow<ExecutionRecord?>(null)
     val currentExecution: StateFlow<ExecutionRecord?> = _currentExecution.asStateFlow()
@@ -249,7 +249,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
         observeWorkflowExecution()
     }
 
-    // ========== 实时可视�?API ==========
+    // ========== 实时可视?API ==========
 
     /**
      * 开始实时可视化
@@ -278,7 +278,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
     }
 
     /**
-     * 更新节点状�?
+     * 更新节点状?
      */
     suspend fun updateNodeExecution(execution: NodeExecution) {
         val current = _currentExecution.value ?: return
@@ -301,7 +301,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
 
         _currentExecution.value = updatedRecord
 
-        // 检查是否完�?
+        // 检查是否完?
         if (updatedExecutions.all { it.isComplete }) {
             finishVisualization(
                 if (updatedExecutions.any { it.status == NodeStatus.FAILED })
@@ -309,15 +309,15 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             )
         }
 
-        // 发送实时更�?
+        // 发送实时更?
         _liveUpdates.emit(execution)
 
-        // 更新可视化数�?
+        // 更新可视化数?
         updateVisualizationData()
     }
 
     /**
-     * 记录节点开�?
+     * 记录节点开?
      */
     suspend fun recordNodeStart(
         nodeId: String,
@@ -365,7 +365,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
     }
 
     /**
-     * 完成可视�?
+     * 完成可视?
      */
     fun finishVisualization(status: ExecutionStatus, errorMessage: String? = null) {
         val current = _currentExecution.value ?: return
@@ -384,7 +384,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
 
         _currentExecution.value = finalRecord
 
-        // 保存到历�?
+        // 保存到历?
         saveToHistory(finalRecord)
 
         // 生成性能分析
@@ -427,7 +427,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
         while (currentIndex < sortedNodes.size) {
             val node = sortedNodes[currentIndex]
 
-            // 计算当前时间点之前所有节点的状�?
+            // 计算当前时间点之前所有节点的状?
             val currentTime = System.currentTimeMillis()
             val nodeStates = sortedNodes.map { exec ->
                 val isComplete = exec.endTime != null && exec.endTime <= node.endTime
@@ -490,10 +490,10 @@ class ExecutionVisualizer private constructor(private val context: Context) {
         JSON, CSV, HTML
     }
 
-    // ========== 可视化数�?API ==========
+    // ========== 可视化数?API ==========
 
     /**
-     * 获取实时可视化数�?
+     * 获取实时可视化数?
      */
     fun getVisualizationData(): VisualizationData? {
         return _visualizationData.value
@@ -671,16 +671,16 @@ class ExecutionVisualizer private constructor(private val context: Context) {
             workflowEngine.executionEvents.collect { event ->
                 when (event) {
                     is WorkflowEngine.ExecutionEvent.WorkflowTriggered -> {
-                        // 可以在这里初始化可视�?
+                        // 可以在这里初始化可视?
                     }
                     is WorkflowEngine.ExecutionEvent.NodeStarted -> {
-                        // 记录节点开�?
+                        // 记录节点开?
                     }
                     is WorkflowEngine.ExecutionEvent.NodeCompleted -> {
                         // 记录节点完成
                     }
                     is WorkflowEngine.ExecutionEvent.Completed -> {
-                        // 工作流完�?
+                        // 工作流完?
                     }
                     else -> {}
                 }
@@ -733,7 +733,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
                         },
                         title = "优化节点: ${bottleneck.nodeName}",
                         description = "此节点耗时 ${bottleneck.durationMs}ms，占总执行时间的 ${"%.1f".format(bottleneck.percentageOfTotal)}%",
-                        expectedImprovement = "优化后可减少 ${(bottleneck.percentageOfTotal * 0.3).toInt()}% 总执行时�?
+                        expectedImprovement = "优化后可减少 ${(bottleneck.percentageOfTotal * 0.3).toInt()}% 总执行时?
                     )
                 )
             }
@@ -748,7 +748,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
         // 时间分布
         val timeDistribution = mapOf(
             "node_execution" to record.nodeExecutions.map { it.durationMs }.sum().toFloat() / max(1, totalDuration) * 100,
-            "overhead" to 5f,  // 简�?
+            "overhead" to 5f,  // 简?
             "waiting" to 10f
         )
 
@@ -771,7 +771,7 @@ class ExecutionVisualizer private constructor(private val context: Context) {
 
         _executionHistory.value = history
 
-        // 持久�?
+        // 持久?
         scope.launch {
             persistRecord(record)
         }

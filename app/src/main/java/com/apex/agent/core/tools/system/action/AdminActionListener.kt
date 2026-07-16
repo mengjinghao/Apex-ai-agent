@@ -11,14 +11,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
-/** 基于设备管理员的UI操作监听了实现ADMIN权限级别的操作监�?/
+/** 基于设备管理员的UI操作监听了实现ADMIN权限级别的操作监?/
 class AdminActionListener(private val context: Context) : ActionListener {
     companion object {
         private const val TAG = "AdminActionListener"
         private var adminComponentName: ComponentName? = null
 
         /**
-         * 设置设备管理员组件名�?        * @param componentName 设备管理员组件名�?        */
+         * 设置设备管理员组件名?        * @param componentName 设备管理员组件名?        */
         fun setAdminComponentName(componentName: ComponentName) {
             adminComponentName = componentName
         }
@@ -127,18 +127,18 @@ class AdminActionListener(private val context: Context) : ActionListener {
         }
     }
 
-    /** 检查设备管理员是否已激�?/
+    /** 检查设备管理员是否已激?/
     private fun isDeviceAdminActive(): Boolean {
         return try {
             adminComponentName?.let { devicePolicyManager.isAdminActive(it) } ?: false
         } catch (e: Exception) {
-            AppLogger.e(TAG, "检查设备管理员状态出�? e)
+            AppLogger.e(TAG, "检查设备管理员状态出? e)
             false
         }
     }
 
     /**
-     * 开始管理员级别的事件监�?    * 设备管理员可以监听系统状态变化、锁屏事件等
+     * 开始管理员级别的事件监?    * 设备管理员可以监听系统状态变化、锁屏事件等
      */
     private fun startAdminEventMonitoring() {
         AppLogger.d(TAG, "开始管理员级别事件监控 - 可监听系统状态和安全事件")
@@ -154,7 +154,7 @@ class AdminActionListener(private val context: Context) : ActionListener {
      * 停止管理员级别的事件监控
      */
     private fun stopAdminEventMonitoring() {
-        AppLogger.d(TAG, "停止管理员级别事件监�?
+        AppLogger.d(TAG, "停止管理员级别事件监?
     }
 
     /**
@@ -175,7 +175,7 @@ class AdminActionListener(private val context: Context) : ActionListener {
     }
 
     /**
-     * 处理应用状态变化事�?    * @param packageName 应用包名
+     * 处理应用状态变化事?    * @param packageName 应用包名
      * @param event 事件类型
      */
     fun handleAppStateChange(packageName: String, event: String) {

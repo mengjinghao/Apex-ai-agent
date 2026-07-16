@@ -7,15 +7,15 @@ import com.google.gson.reflect.TypeToken
 import java.io.InputStreamReader
 
 /**
- * UI工具类配置管�?
+ * UI工具类配置管?
  * 
- * 集中管理所有UI工具的配置参数，支持从外部文件加载配�?
+ * 集中管理所有UI工具的配置参数，支持从外部文件加载配?
  */
 object UIToolsConfig {
     private const val TAG = "UIToolsConfig"
     
     // ==================== 重试配置 ====================
-    /** 最大重试次�?*/
+    /** 最大重试次?*/
     const val MAX_RETRY_COUNT = 3
     
     /** 重试延迟（毫秒） */
@@ -29,7 +29,7 @@ object UIToolsConfig {
     const val SCREENSHOT_TIMEOUT_MS = 3000L
     
     // ==================== 截图配置 ====================
-    /** 截图质量�?-100�?*/
+    /** 截图质量?-100?*/
     const val SCREENSHOT_QUALITY = 85
     
     /** 截图格式 */
@@ -42,14 +42,14 @@ object UIToolsConfig {
     /** UI层次结构获取超时（毫秒） */
     const val UI_HIERARCHY_TIMEOUT_MS = 2000L
     
-    /** 元素查找最大深�?*/
+    /** 元素查找最大深?*/
     const val ELEMENT_SEARCH_MAX_DEPTH = 10
     
     // ==================== 手势配置 ====================
     /** 默认滑动持续时间（毫秒） */
     const val DEFAULT_SWIPE_DURATION = 300
     
-    /** 长按最短持续时间（毫秒�?*/
+    /** 长按最短持续时间（毫秒?*/
     const val MIN_LONG_PRESS_DURATION = 500
     
     /** 点击反馈显示时长（毫秒） */
@@ -63,7 +63,7 @@ object UIToolsConfig {
     const val MAX_LOG_ENTRIES = 1000
     
     // ==================== 应用包名配置 ====================
-    /** 内置应用包名映射�?*/
+    /** 内置应用包名映射?*/
     private val BUILTIN_APP_PACKAGES = mapOf(
         // 社交与通讯
         "微信" to "com.tencent.mm",
@@ -74,36 +74,36 @@ object UIToolsConfig {
         // 电商
         "淘宝" to "com.taobao.taobao",
         "京东" to "com.jingdong.app.mall",
-        "拼多�? to "com.xunmeng.pinduoduo",
+        "拼多? to "com.xunmeng.pinduoduo",
         
-        // 生活与社�?
-        "小红�? to "com.xingin.xhs",
+        // 生活与社?
+        "小红? to "com.xingin.xhs",
         "豆瓣" to "com.douban.frodo",
         "知乎" to "com.zhihu.android",
         
-        // 地图与导�?
+        // 地图与导?
         "高德地图" to "com.autonavi.minimap",
         "百度地图" to "com.baidu.BaiduMap",
         
-        // 美食与服�?
+        // 美食与服?
         "美团" to "com.sankuai.meituan",
         "大众点评" to "com.dianping.v1",
-        "饿了�? to "me.ele",
+        "饿了? to "me.ele",
         
         // 旅行
         "携程" to "ctrip.android.view",
         "铁路12306" to "com.MobileTicket",
         "滴滴出行" to "com.sdu.did.psnger",
         
-        // 视频与娱�?
+        // 视频与娱?
         "bilibili" to "tv.danmaku.bili",
         "哔哩哔哩" to "tv.danmaku.bili",
         "抖音" to "com.ss.android.ugc.aweme",
         "快手" to "com.smile.gifmaker",
         "腾讯视频" to "com.tencent.qqlive",
         
-        // 音乐与音�?
-        "网易云音�? to "com.netease.cloudmusic",
+        // 音乐与音?
+        "网易云音? to "com.netease.cloudmusic",
         "QQ音乐" to "com.tencent.qqmusic",
         "喜马拉雅" to "com.ximalaya.ting.android",
         
@@ -111,11 +111,11 @@ object UIToolsConfig {
         "番茄小说" to "com.dragon.read",
         "七猫免费小说" to "com.kmxs.reader",
         
-        // 生产�?
+        // 生产?
         "飞书" to "com.ss.android.lark",
         "QQ邮箱" to "com.tencent.androidqqmail",
         
-        // AI与工�?
+        // AI与工?
         "豆包" to "com.larus.nova",
         
         // 系统应用
@@ -125,16 +125,16 @@ object UIToolsConfig {
         "Google Maps" to "com.google.android.apps.maps"
     )
     
-    /** 动态加载的应用包名（从系统扫描�?*/
+    /** 动态加载的应用包名（从系统扫描?*/
     private var dynamicAppPackages = mutableMapOf<String, String>()
     
-    /** 是否已扫描系统应�?*/
+    /** 是否已扫描系统应?*/
     private var appsScanned = false
     
     /**
      * 获取完整的应用包名映射表
      * 
-     * @param context Android上下�?
+     * @param context Android上下?
      * @return 应用名称到包名的映射
      */
     fun getAppPackages(context: Context): Map<String, String> {
@@ -146,9 +146,9 @@ object UIToolsConfig {
     }
     
     /**
-     * 扫描已安装的应用并添加到映射�?
+     * 扫描已安装的应用并添加到映射?
      * 
-     * @param context Android上下�?
+     * @param context Android上下?
      */
     fun scanInstalledApps(context: Context) {
         if (appsScanned) return
@@ -156,7 +156,7 @@ object UIToolsConfig {
         synchronized(this) {
             if (appsScanned) return
             
-            AppLogger.d(TAG, "开始扫描已安装的应�?..")
+            AppLogger.d(TAG, "开始扫描已安装的应?..")
             
             try {
                 val packageManager = context.packageManager
@@ -172,7 +172,7 @@ object UIToolsConfig {
                         val packageName = app.packageName
                         
                         if (appName.isNotBlank() && packageName.isNotBlank()) {
-                            // 只添加不在内置列表中的应�?
+                            // 只添加不在内置列表中的应?
                             if (!BUILTIN_APP_PACKAGES.containsKey(appName)) {
                                 newPackages[appName] = packageName
                             }
@@ -184,11 +184,11 @@ object UIToolsConfig {
                 
                 if (newPackages.isNotEmpty()) {
                     dynamicAppPackages.putAll(newPackages)
-                    AppLogger.d(TAG, "扫描完成，新�?${newPackages.size} 个应�?)
+                    AppLogger.d(TAG, "扫描完成，新?${newPackages.size} 个应?)
                 }
                 
             } catch (e: Exception) {
-                AppLogger.e(TAG, "扫描已安装应用失�?, e)
+                AppLogger.e(TAG, "扫描已安装应用失?, e)
             } finally {
                 appsScanned = true
             }
@@ -198,9 +198,9 @@ object UIToolsConfig {
     /**
      * 从JSON配置文件加载应用包名
      * 
-     * @param context Android上下�?
-     * @param fileName JSON文件名（位于assets目录�?
-     * @return 加载的应用包名映�?
+     * @param context Android上下?
+     * @param fileName JSON文件名（位于assets目录?
+     * @return 加载的应用包名映?
      */
     fun loadAppPackagesFromJson(context: Context, fileName: String = "app_packages.json"): Map<String, String> {
         return try {
@@ -212,7 +212,7 @@ object UIToolsConfig {
             val type = object : TypeToken<Map<String, String>>() {}.type
             val loadedPackages: Map<String, String> = gson.fromJson(json, type)
             
-            AppLogger.d(TAG, "�?${fileName} 加载�?${loadedPackages.size} 个应用包�?)
+            AppLogger.d(TAG, "?${fileName} 加载?${loadedPackages.size} 个应用包?)
             loadedPackages
             
         } catch (e: Exception) {
@@ -224,7 +224,7 @@ object UIToolsConfig {
     /**
      * 根据应用名称查找包名
      * 
-     * @param context Android上下�?
+     * @param context Android上下?
      * @param appName 应用名称
      * @return 包名，未找到返回null
      */
@@ -236,7 +236,7 @@ object UIToolsConfig {
     /**
      * 根据包名查找应用名称
      * 
-     * @param context Android上下�?
+     * @param context Android上下?
      * @param packageName 包名
      * @return 应用名称，未找到返回null
      */
@@ -246,7 +246,7 @@ object UIToolsConfig {
     }
     
     /**
-     * 重置扫描状态（用于测试�?
+     * 重置扫描状态（用于测试?
      */
     fun resetScanState() {
         appsScanned = false

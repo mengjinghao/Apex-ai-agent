@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 兴趣管理服务
- * 负责管理用户兴趣分析和内容推�?*/
+ * 负责管理用户兴趣分析和内容推?*/
 class InterestManagementManager private constructor(
     private val context: Context,
     private val interestAnalyzer: InterestAnalyzer,
@@ -70,14 +70,14 @@ class InterestManagementManager private constructor(
     }
     
     /**
-     * 获取用户的主要兴�?    */
+     * 获取用户的主要兴?    */
     suspend fun getPrimaryInterest(userId: String, messages: List<ChatMessage>, userProfile: HonzonUserProfile? = null): String? = withContext(Dispatchers.IO) {
         val profile = analyzeUserInterests(userId, messages, userProfile)
         profile.primaryInterest
     }
     
     /**
-     * 获取用户的兴趣列�?   */
+     * 获取用户的兴趣列?   */
     suspend fun getTopInterests(userId: String, messages: List<ChatMessage>, userProfile: HonzonUserProfile? = null): List<String> = withContext(Dispatchers.IO) {
         val profile = analyzeUserInterests(userId, messages, userProfile)
         profile.topInterests
@@ -91,10 +91,10 @@ class InterestManagementManager private constructor(
     }
     
     /**
-     * 检查用户是否有明确的兴�?    */
+     * 检查用户是否有明确的兴?    */
     suspend fun hasClearInterests(userId: String, messages: List<ChatMessage>, userProfile: HonzonUserProfile? = null): Boolean = withContext(Dispatchers.IO) {
         val profile = analyzeUserInterests(userId, messages, userProfile)
-        profile.primaryInterest != null && profile.overallInterestLevel != "�?
+        profile.primaryInterest != null && profile.overallInterestLevel != "?
     }
     
     /**
@@ -116,8 +116,8 @@ class InterestManagementManager private constructor(
         val profile = analyzeUserInterests(userId, messages, userProfile)
         
         if (profile.primaryInterest != null) {
-            "用户的{profile.primaryInterest}有浓厚兴趣，可以围绕这个话题展开深入讨论�?
+            "用户的{profile.primaryInterest}有浓厚兴趣，可以围绕这个话题展开深入讨论?
         } else {
-            "用户兴趣尚不明确，可以通过更多交流来了解用户的兴趣偏好�?        }
+            "用户兴趣尚不明确，可以通过更多交流来了解用户的兴趣偏好?        }
     }
 }

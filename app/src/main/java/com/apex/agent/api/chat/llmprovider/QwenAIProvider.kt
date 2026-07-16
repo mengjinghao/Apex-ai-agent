@@ -12,7 +12,7 @@ import org.json.JSONObject
 import okhttp3.OkHttpClient
 
 /**
- * 针对阿里巴巴Qwen（通义千问）模型的特定API Provider�?* 继承自OpenAIProvider，以重用大部分兼容逻辑，但特别处理了`enable_thinking`参数�?*/
+ * 针对阿里巴巴Qwen（通义千问）模型的特定API Provider?* 继承自OpenAIProvider，以重用大部分兼容逻辑，但特别处理了`enable_thinking`参数?*/
 class QwenAIProvider(
     apiEndpoint: String,
     apiKeyProvider: ApiKeyProvider,
@@ -38,7 +38,7 @@ class QwenAIProvider(
     ) {
 
     /**
-     * 重写创建请求体的方法，以支持Qwen的`enable_thinking`参数�?    */
+     * 重写创建请求体的方法，以支持Qwen的`enable_thinking`参数?    */
     override fun createRequestBody(
         context: Context,
         chatHistory: List<PromptTurn>,
@@ -58,7 +58,7 @@ class QwenAIProvider(
             AppLogger.d("QwenAIProvider", "已为Qwen模型启用“思考模式”，)
         }
 
-        // 记录最终的请求体（省略过长的tools字段�?       val logJson = JSONObject(jsonObject.toString())
+        // 记录最终的请求体（省略过长的tools字段?       val logJson = JSONObject(jsonObject.toString())
         if (logJson.has("tools")) {
             val toolsArray = logJson.getJSONArray("tools")
             logJson.put("tools", "[${toolsArray.length()} tools omitted for brevity]")

@@ -130,7 +130,7 @@ class AgentTemplateManager(private val context: Context) {
 
     fun duplicateTemplate(templateId: String, newName: String? = null): AgentTemplate? {
         val original = _templates[templateId] ?: return null
-        return original.copy(id = UUID.randomUUID().toString(), name = newName ?: "${original.name} (副本�?, isDefault = false, tags = original.tags.toMutableSet().apply { add("duplicate") }, usageCount = 0, rating = 0f, created = System.currentTimeMillis(), updated = System.currentTimeMillis())
+        return original.copy(id = UUID.randomUUID().toString(), name = newName ?: "${original.name} (副本?, isDefault = false, tags = original.tags.toMutableSet().apply { add("duplicate") }, usageCount = 0, rating = 0f, created = System.currentTimeMillis(), updated = System.currentTimeMillis())
     }
 
     suspend fun exportTemplate(templateId: String): String? {

@@ -10,7 +10,7 @@ import com.apex.agent.data.repository.UIHierarchyManager
 import kotlin.math.min
 
 /**
- * 用于管理内置无障碍服务提供者应用的安装和更�?*/
+ * 用于管理内置无障碍服务提供者应用的安装和更?*/
 class AccessibilityProviderInstaller {
     companion object {
         private const val TAG = "AccessibilityProviderInstaller"
@@ -21,7 +21,7 @@ class AccessibilityProviderInstaller {
         private var cachedBundledVersion: String? = null
         private var cachedUpdateNeeded: Boolean? = null
         private var lastCheckTime: Long = 0
-        private const val CACHE_EXPIRE_TIME = 60 * 1000 // 缓存有效，分�?
+        private const val CACHE_EXPIRE_TIME = 60 * 1000 // 缓存有效，分?
 
         /**
          * 获取内置无障碍服务APK版本信息
@@ -46,7 +46,7 @@ class AccessibilityProviderInstaller {
         }
 
         /**
-         * 获取已安装的无障碍服务版�?        */
+         * 获取已安装的无障碍服务版?        */
         fun getInstalledVersion(context: Context): String? {
             if (cachedInstalledVersion != null && !isCacheExpired()) {
                 return cachedInstalledVersion
@@ -136,7 +136,7 @@ class AccessibilityProviderInstaller {
          */
         fun launchInstall(context: Context) {
             UIHierarchyManager.launchProviderInstall(context)
-            clearCache() // 清除缓存以在安装后刷新状�?       }
+            clearCache() // 清除缓存以在安装后刷新状?       }
 
         private fun updateCacheTimestamp() {
             lastCheckTime = System.currentTimeMillis()

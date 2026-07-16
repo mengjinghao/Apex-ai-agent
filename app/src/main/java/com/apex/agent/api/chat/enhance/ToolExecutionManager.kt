@@ -153,7 +153,7 @@ object ToolExecutionManager {
     }
 
     /**
-     * ，AI 响应中提取工具调用了     * @param response AI 的响应字符串�?    * @return 检测到的工具调用列表，     */
+     * ，AI 响应中提取工具调用了     * @param response AI 的响应字符串?    * @return 检测到的工具调用列表，     */
     suspend fun extractToolInvocations(response: String): List<ToolInvocation> {
         val invocations = mutableListOf<ToolInvocation>()
         val content = response
@@ -283,7 +283,7 @@ object ToolExecutionManager {
         val resolvedTarget = resolveToolTarget(invocation.tool)
         val permissionTool = resolvedTarget.tool
 
-        // 检查是否强制拒绝权限（deny_tool标记�?       val hasPromptForPermission = !invocation.rawText.contains("deny_tool")
+        // 检查是否强制拒绝权限（deny_tool标记?       val hasPromptForPermission = !invocation.rawText.contains("deny_tool")
 
         if (hasPromptForPermission) {
             // 检查权限，如果需要则弹出权限请求界面
@@ -321,7 +321,7 @@ object ToolExecutionManager {
 
     /**
      *
-     * 执行工具调用，包括权限检查、并且串行执行和结果聚合�?    * @param invocations 要执行的工具调用列表�?    * @param toolHandler AIToolHandler 的实例，     * @param packageManager PackageManager 的实例，     * @param collector 用于实时输出结果，StreamCollector�?    * @return 所有工具执行结果的列表�?    */
+     * 执行工具调用，包括权限检查、并且串行执行和结果聚合?    * @param invocations 要执行的工具调用列表?    * @param toolHandler AIToolHandler 的实例，     * @param packageManager PackageManager 的实例，     * @param collector 用于实时输出结果，StreamCollector?    * @return 所有工具执行结果的列表?    */
     suspend fun executeInvocations(
         invocations: List<ToolInvocation>,
         context: Context,
@@ -332,12 +332,12 @@ object ToolExecutionManager {
         callerChatId: String? = null
     ): List<ToolResult> = coroutineScope {
         // 默认工具注册现在可能在启动阶段被延后；这里确保在真正执行工具前已完成注册
-        // registerDefaultTools() 是幂等且线程安全的，可安全重复调�?
+        // registerDefaultTools() 是幂等且线程安全的，可安全重复调?
         withContext(Dispatchers.Default) {
             toolHandler.registerDefaultTools()
         }
 
-        // 1. 权限检�?
+        // 1. 权限检?
         val permittedInvocations = mutableListOf<ToolInvocation>()
         val permissionDeniedResults = mutableListOf<ToolResult>()
         for (invocation in invocations) {
@@ -370,7 +370,7 @@ object ToolExecutionManager {
                 }
             }
 
-        // 2. 按并�串行对工具进行分�?
+        // 2. 按并串行对工具进行分?
         val parallelizableToolNames = setOf(
             "list_files", "read_file", "read_file_part", "read_file_full", "file_exists",
             "find_files", "file_info", "grep_code", "calculate", "ffmpeg_info",
@@ -382,7 +382,7 @@ object ToolExecutionManager {
             )
         }
 
-        // 3. 执行工具并收集聚合结�?
+        // 3. 执行工具并收集聚合结?
         val executionResults = ConcurrentHashMap<ToolInvocation, ToolResult>()
 
         // 启动并行工具
@@ -399,10 +399,10 @@ object ToolExecutionManager {
             executionResults[invocation] = result
         }
 
-        // 等待所有并行任务完�?
+        // 等待所有并行任务完?
         parallelJobs.awaitAll()
 
-        // 4. 按原始顺序重新排序结�?
+        // 4. 按原始顺序重新排序结?
         val orderedAggregated = injectedInvocations.mapNotNull { executionResults[it] }
 
         // 5. 组合所有结果并返回
@@ -410,7 +410,7 @@ object ToolExecutionManager {
     }
 
     /**
-     * 封装单个工具的执行、实时输出和结果聚合的辅助函�?    */
+     * 封装单个工具的执行、实时输出和结果聚合的辅助函?    */
     private suspend fun executeAndEmitTool(
         invocation: ToolInvocation,
         toolHandler: AIToolHandler,
@@ -421,10 +421,10 @@ object ToolExecutionManager {
         val displayToolName = resolveDisplayToolName(invocation.tool)
 
         return try {
-            // 首先尝试使用传统工具执行�?           val executor = toolHandler.getToolExecutorOrActivate(toolName)
+            // 首先尝试使用传统工具执行?           val executor = toolHandler.getToolExecutorOrActivate(toolName)
             
             if (executor != null) {
-                // 使用传统工具执行器执�?               toolHandler.notifyToolExecutionStarted(invocation.tool)
+                // 使用传统工具执行器执?               toolHandler.notifyToolExecutionStarted(invocation.tool)
 
                 val collectedResults = mutableListOf<ToolResult>()
                 executeToolSafely(invocation, executor, toolHandler).collect { result ->
@@ -435,7 +435,7 @@ object ToolExecutionManager {
                     collector.emit(ensureEndsWithNewline(toolResultStatusContent))
                 }
 
-                // 为此调用聚合最终结�?               if (collectedResults.isEmpty()) {
+                // 为此调用聚合最终结?               if (collectedResults.isEmpty()) {
                     val emptyResult =
                         ToolResult(
                             toolName = displayToolName,
@@ -462,7 +462,7 @@ object ToolExecutionManager {
                 toolHandler.notifyToolExecutionResult(invocation.tool, finalResult)
                 return finalResult
             } else {
-                // 尝试使用新的工具适配�?               AppLogger.d(TAG, "尝试使用工具适配器执行工�?${toolName}")
+                // 尝试使用新的工具适配?               AppLogger.d(TAG, "尝试使用工具适配器执行工?${toolName}")
                 val toolResult = executeWithToolAdapter(invocation, displayToolName, collector)
                 toolHandler.notifyToolExecutionResult(invocation.tool, toolResult)
                 return toolResult
@@ -473,7 +473,7 @@ object ToolExecutionManager {
     }
 
     /**
-     * 使用工具适配器执行工具调�?    */
+     * 使用工具适配器执行工具调?    */
     private suspend fun executeWithToolAdapter(
         invocation: ToolInvocation,
         displayToolName: String,
@@ -504,8 +504,8 @@ object ToolExecutionManager {
             
             return result
         } catch (e: Exception) {
-            AppLogger.e(TAG, "工具适配器执行失�?${invocation.tool.name}", e)
-            val errorMessage = "工具适配器执行失�?${e.message}"
+            AppLogger.e(TAG, "工具适配器执行失?${invocation.tool.name}", e)
+            val errorMessage = "工具适配器执行失?${e.message}"
             val errorResult = ToolResult(
                 toolName = displayToolName,
                 success = false,
@@ -554,9 +554,9 @@ object ToolExecutionManager {
                     if (isAdviceTool) {
                         "Tool '${toolNamePart}' is an advice-only entry in package '${packName}' and is not executable."
                     } else if (isPackageActivated) {
-                        // 包已激活但工具不存�?                       "Tool '${toolNamePart}' does not exist in tool package '${packName}'. Please use the 'use_package' tool and specify package name '${packName}' to list all available tools in this package."
+                        // 包已激活但工具不存?                       "Tool '${toolNamePart}' does not exist in tool package '${packName}'. Please use the 'use_package' tool and specify package name '${packName}' to list all available tools in this package."
                     } else {
-                        // 包未激�?                       "Tool package '${packName}' is not activated. Auto-activation was attempted but failed, or tool '${toolNamePart}' does not exist. Please use 'use_package' with package name '${packName}' to check available tools."
+                        // 包未激?                       "Tool package '${packName}' is not activated. Auto-activation was attempted but failed, or tool '${toolNamePart}' does not exist. Please use 'use_package' with package name '${packName}' to check available tools."
                     }
                 }
             }

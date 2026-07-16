@@ -7,7 +7,7 @@ import com.apex.agent.core.tools.integration.provider.SkillRepoIntegration
 import com.apex.util.AppLogger
 
 /**
- * 统一集成管理�?—�所有市�集成源的注册和调度中�? */
+ * 统一集成管理?—所有市集成源的注册和调度中? */
 object IntegrationManager {
 
     private const val TAG = "IntegrationManager"
@@ -17,12 +17,12 @@ object IntegrationManager {
         register(McpSoIntegration(context))
         register(LobeHubIntegration(context))
         register(SkillRepoIntegration())
-        AppLogger.d(TAG, "已注�?${providers.size} 个集成源: ${providers.keys}")
+        AppLogger.d(TAG, "已注?${providers.size} 个集成源: ${providers.keys}")
     }
 
     fun register(provider: IntegrationProvider) {
         providers[provider.getInfo().id] = provider
-        AppLogger.d(TAG, "注册集成�? ${provider.getInfo().name}")
+        AppLogger.d(TAG, "注册集成? ${provider.getInfo().name}")
     }
 
     fun unregister(id: String) {
@@ -52,15 +52,15 @@ object IntegrationManager {
     }
 
     suspend fun install(sourceId: String, itemId: String): Result<String> {
-        val provider = providers[sourceId] ?: return Result.failure(Exception("未知集成�? $sourceId"))
+        val provider = providers[sourceId] ?: return Result.failure(Exception("未知集成? $sourceId"))
         val detail = provider.getDetail(itemId).getOrElse {
-            return Result.failure(Exception("未找到项�? $itemId"))
+            return Result.failure(Exception("未找到项? $itemId"))
         }
         return provider.install(detail)
     }
 
     suspend fun uninstall(sourceId: String, installedId: String): Result<String> {
-        val provider = providers[sourceId] ?: return Result.failure(Exception("未知集成�? $sourceId"))
+        val provider = providers[sourceId] ?: return Result.failure(Exception("未知集成? $sourceId"))
         return provider.uninstall(installedId)
     }
 }

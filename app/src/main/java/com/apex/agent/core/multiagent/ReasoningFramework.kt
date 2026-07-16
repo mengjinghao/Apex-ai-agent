@@ -3,7 +3,7 @@ package com.apex.agent.core.multiagent
 import java.util.UUID
 
 /**
- * 推理框架系统 - 参�?AgentX �?Chain-of-Thought、Tree-of-Thought、ReAct、Reflection
+ * 推理框架系统 - 参?AgentX ?Chain-of-Thought、Tree-of-Thought、ReAct、Reflection
  */
 enum class ReasoningType {
     CHAIN_OF_THOUGHT,
@@ -41,15 +41,15 @@ class ReasoningFramework(private val context: android.content.Context) {
         val steps = mutableListOf<ReasoningStep>()
 
         steps.add(ReasoningStep(1, "理解问题: ${question}"))
-        steps.add(ReasoningStep(2, "分析问题，分解关键要�?))
+        steps.add(ReasoningStep(2, "分析问题，分解关键要?))
         steps.add(ReasoningStep(3, "搜索相关知识"))
-        steps.add(ReasoningStep(4, "逐步推理和分�?))
-        steps.add(ReasoningStep(5, "综合思考得出结�?))
+        steps.add(ReasoningStep(4, "逐步推理和分?))
+        steps.add(ReasoningStep(5, "综合思考得出结?))
 
         return ReasoningResult(
             reasoningType = ReasoningType.CHAIN_OF_THOUGHT,
             steps = steps,
-            finalAnswer = "思维链推理完�?,
+            finalAnswer = "思维链推理完?,
             totalTime = System.currentTimeMillis() - startTime,
             confidence = 0.85f
         )
@@ -59,17 +59,17 @@ class ReasoningFramework(private val context: android.content.Context) {
         val startTime = System.currentTimeMillis()
         val steps = mutableListOf<ReasoningStep>()
 
-        steps.add(ReasoningStep(1, "探索可能的解决路�?))
+        steps.add(ReasoningStep(1, "探索可能的解决路?))
         steps.add(ReasoningStep(2, "分支 1: 从A方向尝试"))
         steps.add(ReasoningStep(3, "分支 2: 从B方向尝试"))
-        steps.add(ReasoningStep(4, "评估各分支的可行�?))
-        steps.add(ReasoningStep(5, "选择最优路径继续推�?))
-        steps.add(ReasoningStep(6, "得出最终答�?))
+        steps.add(ReasoningStep(4, "评估各分支的可行?))
+        steps.add(ReasoningStep(5, "选择最优路径继续推?))
+        steps.add(ReasoningStep(6, "得出最终答?))
 
         return ReasoningResult(
             reasoningType = ReasoningType.TREE_OF_THOUGHT,
             steps = steps,
-            finalAnswer = "思维树推理完�?,
+            finalAnswer = "思维树推理完?,
             totalTime = System.currentTimeMillis() - startTime,
             confidence = 0.9f
         )
@@ -79,13 +79,13 @@ class ReasoningFramework(private val context: android.content.Context) {
         val startTime = System.currentTimeMillis()
         val steps = mutableListOf<ReasoningStep>()
 
-        steps.add(ReasoningStep(1, "思�? 我需要理解问�?, "思�?))
+        steps.add(ReasoningStep(1, "思? 我需要理解问?, "思?))
         steps.add(ReasoningStep(2, "行动: 搜索相关信息", "搜索"))
         steps.add(ReasoningStep(3, "观察: 找到X和Y", "观察"))
-        steps.add(ReasoningStep(4, "思�? 根据X和Y继续推理", "思�?))
+        steps.add(ReasoningStep(4, "思? 根据X和Y继续推理", "思?))
         steps.add(ReasoningStep(5, "行动: 执行计算", "计算"))
         steps.add(ReasoningStep(6, "观察: 得到结果Z", "观察"))
-        steps.add(ReasoningStep(7, "思�? 综合以上得出答案", "思�?))
+        steps.add(ReasoningStep(7, "思? 综合以上得出答案", "思?))
 
         return ReasoningResult(
             reasoningType = ReasoningType.REACT,
@@ -100,16 +100,16 @@ class ReasoningFramework(private val context: android.content.Context) {
         val startTime = System.currentTimeMillis()
         val steps = mutableListOf<ReasoningStep>()
 
-        steps.add(ReasoningStep(1, "反�? 上次的回答是否完整？"))
-        steps.add(ReasoningStep(2, "分析: 是否有遗漏或错误�?))
+        steps.add(ReasoningStep(1, "反? 上次的回答是否完整？"))
+        steps.add(ReasoningStep(2, "分析: 是否有遗漏或错误?))
         steps.add(ReasoningStep(3, "改进: 需要补充哪些信息？"))
-        steps.add(ReasoningStep(4, "重新推理: 更完整和准确的分�?))
+        steps.add(ReasoningStep(4, "重新推理: 更完整和准确的分?))
         steps.add(ReasoningStep(5, "确认: 这次是否足够好？"))
 
         return ReasoningResult(
             reasoningType = ReasoningType.REFLECTION,
             steps = steps,
-            finalAnswer = "反思推理完�?,
+            finalAnswer = "反思推理完?,
             totalTime = System.currentTimeMillis() - startTime,
             confidence = 0.92f
         )
@@ -141,7 +141,7 @@ class ReasoningFramework(private val context: android.content.Context) {
             sb.append("\n")
         }
         sb.append("\n## 答案: ${result.finalAnswer}\n")
-        sb.append("## 置信�? ${(result.confidence * 100).toInt()}%\n")
+        sb.append("## 置信? ${(result.confidence * 100).toInt()}%\n")
         return sb.toString()
     }
 }

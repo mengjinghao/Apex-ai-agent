@@ -16,14 +16,14 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * 针对 DeepSeek 模型的特�?API Provider
- * 继承�?OpenAIProvider，以重用大部分兼容逻辑，但特别处理�?`reasoning_content` 参数
- * 当启用推理模式时，会�?assistant 消息中的 <think> 标签内容提取出来作为 reasoning_content 字段
+ * 针对 DeepSeek 模型的特?API Provider
+ * 继承?OpenAIProvider，以重用大部分兼容逻辑，但特别处理?`reasoning_content` 参数
+ * 当启用推理模式时，会?assistant 消息中的 <think> 标签内容提取出来作为 reasoning_content 字段
  *
  * 优化特性：
- * - R1 模型参数自动修正（temperature=1.0, top_p=0.95�? * - 增强�?reasoning_content 流式处理
- * - DeepSeek 特定错误处理（速率限制、安全审查、上下文溢出�? * - JSON Output 模式支持
- * - Tool Call �?reasoning_content 的交互优�? */
+ * - R1 模型参数自动修正（temperature=1.0, top_p=0.95? * - 增强?reasoning_content 流式处理
+ * - DeepSeek 特定错误处理（速率限制、安全审查、上下文溢出? * - JSON Output 模式支持
+ * - Tool Call ?reasoning_content 的交互优? */
 class DeepseekProvider(
     apiEndpoint: String,
     apiKeyProvider: ApiKeyProvider,
@@ -48,7 +48,7 @@ class DeepseekProvider(
         enableToolCall = enableToolCall
     ) {
 
-    // DeepSeek 模型类型检�?    private val isR1Model = modelName.contains("r1", ignoreCase = true) || 
+    // DeepSeek 模型类型检?    private val isR1Model = modelName.contains("r1", ignoreCase = true) || 
                            modelName.contains("reasoner", ignoreCase = true)
     private val isV4Model = modelName.contains("v4", ignoreCase = true)
     private val isV3Model = modelName.contains("v3", ignoreCase = true) || 
@@ -56,7 +56,7 @@ class DeepseekProvider(
     private val isCoderModel = modelName.contains("coder", ignoreCase = true)
 
     /**
-     * 验证并修�?DeepSeek 特定的参�?     * R1 模型要求 temperature 固定�?1.0，top_p 建议�?0.95
+     * 验证并修?DeepSeek 特定的参?     * R1 模型要求 temperature 固定?1.0，top_p 建议?0.95
      */
     private fun validateAndFixDeepSeekParameters(modelParameters: List<ModelParameter<*>>): List<ModelParameter<*>> {
         if (!isR1Model) return modelParameters
@@ -66,7 +66,7 @@ class DeepseekProvider(
                 "temperature" -> {
                     // R1 模型强制 temperature = 1.0
                     if (param.currentValue != 1.0f) {
-                        AppLogger.w("DeepseekProvider", "R1 模型要求 temperature 固定�?1.0，已自动修正")
+                        AppLogger.w("DeepseekProvider", "R1 模型要求 temperature 固定?1.0，已自动修正")
                         @Suppress("UNCHECKED_CAST")
                         (param as ModelParameter<Float>).apply {
                             currentValue = 1.0f
@@ -77,7 +77,7 @@ class DeepseekProvider(
                 "top_p" -> {
                     // R1 模型建议 top_p = 0.95
                     if (param.currentValue != 0.95f) {
-                        AppLogger.w("DeepseekProvider", "R1 模型建议 top_p �?0.95，已自动修正")
+                        AppLogger.w("DeepseekProvider", "R1 模型建议 top_p ?0.95，已自动修正")
                         @Suppress("UNCHECKED_CAST")
                         (param as ModelParameter<Float>).apply {
                             currentValue = 0.95f
@@ -91,8 +91,8 @@ class DeepseekProvider(
     }
 
     /**
-     * 重写创建请求体的方法，以支持 DeepSeek �?`reasoning_content` 参数
-     * 当启用推理模式时，需要特殊处理消息格�?     */
+     * 重写创建请求体的方法，以支持 DeepSeek ?`reasoning_content` 参数
+     * 当启用推理模式时，需要特殊处理消息格?     */
     override fun createRequestBody(
         context: Context,
         chatHistory: List<PromptTurn>,
@@ -102,7 +102,7 @@ class DeepseekProvider(
         availableTools: List<ToolPrompt>?,
         preserveThinkInHistory: Boolean
     ): RequestBody {
-        // 验证并修�?DeepSeek 特定参数（R1 模型强制 temperature=1.0, top_p=0.95�?        val validatedParameters = validateAndFixDeepSeekParameters(modelParameters)
+        // 验证并修?DeepSeek 特定参数（R1 模型强制 temperature=1.0, top_p=0.95?        val validatedParameters = validateAndFixDeepSeekParameters(modelParameters)
 
         fun applyThinkingParamsIfNeeded(jsonObject: JSONObject) {
             if (!enableThinking) return
@@ -160,7 +160,7 @@ class DeepseekProvider(
         // 当工具为空时，将 enableToolCall 视为 false
         val effectiveEnableToolCall = enableToolCall && availableTools != null && availableTools.isNotEmpty()
 
-        // 如果启用 Tool Call 且传入了工具列表，添�?tools 定义
+        // 如果启用 Tool Call 且传入了工具列表，添?tools 定义
         var toolsJson: String? = null
         if (effectiveEnableToolCall) {
             val tools = buildToolDefinitions(availableTools!!)
@@ -171,14 +171,14 @@ class DeepseekProvider(
             }
         }
 
-        // 使用特殊的消息构建方法（支持 reasoning_content�?        val messagesArray = buildMessagesWithReasoning(
+        // 使用特殊的消息构建方法（支持 reasoning_content?        val messagesArray = buildMessagesWithReasoning(
             context,
             chatHistory,
             effectiveEnableToolCall
         )
         jsonObject.put("messages", messagesArray)
 
-        // 记录最终的请求体（省略过长�?tools 字段�?        val logJson = JSONObject(jsonObject.toString())
+        // 记录最终的请求体（省略过长?tools 字段?        val logJson = JSONObject(jsonObject.toString())
         if (logJson.has("tools")) {
             val toolsArray = logJson.getJSONArray("tools")
             logJson.put("tools", "[${toolsArray.length()} tools omitted for brevity]")
@@ -190,7 +190,7 @@ class DeepseekProvider(
     }
 
     /**
-     * 构建支持 reasoning_content 的消息数�?     * 对于 assistant 角色的消息，提取 <think> 标签内容作为 reasoning_content
+     * 构建支持 reasoning_content 的消息数?     * 对于 assistant 角色的消息，提取 <think> 标签内容作为 reasoning_content
      */
     private fun buildMessagesWithReasoning(
         context: Context,
@@ -385,7 +385,7 @@ class DeepseekProvider(
                                 if (resultsList.size > validCount) {
                                     AppLogger.w(
                                         "DeepseekProvider",
-                                        "发现多余�?tool_result: ${resultsList.size} results vs ${validCount} pending tool_calls"
+                                        "发现多余?tool_result: ${resultsList.size} results vs ${validCount} pending tool_calls"
                                     )
                                 }
 
@@ -477,12 +477,12 @@ class DeepseekProvider(
         onNonFatalError: suspend (error: String) -> Unit,
         enableRetry: Boolean
     ): Stream<String> {
-        // 直接调用父类�?sendMessage 实现
-        // DeepSeek 特定的错误处理将在父类的统一重试策略中处�?        return super.sendMessage(context, chatHistory, modelParameters, enableThinking, stream, availableTools, preserveThinkInHistory, onTokensUpdated, onNonFatalError, enableRetry)
+        // 直接调用父类?sendMessage 实现
+        // DeepSeek 特定的错误处理将在父类的统一重试策略中处?        return super.sendMessage(context, chatHistory, modelParameters, enableThinking, stream, availableTools, preserveThinkInHistory, onTokensUpdated, onNonFatalError, enableRetry)
     }
 
     /**
-     * DeepSeek 特定的连接测试方�?     * 针对 DeepSeek API 的特点进行优化测�?     */
+     * DeepSeek 特定的连接测试方?     * 针对 DeepSeek API 的特点进行优化测?     */
     override suspend fun testConnection(context: Context): Result<String> {
         return try {
             // 使用简单的测试消息进行连接测试
@@ -513,7 +513,7 @@ class DeepseekProvider(
     }
 
     /**
-     * 获取 DeepSeek 模型的特定信�?     */
+     * 获取 DeepSeek 模型的特定信?     */
     fun getModelInfo(): String {
         return buildString {
             append("DeepSeek Model: ${modelName}\n")

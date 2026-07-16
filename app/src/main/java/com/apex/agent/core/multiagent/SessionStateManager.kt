@@ -92,7 +92,7 @@ class SessionStateManager {
     }
 
     /**
-     * 应用协作规则到指定会�?     */
+     * 应用协作规则到指定会?     */
     fun applyRules(sessionId: String, rules: CollaborationRules) {
         val state = sessionStates[sessionId] ?: createSession(sessionId)
         // 根据规则更新会话模式
@@ -319,7 +319,7 @@ class NotificationHelper(private val context: Context) {
 
     fun showUserInterventionNotification(sessionName: String, message: String) {
         val notification = Notification.Builder(context, channelId)
-            .setContentTitle("需要用户干�?
+            .setContentTitle("需要用户干?
             .setContentText("${sessionName} - ${message}")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .setAutoCancel(true)

@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 /**
- * 权限模式枚举 - 定义系统支持的所有权限模�?
+ * 权限模式枚举 - 定义系统支持的所有权限模?
  */
 enum class PermissionMode(
     val id: String,
@@ -25,8 +25,8 @@ enum class PermissionMode(
     
     ACCESSIBILITY(
         id = "accessibility",
-        displayName = "无障碍模�?,
-        description = "使用无障碍服务权限，提供更强大的自动化能�?,
+        displayName = "无障碍模?,
+        description = "使用无障碍服务权限，提供更强大的自动化能?,
         level = 1,
         requiresAccessibility = true
     ),
@@ -40,8 +40,8 @@ enum class PermissionMode(
     
     ADMIN(
         id = "admin",
-        displayName = "管理员模�?,
-        description = "使用设备管理员权限，提供系统级控制能�?,
+        displayName = "管理员模?,
+        description = "使用设备管理员权限，提供系统级控制能?,
         level = 3,
         requiresAdmin = true
     ),
@@ -49,7 +49,7 @@ enum class PermissionMode(
     SHIZUKU(
         id = "shizuku",
         displayName = "Shizuku模式",
-        description = "使用 Shizuku/Sui 服务，无需 Root 即可获得系统级权�?,
+        description = "使用 Shizuku/Sui 服务，无需 Root 即可获得系统级权?,
         level = 4,
         requiresShizuku = true
     ),
@@ -80,7 +80,7 @@ enum class PermissionMode(
 }
 
 /**
- * 权限模式状�?- 包含模式的检测状�?
+ * 权限模式状?- 包含模式的检测状?
  */
 @Parcelize
 data class PermissionModeState(
@@ -111,7 +111,7 @@ enum class RootExecutionMode(
     FORCE_LIBSU(
         id = "force_libsu",
         displayName = "Libsu模式",
-        description = "强制使用 Libsu 库执�?Root 命令"
+        description = "强制使用 Libsu 库执?Root 命令"
     ),
     
     FORCE_EXEC(
@@ -148,7 +148,7 @@ enum class RootExecutionMode(
 }
 
 /**
- * Root 检测结�?- 包含 Root 方案的详细信�?
+ * Root 检测结?- 包含 Root 方案的详细信?
  */
 @Parcelize
 data class RootDetectionResult(
@@ -196,13 +196,13 @@ enum class RootScheme(
 }
 
 /**
- * SELinux 状�?
+ * SELinux 状?
  */
 enum class SELinuxStatus(val displayName: String) {
     ENFORCING("强制模式"),
     PERMISSIVE("宽容模式"),
-    DISABLED("已禁�?),
-    UNKNOWN("未知状�?);
+    DISABLED("已禁?),
+    UNKNOWN("未知状?);
 
     companion object {
         fun fromString(status: String): SELinuxStatus =
@@ -216,7 +216,7 @@ enum class SELinuxStatus(val displayName: String) {
 }
 
 /**
- * Shizuku 检测结�?
+ * Shizuku 检测结?
  */
 @Parcelize
 data class ShizukuDetectionResult(

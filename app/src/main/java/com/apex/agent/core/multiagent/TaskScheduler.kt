@@ -89,10 +89,10 @@ class TaskScheduler(private val context: Context) {
     suspend fun executeTask(taskId: String): Result<TaskResult> = withContext(Dispatchers.Default) {
         try {
             val task = _tasks.value.find { it.id == taskId }
-                ?: return@withContext Result.failure(IllegalArgumentException("任务不存�?))
+                ?: return@withContext Result.failure(IllegalArgumentException("任务不存?))
 
             if (!canExecuteTask(task)) {
-                return@withContext Result.failure(IllegalStateException("依赖任务未完�?))
+                return@withContext Result.failure(IllegalStateException("依赖任务未完?))
             }
 
             _runningTasks.value = _runningTasks.value + taskId
@@ -170,7 +170,7 @@ class TaskScheduler(private val context: Context) {
     suspend fun reassignTask(taskId: String, newAgentId: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val task = _tasks.value.find { it.id == taskId }
-                ?: return@withContext Result.failure(IllegalArgumentException("任务不存�?))
+                ?: return@withContext Result.failure(IllegalArgumentException("任务不存?))
 
             val updatedTask = task.copy(assignedAgentId = newAgentId)
             updateTask(updatedTask)
@@ -185,7 +185,7 @@ class TaskScheduler(private val context: Context) {
     suspend fun retryTask(taskId: String): Result<Unit> = withContext(Dispatchers.Default) {
         try {
             val task = _tasks.value.find { it.id == taskId }
-                ?: return@withContext Result.failure(IllegalArgumentException("任务不存�?))
+                ?: return@withContext Result.failure(IllegalArgumentException("任务不存?))
 
             val retriedTask = task.copy(
                 status = TaskState.PENDING,

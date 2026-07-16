@@ -55,9 +55,9 @@ class RbacManager private constructor(private val context: Context) {
     private suspend fun ensureDefaultData() {
         if (repo.roleCount() > 0) return
         val now = System.currentTimeMillis()
-        val superAdminRole = repo.insertRole(Role(name = "super_admin", description = "超级管理�?- 全部权限", level = 5, isSystem = true))
-        val adminRole = repo.insertRole(Role(name = "admin", description = "管理�?- 高级权限", level = 4, isSystem = true))
-        val userRole = repo.insertRole(Role(name = "user", description = "普通用�?- 标准权限", level = 1, isSystem = true))
+        val superAdminRole = repo.insertRole(Role(name = "super_admin", description = "超级管理?- 全部权限", level = 5, isSystem = true))
+        val adminRole = repo.insertRole(Role(name = "admin", description = "管理?- 高级权限", level = 4, isSystem = true))
+        val userRole = repo.insertRole(Role(name = "user", description = "普通用?- 标准权限", level = 1, isSystem = true))
         val guestRole = repo.insertRole(Role(name = "guest", description = "访客 - 只读权限", level = 0, isSystem = true))
 
         val permIds = mutableMapOf<String, Long>()
@@ -118,7 +118,7 @@ class RbacManager private constructor(private val context: Context) {
             Permission(name = "users:manage", description = "管理用户", category = "system", createdAt = now),
             Permission(name = "roles:manage", description = "管理角色", category = "system", createdAt = now),
             Permission(name = "permissions:manage", description = "管理权限", category = "system", createdAt = now),
-            Permission(name = "system:admin", description = "系统管理员权�?, category = "system", createdAt = now),
+            Permission(name = "system:admin", description = "系统管理员权?, category = "system", createdAt = now),
             Permission(name = "system:settings", description = "修改系统设置", category = "system", createdAt = now),
             Permission(name = "system:audit", description = "查看审计日志", category = "system", createdAt = now),
             Permission(name = "file:read", description = "读取文件系统中的文件", category = "file", createdAt = now),

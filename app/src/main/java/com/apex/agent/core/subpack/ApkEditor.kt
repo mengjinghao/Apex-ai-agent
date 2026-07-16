@@ -9,7 +9,7 @@ import com.apex.util.AssetCopyUtils
 import java.io.File
 import java.io.InputStream
 
-/** APK编辑�? 提供链式调用API 支持修改包名、应用名、图标和重新签名等操�?/
+/** APK编辑? 提供链式调用API 支持修改包名、应用名、图标和重新签名等操?/
 class ApkEditor
 private constructor(
         private val context: Context,
@@ -20,8 +20,8 @@ private constructor(
         private const val TAG = "ApkEditor"
 
         /**
-         * 从资产文件创建APK编辑�?        * @param context 上下�?        * @param assetPath 资产路径
-         * @return APK编辑器实�?        */
+         * 从资产文件创建APK编辑?        * @param context 上下?        * @param assetPath 资产路径
+         * @return APK编辑器实?        */
         @JvmStatic
         fun fromAsset(context: Context, assetPath: String): ApkEditor {
             val fileName = assetPath.substringAfterLast('/')
@@ -32,8 +32,8 @@ private constructor(
         }
 
         /**
-         * 从文件创建APK编辑�?        * @param context 上下�?        * @param apkFile APK文件
-         * @return APK编辑器实�?        */
+         * 从文件创建APK编辑?        * @param context 上下?        * @param apkFile APK文件
+         * @return APK编辑器实?        */
         @JvmStatic
         fun fromFile(context: Context, apkFile: File): ApkEditor {
             val apkReverseEngineer = ApkReverseEngineer(context)
@@ -41,8 +41,8 @@ private constructor(
         }
 
         /**
-         * 从文件路径创建APK编辑�?        * @param context 上下�?        * @param apkFilePath APK文件路径
-         * @return APK编辑器实�?        */
+         * 从文件路径创建APK编辑?        * @param context 上下?        * @param apkFilePath APK文件路径
+         * @return APK编辑器实?        */
         @JvmStatic
         fun fromPath(context: Context, apkFilePath: String): ApkEditor {
             val apkFile = File(apkFilePath)
@@ -50,7 +50,7 @@ private constructor(
         }
 
         /**
-         * 复制资产文件到缓存目�?        * @param context 上下�?        * @param assetPath 资产路径
+         * 复制资产文件到缓存目?        * @param context 上下?        * @param assetPath 资产路径
          * @return 缓存文件
          */
     }
@@ -70,7 +70,7 @@ private constructor(
 
     /**
      * 修改包名
-     * @param packageName 新包�?    * @return 当前APK编辑器实�?    */
+     * @param packageName 新包?    * @return 当前APK编辑器实?    */
     fun changePackageName(packageName: String): ApkEditor {
         this.newPackageName = packageName
         return this
@@ -78,31 +78,31 @@ private constructor(
 
     /**
      * 修改应用名称
-     * @param appName 新应用名�?    * @return 当前APK编辑器实�?    */
+     * @param appName 新应用名?    * @return 当前APK编辑器实?    */
     fun changeAppName(appName: String): ApkEditor {
         this.newAppName = appName
         return this
     }
 
     /**
-     * 修改版本�?    * @param versionName 新版本名
-     * @return 当前APK编辑器实�?    */
+     * 修改版本?    * @param versionName 新版本名
+     * @return 当前APK编辑器实?    */
     fun changeVersionName(versionName: String): ApkEditor {
         this.newVersionName = versionName
         return this
     }
 
     /**
-     * 修改版本�?    * @param versionCode 新版本号
-     * @return 当前APK编辑器实�?    */
+     * 修改版本?    * @param versionCode 新版本号
+     * @return 当前APK编辑器实?    */
     fun changeVersionCode(versionCode: String): ApkEditor {
         this.newVersionCode = versionCode
         return this
     }
 
     /**
-     * 更改图标（从位图�?    * @param iconBitmap 图标位图
-     * @return 当前APK编辑器实�?    */
+     * 更改图标（从位图?    * @param iconBitmap 图标位图
+     * @return 当前APK编辑器实?    */
     fun changeIcon(iconBitmap: Bitmap): ApkEditor {
         this.newIconBitmap = iconBitmap
         return this
@@ -110,15 +110,15 @@ private constructor(
 
     /**
      * 更改图标（从输入流）
-     * @param iconInputStream 图标输入�?    * @return 当前APK编辑器实�?    */
+     * @param iconInputStream 图标输入?    * @return 当前APK编辑器实?    */
     fun changeIcon(iconInputStream: InputStream): ApkEditor {
         val bitmap = BitmapFactory.decodeStream(iconInputStream)
         return changeIcon(bitmap)
     }
 
     /**
-     * 更改图标（从资产文件�?    * @param iconAssetPath 图标资产路径
-     * @return 当前APK编辑器实�?    */
+     * 更改图标（从资产文件?    * @param iconAssetPath 图标资产路径
+     * @return 当前APK编辑器实?    */
     fun changeIconFromAsset(iconAssetPath: String): ApkEditor {
         context.assets.open(iconAssetPath).use { input ->
             return changeIcon(input)
@@ -127,9 +127,9 @@ private constructor(
 
     /**
      * 设置签名信息
-     * @param keyStoreFile 密钥库文�?    * @param keyStorePassword 密钥库密�?    * @param keyAlias 密钥别名
+     * @param keyStoreFile 密钥库文?    * @param keyStorePassword 密钥库密?    * @param keyAlias 密钥别名
      * @param keyPassword 密钥密码
-     * @return 当前APK编辑器实�?    */
+     * @return 当前APK编辑器实?    */
     fun withSignature(
             keyStoreFile: File,
             keyStorePassword: String,
@@ -146,7 +146,7 @@ private constructor(
     /**
      * 设置输出文件
      * @param outputFile 输出文件
-     * @return 当前APK编辑器实�?    */
+     * @return 当前APK编辑器实?    */
     fun setOutput(outputFile: File): ApkEditor {
         this.outputFile = outputFile
         return this
@@ -155,7 +155,7 @@ private constructor(
     /**
      * 设置输出文件路径
      * @param outputPath 输出文件路径
-     * @return 当前APK编辑器实�?    */
+     * @return 当前APK编辑器实?    */
     fun setOutput(outputPath: String): ApkEditor {
         return setOutput(File(outputPath))
     }
@@ -163,7 +163,7 @@ private constructor(
     /**
      * 仅替换Web内容并更新清单信息的快速打包（不落地解压）
      * @param webContentDir 网页内容目录
-     * @return 重新打包后的APK文件（未签名�?    */
+     * @return 重新打包后的APK文件（未签名?    */
     fun repackWithWebContent(webContentDir: File): File {
         if (!webContentDir.exists() || !webContentDir.isDirectory) {
             throw IllegalArgumentException("webContentDir is missing or not a directory: ${webContentDir.absolutePath}")
@@ -221,7 +221,7 @@ private constructor(
             File(context.cacheDir, "signed_${apkFile.name}")
         }
 
-        AppLogger.d(TAG, "开始签名APK，输�?${unsignedApk.absolutePath}, 输出�?${signedOutputFile.absolutePath}")
+        AppLogger.d(TAG, "开始签名APK，输?${unsignedApk.absolutePath}, 输出?${signedOutputFile.absolutePath}")
 
         val signResult = apkReverseEngineer.signApk(
                 unsignedApk,

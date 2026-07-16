@@ -1,7 +1,7 @@
 package com.apex.agent.core.interest
 
 /**
- * 兴趣分析结果数据�?*/
+ * 兴趣分析结果数据?*/
 data class InterestProfile(
     // 兴趣概览
     var primaryInterest: String? = null,
@@ -10,7 +10,7 @@ data class InterestProfile(
     
     // 兴趣强度
     var interestIntensities: MutableMap<String, String> = mutableMapOf(),
-    var overallInterestLevel: String = "�?
+    var overallInterestLevel: String = "?
     
     // 兴趣趋势
     var interestTrends: MutableMap<String, String> = mutableMapOf()

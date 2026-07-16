@@ -13,7 +13,7 @@ import java.util.*
 import com.apex.agent.core.normal.shortcut.CommandCategory
 
 /**
- * Shell命令管理�? 负责命令执行、历史记录管理等
+ * Shell命令管理? 负责命令执行、历史记录管理等
  */
 class ShellCommandManager(private val context: Context) {
     
@@ -146,7 +146,7 @@ class ShellCommandManager(private val context: Context) {
     }
     
     /**
-     * 添加自定义预设命�?    */
+     * 添加自定义预设命?    */
     suspend fun addCustomPresetCommand(command: PresetCommand) {
         // 实现保存自定义预设命令的逻辑
     }
@@ -157,7 +157,7 @@ class ShellCommandManager(private val context: Context) {
     fun getCommandHistory(): List<CommandRecord> {
         val historyJson = prefs.getString(KEY_COMMAND_HISTORY, null) ?: return emptyList()
         return try {
-            // 在实际实现中，使用JSON解析库如Gson或Moshi来解析历史记�?           // 此处为简化，返回空列�?           emptyList()
+            // 在实际实现中，使用JSON解析库如Gson或Moshi来解析历史记?           // 此处为简化，返回空列?           emptyList()
         } catch (e: Exception) {
             emptyList()
         }
@@ -177,17 +177,17 @@ class ShellCommandManager(private val context: Context) {
             timestamp = System.currentTimeMillis()
         )
         
-        // 保存到历史记�?       saveCommandToHistory(record)
+        // 保存到历史记?       saveCommandToHistory(record)
         
         return record
     }
     
     /**
-     * 保存命令到历史记�?    */
+     * 保存命令到历史记?    */
     private fun saveCommandToHistory(record: CommandRecord) {
         val history = getCommandHistory().toMutableList()
         
-        // 如果已存在相同命令，移除旧记�?       history.removeAll { it.command == record.command }
+        // 如果已存在相同命令，移除旧记?       history.removeAll { it.command == record.command }
         
         // 添加新记录到列表头部
         history.add(0, record)
@@ -196,7 +196,7 @@ class ShellCommandManager(private val context: Context) {
         val trimmedHistory = history.take(MAX_HISTORY_SIZE)
         
         // 保存到SharedPreferences
-        // 在实际实现中，使用JSON序列化库将历史记录转换为JSON字符�?       // prefs.edit().putString(KEY_COMMAND_HISTORY, jsonString).apply()
+        // 在实际实现中，使用JSON序列化库将历史记录转换为JSON字符?       // prefs.edit().putString(KEY_COMMAND_HISTORY, jsonString).apply()
     }
     
     /**
@@ -214,11 +214,11 @@ class ShellCommandManager(private val context: Context) {
         history.removeAll { it.command == command }
         
         // 保存到SharedPreferences
-        // 在实际实现中，使用JSON序列化库将历史记录转换为JSON字符�?       // prefs.edit().putString(KEY_COMMAND_HISTORY, jsonString).apply()
+        // 在实际实现中，使用JSON序列化库将历史记录转换为JSON字符?       // prefs.edit().putString(KEY_COMMAND_HISTORY, jsonString).apply()
     }
     
     /**
-     * 获取建议的命令列表（基于历史记录和输入的前缀�?    */
+     * 获取建议的命令列表（基于历史记录和输入的前缀?    */
     fun getSuggestedCommands(prefix: String): List<String> {
         if (prefix.isBlank()) return emptyList()
         

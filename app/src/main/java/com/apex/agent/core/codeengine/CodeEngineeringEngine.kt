@@ -165,11 +165,11 @@ class CodeEngineeringEngine(private val context: Context) {
         }
 
     suspend fun analyzeProject(rootPath: String): CodeProject? = withContext(Dispatchers.IO) {
-        AppLogger.d(TAG, "开始分析项�? ${rootPath}")
+        AppLogger.d(TAG, "开始分析项? ${rootPath}")
 
         val rootFile = File(rootPath)
         if (!rootFile.exists() || !rootFile.isDirectory) {
-            AppLogger.e(TAG, "项目目录不存�? ${rootPath}")
+            AppLogger.e(TAG, "项目目录不存? ${rootPath}")
             return@withContext null
         }
 
@@ -203,7 +203,7 @@ class CodeEngineeringEngine(private val context: Context) {
         )
 
         saveProject(project)
-        AppLogger.d(TAG, "项目分析完成: ${project.name}, ${codeFiles.size} 个文�?)
+        AppLogger.d(TAG, "项目分析完成: ${project.name}, ${codeFiles.size} 个文?)
 
         project
     }
@@ -354,8 +354,8 @@ class CodeEngineeringEngine(private val context: Context) {
                         type = IssueType.PERFORMANCE_ISSUE,
                         severity = Severity.MEDIUM,
                         lineNumber = 1,
-                        description = "文件过长（超�?0000字符），建议拆分",
-                        suggestion = "将代码拆分为多个小文�?,
+                        description = "文件过长（超?0000字符），建议拆分",
+                        suggestion = "将代码拆分为多个小文?,
                         confidence = 0.7f
                     )
                 )
@@ -371,7 +371,7 @@ class CodeEngineeringEngine(private val context: Context) {
                             type = IssueType.CODE_SMELL,
                             severity = Severity.LOW,
                             lineNumber = lineNum,
-                            description = "行过长（${line.length}字符�?,
+                            description = "行过长（${line.length}字符?,
                             suggestion = "将长行拆分为多行",
                             confidence = 0.8f
                         )
@@ -401,7 +401,7 @@ class CodeEngineeringEngine(private val context: Context) {
                             severity = Severity.INFO,
                             lineNumber = lineNum,
                             description = "发现待办事项注释",
-                            suggestion = "完成代码或移除待办注�?,
+                            suggestion = "完成代码或移除待办注?,
                             confidence = 0.9f
                         )
                     )
@@ -513,7 +513,7 @@ class CodeEngineeringEngine(private val context: Context) {
                 put("lastAnalyzed", project.lastAnalyzed)
             }
             projectFile.writeText(json.toString(2))
-            AppLogger.d(TAG, "项目信息已保�? ${project.id}")
+            AppLogger.d(TAG, "项目信息已保? ${project.id}")
         } catch (e: Exception) {
             AppLogger.e(TAG, "保存项目信息失败", e)
         }
@@ -527,7 +527,7 @@ class CodeEngineeringEngine(private val context: Context) {
 
             val projectFile = File(projectsDir, "${projectId}.json")
             if (!projectFile.exists()) {
-                AppLogger.e(TAG, "项目不存�? ${projectId}")
+                AppLogger.e(TAG, "项目不存? ${projectId}")
                 return@withContext suggestions
             }
 
@@ -537,7 +537,7 @@ class CodeEngineeringEngine(private val context: Context) {
 
             scanDirectoryForRefactoring(rootDir, "", suggestions)
 
-            AppLogger.d(TAG, "生成 ${suggestions.size} 条重构建�?)
+            AppLogger.d(TAG, "生成 ${suggestions.size} 条重构建?)
             suggestions
         }
 
@@ -584,8 +584,8 @@ class CodeEngineeringEngine(private val context: Context) {
                                 lineEnd = lineNum,
                                 originalCode = line,
                                 suggestedCode = line.replace(num, "CONSTANT_NAME"),
-                                description = "用命名常量替换魔法数�?${num}",
-                                benefits = listOf("提高代码可读�?, "便于统一修改", "减少错误"),
+                                description = "用命名常量替换魔法数?${num}",
+                                benefits = listOf("提高代码可读?, "便于统一修改", "减少错误"),
                                 riskLevel = RiskLevel.LOW
                             )
                         )
@@ -600,7 +600,7 @@ class CodeEngineeringEngine(private val context: Context) {
     suspend fun generateReport(projectId: String): String = withContext(Dispatchers.IO) {
         val projectFile = File(projectsDir, "${projectId}.json")
         if (!projectFile.exists()) {
-            return@withContext "项目不存�? ${projectId}"
+            return@withContext "项目不存? ${projectId}"
         }
 
         val projectJson = JSONObject(projectFile.readText())
@@ -608,14 +608,14 @@ class CodeEngineeringEngine(private val context: Context) {
         buildString {
             appendLine("=== 代码工程分析报告 ===")
             appendLine()
-            appendLine("【项目信息�?)
+            appendLine("【项目信息?)
             appendLine("名称: ${projectJson.getString("name")}")
             appendLine("路径: ${projectJson.getString("rootPath")}")
             appendLine("语言: ${projectJson.getString("language")}")
             appendLine("构建系统: ${projectJson.getString("buildSystem")}")
-            appendLine("最后分�? ${projectJson.getLong("lastAnalyzed")}")
+            appendLine("最后分? ${projectJson.getLong("lastAnalyzed")}")
             appendLine()
-            appendLine("【建议操作�?)
+            appendLine("【建议操作?)
             appendLine("1. 运行详细代码分析")
             appendLine("2. 查看重构建议")
             appendLine("3. 执行安全审计")
@@ -632,7 +632,7 @@ class CodeEngineeringEngine(private val context: Context) {
 
                 if (analyzed < cutoffTime) {
                     file.delete()
-                    AppLogger.d(TAG, "清理旧项�? ${file.name}")
+                    AppLogger.d(TAG, "清理旧项? ${file.name}")
                 }
             } catch (e: Exception) {
                 AppLogger.w(TAG, "跳过清理文件: ${file.name}", e)

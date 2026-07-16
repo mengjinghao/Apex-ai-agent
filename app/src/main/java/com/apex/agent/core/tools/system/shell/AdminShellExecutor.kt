@@ -16,14 +16,14 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-/** 基于设备管理员的Shell命令执行。实现ADMIN权限级别的命令执�?/
+/** 基于设备管理员的Shell命令执行。实现ADMIN权限级别的命令执?/
 class AdminShellExecutor(private val context: Context) : ShellExecutor {
     companion object {
         private const val TAG = "AdminShellExecutor"
         private var adminComponentName: ComponentName? = null
 
         /**
-         * 设置设备管理员组件名�?        * @param componentName 设备管理员组件名�?        */
+         * 设置设备管理员组件名?        * @param componentName 设备管理员组件名?        */
         fun setAdminComponentName(componentName: ComponentName) {
             adminComponentName = componentName
         }
@@ -74,14 +74,14 @@ class AdminShellExecutor(private val context: Context) : ShellExecutor {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
 
-            // 由于无法知道用户是否激活了管理员，返回false，让调用者自行处理后续检�?           onResult(false)
+            // 由于无法知道用户是否激活了管理员，返回false，让调用者自行处理后续检?           onResult(false)
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error opening device admin settings", e)
             onResult(false)
         }
     }
 
-    /** 检查设备管理员是否已激�?/
+    /** 检查设备管理员是否已激?/
     private fun isDeviceAdminActive(): Boolean {
         return try {
             adminComponentName?.let { devicePolicyManager.isAdminActive(it) } ?: false
@@ -103,7 +103,7 @@ class AdminShellExecutor(private val context: Context) : ShellExecutor {
 
                 AppLogger.d(TAG, "Executing command via device admin: ${command}")
 
-                // 设备管理员API不能直接执行shell命令，但可以执行一些系统操�?               // 这里实现将根据实际可用的管理员API而定
+                // 设备管理员API不能直接执行shell命令，但可以执行一些系统操?               // 这里实现将根据实际可用的管理员API而定
 
                 try {
                     when {
@@ -125,7 +125,7 @@ class AdminShellExecutor(private val context: Context) : ShellExecutor {
                                     0
                             )
                         }
-                        // 可以添加更多设备管理员API支持的操�?                       else -> {
+                        // 可以添加更多设备管理员API支持的操?                       else -> {
                             return@withContext ShellExecutor.CommandResult(
                                     false,
                                     "",

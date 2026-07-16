@@ -27,26 +27,26 @@ class ApkReverseEngineer(private val context: Context) {
     }
 
     /**
-     * 替换AXML中所有引用旧包名的属�?    * @param axml AXML数据结构
-     * @param oldPackageName 旧包�?    * @param newPackageName 新包�?    */
+     * 替换AXML中所有引用旧包名的属?    * @param axml AXML数据结构
+     * @param oldPackageName 旧包?    * @param newPackageName 新包?    */
     private fun replacePackageReferences(
             axml: Axml,
             oldPackageName: String,
             newPackageName: String
     ) {
-        // 递归处理所有节�?       fun processNode(node: Axml.Node) {
-            // 处理当前节点的属�?           for (attr in node.attrs) {
+        // 递归处理所有节?       fun processNode(node: Axml.Node) {
+            // 处理当前节点的属?           for (attr in node.attrs) {
                 if (attr.value is String) {
                     val strValue = attr.value as String
 
-                    // 特殊情况：保留对MainActivity的引用不�?                   if (strValue == "${oldPackageName}.MainActivity" ||
+                    // 特殊情况：保留对MainActivity的引用不?                   if (strValue == "${oldPackageName}.MainActivity" ||
                                     strValue.endsWith(".${oldPackageName}.MainActivity")
                     ) {
                         AppLogger.d(TAG, "保留MainActivity引用不变: ${strValue}")
                         continue
                     }
 
-                    // 替换所有其他引用旧包名的情�?                   if (strValue.contains(oldPackageName)) {
+                    // 替换所有其他引用旧包名的情?                   if (strValue.contains(oldPackageName)) {
                         val newValue = strValue.replace(oldPackageName, newPackageName)
                         AppLogger.d(TAG, "替换包名引用: ${strValue} -> ${newValue}")
                         attr.value = newValue
@@ -54,17 +54,17 @@ class ApkReverseEngineer(private val context: Context) {
                 }
             }
 
-            // 递归处理子节�?           for (childNode in node.children) {
+            // 递归处理子节?           for (childNode in node.children) {
                 processNode(childNode)
             }
         }
 
-        // 处理所有顶级节�?       for (node in axml.firsts) {
+        // 处理所有顶级节?       for (node in axml.firsts) {
             processNode(node)
         }
     }
 
-    /** 按指定尺寸缩放位�?/
+    /** 按指定尺寸缩放位?/
     private fun scaleBitmap(source: Bitmap, size: Int): Bitmap {
         return Bitmap.createScaledBitmap(source, size, size, true)
     }
@@ -105,7 +105,7 @@ class ApkReverseEngineer(private val context: Context) {
                         val entry = entries.nextElement()
                         val entryName = entry.name
 
-                        // 跳过旧签�?                       if (entryName.startsWith("META-INF/")) {
+                        // 跳过旧签?                       if (entryName.startsWith("META-INF/")) {
                             continue
                         }
 
@@ -174,10 +174,10 @@ class ApkReverseEngineer(private val context: Context) {
                     "使用zipalign-java库进程{alignment}字节对齐: ${inputApk.absolutePath} -> ${outputApk.absolutePath}"
             )
 
-            // 使用zipalign-java库进行对�?           val rafIn = RandomAccessFile(inputApk, "r")
+            // 使用zipalign-java库进行对?           val rafIn = RandomAccessFile(inputApk, "r")
             val fos = FileOutputStream(outputApk)
 
-            // ，so文件使用16KB边界对齐，其他文件使，字节对�?
+            // ，so文件使用16KB边界对齐，其他文件使，字节对?
             com.iyxan23.zipalignjava.ZipAlign.alignZip(rafIn, fos, alignment, 4 * 1024)
 
             rafIn.close()
@@ -192,7 +192,7 @@ class ApkReverseEngineer(private val context: Context) {
     }
 
     /**
-     * 判断文件是否应该不压缩存�?    * @param filePath 文件路径
+     * 判断文件是否应该不压缩存?    * @param filePath 文件路径
      * @return 如果应该不压缩存储返回true，否则返回false
      */
     private fun shouldStoreWithoutCompression(filePath: String): Boolean {
@@ -491,7 +491,7 @@ class ApkReverseEngineer(private val context: Context) {
     /**
      * 重新签名APK
      * @param unsignedApk 未签名的APK文件
-     * @param keyStoreFile 密钥库文�?    * @param keyStorePassword 密钥库密�?    * @param keyAlias 密钥别名
+     * @param keyStoreFile 密钥库文?    * @param keyStorePassword 密钥库密?    * @param keyAlias 密钥别名
      * @param keyPassword 密钥密码
      * @param outputApk 签名后的APK文件
      * @return 包含签名结果和错误消息的Pair，成功时第二个值为null
@@ -517,13 +517,13 @@ class ApkReverseEngineer(private val context: Context) {
                 return Pair(false, message)
             }
 
-            AppLogger.d(TAG, "开始签名APK，使用密�?${keyStoreFile.absolutePath}, 别名: ${keyAlias}")
+            AppLogger.d(TAG, "开始签名APK，使用密?${keyStoreFile.absolutePath}, 别名: ${keyAlias}")
             AppLogger.d(TAG, "密钥文件大小: ${keyStoreFile.length()}字节")
 
             if (outputApk.exists()) outputApk.delete()
             outputApk.parentFile?.mkdirs()
 
-            // 首先尝试使用PKCS12格式加载密钥�?           val pkcs12Result =
+            // 首先尝试使用PKCS12格式加载密钥?           val pkcs12Result =
                     trySignWithKeyStoreType(
                             unsignedApk,
                             keyStoreFile,
@@ -574,9 +574,9 @@ class ApkReverseEngineer(private val context: Context) {
             keyStoreType: String
     ): Pair<Boolean, String?> {
         try {
-            AppLogger.d(TAG, "尝试着keyStoreType 格式加载密钥�?
+            AppLogger.d(TAG, "尝试着keyStoreType 格式加载密钥?
 
-            // 使用KeyStoreHelper获取密钥库实�?           val keyStore = KeyStoreHelper.getKeyStoreInstance(keyStoreType)
+            // 使用KeyStoreHelper获取密钥库实?           val keyStore = KeyStoreHelper.getKeyStoreInstance(keyStoreType)
             if (keyStore == null) {
                 val errorMessage = context.getString(R.string.apk_get_keystore_instance_failed, keyStoreType)
                 AppLogger.e(TAG, errorMessage)
@@ -586,14 +586,14 @@ class ApkReverseEngineer(private val context: Context) {
             FileInputStream(keyStoreFile).use { input ->
                 try {
                     keyStore.load(input, keyStorePassword.toCharArray())
-                    AppLogger.d(TAG, "成功，keyStoreType 格式加载密钥�?
+                    AppLogger.d(TAG, "成功，keyStoreType 格式加载密钥?
                 } catch (e: Exception) {
                     val errorMessage = context.getString(R.string.apk_load_keystore_failed, keyStoreType, e.message ?: "")
                     AppLogger.e(TAG, errorMessage)
                     return Pair(false, errorMessage)
                 }
 
-                // 获取可用的别�?               val aliases = keyStore.aliases()
+                // 获取可用的别?               val aliases = keyStore.aliases()
                 val aliasList = mutableListOf<String>()
                 while (aliases.hasMoreElements()) {
                     aliasList.add(aliases.nextElement())
@@ -604,9 +604,9 @@ class ApkReverseEngineer(private val context: Context) {
                     AppLogger.e(TAG, errorMessage)
                     return Pair(false, errorMessage)
                 } else {
-                    AppLogger.d(TAG, "${keyStoreType} 密钥库中的别�?${aliasList.joinToString()}")
+                    AppLogger.d(TAG, "${keyStoreType} 密钥库中的别?${aliasList.joinToString()}")
 
-                    // 如果指定的别名不存在，但有其他别名，使用第一个别�?                   if (!aliasList.contains(keyAlias) && aliasList.isNotEmpty()) {
+                    // 如果指定的别名不存在，但有其他别名，使用第一个别?                   if (!aliasList.contains(keyAlias) && aliasList.isNotEmpty()) {
                         AppLogger.w(TAG, "指定的别，的${keyAlias}'不存在，将使用可用的别名: ${aliasList[0]}")
                         val actualKeyAlias = aliasList[0]
                         return signWithKeyStore(
@@ -652,7 +652,7 @@ class ApkReverseEngineer(private val context: Context) {
             }
             val privateKey = key
 
-            // 获取证书�?           val certificateChain = keyStore.getCertificateChain(keyAlias)
+            // 获取证书?           val certificateChain = keyStore.getCertificateChain(keyAlias)
             if (certificateChain == null || certificateChain.isEmpty()) {
                 val errorMessage = context.getString(R.string.apk_cannot_get_cert_chain, keyAlias)
                 AppLogger.e(TAG, errorMessage)

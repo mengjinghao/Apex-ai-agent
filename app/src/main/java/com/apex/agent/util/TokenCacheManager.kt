@@ -13,7 +13,7 @@ class TokenCacheManager {
     // 对应于previousChatHistory的token数量
     private var previousHistoryTokenCount = 0
     
-    // 缓存的输入token数量（对应于previousChatHistory的公共前缀�?   private var _cachedInputTokenCount = 0
+    // 缓存的输入token数量（对应于previousChatHistory的公共前缀?   private var _cachedInputTokenCount = 0
     
     // 当前请求的新增token数量
     private var _currentInputTokenCount = 0
@@ -28,12 +28,12 @@ class TokenCacheManager {
         get() = _cachedInputTokenCount
     
     /**
-     * 获取当前请求的输入token数量（不包括缓存�?    */
+     * 获取当前请求的输入token数量（不包括缓存?    */
     val currentInputTokenCount: Int
         get() = _currentInputTokenCount
     
     /**
-     * 获取总输入token数量（缓�? 当前�?    */
+     * 获取总输入token数量（缓? 当前?    */
     val totalInputTokenCount: Int
         get() = _cachedInputTokenCount + _currentInputTokenCount
     
@@ -44,7 +44,7 @@ class TokenCacheManager {
         get() = _outputTokenCount
     
     /**
-     * 重置所有token计数和缓�?    */
+     * 重置所有token计数和缓?    */
     fun resetTokenCounts() {
         previousChatHistory = emptyList()
         previousHistoryTokenCount = 0
@@ -61,7 +61,7 @@ class TokenCacheManager {
     }
 
     /**
-     * 使用API返回的实际输出token数量覆盖当前估算�?    */
+     * 使用API返回的实际输出token数量覆盖当前估算?    */
     fun setOutputTokens(tokens: Int) {
         _outputTokenCount = tokens.coerceAtLeast(0)
     }
@@ -70,7 +70,7 @@ class TokenCacheManager {
      * 使用API返回的实际token数据更新计数
      * 用于Gemini等支持服务端缓存统计的API
      * 
-     * @param actualInput 实际的输入token数量（不包括缓存�?    * @param cachedInput 缓存命中的token数量
+     * @param actualInput 实际的输入token数量（不包括缓存?    * @param cachedInput 缓存命中的token数量
      */
     fun updateActualTokens(actualInput: Int, cachedInput: Int) {
         _currentInputTokenCount = actualInput
@@ -78,7 +78,7 @@ class TokenCacheManager {
     }
     
     /**
-     * 计算输入token数量，利用缓存优化重复计�?    * 
+     * 计算输入token数量，利用缓存优化重复计?    * 
      * @param chatHistory 完整的聊天历史（必须已包含本次最新输入）
      * @param toolsJson 工具定义的JSON字符串（可选）
      * @return 总的输入token数量
@@ -88,7 +88,7 @@ class TokenCacheManager {
         toolsJson: String? = null,
         updateState: Boolean = true
     ): Int {
-        // 构建包含工具定义的历史记录列�?       // 策略：将toolsJson拼接到System Prompt前面，或者作为第一条System消息
+        // 构建包含工具定义的历史记录列?       // 策略：将toolsJson拼接到System Prompt前面，或者作为第一条System消息
         // 这样可以利用前缀匹配机制缓存工具定义
         val historyWithTools = if (!toolsJson.isNullOrEmpty()) {
             val mutableHistory = chatHistory.toMutableList()
@@ -108,7 +108,7 @@ class TokenCacheManager {
         }
 
         // 找到与之前历史的公共前缀长度
-        // 注意：previousChatHistory现在存储的是包含工具定义的版�?       val commonPrefixLength = findCommonPrefixLength(historyWithTools, previousChatHistory)
+        // 注意：previousChatHistory现在存储的是包含工具定义的版?       val commonPrefixLength = findCommonPrefixLength(historyWithTools, previousChatHistory)
         
         AppLogger.d("TokenCacheManager", "聊天历史比较: 当前=${historyWithTools.size}, 之前=${previousChatHistory.size}, 公共前缀=${commonPrefixLength}")
         
@@ -116,7 +116,7 @@ class TokenCacheManager {
         val newTokens: Int
 
         if (commonPrefixLength > 0) {
-            // 有公共前缀，可以使用缓�?           cachedTokens = if (commonPrefixLength == previousChatHistory.size) {
+            // 有公共前缀，可以使用缓?           cachedTokens = if (commonPrefixLength == previousChatHistory.size) {
                 // 完全匹配之前的历史，直接使用缓存
                 previousHistoryTokenCount
             } else {
@@ -125,7 +125,7 @@ class TokenCacheManager {
                 calculateTokensForHistory(commonPrefix)
             }
             
-            // 计算新增部分的token数量 (history剩下的部�? 当前消息�?
+            // 计算新增部分的token数量 (history剩下的部? 当前消息?
             val newPart = historyWithTools.drop(commonPrefixLength)
             newTokens = calculateTokensForHistory(newPart)
         } else {
@@ -142,7 +142,7 @@ class TokenCacheManager {
             // 更新缓存的历史记，token 数量
             previousHistoryTokenCount = cachedTokens + newTokens
 
-            // 更新缓存的历史记录列表（包含工具定义�?           if (chatHistory.isNotEmpty()) {
+            // 更新缓存的历史记录列表（包含工具定义?           if (chatHistory.isNotEmpty()) {
                 previousChatHistory = historyWithTools
             }
 

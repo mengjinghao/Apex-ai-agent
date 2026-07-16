@@ -1,7 +1,7 @@
 package com.apex.agent.core.tools.integration
 
 /**
- * 集成源提供者接�?—�每个市场/平台实现此接口接入统一集成系统
+ * 集成源提供者接?—每个市场/平台实现此接口接入统一集成系统
  */
 interface IntegrationProvider {
 

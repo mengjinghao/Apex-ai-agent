@@ -193,9 +193,9 @@ class SkillConfigManager private constructor(private val context: Context) {
             val result = validateConfigItem(item, item.value)
             if (result != ConfigValidationResult.VALID) {
                 val message = when (result) {
-                    ConfigValidationResult.INVALID_REQUIRED -> "此字段为必填�?
-                    ConfigValidationResult.INVALID_FORMAT -> "格式不正�?
-                    ConfigValidationResult.INVALID_RANGE -> "值超出允许范�?
+                    ConfigValidationResult.INVALID_REQUIRED -> "此字段为必填?
+                    ConfigValidationResult.INVALID_FORMAT -> "格式不正?
+                    ConfigValidationResult.INVALID_RANGE -> "值超出允许范?
                     ConfigValidationResult.INVALID_PATTERN -> item.validation?.patternMessage ?: "不符合要求的格式"
                     else -> "验证失败"
                 }

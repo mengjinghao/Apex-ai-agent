@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
-/** 基于标准Android权限的UI操作监听了实现STANDARD权限级别的操作监�?/
+/** 基于标准Android权限的UI操作监听了实现STANDARD权限级别的操作监?/
 class StandardActionListener(private val context: Context) : ActionListener {
     companion object {
         private const val TAG = "StandardActionListener"
@@ -20,15 +20,15 @@ class StandardActionListener(private val context: Context) : ActionListener {
 
     override fun getPermissionLevel(): AndroidPermissionLevel = AndroidPermissionLevel.STANDARD
 
-    override suspend fun isAvailable(): Boolean = true // 标准监听器始终可�?
+    override suspend fun isAvailable(): Boolean = true // 标准监听器始终可?
     override suspend fun hasPermission(): ActionListener.PermissionStatus =
-        ActionListener.PermissionStatus.granted() // 标准监听器不需要额外权�?
+        ActionListener.PermissionStatus.granted() // 标准监听器不需要额外权?
     override fun initialize() {
         AppLogger.d(TAG, "标准UI操作监听器初始化完成")
     }
 
     override suspend fun requestPermission(onResult: (Boolean) -> Unit) {
-        // 标准监听器不需要额外权�?       onResult(true)
+        // 标准监听器不需要额外权?       onResult(true)
     }
 
     override fun isListening(): Boolean = isListening.get()
@@ -77,10 +77,10 @@ class StandardActionListener(private val context: Context) : ActionListener {
     }
 
     /**
-     * 开始基本事件监�?    * 在标准权限下，只能监听应用内的基本触摸和按键事件
+     * 开始基本事件监?    * 在标准权限下，只能监听应用内的基本触摸和按键事件
      */
     private fun startBasicEventMonitoring() {
-        // 在标准权限下，监听能力有�?       // 可以监听应用内的View触摸事件、Activity生命周期变化�?       AppLogger.d(TAG, "开始基本事件监�? 监听应用内触摸和按键事件")
+        // 在标准权限下，监听能力有?       // 可以监听应用内的View触摸事件、Activity生命周期变化?       AppLogger.d(TAG, "开始基本事件监? 监听应用内触摸和按键事件")
         
         // 注意：标准权限无法监听系统级事件或其他应用的操作
         // 只能监听当前应用内的用户交互

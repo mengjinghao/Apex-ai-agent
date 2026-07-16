@@ -7,7 +7,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
 
 /**
- * XML布局解析�?
+ * XML布局解析?
  * 
  * 负责解析Android UI层次结构的XML，提取节点信息和窗口信息
  */
@@ -18,7 +18,7 @@ class XmlLayoutParser {
     }
     
     /**
-     * UI节点数据�?
+     * UI节点数据?
      */
     data class UINode(
         val className: String?,
@@ -59,8 +59,8 @@ class XmlLayoutParser {
     /**
      * 解析XML布局为节点树
      * 
-     * @param xml XML字符�?
-     * @return 简化的UI节点�?
+     * @param xml XML字符?
+     * @return 简化的UI节点?
      */
     fun parse(xml: String): SimplifiedUINode {
         try {
@@ -124,9 +124,9 @@ class XmlLayoutParser {
     /**
      * 在XML中查找匹配的节点
      * 
-     * @param xml XML字符�?
+     * @param xml XML字符?
      * @param predicate 匹配条件
-     * @return 匹配的节点列�?
+     * @return 匹配的节点列?
      */
     fun findNodes(xml: String, predicate: (XmlPullParser) -> Boolean): List<NodeInfo> {
         val matchedNodes = mutableListOf<NodeInfo>()
@@ -164,10 +164,10 @@ class XmlLayoutParser {
     }
     
     /**
-     * 从XML中提取窗口信�?
+     * 从XML中提取窗口信?
      * 
-     * @param xml XML字符�?
-     * @return Pair<包名, Activity�?
+     * @param xml XML字符?
+     * @return Pair<包名, Activity?
      */
     fun extractWindowInfo(xml: String): Pair<String?, String?> {
         try {
@@ -208,7 +208,7 @@ class XmlLayoutParser {
     }
     
     /**
-     * 解析边界坐标字符�?
+     * 解析边界坐标字符?
      * 
      * @param boundsString 边界字符串，格式: "[left,top][right,bottom]"
      * @return Rect对象
@@ -236,10 +236,10 @@ class XmlLayoutParser {
     }
     
     /**
-     * 计算边界中心�?
+     * 计算边界中心?
      * 
-     * @param boundsString 边界字符�?
-     * @return Pair<x, y> 中心点坐�?
+     * @param boundsString 边界字符?
+     * @return Pair<x, y> 中心点坐?
      */
     fun getBoundsCenter(boundsString: String): Pair<Int, Int>? {
         val rect = parseBounds(boundsString)
@@ -252,9 +252,9 @@ class XmlLayoutParser {
     }
     
     /**
-     * 检查边界是否在屏幕范围�?
+     * 检查边界是否在屏幕范围?
      * 
-     * @param boundsString 边界字符�?
+     * @param boundsString 边界字符?
      * @param screenWidth 屏幕宽度
      * @param screenHeight 屏幕高度
      * @return 是否在屏幕范围内
@@ -275,11 +275,11 @@ class XmlLayoutParser {
     /**
      * 从XmlPullParser创建UINode
      * 
-     * @param parser XML解析�?
+     * @param parser XML解析?
      * @return UINode对象
      */
     private fun createNode(parser: XmlPullParser): UINode {
-        // 解析关键属�?
+        // 解析关键属?
         val className = parser.getAttributeValue(null, "class")?.substringAfterLast('.')
         val text = parser.getAttributeValue(null, "text")?.replace("&#10;", "\n")
         val contentDesc = parser.getAttributeValue(null, "content-desc")

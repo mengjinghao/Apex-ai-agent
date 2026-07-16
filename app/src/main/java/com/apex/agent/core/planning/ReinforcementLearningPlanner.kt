@@ -250,7 +250,7 @@ class ReinforcementLearningPlanner(private val context: Context) {
         name: String,
         priority: Priority = Priority.MEDIUM
     ): Plan = withContext(Dispatchers.IO) {
-        val goal = activeGoals[goalId] ?: throw IllegalArgumentException("目标不存�?)
+        val goal = activeGoals[goalId] ?: throw IllegalArgumentException("目标不存?)
 
         val steps = generatePlanSteps(goal)
 
@@ -589,21 +589,21 @@ class ReinforcementLearningPlanner(private val context: Context) {
         buildString {
             appendLine("=== 强化学习规划系统报告 ===")
             appendLine()
-            appendLine("【目标统计�?)
+            appendLine("【目标统计?)
             appendLine("活跃目标: ${activeGoals.size}")
             appendLine("长期目标: ${activeGoals.values.count { it.type == GoalType.LONG_TERM }}")
             appendLine("中期目标: ${activeGoals.values.count { it.type == GoalType.MEDIUM_TERM }}")
             appendLine("短期目标: ${activeGoals.values.count { it.type == GoalType.SHORT_TERM }}")
             appendLine()
-            appendLine("【计划统计�?)
+            appendLine("【计划统计?)
             appendLine("总计划数: ${activePlans.size}")
-            appendLine("进行�? ${activePlans.values.count { it.status == PlanStatus.IN_PROGRESS }}")
-            appendLine("已完�? ${activePlans.values.count { it.status == PlanStatus.COMPLETED }}")
+            appendLine("进行? ${activePlans.values.count { it.status == PlanStatus.IN_PROGRESS }}")
+            appendLine("已完? ${activePlans.values.count { it.status == PlanStatus.COMPLETED }}")
             appendLine()
-            appendLine("【学习状态�?)
+            appendLine("【学习状态?)
             appendLine("经验数量: ${experienceBuffer.size}")
             appendLine("Epsilon: ${String.format("%.2f", epsilon)}")
-            appendLine("学习�? ${String.format("%.3f", learningRate)}")
+            appendLine("学习? ${String.format("%.3f", learningRate)}")
         }
     }
 

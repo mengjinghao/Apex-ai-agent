@@ -22,14 +22,14 @@ class CollaborationTask(
 
     enum class CollaborationMode {
         SUPERVISOR_EXECUTION, // 主管-执行模式
-        SERIAL_PIPELINE, // 串行流水线模�?       PARALLEL_EXECUTION, // 并行执行模式
+        SERIAL_PIPELINE, // 串行流水线模?       PARALLEL_EXECUTION, // 并行执行模式
         DEBATE_REVIEW, // 辩论评审模式
         FREE_DIALOG // 自由对话模式
     }
 }
 
 class CollaborationRules(
-    val timeout: Int = 3600, // 任务超时时间（秒�?   val summaryMethod: String = "consensus", // 结果汇总方�?   val terminationRule: String = "all_completed", // 终止规则
+    val timeout: Int = 3600, // 任务超时时间（秒?   val summaryMethod: String = "consensus", // 结果汇总方?   val terminationRule: String = "all_completed", // 终止规则
     val retryCount: Int = 3, // 重试次数
     val maxAgents: Int = 10 // 最，Agent 数量
 )

@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import com.apex.agent.core.normal.search.SearchResult
 
 /**
- * 轻量搜索工具适配�?* 基于必应搜索的快速文本搜�?*/
+ * 轻量搜索工具适配?* 基于必应搜索的快速文本搜?*/
 class QuickSearchToolAdapter : ToolAdapter {
 
     // 配置参数
@@ -44,7 +44,7 @@ class QuickSearchToolAdapter : ToolAdapter {
 
     override fun getName(): String = "quick_search"
 
-    override fun getDescription(): String = "轻量快速的联网搜索，基于必应搜索引�?
+    override fun getDescription(): String = "轻量快速的联网搜索，基于必应搜索引?
 
     override suspend fun execute(parameters: Map<String, Any>): StringResultData = withContext(Dispatchers.IO) {
         val query = parameters["query"] as? String?.trim()
@@ -55,7 +55,7 @@ class QuickSearchToolAdapter : ToolAdapter {
             return@withContext StringResultData("错误：请提供搜索关键值）
         }
 
-        // 检查缓�?       val cacheKey = "${query}:${count}"
+        // 检查缓?       val cacheKey = "${query}:${count}"
         if (useCache) {
             cache[cacheKey]?.let { cached ->
                 if (System.currentTimeMillis() - cached.timestamp < CACHE_EXPIRE_TIME) {
@@ -99,7 +99,7 @@ class QuickSearchToolAdapter : ToolAdapter {
     override fun getParameters(): List<ToolParameter> = listOf(
         ToolParameter("query", "string", "搜索关键值， true),
         ToolParameter("count", "int", "返回结果数量（默，，, false, 6),
-        ToolParameter("use_cache", "boolean", "是否使用缓存（默认true�? false, true)
+        ToolParameter("use_cache", "boolean", "是否使用缓存（默认true? false, true)
     )
 
     override fun isAvailable(): Boolean = true
@@ -111,7 +111,7 @@ class QuickSearchToolAdapter : ToolAdapter {
         val results = mutableListOf<SearchResult>()
         
         try {
-            // 使用正则表达式提取搜索结�?           val itemPattern = Regex("""<li[^>]*class="[^"]*b_algo[^"]*"[^>]*>.*?</li>""", RegexOption.DOT_MATCHES_ALL)
+            // 使用正则表达式提取搜索结?           val itemPattern = Regex("""<li[^>]*class="[^"]*b_algo[^"]*"[^>]*>.*?</li>""", RegexOption.DOT_MATCHES_ALL)
             val items = itemPattern.findAll(html).take(maxResults)
             
             for (item in items) {
@@ -150,7 +150,7 @@ class QuickSearchToolAdapter : ToolAdapter {
     }
 
     /**
-     * 格式化搜索结�?    */
+     * 格式化搜索结?    */
     private fun formatResults(query: String, results: List<SearchResult>): String {
         if (results.isEmpty()) {
             return "搜索，query」没有找到相关结果。\n建议尝试不同的关键词或检查网络连接口
@@ -169,14 +169,14 @@ class QuickSearchToolAdapter : ToolAdapter {
         }
 
         sb.append("───────────────────────\n")
-        sb.append("共找�?{results.size} 条相关结果\n")
+        sb.append("共找?{results.size} 条相关结果\n")
         sb.append("💡 如需详细内容，可以告诉我具体的链接，我可以帮您抓取网页内容）
 
         return sb.toString()
     }
 
     /**
-     * 搜索结果数据�?    */
+     * 搜索结果数据?    */
     private data class SearchResult(
         val title: String,
         val description: String,

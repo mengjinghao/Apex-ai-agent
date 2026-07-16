@@ -8,7 +8,7 @@ import com.apex.core.tools.javascript.map
 import kotlinx.coroutines.withContext
 
 /**
- * 批量运行存储 - 与主会话存储完全隔离的数据存�? * 
+ * 批量运行存储 - 与主会话存储完全隔离的数据存? * 
  * 用途：
  * - 批量运行器的任务数据不写入主会话存储
  * - RL轨迹数据（强化学习）隔离存储
@@ -49,7 +49,7 @@ class BatchRunStorage(context: Context) {
     }
     
     /**
-     * 开始批量运�?     */
+     * 开始批量运?     */
     suspend fun startBatchRun(batchRunId: String) {
         withContext(Dispatchers.IO) {
             batchRunDao.updateBatchRunStatus(
@@ -88,7 +88,7 @@ class BatchRunStorage(context: Context) {
                 completedAt = System.currentTimeMillis(),
                 result = null
             )
-            // 获取实体并更新错误信�?            val entity = batchRunDao.getBatchRunById(batchRunId)
+            // 获取实体并更新错误信?            val entity = batchRunDao.getBatchRunById(batchRunId)
             entity?.let {
                 batchRunDao.updateBatchRun(it.copy(errorMessage = errorMessage))
             }
@@ -96,19 +96,19 @@ class BatchRunStorage(context: Context) {
     }
     
     /**
-     * 获取批量运行状�?     */
+     * 获取批量运行状?     */
     suspend fun getBatchRun(batchRunId: String): BatchRunEntity? {
         return batchRunDao.getBatchRunById(batchRunId)
     }
     
     /**
-     * 获取所有批量运行（Flow�?     */
+     * 获取所有批量运行（Flow?     */
     fun getAllBatchRunsFlow(): Flow<List<BatchRunEntity>> {
         return batchRunDao.getAllBatchRuns()
     }
     
     /**
-     * 获取特定批次的批量运�?     */
+     * 获取特定批次的批量运?     */
     fun getBatchRunsByBatchIdFlow(batchRunId: String): Flow<List<BatchRunEntity>> {
         return batchRunDao.getBatchRunsByBatchId(batchRunId)
     }
@@ -127,7 +127,7 @@ class BatchRunStorage(context: Context) {
         withContext(Dispatchers.IO) {
             // 先删除关联的RL轨迹
             rlTrajectoryDao.deleteTrajectoriesByBatchRunId(batchRunId)
-            // 再删除批量运行本�?            batchRunDao.deleteBatchRun(batchRunId)
+            // 再删除批量运行本?            batchRunDao.deleteBatchRun(batchRunId)
         }
     }
     
@@ -182,7 +182,7 @@ class BatchRunStorage(context: Context) {
     }
     
     /**
-     * 计算批量运行的平均奖�?     */
+     * 计算批量运行的平均奖?     */
     suspend fun calculateAverageReward(batchRunId: String): Double = withContext(Dispatchers.IO) {
         val trajectories = rlTrajectoryDao.getTrajectoriesByBatchRunIdSync(batchRunId)
         if (trajectories.isEmpty()) return@withContext 0.0
@@ -223,14 +223,14 @@ class BatchRunStorage(context: Context) {
      */
     suspend fun cleanupOldData(olderThanTimestamp: Long) {
         withContext(Dispatchers.IO) {
-            // 清理旧的批量运行（级联删除RL轨迹�?            val allBatchRuns = batchRunDao.getBatchRunsByBatchId("")
+            // 清理旧的批量运行（级联删除RL轨迹?            val allBatchRuns = batchRunDao.getBatchRunsByBatchId("")
             // Note: This is simplified; in production you'd want a proper cleanup query
         }
     }
 }
 
 /**
- * 批量运行状态枚�? */
+ * 批量运行状态枚? */
 enum class BatchStatus {
     PENDING,
     RUNNING,

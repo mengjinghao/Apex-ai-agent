@@ -6,7 +6,7 @@ import com.apex.agent.core.hooks.SessionContext
 import com.apex.util.AppLogger
 
 /**
- * 压缩建议数据�? */
+ * 压缩建议数据? */
 data class CompactionSuggestion(
     val shouldCompact: Boolean,
     val reason: String,
@@ -14,7 +14,7 @@ data class CompactionSuggestion(
 )
 
 /**
- * 压缩结果数据�? */
+ * 压缩结果数据? */
 data class CompactionResult(
     val success: Boolean,
     val qualityScore: Float,
@@ -33,12 +33,12 @@ data class ContextUsageStats(
 )
 
 /**
- * 战略性上下文压缩管理�? * 智能检测上下文使用情况，提供压缩建议和执行压缩
+ * 战略性上下文压缩管理? * 智能检测上下文使用情况，提供压缩建议和执行压缩
  */
 object StrategicCompactionManager {
     private const val TAG = "StrategicCompactionManager"
     
-    // 上下文窗口大小限制（token�?    private const val CONTEXT_WINDOW_LIMIT = 128000
+    // 上下文窗口大小限制（token?    private const val CONTEXT_WINDOW_LIMIT = 128000
     
     // 建议压缩的阈值百分比
     private const val COMPACTION_THRESHOLD_PERCENT = 75f
@@ -48,17 +48,17 @@ object StrategicCompactionManager {
     private const val RECENT_INFO_WEIGHT = 0.3f
     private const val TOOL_RESULT_WEIGHT = 0.3f
 
-    // 会话级统计数�?    private val sessionStats = mutableMapOf<String, SessionStatistics>()
+    // 会话级统计数?    private val sessionStats = mutableMapOf<String, SessionStatistics>()
 
     /**
-     * 检测是否需要建议压�?     * @param sessionId 会话ID
+     * 检测是否需要建议压?     * @param sessionId 会话ID
      * @return 压缩建议
      */
     fun shouldSuggestCompaction(sessionId: String): CompactionSuggestion {
         val stats = getSessionStats(sessionId)
         val usagePercent = stats.windowUsagePercent
         
-        AppLogger.d(TAG, "检查会�?${sessionId} 的压缩需�? 使用�?${usagePercent}%")
+        AppLogger.d(TAG, "检查会?${sessionId} 的压缩需? 使用?${usagePercent}%")
 
         return when {
             usagePercent >= 90f -> CompactionSuggestion(
@@ -73,12 +73,12 @@ object StrategicCompactionManager {
             )
             stats.messageCount > 50 -> CompactionSuggestion(
                 shouldCompact = true,
-                reason = "对话轮次较多�?{stats.messageCount} 条），建议压缩历�?,
+                reason = "对话轮次较多?{stats.messageCount} 条），建议压缩历?,
                 urgency = 50
             )
             else -> CompactionSuggestion(
                 shouldCompact = false,
-                reason = "${usagePercent}%�?,
+                reason = "${usagePercent}%?,
                 urgency = 0
             )
         }
@@ -91,14 +91,14 @@ object StrategicCompactionManager {
      * @return 压缩结果
      */
     suspend fun executeCompaction(sessionId: String, context: Context): CompactionResult {
-        AppLogger.i(TAG, "开始执行会�?${sessionId} 的上下文压缩")
+        AppLogger.i(TAG, "开始执行会?${sessionId} 的上下文压缩")
 
         return try {
             // 获取压缩前的统计
             val beforeStats = getSessionStats(sessionId)
             val beforeTokens = beforeStats.estimatedTokens
 
-            // 创建会话上下文用于钩子调�?            val sessionContext = SessionContext(
+            // 创建会话上下文用于钩子调?            val sessionContext = SessionContext(
                 sessionId = sessionId,
                 startTime = System.currentTimeMillis(),
                 lastActivity = System.currentTimeMillis(),
@@ -106,7 +106,7 @@ object StrategicCompactionManager {
                 tokenUsage = beforeTokens.toLong()
             )
 
-            // 压缩前触发钩�?            AppLogger.d(TAG, "触发压缩前钩�?)
+            // 压缩前触发钩?            AppLogger.d(TAG, "触发压缩前钩?)
             HookRegistry.triggerPreCompact(context, sessionContext)
 
             // 执行压缩逻辑
@@ -140,8 +140,8 @@ object StrategicCompactionManager {
     }
 
     /**
-     * 获取上下文使用统�?     * @param sessionId 会话ID
-     * @return 上下文使用统�?     */
+     * 获取上下文使用统?     * @param sessionId 会话ID
+     * @return 上下文使用统?     */
     fun getContextUsageStats(sessionId: String): ContextUsageStats {
         val stats = getSessionStats(sessionId)
         return ContextUsageStats(
@@ -153,7 +153,7 @@ object StrategicCompactionManager {
     }
 
     /**
-     * 更新会话统计（供外部调用�?     */
+     * 更新会话统计（供外部调用?     */
     fun updateSessionStats(sessionId: String, messageCount: Int, toolCallCount: Int, estimatedTokens: Int) {
         val stats = sessionStats.getOrPut(sessionId) { SessionStatistics() }
         stats.messageCount = messageCount
@@ -161,14 +161,14 @@ object StrategicCompactionManager {
         stats.estimatedTokens = estimatedTokens
         stats.windowUsagePercent = (estimatedTokens.toFloat() / CONTEXT_WINDOW_LIMIT) * 100f
         
-        AppLogger.d(TAG, "更新会话 ${sessionId} 统计: 消息�?${messageCount}, 工具调用=${toolCallCount}, tokens=${estimatedTokens}")
+        AppLogger.d(TAG, "更新会话 ${sessionId} 统计: 消息?${messageCount}, 工具调用=${toolCallCount}, tokens=${estimatedTokens}")
     }
 
     /**
-     * 清除会话统计（会话结束时调用�?     */
+     * 清除会话统计（会话结束时调用?     */
     fun clearSessionStats(sessionId: String) {
         sessionStats.remove(sessionId)
-        AppLogger.d(TAG, "清除会话 ${sessionId} 的统计数�?)
+        AppLogger.d(TAG, "清除会话 ${sessionId} 的统计数?)
     }
 
     /**
@@ -179,23 +179,23 @@ object StrategicCompactionManager {
     }
 
     /**
-     * 执行实际的压缩操�?     */
+     * 执行实际的压缩操?     */
     private fun performCompaction(sessionId: String, stats: SessionStatistics): List<String> {
         val preservedItems = mutableListOf<String>()
         
-        // 模拟压缩过程：保留关键信�?        // 实际实现中，这里应该调用 LLM 进行智能摘要
+        // 模拟压缩过程：保留关键信?        // 实际实现中，这里应该调用 LLM 进行智能摘要
         
         // 保留最近的关键对话
-        preservedItems.add("最�?5 轮对话的核心要点")
+        preservedItems.add("最?5 轮对话的核心要点")
         
-        // 保留重要的工具调用结�?        if (stats.toolCallCount > 0) {
-            preservedItems.add("关键工具调用的结果摘�?)
+        // 保留重要的工具调用结?        if (stats.toolCallCount > 0) {
+            preservedItems.add("关键工具调用的结果摘?)
         }
         
-        // 保留用户明确指定的重要信�?        preservedItems.add("用户强调的重要上下文")
+        // 保留用户明确指定的重要信?        preservedItems.add("用户强调的重要上下文")
         
         // 更新压缩后的统计
-        val reducedTokens = (stats.estimatedTokens * 0.4).toInt() // 压缩�?40%
+        val reducedTokens = (stats.estimatedTokens * 0.4).toInt() // 压缩?40%
         stats.estimatedTokens = reducedTokens
         stats.windowUsagePercent = (reducedTokens.toFloat() / CONTEXT_WINDOW_LIMIT) * 100f
         
@@ -211,7 +211,7 @@ object StrategicCompactionManager {
         preservedItems: List<String>
     ): Float {
         // 基于保留信息的完整度评分
-        val preservationRatio = preservedItems.size.toFloat() / 10f // 假设最多保�?10 项关键信�?        val compressionRatio = 1f - (after.estimatedTokens.toFloat() / before.estimatedTokens.toFloat())
+        val preservationRatio = preservedItems.size.toFloat() / 10f // 假设最多保?10 项关键信?        val compressionRatio = 1f - (after.estimatedTokens.toFloat() / before.estimatedTokens.toFloat())
         
         // 综合评分：保留信息越完整、压缩比越合理，分数越高
         val score = (preservationRatio * KEY_INFO_WEIGHT + 
@@ -221,7 +221,7 @@ object StrategicCompactionManager {
     }
 
     /**
-     * 会话统计数据内部�?     */
+     * 会话统计数据内部?     */
     private data class SessionStatistics(
         var toolCallCount: Int = 0,
         var windowUsagePercent: Float = 0f,

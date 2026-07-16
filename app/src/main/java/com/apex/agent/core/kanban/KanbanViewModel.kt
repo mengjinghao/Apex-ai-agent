@@ -9,9 +9,9 @@ import com.apex.agent.core.kanban.DispatchStatistics
 import com.apex.agent.core.tools.defaultTool.debugger.name
 
 /**
- * KanbanViewModel - 状态跟踪和可视�? *
- * 提供看板状态的完整视图，支�?
- * - 实时状态更�? * - 状态历史跟�? * - 可视化数�? */
+ * KanbanViewModel - 状态跟踪和可视? *
+ * 提供看板状态的完整视图，支?
+ * - 实时状态更? * - 状态历史跟? * - 可视化数? */
 class KanbanViewModel(
     private val board: KanbanBoard,
     private val workerRegistry: WorkerRegistry,
@@ -20,7 +20,7 @@ class KanbanViewModel(
     private val TAG = "KanbanViewModel"
 
     /**
-     * 看板 UI 状�?     */
+     * 看板 UI 状?     */
     data class KanbanUiState(
         val boardId: String,
         val boardName: String,
@@ -33,7 +33,7 @@ class KanbanViewModel(
     )
 
     /**
-     * �?UI 状�?     */
+     * ?UI 状?     */
     data class ColumnUiState(
         val id: String,
         val name: String,
@@ -45,7 +45,7 @@ class KanbanViewModel(
     )
 
     /**
-     * 任务 UI 状�?     */
+     * 任务 UI 状?     */
     data class TaskUiState(
         val id: String,
         val title: String,
@@ -88,7 +88,7 @@ class KanbanViewModel(
     val boardEvent: StateFlow<BoardEvent?> = _boardEvent.asStateFlow()
 
     /**
-     * 刷新 UI 状�?     */
+     * 刷新 UI 状?     */
     fun refreshState() {
         _uiState.value = buildUiState()
     }
@@ -108,7 +108,7 @@ class KanbanViewModel(
     }
 
     /**
-     * 添加新任�?     */
+     * 添加新任?     */
     fun addTask(title: String, description: String, columnId: String, priority: Int = 3): KanbanTask {
         val task = KanbanTask(
             title = title,
@@ -138,7 +138,7 @@ class KanbanViewModel(
     }
 
     /**
-     * 开始任务执�?     */
+     * 开始任务执?     */
     fun startTask(taskId: String) {
         val task = board.getTask(taskId)
         if (task != null) {
@@ -224,7 +224,7 @@ class KanbanViewModel(
     }
 
     /**
-     * 获取任务时间�?     */
+     * 获取任务时间?     */
     fun getTaskTimeline(taskId: String): List<TimelineEvent> {
         val task = board.getTask(taskId) ?: return emptyList()
         val events = mutableListOf<TimelineEvent>()
@@ -232,7 +232,7 @@ class KanbanViewModel(
         events.add(TimelineEvent(
             timestamp = task.createdAt,
             type = TimelineEvent.Type.CREATED,
-            message = "任务已创�?
+            message = "任务已创?
         ))
 
         task.collaborationHistory.forEach { event ->
@@ -298,10 +298,10 @@ class KanbanViewModel(
             status = task.status,
             priority = task.priority,
             priorityLabel = when (task.priority) {
-                1 -> "紧�?
-                2 -> "�?
-                3 -> "�?
-                4 -> "�?
+                1 -> "紧?
+                2 -> "?
+                3 -> "?
+                4 -> "?
                 else -> "未知"
             },
             assignedWorker = task.assignedWorkerId,
@@ -347,7 +347,7 @@ class KanbanViewModel(
     }
 
     /**
-     * 时间线事�?     */
+     * 时间线事?     */
     data class TimelineEvent(
         val timestamp: Long,
         val type: Type,

@@ -13,7 +13,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 
 /**
- * Service生命周期所有者类，提供Compose所需的生命周期管�?* 用于为没有自然生命周期的服务组件提供Compose所需的生命周期管�?*/
+ * Service生命周期所有者类，提供Compose所需的生命周期管?* 用于为没有自然生命周期的服务组件提供Compose所需的生命周期管?*/
 class ServiceLifecycleOwner : LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
     private val TAG = "ServiceLifecycleOwner"
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -24,9 +24,9 @@ class ServiceLifecycleOwner : LifecycleOwner, ViewModelStoreOwner, SavedStateReg
     init {
         // 确保在主线程上初始化
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            // 在主线程上，直接初始�?           savedStateRegistryController.performRestore(null)
+            // 在主线程上，直接初始?           savedStateRegistryController.performRestore(null)
         } else {
-            // 如果不在主线程上，使用Handler将初始化转到主线�?           AppLogger.w(TAG, "Initializing ServiceLifecycleOwner not on main thread. Moving to main thread.")
+            // 如果不在主线程上，使用Handler将初始化转到主线?           AppLogger.w(TAG, "Initializing ServiceLifecycleOwner not on main thread. Moving to main thread.")
             mainHandler.post { savedStateRegistryController.performRestore(null) }
         }
     }
@@ -41,7 +41,7 @@ class ServiceLifecycleOwner : LifecycleOwner, ViewModelStoreOwner, SavedStateReg
         get() = savedStateRegistryController.savedStateRegistry
         
     fun handleLifecycleEvent(event: Lifecycle.Event) {
-        // 确保生命周期事件在主线程上处�?       if (Looper.myLooper() == Looper.getMainLooper()) {
+        // 确保生命周期事件在主线程上处?       if (Looper.myLooper() == Looper.getMainLooper()) {
             lifecycleRegistry.handleLifecycleEvent(event)
         } else {
             // 如果不在主线程上，使用Handler将调用转到主线程

@@ -239,7 +239,7 @@ class SkillValidator(context: Context) {
                 if (compat.permissionChecks.isNotEmpty()) {
                     appendLine("### Permissions (${compat.permissionChecks.count { it.isGranted }}/${compat.permissionChecks.size} granted)")
                     compat.permissionChecks.forEach { check ->
-                        val status = if (check.isGranted) "�? else "�?
+                        val status = if (check.isGranted) "? else "?
                         appendLine("- ${status} ${check.permission.name}: ${check.message}")
                     }
                     appendLine()
@@ -247,7 +247,7 @@ class SkillValidator(context: Context) {
                 if (compat.dependencyChecks.isNotEmpty()) {
                     appendLine("### Dependencies (${compat.dependencyChecks.count { it.isMet }}/${compat.dependencyChecks.size} met)")
                     compat.dependencyChecks.forEach { check ->
-                        val status = if (check.isMet) "�? else "�?
+                        val status = if (check.isMet) "? else "?
                         appendLine("- ${status} ${check.dependencyName}${check.currentVersion?.let { " (${it})" } ?: ""}: ${check.message}")
                     }
                     appendLine()

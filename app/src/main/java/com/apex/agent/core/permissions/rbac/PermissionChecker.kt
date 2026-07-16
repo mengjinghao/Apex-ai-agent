@@ -47,7 +47,7 @@ class PermissionChecker(private val context: Context) {
         return if (modeState != null && modeState.isUsable) {
             PermissionResult.Granted
         } else {
-            PermissionResult.Denied("需�?${requiredMode.displayName} 权限模式")
+            PermissionResult.Denied("需?${requiredMode.displayName} 权限模式")
         }
     }
 

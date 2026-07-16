@@ -35,15 +35,15 @@ private object SharedHttpClient {
  * key: config.id
  * value: Pair<指纹(用于检测配置变更）, AIService>
  *
- * 收益�?
- * - 避免每次请求重复构�?Provider 实例（反�初始�分配开销�?
- * - 减少 GC 压力（LlamaProvider 较重�?
- * - 利用 ConcurrentHashMap 的线程安全读�?
+ * 收益?
+ * - 避免每次请求重复构?Provider 实例（反初始分配开销?
+ * - 减少 GC 压力（LlamaProvider 较重?
+ * - 利用 ConcurrentHashMap 的线程安全读?
  */
 private object ServiceCache {
     private val cache = ConcurrentHashMap<String, Pair<String, AIService>>()
 
-    /** 生成用于比较配置是否变更的指�?*/
+    /** 生成用于比较配置是否变更的指?*/
     fun fingerprint(config: ModelConfigData): String {
         return buildString {
             append(config.apiProviderType)
@@ -107,22 +107,22 @@ object AIServiceFactory {
         }
     }
 
-    /** 显式失效某个配置的缓存（当用户修改了该配置时调用�?*/
+    /** 显式失效某个配置的缓存（当用户修改了该配置时调用?*/
     fun invalidateCache(configId: String) {
         ServiceCache.invalidate(configId)
         AppLogger.d(TAG, "缓存失效: configId=${configId}")
     }
 
-    /** 清空全部缓存（切换账�?/ 重置场景�?*/
+    /** 清空全部缓存（切换账?/ 重置场景?*/
     fun clearAllCaches() {
         ServiceCache.clearAll()
-        AppLogger.d(TAG, "全部缓存已清�?)
+        AppLogger.d(TAG, "全部缓存已清?)
     }
 
     /**
      * [优化版] 创建或复用AI服务实例
-     * - 相同 config.id + 相同参数指纹 �复用缓存实例
-     * - 指纹不匹�?�重新构造并更新缓存
+     * - 相同 config.id + 相同参数指纹 复用缓存实例
+     * - 指纹不匹?重新构造并更新缓存
      */
     fun createService(
         config: ModelConfigData,
@@ -145,7 +145,7 @@ object AIServiceFactory {
     }
 
     /**
-     * 轻量级缓存事件上�?(使用反射避免直接耦合 ArchitectureHealthCheck)
+     * 轻量级缓存事件上?(使用反射避免直接耦合 ArchitectureHealthCheck)
      */
     private fun reportCacheEvent(context: Context, isHit: Boolean) {
         try {
@@ -159,12 +159,12 @@ object AIServiceFactory {
                     .invoke(healthInstance, ServiceCache.size())
             }
         } catch (_: Throwable) {
-            // 静默失败：健康检查模块非必需功能，不影响主流�?
+            // 静默失败：健康检查模块非必需功能，不影响主流?
         }
     }
 
     /**
-     * 内部方法：真正构�?Provider 实例
+     * 内部方法：真正构?Provider 实例
      */
     private fun buildServiceInternal(
         config: ModelConfigData,
@@ -244,7 +244,7 @@ object AIServiceFactory {
                     enableToolCall = enableToolCall
                 )
 
-            // 阿里�?
+            // 阿里?
             ApiProviderType.ALIYUN ->
                 QwenAIProvider(
                     apiEndpoint = config.apiEndpoint,
@@ -364,7 +364,7 @@ object AIServiceFactory {
                     enableToolCall = enableToolCall
                 )
 
-            // 支付宝百�?
+            // 支付宝百?
             ApiProviderType.ALIPAY_BAILING ->
                 OpenAIProvider(
                     apiEndpoint = config.apiEndpoint,
@@ -409,7 +409,7 @@ object AIServiceFactory {
                     enableToolCall = enableToolCall
                 )
 
-            // 派欧�?
+            // 派欧?
             ApiProviderType.PPINFRA ->
                 OpenAIProvider(
                     apiEndpoint = config.apiEndpoint,

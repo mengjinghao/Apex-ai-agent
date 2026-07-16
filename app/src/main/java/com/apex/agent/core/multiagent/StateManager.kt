@@ -15,7 +15,7 @@ class StateManager {
         val oldStatus = taskStates[taskId]
         taskStates[taskId] = status
 
-        // 閫氱煡鐩戝惉�?       if (oldStatus != status) {
+        // 閫氱煡鐩戝惉?       if (oldStatus != status) {
             listeners.values.forEach { it.onTaskStatusChanged(taskId, status) }
         }
     }
@@ -28,7 +28,7 @@ class StateManager {
         val oldStatus = agentStates[agentId]
         agentStates[agentId] = status
 
-        // 閫氱煡鐩戝惉�?       if (oldStatus != status) {
+        // 閫氱煡鐩戝惉?       if (oldStatus != status) {
             listeners.values.forEach { it.onAgentStatusChanged(agentId, status) }
         }
     }

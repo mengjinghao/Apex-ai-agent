@@ -10,7 +10,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
 /**
- * 针对豆包（Doubao）模型的特定API Provider�?* 继承自OpenAIProvider，以重用大部分兼容逻辑，但特别处理了`thinking`参数�?*/
+ * 针对豆包（Doubao）模型的特定API Provider?* 继承自OpenAIProvider，以重用大部分兼容逻辑，但特别处理了`thinking`参数?*/
 class DoubaoAIProvider(
     apiEndpoint: String,
     apiKeyProvider: ApiKeyProvider,
@@ -36,7 +36,7 @@ class DoubaoAIProvider(
     ) {
 
     /**
-     * 重写创建请求体的方法，以支持豆包的`thinking`参数�?    * 按官方文档建议始终显式传入：enabled/disabled�?    */
+     * 重写创建请求体的方法，以支持豆包的`thinking`参数?    * 按官方文档建议始终显式传入：enabled/disabled?    */
     override fun createRequestBody(
         context: android.content.Context,
         chatHistory: List<PromptTurn>,
@@ -53,9 +53,9 @@ class DoubaoAIProvider(
         // 豆包思考模式显式传参，避免依赖服务端默认，        val thinkingType = if (enableThinking) "enabled" else "disabled"
         val thinkingObject = JSONObject().put("type", thinkingType)
         jsonObject.put("thinking", thinkingObject)
-        AppLogger.d("DoubaoAIProvider", "已为豆包模型设置思考模�?${thinkingType}")
+        AppLogger.d("DoubaoAIProvider", "已为豆包模型设置思考模?${thinkingType}")
 
-        // 记录最终的请求体（省略过长的tools字段�?       val logJson = JSONObject(jsonObject.toString())
+        // 记录最终的请求体（省略过长的tools字段?       val logJson = JSONObject(jsonObject.toString())
         if (logJson.has("tools")) {
             val toolsArray = logJson.getJSONArray("tools")
             logJson.put("tools", "[${toolsArray.length()} tools omitted for brevity]")

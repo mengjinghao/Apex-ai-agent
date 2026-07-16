@@ -76,7 +76,7 @@ class StandardChatManagerTool(private val context: Context) {
 
     companion object {
         private const val TAG = "StandardChatManagerTool"
-        private const val SERVICE_CONNECTION_TIMEOUT = 15000L // 15秒超�?       private const val RESPONSE_STREAM_ACQUIRE_TIMEOUT = 15000L
+        private const val SERVICE_CONNECTION_TIMEOUT = 15000L // 15秒超?       private const val RESPONSE_STREAM_ACQUIRE_TIMEOUT = 15000L
         private const val AI_RESPONSE_TIMEOUT = 300000L
     }
 
@@ -221,7 +221,7 @@ class StandardChatManagerTool(private val context: Context) {
     }
 
     /**
-     * 查询对话输入状�?   */
+     * 查询对话输入状?   */
     suspend fun agentStatus(tool: AITool): ToolResult {
         return try {
             val chatId = tool.parameters.find { it.name == "chat_id" }?.value?.trim()
@@ -545,7 +545,7 @@ class StandardChatManagerTool(private val context: Context) {
 
     private val appContext = context.applicationContext
 
-    // Service 连接状�?  private var chatCore: ChatServiceCore? = null
+    // Service 连接状?  private var chatCore: ChatServiceCore? = null
     private var floatingService: FloatingChatService? = null
     private var isBound = false
     private var connectionDeferred = CompletableDeferred<Boolean>().apply { complete(false) }
@@ -587,10 +587,10 @@ class StandardChatManagerTool(private val context: Context) {
     }
 
     /**
-     * 确保服务已连�?    * @return 是否成功连接
+     * 确保服务已连?    * @return 是否成功连接
      */
     private suspend fun ensureServiceConnected(startIntent: Intent? = null): Boolean {
-        // 如果已经连接，直接返�?      if (isBound && chatCore != null) {
+        // 如果已经连接，直接返?      if (isBound && chatCore != null) {
             if (startIntent != null) {
                 withContext(Dispatchers.Main) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -635,7 +635,7 @@ class StandardChatManagerTool(private val context: Context) {
             }
         }
 
-        // 重新启动和绑定服�?      return try {
+        // 重新启动和绑定服?      return try {
             // 重置 deferred
             connectionDeferred = CompletableDeferred()
             
@@ -961,7 +961,7 @@ class StandardChatManagerTool(private val context: Context) {
     }
 
     /**
-     * 列出所有对�?   */
+     * 列出所有对?   */
     suspend fun listChats(tool: AITool): ToolResult {
         return try {
             val chatHistoryManager = ChatHistoryManager.getInstance(appContext)
@@ -1146,7 +1146,7 @@ class StandardChatManagerTool(private val context: Context) {
     }
 
     /**
-     * 向AI发送消�?    */
+     * 向AI发送消?    */
     suspend fun startMessageToAIStream(tool: AITool): MessageSendStreamStartResult {
         return try {
             if (!ensureServiceConnected()) {
@@ -1387,7 +1387,7 @@ class StandardChatManagerTool(private val context: Context) {
     }
 
     /**
-     * 向AI发送消息（高级参数�?    */
+     * 向AI发送消息（高级参数?    */
     suspend fun sendMessageToAIAdvanced(tool: AITool): ToolResult {
         return try {
             val message = tool.parameters.find { it.name == "message" }?.value?.trim()

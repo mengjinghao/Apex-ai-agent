@@ -74,7 +74,7 @@ class LogistraAgentEvolutionEngineV2(
             currentSkill
         }
 
-        // Step 4: 多版本晋的降�?
+        // Step 4: 多版本晋的降?
         AppLogger.d(TAG, "Step 4: Running multi-version promotion analysis...")
         versionManager.promoteVersions(currentSkill.skillId)
 
@@ -89,7 +89,7 @@ class LogistraAgentEvolutionEngineV2(
     }
 
     /**
-     * 便捷方法：从任务目标和工具序列创建初始技�?     */
+     * 便捷方法：从任务目标和工具序列创建初始技?     */
     fun createInitialSkill(
         skillId: String,
         name: String,

@@ -1,9 +1,9 @@
 package com.apex.util
 
 enum class TaskComplexity(val level: Int, val windowMultiplier: Float, val description: String) {
-    TRIVIAL(0, 0.2f, "简单闲�?),
+    TRIVIAL(0, 0.2f, "简单闲?),
     SIMPLE(1, 0.3f, "基础问答"),
-    MODERATE(2, 0.5f, "一般任�?),
+    MODERATE(2, 0.5f, "一般任?),
     COMPLEX(3, 0.7f, "复杂任务"),
     CRITICAL(4, 1.0f, "关键任务")
 }
@@ -26,30 +26,30 @@ class AdaptiveWindowManager(
 
     companion object {
         private val TRIVIAL_PATTERNS = listOf(
-            Regex("(你好|您好|hi|hello|hey|嗨|早上好|晚安�?, RegexOption.IGNORE_CASE),
+            Regex("(你好|您好|hi|hello|hey|嗨|早上好|晚安?, RegexOption.IGNORE_CASE),
             Regex("(谢谢|感谢|thx|correct)", RegexOption.IGNORE_CASE),
-            Regex("^(ok|ok[�?]|好的|收到|了解�?", RegexOption.IGNORE_CASE),
+            Regex("^(ok|ok[?]|好的|收到|了解?", RegexOption.IGNORE_CASE),
             Regex("^(?:随便|无所谓|都可以|无所谓）$", RegexOption.IGNORE_CASE),
             Regex("(哈哈|笑死|哈哈哈）$")
         )
 
         private val SIMPLE_PATTERNS = listOf(
-            Regex("(什么|怎么|如何|为什么|哪|谁|何时�?, RegexOption.IGNORE_CASE),
-            Regex("^(?:定义|解释|说明|描述|列出|查询�?, RegexOption.IGNORE_CASE),
-            Regex("^(?:给我|帮我|我想|我要�?, RegexOption.IGNORE_CASE)
+            Regex("(什么|怎么|如何|为什么|哪|谁|何时?, RegexOption.IGNORE_CASE),
+            Regex("^(?:定义|解释|说明|描述|列出|查询?, RegexOption.IGNORE_CASE),
+            Regex("^(?:给我|帮我|我想|我要?, RegexOption.IGNORE_CASE)
         )
 
         private val COMPLEX_PATTERNS = listOf(
             Regex("(调试|debug|修复|fix|错误|exception|崩溃|crash)", RegexOption.IGNORE_CASE),
-            Regex("(代码|函数|方法|类|算法|架构|设计|实现�?, RegexOption.IGNORE_CASE),
-            Regex("(比较|分析|评估|优化|改进|重构�?, RegexOption.IGNORE_CASE),
-            Regex("(多步|步骤|流程|阶段|先后�?, RegexOption.IGNORE_CASE),
+            Regex("(代码|函数|方法|类|算法|架构|设计|实现?, RegexOption.IGNORE_CASE),
+            Regex("(比较|分析|评估|优化|改进|重构?, RegexOption.IGNORE_CASE),
+            Regex("(多步|步骤|流程|阶段|先后?, RegexOption.IGNORE_CASE),
             Regex("```[\\s\\S]*?```", RegexOption.IGNORE_CASE)
         )
 
         private val CRITICAL_PATTERNS = listOf(
             Regex("(必须|紧急|重要|关键|critical|must|urgent)", RegexOption.IGNORE_CASE),
-            Regex("(全|所有|整个|全部�?, RegexOption.IGNORE_CASE),
+            Regex("(全|所有|整个|全部?, RegexOption.IGNORE_CASE),
             Regex("(安全|权限|认证|授权|security|permission|auth)", RegexOption.IGNORE_CASE),
             Regex("(数据库|事务|并发|锁|lock|transaction)", RegexOption.IGNORE_CASE),
             Regex("(部署|发布|上线|生产|production|deploy)", RegexOption.IGNORE_CASE)
@@ -197,7 +197,7 @@ class AdaptiveWindowManager(
     private class PatternLearner {
         private val learnedPatterns = mutableMapOf<String, TaskComplexity>()
         private val simpleIndicators = setOf(
-            "�?, "�?, "�?, "�?, "呀", "�?, "�?, "�?, "�?
+            "?, "?, "?, "?, "呀", "?, "?, "?, "?
         )
 
         fun learnFromInteraction(messages: List<com.apex.data.model.Message>, complexity: TaskComplexity) {

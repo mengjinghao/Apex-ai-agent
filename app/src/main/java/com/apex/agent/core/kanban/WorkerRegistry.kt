@@ -9,8 +9,8 @@ import java.util.UUID
 /**
  * WorkerRegistry - Worker 插件发现系统
  *
- * 从插件系统发现可用的 Worker，支�?
- * - 动�?Worker 注册
+ * 从插件系统发现可用的 Worker，支?
+ * - 动?Worker 注册
  * - 基于能力和角色的匹配
  * - 负载均衡
  */
@@ -49,7 +49,7 @@ class WorkerRegistry private constructor() {
     }
 
     /**
-     * 任务执行上下�?     */
+     * 任务执行上下?     */
     data class TaskExecutionContext(
         val board: KanbanBoard,
         val column: KanbanColumn,
@@ -61,7 +61,7 @@ class WorkerRegistry private constructor() {
     private val workerListeners = mutableListOf<WorkerChangeListener>()
 
     /**
-     * 注册 Worker (使用 PLUGIN 级别�?     */
+     * 注册 Worker (使用 PLUGIN 级别?     */
     fun registerWorker(worker: Worker): RegistrationResult {
         if (registeredWorkers.containsKey(worker.id)) {
             AppLogger.w(TAG, "Worker ${worker.id} already registered")
@@ -143,7 +143,7 @@ class WorkerRegistry private constructor() {
     }
 
     /**
-     * 为任务找到最�?Worker (负载均衡�?     */
+     * 为任务找到最?Worker (负载均衡?     */
     fun findBestWorker(task: KanbanTask, preferredRole: AgentRole? = null): Worker? {
         val candidates = when {
             preferredRole != null -> findWorkersByRole(preferredRole)
@@ -207,7 +207,7 @@ class WorkerRegistry private constructor() {
     }
 
     /**
-     * 获取所�?Worker 的统计信�?     */
+     * 获取所?Worker 的统计信?     */
     fun getStatistics(): WorkerStatistics {
         val workers = registeredWorkers.values.toList()
         return WorkerStatistics(
@@ -221,13 +221,13 @@ class WorkerRegistry private constructor() {
     }
 
     /**
-     * 添加 Worker 变化监听�?     */
+     * 添加 Worker 变化监听?     */
     fun addListener(listener: WorkerChangeListener) {
         workerListeners.add(listener)
     }
 
     /**
-     * 移除 Worker 变化监听�?     */
+     * 移除 Worker 变化监听?     */
     fun removeListener(listener: WorkerChangeListener) {
         workerListeners.remove(listener)
     }
@@ -274,7 +274,7 @@ class WorkerRegistry private constructor() {
 }
 
 /**
- * 简�?Worker 实现模板
+ * 简?Worker 实现模板
  */
 abstract class BaseWorker(
     override val id: String = UUID.randomUUID().toString(),

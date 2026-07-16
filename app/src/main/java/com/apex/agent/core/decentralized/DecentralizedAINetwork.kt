@@ -600,23 +600,23 @@ class DecentralizedAINetwork(private val context: Context) {
         buildString {
             appendLine("=== 去中心化 AI 网络报告 ===")
             appendLine()
-            appendLine("【节点统计�?)
+            appendLine("【节点统计?)
             appendLine("已知节点: ${knownNodes.size}")
             appendLine("活跃连接: ${activeConnections.size}")
             appendLine("在线节点: ${knownNodes.values.count { it.isOnline }}")
             appendLine()
 
-            appendLine("【共享模型�?)
+            appendLine("【共享模型?)
             appendLine("模型数量: ${sharedModels.size}")
             appendLine()
 
-            appendLine("【账本状态�?)
+            appendLine("【账本状态?)
             appendLine("账本条目: ${localLedger.size}")
             appendLine("消息数量: ${messageQueue.size}")
             appendLine()
 
             if (localNode != null) {
-                appendLine("【本地节点�?)
+                appendLine("【本地节点?)
                 appendLine("名称: ${localNode?.name}")
                 appendLine("类型: ${localNode?.nodeType?.name}")
                 appendLine("信誉: ${String.format("%.2f", localNode?.reputation ?: 0f)}")

@@ -6,8 +6,8 @@ import java.util.UUID
 /**
  * KanbanTask - 任务模型
  *
- * 看板中的任务单元，支�?
- * - 多阶段状态流�? * - Agent 分配和跟�? * - 优先级和依赖管理
+ * 看板中的任务单元，支?
+ * - 多阶段状态流? * - Agent 分配和跟? * - 优先级和依赖管理
  */
 class KanbanTask(
     val id: String = UUID.randomUUID().toString(),
@@ -15,18 +15,18 @@ class KanbanTask(
     var description: String = "",
     var columnId: String,
     var order: Int = 0,
-    // 任务状�?    var status: KanbanTaskStatus = KanbanTaskStatus.PENDING,
+    // 任务状?    var status: KanbanTaskStatus = KanbanTaskStatus.PENDING,
     // 分配信息
     var assignedWorkerId: String? = null,
     var assignedAgentId: String? = null,
     var assignedAgentName: String? = null,
     var assignedRole: AgentRole? = null,
-    // 任务属�?    var priority: Int = 3,  // 1-5, 1 最�?    var taskType: String = "general",
+    // 任务属?    var priority: Int = 3,  // 1-5, 1 最?    var taskType: String = "general",
     val tags: MutableList<String> = mutableListOf(),
     // 依赖关系
-    val dependencies: MutableList<String> = mutableListOf(),  // 依赖的任�?ID
+    val dependencies: MutableList<String> = mutableListOf(),  // 依赖的任?ID
     val blockingTasks: MutableList<String> = mutableListOf(),  // 阻塞此任务的任务 ID
-    // 结果和输�?    var result: TaskResult? = null,
+    // 结果和输?    var result: TaskResult? = null,
     var outputArtifacts: MutableList<TaskArtifact> = mutableListOf(),
     // 时间追踪
     val createdAt: Long = System.currentTimeMillis(),
@@ -39,7 +39,7 @@ class KanbanTask(
     var collaborationHistory: MutableList<CollaborationEvent> = mutableListOf()
 ) {
     /**
-     * 分配�?Worker/Agent
+     * 分配?Worker/Agent
      */
     fun assignTo(workerId: String, agentId: String? = null, agentName: String? = null, role: AgentRole? = null) {
         assignedWorkerId = workerId
@@ -52,7 +52,7 @@ class KanbanTask(
     }
 
     /**
-     * 开始执�?     */
+     * 开始执?     */
     fun startExecution() {
         if (status != KanbanTaskStatus.ASSIGNED && status != KanbanTaskStatus.PENDING) {
             return
@@ -139,12 +139,12 @@ class KanbanTask(
     fun hasPendingDependencies(): Boolean {
         return dependencies.any { depId ->
             // 这里依赖外部的看板状态来判断
-            // 实际使用时需要传入相关任务的状�?            blockingTasks.contains(depId)
+            // 实际使用时需要传入相关任务的状?            blockingTasks.contains(depId)
         }
     }
 
     /**
-     * 获取进度百分�?     */
+     * 获取进度百分?     */
     fun getProgress(): Int {
         return when (status) {
             KanbanTaskStatus.PENDING -> 0
@@ -159,7 +159,7 @@ class KanbanTask(
 
     companion object {
         /**
-         * 创建简单任�?         */
+         * 创建简单任?         */
         fun createSimple(title: String, columnId: String, description: String = ""): KanbanTask {
             return KanbanTask(
                 title = title,
@@ -171,9 +171,9 @@ class KanbanTask(
 }
 
 /**
- * 任务状态枚�? */
+ * 任务状态枚? */
 enum class KanbanTaskStatus {
-    PENDING,       // 待处�?    ASSIGNED,      // 已分�?    IN_PROGRESS,   // 进行�?    COMPLETED,     // 已完�?    FAILED,        // 失败
+    PENDING,       // 待处?    ASSIGNED,      // 已分?    IN_PROGRESS,   // 进行?    COMPLETED,     // 已完?    FAILED,        // 失败
     BLOCKED,       // 阻塞
     CANCELLED      // 取消
 }

@@ -54,7 +54,7 @@ class MultiModalIntegrationService(
         }
 
         if (modalities.isEmpty()) {
-            throw IllegalArgumentException("至少需要提供一种输入模�?)
+            throw IllegalArgumentException("至少需要提供一种输入模?)
         }
 
         val input = MultiModalInput(

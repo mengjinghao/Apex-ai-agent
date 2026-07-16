@@ -71,11 +71,11 @@ open class FileSystemAdvancedTools(protected val context: Context) {
         private var ripgrepAvailabilityVerified = false
     }
 
-    // ApiPreferences 实例，用于动态获取配�?    protected val apiPreferences: ApiPreferences by lazy {
+    // ApiPreferences 实例，用于动态获取配?    protected val apiPreferences: ApiPreferences by lazy {
         ApiPreferences.getInstance(context)
     }
 
-    // SSH文件管理器（单例，懒加载�?    private val sshFileManager by lazy {
+    // SSH文件管理器（单例，懒加载?    private val sshFileManager by lazy {
         SSHFileConnectionManager.getInstance(context)
     }
 
@@ -92,7 +92,7 @@ open class FileSystemAdvancedTools(protected val context: Context) {
 
     // Linux文件系统提供者，优先使用SSH连接，否则从TerminalManager获取
     protected fun getLinuxFileSystem(): FileSystemProvider {
-        // 先尝试获取SSH连接的文件系�?        val sshProvider = sshFileManager.getFileSystemProvider()
+        // 先尝试获取SSH连接的文件系?        val sshProvider = sshFileManager.getFileSystemProvider()
         
         // 如果SSH已登录，使用SSH文件系统
         if (sshProvider != null) {
@@ -103,7 +103,7 @@ open class FileSystemAdvancedTools(protected val context: Context) {
             return sshProvider
         }
         
-        // 否则使用本地Terminal的文件系�?        if (lastLinuxFileSystemProviderLabel != "local") {
+        // 否则使用本地Terminal的文件系?        if (lastLinuxFileSystemProviderLabel != "local") {
             AppLogger.d(TAG, "Using local terminal file system provider")
             lastLinuxFileSystemProviderLabel = "local"
         }
@@ -236,7 +236,7 @@ open class FileSystemAdvancedTools(protected val context: Context) {
             val trimmed = q.trim()
             if (trimmed.isNotBlank()) {
                 val isDotPlaceholder = trimmed.length >= 3 && trimmed.all { it == '.' }
-                val isEllipsisPlaceholder = trimmed.all { it == '�?}
+                val isEllipsisPlaceholder = trimmed.all { it == '?}
                 if (isDotPlaceholder || isEllipsisPlaceholder) continue
                 seen.add(trimmed)
             }

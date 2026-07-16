@@ -21,8 +21,8 @@ import com.apex.agent.core.tools.defaultTool.standard.StandardHttpTools
 object ToolGetterRefactored {
 
     /**
-     * 获取UI工具（重构版�?
-     * @param context 应用上下�?
+     * 获取UI工具（重构版?
+     * @param context 应用上下?
      * @return 根据首选权限级别的UI工具实现
      */
     fun getUITools(context: Context): StandardUIToolsRefactored {
@@ -44,7 +44,7 @@ object ToolGetterRefactored {
     }
 
     /**
-     * 获取Shell工具执行器（保留原版�?
+     * 获取Shell工具执行器（保留原版?
      */
     fun getShellToolExecutor(context: Context): com.apex.agent.core.tools.defaultTool.standard.StandardShellToolExecutor {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getShellToolExecutor(context)
@@ -58,7 +58,7 @@ object ToolGetterRefactored {
     }
 
     /**
-     * 获取设备信息工具执行器（保留原版，待后续重构�?
+     * 获取设备信息工具执行器（保留原版，待后续重构?
      */
     fun getDeviceInfoToolExecutor(context: Context): com.apex.agent.core.tools.defaultTool.standard.StandardDeviceInfoToolExecutor {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getDeviceInfoToolExecutor(context)
@@ -86,7 +86,7 @@ object ToolGetterRefactored {
     }
 
     /**
-     * 获取Intent工具执行器（保留原版�?
+     * 获取Intent工具执行器（保留原版?
      */
     fun getIntentToolExecutor(context: Context): com.apex.agent.core.tools.defaultTool.standard.StandardIntentToolExecutor {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getIntentToolExecutor(context)
@@ -100,47 +100,47 @@ object ToolGetterRefactored {
     }
 
     /**
-     * 获取终端命令执行器（保留原版�?
+     * 获取终端命令执行器（保留原版?
      */
     fun getTerminalCommandExecutor(context: Context): com.apex.agent.core.tools.defaultTool.standard.StandardTerminalCommandExecutor {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getTerminalCommandExecutor(context)
     }
 
     /**
-     * 获取内存查询工具执行器（保留原版�?
+     * 获取内存查询工具执行器（保留原版?
      */
     fun getMemoryQueryToolExecutor(context: Context): com.apex.agent.core.tools.defaultTool.standard.MemoryQueryToolExecutor {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getMemoryQueryToolExecutor(context)
     }
 
     /**
-     * 获取FFmpeg工具执行器（保留原版�?
+     * 获取FFmpeg工具执行器（保留原版?
      */
     fun getFFmpegToolExecutor(context: Context): com.apex.agent.core.tools.defaultTool.standard.StandardFFmpegToolExecutor {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getFFmpegToolExecutor(context)
     }
 
     /**
-     * 获取FFmpeg信息工具执行器（保留原版�?
+     * 获取FFmpeg信息工具执行器（保留原版?
      */
     fun getFFmpegInfoToolExecutor(): com.apex.agent.core.tools.defaultTool.standard.StandardFFmpegInfoToolExecutor {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getFFmpegInfoToolExecutor()
     }
 
     /**
-     * 获取FFmpeg转换工具执行器（保留原版�?
+     * 获取FFmpeg转换工具执行器（保留原版?
      */
     fun getFFmpegConvertToolExecutor(context: Context): com.apex.agent.core.tools.defaultTool.standard.StandardFFmpegConvertToolExecutor {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getFFmpegConvertToolExecutor(context)
     }
 
     /**
-     * 获取计算器（保留原版�?
+     * 获取计算器（保留原版?
      */
     fun getCalculator() = com.apex.agent.core.tools.defaultTool.ToolGetter.getCalculator()
 
     /**
-     * 获取工作流工具（保留原版�?
+     * 获取工作流工具（保留原版?
      */
     fun getWorkflowTools(context: Context): com.apex.agent.core.tools.defaultTool.standard.StandardWorkflowTools {
         return com.apex.agent.core.tools.defaultTool.ToolGetter.getWorkflowTools(context)

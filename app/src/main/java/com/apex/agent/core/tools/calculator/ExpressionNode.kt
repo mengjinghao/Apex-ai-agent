@@ -6,7 +6,7 @@ sealed interface ExpressionNode {
     fun evaluate(): Double
 }
 
-/** 常量节点（数字字面量�?/
+/** 常量节点（数字字面量?/
 data class NumberNode(val value: Double) : ExpressionNode {
     override fun evaluate(): Double = value
 }
@@ -18,7 +18,7 @@ data class VariableNode(val name: String) : ExpressionNode {
     }
 }
 
-/** 二元操作符节�?/
+/** 二元操作符节?/
 data class BinaryOperationNode(
         val left: ExpressionNode,
         val operator: String,
@@ -71,7 +71,7 @@ data class FunctionCallNode(val name: String, val arguments: List<ExpressionNode
     }
 }
 
-/** 三元运算符节�?condition ? trueExpr : falseExpr) */
+/** 三元运算符节?condition ? trueExpr : falseExpr) */
 data class TernaryOperationNode(
         val condition: ExpressionNode,
         val trueExpression: ExpressionNode,
@@ -87,7 +87,7 @@ data class TernaryOperationNode(
     }
 }
 
-/** 变量赋值节�?/
+/** 变量赋值节?/
 data class AssignmentNode(val variableName: String, val value: ExpressionNode) : ExpressionNode {
     override fun evaluate(): Double {
         val result = value.evaluate()
@@ -96,7 +96,7 @@ data class AssignmentNode(val variableName: String, val value: ExpressionNode) :
     }
 }
 
-/** 复合赋值节�?+=, -=, *=, /=) */
+/** 复合赋值节?+=, -=, *=, /=) */
 data class CompoundAssignmentNode(
         val variableName: String,
         val operator: String,
@@ -130,7 +130,7 @@ data class ArrayAccessNode(val array: ExpressionNode, val index: ExpressionNode)
     }
 }
 
-/** 字符串模板节�?/
+/** 字符串模板节?/
 data class TemplateStringNode(
         val parts: List<Any> // String ，ExpressionNode
 ) : ExpressionNode {

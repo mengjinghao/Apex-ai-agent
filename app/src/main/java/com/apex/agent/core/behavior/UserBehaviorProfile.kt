@@ -1,7 +1,7 @@
 package com.apex.agent.core.behavior
 
 /**
- * 用户行为分析结果数据�?*/
+ * 用户行为分析结果数据?*/
 data class UserBehaviorProfile(
     // 对话模式
     var messageCount: Int = 0,

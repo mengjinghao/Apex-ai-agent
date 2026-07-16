@@ -20,12 +20,12 @@ import com.apex.agent.core.tools.skill.Category
 /**
  * Skill 商店 - Marketplace 功能模块
  *
- * 功能�?
+ * 功能?
  * - Skill 商店浏览
- * - 搜索和筛�?
- * - 评分和评�?
+ * - 搜索和筛?
+ * - 评分和评?
  * - 下载管理
- * - 排行�?
+ * - 排行?
  */
 class SkillStore private constructor(private val context: Context) {
 
@@ -122,7 +122,7 @@ class SkillStore private constructor(private val context: Context) {
         val installCount: Int,
         val rating: Float,
         val category: String,
-        val change: Int // 排名变化，正数表示上�?
+        val change: Int // 排名变化，正数表示上?
     )
 
     @Serializable
@@ -146,7 +146,7 @@ class SkillStore private constructor(private val context: Context) {
         NAME_DESC
     }
 
-    // ========== 状�?==========
+    // ========== 状?==========
 
     private val _storeSkills = MutableStateFlow<List<StoreSkill>>(emptyList())
     val storeSkills: StateFlow<List<StoreSkill>> = _storeSkills.asStateFlow()
@@ -224,10 +224,10 @@ class SkillStore private constructor(private val context: Context) {
         _error.value = null
 
         try {
-            // 检查连�?
+            // 检查连?
             val connected = skillRepoClient.testConnection()
             if (!connected) {
-                // 使用缓存或示例数�?
+                // 使用缓存或示例数?
                 if (cachedSkills.isEmpty()) {
                     loadSampleData()
                 }
@@ -245,14 +245,14 @@ class SkillStore private constructor(private val context: Context) {
                     Category(
                         id = name.lowercase().replace(" ", "_"),
                         name = name,
-                        description = "${name} 类技�?,
+                        description = "${name} 类技?,
                         icon = getCategoryIcon(index),
                         skillCount = 0
                     )
                 }
             }
 
-            // 获取所有技�?
+            // 获取所有技?
             val allSkills = mutableListOf<StoreSkill>()
             var page = 1
             var hasMore = true
@@ -273,14 +273,14 @@ class SkillStore private constructor(private val context: Context) {
             lastCacheTime = System.currentTimeMillis()
             saveCacheToFile()
 
-            // 更新状�?
+            // 更新状?
             _storeSkills.value = allSkills
             _featuredSkills.value = allSkills.filter { it.isFeatured }
             _trendingSkills.value = allSkills.sortedByDescending { it.installCount }.take(10).map {
                 it.copy(isTrending = true)
             }
 
-            // 构建排行�?
+            // 构建排行?
             buildLeaderboard(allSkills)
 
             RefreshResult(
@@ -333,7 +333,7 @@ class SkillStore private constructor(private val context: Context) {
     )
 
     /**
-     * 搜索技�?
+     * 搜索技?
      */
     suspend fun search(filters: SearchFilters): SearchResults = withContext(Dispatchers.IO) {
         _isLoading.value = true
@@ -349,7 +349,7 @@ class SkillStore private constructor(private val context: Context) {
 
             val skills = result.getOrNull()?.skills?.map { it.toStoreSkill() } ?: emptyList()
 
-            // 应用本地筛�?
+            // 应用本地筛?
             var filtered = skills
 
             filters.minRating?.let { minRating ->
@@ -397,10 +397,10 @@ class SkillStore private constructor(private val context: Context) {
     }
 
     /**
-     * 获取技能详�?
+     * 获取技能详?
      */
     suspend fun getSkillDetail(skillId: String): StoreSkill? = withContext(Dispatchers.IO) {
-        // 先检查本地缓�?
+        // 先检查本地缓?
         cachedSkills.find { it.id == skillId }?.let { return@withContext it }
 
         // 从服务器获取
@@ -435,7 +435,7 @@ class SkillStore private constructor(private val context: Context) {
     }
 
     /**
-     * 下载并安装技�?
+     * 下载并安装技?
      */
     suspend fun downloadSkill(
         skillId: String,
@@ -446,7 +446,7 @@ class SkillStore private constructor(private val context: Context) {
         }
 
         try {
-            // 获取技能信�?
+            // 获取技能信?
             val detail = if (version != null) {
                 val versions = skillRepoClient.getSkillVersions(skillId)
                 if (versions.isFailure) {
@@ -537,7 +537,7 @@ class SkillStore private constructor(private val context: Context) {
             )
             saveDownloadHistory()
 
-            // 刷新技能列�?
+            // 刷新技能列?
             skillManager.refreshAvailableSkills()
 
             if (importResult.contains("imported") || importResult.contains("成功")) {
@@ -572,7 +572,7 @@ class SkillStore private constructor(private val context: Context) {
     }
 
     /**
-     * 获取技能评�?
+     * 获取技能评?
      */
     suspend fun getReviews(skillId: String): ReviewStats = withContext(Dispatchers.IO) {
         val reviews = localReviews[skillId] ?: emptyList()
@@ -631,7 +631,7 @@ class SkillStore private constructor(private val context: Context) {
     }
 
     /**
-     * 标记评论有帮�?
+     * 标记评论有帮?
      */
     suspend fun markReviewHelpful(reviewId: String): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -649,7 +649,7 @@ class SkillStore private constructor(private val context: Context) {
     }
 
     /**
-     * 添加到收�?
+     * 添加到收?
      */
     suspend fun addToFavorites(skillId: String): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -665,7 +665,7 @@ class SkillStore private constructor(private val context: Context) {
     }
 
     /**
-     * 从收藏移�?
+     * 从收藏移?
      */
     suspend fun removeFromFavorites(skillId: String): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -699,7 +699,7 @@ class SkillStore private constructor(private val context: Context) {
     }
 
     /**
-     * 获取排行�?
+     * 获取排行?
      */
     fun getLeaderboard(type: LeaderboardType = LeaderboardType.INSTALLS): List<LeaderboardEntry> {
         return when (type) {
@@ -809,14 +809,14 @@ class SkillStore private constructor(private val context: Context) {
                 version = "1.2.0",
                 author = "Logistra Team",
                 category = "文件管理",
-                tags = listOf("文件", "整理", "自动�?),
+                tags = listOf("文件", "整理", "自动?),
                 rating = 4.5f,
                 ratingCount = 128,
                 installCount = 3250,
                 downloadUrl = "",
                 checksum = "",
                 size = 256000,
-                changelog = "- 优化分类逻辑\n- 新增自定义规�?,
+                changelog = "- 优化分类逻辑\n- 新增自定义规?,
                 readme = "# 文件整理助手",
                 screenshots = emptyList(),
                 dependencies = emptyList(),
@@ -840,7 +840,7 @@ class SkillStore private constructor(private val context: Context) {
                 downloadUrl = "",
                 checksum = "",
                 size = 128000,
-                changelog = "- 全新 UI\n- 支持自定义阈�?,
+                changelog = "- 全新 UI\n- 支持自定义阈?,
                 readme = "# 系统监控专家",
                 screenshots = emptyList(),
                 dependencies = emptyList(),
@@ -853,12 +853,12 @@ class SkillStore private constructor(private val context: Context) {
             ),
             StoreSkill(
                 id = "sample_backup_pro",
-                name = "备份专业�?,
-                description = "一键备份应用数据、照片、文件到云端或本�?,
+                name = "备份专业?,
+                description = "一键备份应用数据、照片、文件到云端或本?,
                 version = "3.1.0",
                 author = "CloudTech",
                 category = "工具",
-                tags = listOf("备份", "�?, "数据"),
+                tags = listOf("备份", "?, "数据"),
                 rating = 4.2f,
                 ratingCount = 89,
                 installCount = 1200,
@@ -866,7 +866,7 @@ class SkillStore private constructor(private val context: Context) {
                 checksum = "",
                 size = 512000,
                 changelog = "- 支持更多云服务\n- 增量备份优化",
-                readme = "# 备份专业�?,
+                readme = "# 备份专业?,
                 screenshots = emptyList(),
                 dependencies = listOf("sample_file_organizer"),
                 permissions = emptyList(),
@@ -884,27 +884,27 @@ class SkillStore private constructor(private val context: Context) {
         _trendingSkills.value = sampleSkills.filter { it.isTrending }
 
         _categories.value = listOf(
-            Category("automation", "自动�?, "自动化任务和工作�?, "�?, 150),
-            Category("file_management", "文件管理", "文件和目录操作工�?, "📁", 89),
-            Category("system", "系统", "系统监控和管理工�?, "⚙️", 120),
+            Category("automation", "自动?, "自动化任务和工作?, "?, 150),
+            Category("file_management", "文件管理", "文件和目录操作工?, "📁", 89),
+            Category("system", "系统", "系统监控和管理工?, "⚙️", 120),
             Category("network", "网络", "网络相关功能", "🌐", 67),
-            Category("development", "开�?, "开发者工�?, "💻", 95),
-            Category("communication", "通信", "通知和消息工�?, "📱", 45)
+            Category("development", "开?, "开发者工?, "💻", 95),
+            Category("communication", "通信", "通知和消息工?, "📱", 45)
         )
 
         buildLeaderboard(sampleSkills)
     }
 
     private fun getSampleReviews(skillId: String): List<SkillReview> {
-        // 生成一些示例评�?
+        // 生成一些示例评?
         return listOf(
             SkillReview(
                 id = "${skillId}_review_1",
                 skillId = skillId,
                 userId = "user_1",
-                userName = "技术达�?,
+                userName = "技术达?,
                 rating = 5f,
-                title = "非常好用�?,
+                title = "非常好用?,
                 content = "这个技能真的帮了我大忙，省了我很多时间。强烈推荐！",
                 createdAt = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000
             ),
@@ -912,21 +912,21 @@ class SkillStore private constructor(private val context: Context) {
                 id = "${skillId}_review_2",
                 skillId = skillId,
                 userId = "user_2",
-                userName = "普通用�?,
+                userName = "普通用?,
                 rating = 4f,
                 title = "不错，但可以更好",
-                content = "功能挺全的，就是有时候有点慢，希望后续优化�?,
+                content = "功能挺全的，就是有时候有点慢，希望后续优化?,
                 createdAt = System.currentTimeMillis() - 5 * 24 * 60 * 60 * 1000
             )
         )
     }
 
     private fun getCategoryIcon(index: Int): String {
-        val icons = listOf("�?, "📁", "⚙️", "🌐", "💻", "📱", "🔧", "📊", "🎨", "🔒")
+        val icons = listOf("?, "📁", "⚙️", "🌐", "💻", "📱", "🔧", "📊", "🎨", "🔒")
         return icons.getOrElse(index % icons.size) { "📦" }
     }
 
-    // ========== 数据�?==========
+    // ========== 数据?==========
 
     data class RefreshResult(
         val success: Boolean,

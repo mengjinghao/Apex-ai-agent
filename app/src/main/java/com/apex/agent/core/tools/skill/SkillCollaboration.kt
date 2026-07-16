@@ -9,10 +9,10 @@ import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Skill 间协作机�?
+ * Skill 间协作机?
  *
- * 功能�?
- * - �?Skill 状态共�?
+ * 功能?
+ * - ?Skill 状态共?
  * - 事件总线通信
  * - 数据交换管道
  * - 协作调度
@@ -53,9 +53,9 @@ class SkillCollaboration private constructor(private val context: Context) {
 
     enum class StateScope {
         PRIVATE,      // 仅创建者可访问
-        SKILL,        // �?Skill 内共�?
-        LOCAL,        // 本地所�?Skill 可共�?
-        GLOBAL        // 全局共享（跨进程�?
+        SKILL,        // ?Skill 内共?
+        LOCAL,        // 本地所?Skill 可共?
+        GLOBAL        // 全局共享（跨进程?
     }
 
     /**
@@ -141,7 +141,7 @@ class SkillCollaboration private constructor(private val context: Context) {
         val action: String,
         val inputs: Map<String, ParameterValue>,
         val outputs: List<String>,
-        val dependsOn: List<String> = emptyList(),  // 依赖的前置步�?ID
+        val dependsOn: List<String> = emptyList(),  // 依赖的前置步?ID
         val timeout: Long = 30000
     )
 
@@ -158,11 +158,11 @@ class SkillCollaboration private constructor(private val context: Context) {
     enum class DependencyType {
         DATA_DEPENDENCY,    // 数据依赖
         RESULT_DEPENDENCY,  // 结果依赖
-        STATE_DEPENDENCY,   // 状态依�?
+        STATE_DEPENDENCY,   // 状态依?
         EVENT_DEPENDENCY    // 事件依赖
     }
 
-    // ========== 状�?==========
+    // ========== 状?==========
 
     private val _sharedStates = ConcurrentHashMap<String, SharedState>()
     private val _eventBus = MutableSharedFlow<SkillEvent>(replay = 0, extraBufferCapacity = 100)
@@ -186,10 +186,10 @@ class SkillCollaboration private constructor(private val context: Context) {
         startEventProcessing()
     }
 
-    // ========== 共享状�?API ==========
+    // ========== 共享状?API ==========
 
     /**
-     * 设置共享状�?
+     * 设置共享状?
      */
     suspend fun setSharedState(
         key: String,
@@ -210,10 +210,10 @@ class SkillCollaboration private constructor(private val context: Context) {
 
             _sharedStates[key] = state
 
-            // 持久�?
+            // 持久?
             persistState(key, state)
 
-            // 发送事�?
+            // 发送事?
             emitEvent(SkillEvent(
                 id = generateId(),
                 type = EventType.STATE_CHANGED,
@@ -225,7 +225,7 @@ class SkillCollaboration private constructor(private val context: Context) {
                 replyTo = null
             ))
 
-            // 更新协作�?
+            // 更新协作?
             updateCollaborationGraph()
 
             true
@@ -236,7 +236,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 获取共享状�?
+     * 获取共享状?
      */
     suspend fun getSharedState(key: String, requesterSkillId: String): Any? = withContext(Dispatchers.IO) {
         val state = _sharedStates[key] ?: loadPersistedState(key)
@@ -245,13 +245,13 @@ class SkillCollaboration private constructor(private val context: Context) {
             return@withContext null
         }
 
-        // 检查范围权�?
+        // 检查范围权?
         if (!hasReadPermission(state, requesterSkillId)) {
             AppLogger.w(TAG, "No read permission for state: ${key} by ${requesterSkillId}")
             return@withContext null
         }
 
-        // 检查过�?
+        // 检查过?
         if (state.expiresAt != null && state.expiresAt < System.currentTimeMillis()) {
             _sharedStates.remove(key)
             return@withContext null
@@ -261,7 +261,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 删除共享状�?
+     * 删除共享状?
      */
     suspend fun removeSharedState(key: String, skillId: String): Boolean = withContext(Dispatchers.IO) {
         val state = _sharedStates[key]
@@ -288,7 +288,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 观察状态变�?
+     * 观察状态变?
      */
     fun observeStateChanges(skillId: String): Flow<SharedState> = flow {
         val knownKeys = mutableSetOf<String>()
@@ -307,7 +307,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     private fun hasReadPermission(state: SharedState, skillId: String): Boolean {
         return when (state.scope) {
             StateScope.PRIVATE -> state.skillId == skillId
-            StateScope.SKILL -> state.skillId == skillId  // 简化：�?ID
+            StateScope.SKILL -> state.skillId == skillId  // 简化：?ID
             StateScope.LOCAL, StateScope.GLOBAL -> true
         }
     }
@@ -315,7 +315,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     // ========== 事件总线 API ==========
 
     /**
-     * 发送事�?
+     * 发送事?
      */
     suspend fun sendEvent(event: SkillEvent): Boolean {
         return try {
@@ -329,7 +329,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 发送定向事�?
+     * 发送定向事?
      */
     suspend fun sendToSkill(
         sourceSkillId: String,
@@ -388,7 +388,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 获取技能订�?
+     * 获取技能订?
      */
     fun getSubscriptions(skillId: String): Set<EventType> {
         return _skillSubscriptions[skillId]?.mapNotNull {
@@ -397,13 +397,13 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 观察事件�?
+     * 观察事件?
      */
     fun observeEvents(skillId: String): Flow<SkillEvent> = _eventBus.filter { event ->
         val subscribedTypes = _skillSubscriptions[skillId] ?: emptySet()
         event.targetSkillId == null ||  // 广播
         event.targetSkillId == skillId ||  // 定向
-        event.type.name in subscribedTypes  // 订阅的类�?
+        event.type.name in subscribedTypes  // 订阅的类?
     }
 
     // ========== 数据管道 API ==========
@@ -467,7 +467,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 从管道读取消�?
+     * 从管道读取消?
      */
     suspend fun readFromPipe(pipeId: String, timeoutMs: Long = 5000): PipeMessage? = withContext(Dispatchers.IO) {
         val pipe = _pipes[pipeId] ?: return@withContext null
@@ -484,7 +484,7 @@ class SkillCollaboration private constructor(private val context: Context) {
                 return@withContext message
             }
 
-            // 等待新消�?
+            // 等待新消?
             delay(100)
         }
 
@@ -497,7 +497,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     fun closePipe(pipeId: String): Boolean {
         val pipe = _pipes[pipeId] ?: return false
 
-        // 发�?EOS 消息
+        // 发?EOS 消息
         scope.launch {
             val buffer = _pipeBuffers[pipeId]
             synchronized(buffer!!) {
@@ -517,12 +517,12 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 获取管道状�?
+     * 获取管道状?
      */
     fun getPipeStatus(pipeId: String): Pipe? = _pipes[pipeId]
 
     /**
-     * 获取技能的所有管�?
+     * 获取技能的所有管?
      */
     fun getPipesForSkill(skillId: String): List<Pipe> {
         return _pipes.values.filter {
@@ -570,7 +570,7 @@ class SkillCollaboration private constructor(private val context: Context) {
             startedAt = System.currentTimeMillis()
         )
 
-        // 触发工作流执�?
+        // 触发工作流执?
         executeCollaborationWorkflow(task)
 
         true
@@ -591,7 +591,7 @@ class SkillCollaboration private constructor(private val context: Context) {
             completedAt = System.currentTimeMillis()
         )
 
-        // 通知所有参与技�?
+        // 通知所有参与技?
         task.participatingSkills.forEach { skillId ->
             sendToSkill("system", skillId, EventType.ERROR, "Task cancelled: ${task.name}")
         }
@@ -600,12 +600,12 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     /**
-     * 获取任务状�?
+     * 获取任务状?
      */
     fun getTaskStatus(taskId: String): CollaborationTask? = _activeTasks[taskId]
 
     /**
-     * 获取技能参与的所有任�?
+     * 获取技能参与的所有任?
      */
     fun getTasksForSkill(skillId: String): List<CollaborationTask> {
         return _activeTasks.values.filter {
@@ -625,7 +625,7 @@ class SkillCollaboration private constructor(private val context: Context) {
         val completedSteps = mutableSetOf<String>()
 
         for (step in task.workflow.steps) {
-            // 检查依赖是否满�?
+            // 检查依赖是否满?
             val dependenciesMet = step.dependsOn.all { depId ->
                 completedSteps.contains(depId)
             }
@@ -635,7 +635,7 @@ class SkillCollaboration private constructor(private val context: Context) {
                 continue
             }
 
-            // 发送执行请�?
+            // 发送执行请?
             val requestId = generateId()
             val responseReceived = CompletableDeferred<Boolean>()
 
@@ -651,7 +651,7 @@ class SkillCollaboration private constructor(private val context: Context) {
                 }
             }
 
-            // 发送执行请�?
+            // 发送执行请?
             sendToSkill(
                 sourceSkillId = "collaboration_manager",
                 targetSkillId = step.skillId,
@@ -663,7 +663,7 @@ class SkillCollaboration private constructor(private val context: Context) {
                 correlationId = requestId
             )
 
-            // 等待响应或超�?
+            // 等待响应或超?
             val completed = withTimeoutOrNull(step.timeout) {
                 responseReceived.await()
             } ?: false
@@ -687,7 +687,7 @@ class SkillCollaboration private constructor(private val context: Context) {
             results = results
         )
 
-        // 通知所有参与技�?
+        // 通知所有参与技?
         task.participatingSkills.forEach { skillId ->
             sendToSkill(
                 sourceSkillId = "collaboration_manager",
@@ -700,7 +700,7 @@ class SkillCollaboration private constructor(private val context: Context) {
         updateCollaborationGraph()
     }
 
-    // ========== 协作�?==========
+    // ========== 协作?==========
 
     data class CollaborationGraph(
         val nodes: List<CollaborationNode>,
@@ -728,11 +728,11 @@ class SkillCollaboration private constructor(private val context: Context) {
         val edges = mutableListOf<CollaborationEdge>()
         val interactionCounts = mutableMapOf<Pair<String, String>, Long>()
 
-        // 收集所有共享状态创建�?
+        // 收集所有共享状态创建?
         val stateOwners = _sharedStates.values.groupBy { it.skillId }
 
         // 收集事件交互
-        // 简化：基于参与任务的次�?
+        // 简化：基于参与任务的次?
         _activeTasks.values.forEach { task ->
             task.participatingSkills.forEach { skillId ->
                 val node = CollaborationNode(
@@ -747,7 +747,7 @@ class SkillCollaboration private constructor(private val context: Context) {
             }
         }
 
-        // 构建�?
+        // 构建?
         _activeTasks.values.forEach { task ->
             val skills = task.participatingSkills
             for (i in skills.indices) {
@@ -768,12 +768,12 @@ class SkillCollaboration private constructor(private val context: Context) {
             ))
         }
 
-        // 找出中心技�?
+        // 找出中心技?
         val centralSkills = nodes.sortedByDescending { it.connectionCount }
             .take(3)
             .map { it.skillId }
 
-        // 找出孤立技�?
+        // 找出孤立技?
         val isolatedSkills = nodes.filter { it.connectionCount == 0 }
             .map { it.skillId }
 
@@ -818,11 +818,11 @@ class SkillCollaboration private constructor(private val context: Context) {
                     correlationId = event.correlationId
                 )
             }
-            else -> { /* 其他事件类型由订阅者处�?*/ }
+            else -> { /* 其他事件类型由订阅者处?*/ }
         }
     }
 
-    // ========== 持久�?==========
+    // ========== 持久?==========
 
     private fun initializeDirectories() {
         File(context.filesDir, SHARED_STATE_DIR).mkdirs()
@@ -864,7 +864,7 @@ class SkillCollaboration private constructor(private val context: Context) {
     }
 
     private fun deserializeState(data: String): SharedState {
-        // 简化实�?
+        // 简化实?
         return SharedState(
             key = "",
             value = null,
@@ -884,7 +884,7 @@ class SkillCollaboration private constructor(private val context: Context) {
             activePipeCount = _pipes.count { it.value.isOpen },
             activeTaskCount = _activeTasks.count { it.value.status == TaskStatus.RUNNING },
             pendingTaskCount = _activeTasks.count { it.value.status == TaskStatus.PENDING },
-            totalEventsProcessed = 0, // 简�?
+            totalEventsProcessed = 0, // 简?
             skillConnectionCount = _collaborationGraph.value?.edges?.size ?: 0
         )
     }

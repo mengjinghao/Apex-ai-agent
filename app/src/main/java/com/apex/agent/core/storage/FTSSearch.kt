@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
 /**
- * FTS5搜索管理�?- 实现全文搜索虚拟�? */
+ * FTS5搜索管理?- 实现全文搜索虚拟? */
 class FTSSearch(context: Context) : SQLiteOpenHelper(
     context.applicationContext,
     FTS_DATABASE_NAME,
@@ -28,7 +28,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
         /** 搜索结果表名 */
         const val FTS_CONTENT_TABLE = "messages_fts_content"
         
-        /** FTS元数据表�?*/
+        /** FTS元数据表?*/
         const val FTS_METADATA_TABLE = "messages_fts_metadata"
         
         @Volatile
@@ -42,7 +42,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
     }
     
     override fun onCreate(db: SQLiteDatabase) {
-        // 创建FTS5虚拟�?        db.execSQL("""
+        // 创建FTS5虚拟?        db.execSQL("""
             CREATE VIRTUAL TABLE IF NOT EXISTS ${FTS_TABLE_NAME} USING fts5(
                 message_id,
                 session_id,
@@ -53,7 +53,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
             )
         """.trimIndent())
         
-        // 创建FTS内容表用于存储完整内�?        db.execSQL("""
+        // 创建FTS内容表用于存储完整内?        db.execSQL("""
             CREATE TABLE IF NOT EXISTS ${FTS_CONTENT_TABLE}(
                 message_id TEXT PRIMARY KEY,
                 session_id TEXT NOT NULL,
@@ -98,7 +98,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
             writableDatabase.use { db ->
                 db.beginTransaction()
                 try {
-                    // 插入FTS虚拟�?                    db.execSQL("""
+                    // 插入FTS虚拟?                    db.execSQL("""
                         INSERT INTO ${FTS_TABLE_NAME}(message_id, session_id, content, role, created_at)
                         VALUES (?, ?, ?, ?, ?)
                     """.trimIndent(), arrayOf(
@@ -109,7 +109,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
                         message.createdAt
                     ))
                     
-                    // 插入完整内容�?                    db.execSQL("""
+                    // 插入完整内容?                    db.execSQL("""
                         INSERT OR REPLACE INTO ${FTS_CONTENT_TABLE}(message_id, session_id, content, role, created_at)
                         VALUES (?, ?, ?, ?, ?)
                     """.trimIndent(), arrayOf(
@@ -120,7 +120,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
                         message.createdAt
                     ))
                     
-                    // 更新元数�?                    if (sessionTitle != null) {
+                    // 更新元数?                    if (sessionTitle != null) {
                         db.execSQL("""
                             INSERT OR REPLACE INTO ${FTS_METADATA_TABLE}(message_id, session_title)
                             VALUES (?, ?)
@@ -186,7 +186,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
     
     /**
      * 全文搜索
-     * @param query 搜索关键�?     * @param limit 返回结果数量限制
+     * @param query 搜索关键?     * @param limit 返回结果数量限制
      * @param sessionIdFilter 可选的会话ID过滤
      */
     suspend fun search(
@@ -242,7 +242,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
     
     /**
      * 跨会话LLM摘要召回搜索
-     * @param query 搜索关键�?     * @param limit 返回结果数量限制
+     * @param query 搜索关键?     * @param limit 返回结果数量限制
      */
     suspend fun semanticSearch(query: String, limit: Int = 20): List<FTSSearchResult> {
         // 使用FTS5的BM25排序进行语义相似搜索
@@ -263,7 +263,7 @@ class FTSSearch(context: Context) : SQLiteOpenHelper(
     }
     
     /**
-     * 删除会话的所有索�?     */
+     * 删除会话的所有索?     */
     suspend fun deleteSessionIndexes(sessionId: String) {
         withContext(Dispatchers.IO) {
             writableDatabase.use { db ->

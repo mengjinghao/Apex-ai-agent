@@ -86,17 +86,17 @@ class ReflectionEngine(
             keyFactors.add(KeyFactor(
                 factor = "任务规划缺失",
                 impact = ImpactLevel.HIGH,
-                explanation = "未生成任何执行步�?
+                explanation = "未生成任何执行步?
             ))
             suggestions.add(ImprovementSuggestion(
                 category = SuggestionCategory.TASK_PLANNING,
-                description = "在执行前确保生成完整的任务规�?,
+                description = "在执行前确保生成完整的任务规?,
                 priority = SuggestionPriority.CRITICAL,
                 estimatedImpact = 0.8f,
                 actionableSteps = listOf(
                     "验证任务规划生成逻辑",
                     "添加规划验证步骤",
-                    "设置最小步骤数阈�?
+                    "设置最小步骤数阈?
                 )
             ))
             return
@@ -105,19 +105,19 @@ class ReflectionEngine(
         val stepSequenceScore = evaluateStepSequence(steps)
         if (stepSequenceScore < 0.7) {
             keyFactors.add(KeyFactor(
-                factor = "步骤顺序不合�?,
+                factor = "步骤顺序不合?,
                 impact = ImpactLevel.MEDIUM,
-                explanation = "步骤执行顺序可能影响了效�?
+                explanation = "步骤执行顺序可能影响了效?
             ))
             suggestions.add(ImprovementSuggestion(
                 category = SuggestionCategory.TASK_PLANNING,
-                description = "优化步骤执行顺序以提高效�?,
+                description = "优化步骤执行顺序以提高效?,
                 priority = SuggestionPriority.HIGH,
                 estimatedImpact = 0.6f,
                 actionableSteps = listOf(
                     "分析步骤依赖关系",
-                    "重新排序步骤以减少等待时�?,
-                    "并行化可独立执行的步�?
+                    "重新排序步骤以减少等待时?,
+                    "并行化可独立执行的步?
                 )
             ))
         }
@@ -184,7 +184,7 @@ class ReflectionEngine(
                     priority = SuggestionPriority.HIGH,
                     estimatedImpact = 0.7f,
                     actionableSteps = listOf(
-                        "检查工具参数是否正�?,
+                        "检查工具参数是否正?,
                         "验证工具是否支持当前场景",
                         "考虑使用替代工具"
                     )
@@ -227,7 +227,7 @@ class ReflectionEngine(
             if (failures.size > 1) {
                 suggestions.add(ImprovementSuggestion(
                     category = SuggestionCategory.ERROR_HANDLING,
-                    description = "增强 ${category} 类型错误的处理能�?,
+                    description = "增强 ${category} 类型错误的处理能?,
                     priority = SuggestionPriority.HIGH,
                     estimatedImpact = 0.75f,
                     actionableSteps = generateErrorHandlingSuggestions(category)
@@ -244,7 +244,7 @@ class ReflectionEngine(
             lowerResult.contains("网络") || lowerResult.contains("network") -> "网络问题"
             lowerResult.contains("超时") || lowerResult.contains("timeout") -> "超时问题"
             lowerResult.contains("参数") || lowerResult.contains("parameter") -> "参数错误"
-            lowerResult.contains("不存�?) || lowerResult.contains("not found") -> "资源不存�?
+            lowerResult.contains("不存?) || lowerResult.contains("not found") -> "资源不存?
             lowerResult.contains("格式") || lowerResult.contains("format") -> "格式错误"
             else -> "其他错误"
         }
@@ -253,14 +253,14 @@ class ReflectionEngine(
     private fun generateErrorHandlingSuggestions(category: String): List<String> {
         return when (category) {
             "权限问题" -> listOf(
-                "在执行前检查权�?,
+                "在执行前检查权?,
                 "提供权限申请提示",
                 "实现权限缓存机制"
             )
             "网络问题" -> listOf(
                 "添加重试机制",
                 "实现超时自动重连",
-                "提供离线模式备选方�?
+                "提供离线模式备选方?
             )
             "超时问题" -> listOf(
                 "优化执行逻辑减少耗时",
@@ -269,13 +269,13 @@ class ReflectionEngine(
             )
             "参数错误" -> listOf(
                 "加强参数校验",
-                "提供参数默认�?,
+                "提供参数默认?,
                 "实现参数自动修正"
             )
             else -> listOf(
                 "添加错误日志记录",
                 "实现错误恢复机制",
-                "提供用户友好的错误提�?
+                "提供用户友好的错误提?
             )
         }
     }
@@ -292,7 +292,7 @@ class ReflectionEngine(
             keyFactors.add(KeyFactor(
                 factor = "执行效率低下",
                 impact = ImpactLevel.MEDIUM,
-                explanation = "平均步骤耗时超过5�?
+                explanation = "平均步骤耗时超过5?
             ))
             suggestions.add(ImprovementSuggestion(
                 category = SuggestionCategory.PERFORMANCE,
@@ -301,7 +301,7 @@ class ReflectionEngine(
                 estimatedImpact = 0.5f,
                 actionableSteps = listOf(
                     "分析耗时最长的步骤",
-                    "优化资源密集型操�?,
+                    "优化资源密集型操?,
                     "考虑并行执行"
                 )
             ))
@@ -309,9 +309,9 @@ class ReflectionEngine(
 
         if (outcome.metrics.resourceUsage.cpuUsagePercent > 80.0) {
             keyFactors.add(KeyFactor(
-                factor = "CPU使用率过�?,
+                factor = "CPU使用率过?,
                 impact = ImpactLevel.LOW,
-                explanation = "执行过程中CPU使用率超�?0%"
+                explanation = "执行过程中CPU使用率超?0%"
             ))
             suggestions.add(ImprovementSuggestion(
                 category = SuggestionCategory.RESOURCE_MANAGEMENT,
@@ -321,7 +321,7 @@ class ReflectionEngine(
                 actionableSteps = listOf(
                     "减少不必要的计算",
                     "实现资源释放机制",
-                    "优化算法复杂�?
+                    "优化算法复杂?
                 )
             ))
         }
@@ -341,7 +341,7 @@ class ReflectionEngine(
             learnings.add(Learning(
                 insight = "模式 '${pattern}' 多次成功执行",
                 applicableScenarios = listOf(
-                    "类似任务的步骤规�?,
+                    "类似任务的步骤规?,
                     "工具选择决策",
                     "任务流程优化"
                 ),
@@ -353,15 +353,15 @@ class ReflectionEngine(
             learnings.add(Learning(
                 insight = "任务 '${outcome}' 整体执行成功",
                 applicableScenarios = listOf(
-                    "同类任务的参�?,
-                    "成功案例�?,
+                    "同类任务的参?,
+                    "成功案例?,
                     "策略优化"
                 ),
                 confidence = 0.9f
             ))
         } else {
             learnings.add(Learning(
-                insight = "任务失败，主要原�? ${outcome.errorMessage ?: "未知"}",
+                insight = "任务失败，主要原? ${outcome.errorMessage ?: "未知"}",
                 applicableScenarios = listOf(
                     "失败案例分析",
                     "错误预防",
@@ -383,11 +383,11 @@ class ReflectionEngine(
 
     private suspend fun saveReflection(reflection: Reflection) {
         memoryRepository.createMemory(
-            title = "任务反�? ${reflection.taskGoal}",
+            title = "任务反? ${reflection.taskGoal}",
             content = reflection.toSummaryString(),
             source = "ReflectionEngine",
-            folderPath = "反思记�?,
-            tags = listOf("反�?, "任务分析", reflection.outcome.success.toString())
+            folderPath = "反思记?,
+            tags = listOf("反?, "任务分析", reflection.outcome.success.toString())
         )
     }
 
@@ -399,11 +399,11 @@ class ReflectionEngine(
                     appendLine("洞察: ${learning.insight}")
                     appendLine("适用场景:")
                     learning.applicableScenarios.forEach { appendLine("- ${it}") }
-                    appendLine("置信�? ${learning.confidence}")
+                    appendLine("置信? ${learning.confidence}")
                 },
                 source = "ReflectionEngine",
                 folderPath = "学习洞察",
-                tags = listOf("学习", "经验", "最佳实�?)
+                tags = listOf("学习", "经验", "最佳实?)
             )
         }
     }
@@ -471,7 +471,7 @@ private fun Reflection.toSummaryString(): String {
 
 class ReflectionPrompts {
     val reflectionPrompt = """
-        你是一个AI Agent反思助手。请分析以下任务执行过程并提供改进建议�?
+        你是一个AI Agent反思助手。请分析以下任务执行过程并提供改进建议?
         
         任务目标: {task_goal}
         
@@ -480,7 +480,7 @@ class ReflectionPrompts {
         
         执行结果: {outcome}
         
-        请提�?
+        请提?
         1. 执行质量评估
         2. 成功因素分析
         3. 失败原因分析

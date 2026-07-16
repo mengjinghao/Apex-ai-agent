@@ -298,7 +298,7 @@ data class HiddenTerminalCommandResultData(
     }
 }
 
-/** 计算结果结构化数�?/
+/** 计算结果结构化数?/
 @Serializable
 data class CalculationResultData(
         val expression: String,
@@ -320,7 +320,7 @@ data class CalculationResultData(
     }
 }
 
-/** 日期结果结构化数�?/
+/** 日期结果结构化数?/
 @Serializable
 data class DateResultData(val date: String, val format: String, val formattedDate: String) :
         ToolResultData() {
@@ -539,7 +539,7 @@ data class FileApplyResultData(
     }
 }
 
-/** HTTP响应结果结构化数�?/
+/** HTTP响应结果结构化数?/
 @Serializable
 data class HttpResponseData(
         val url: String,
@@ -616,7 +616,7 @@ data class AppListData(val includesSystemApps: Boolean, val packages: List<Strin
     }
 }
 
-/** 单个应用的使用时长统�?/
+/** 单个应用的使用时长统?/
 @Serializable
 data class AppUsageTimeEntry(
         val packageName: String,
@@ -691,7 +691,7 @@ data class SimplifiedUINode(
 
         // Node identifier
         sb.append(indent)
-        if (isClickable) sb.append("�?) else sb.append("�?)
+        if (isClickable) sb.append("?) else sb.append("?)
 
         // Class name
         className?.let { sb.append("[${it}] ") }
@@ -1134,7 +1134,7 @@ data class ComputerDesktopActionResultData(
             }
         }
         pageContent?.let {
-            sb.appendLine("\n--- Page Content (Interactable Elements marked with �?---")
+            sb.appendLine("\n--- Page Content (Interactable Elements marked with ?---")
             sb.append(it.toTreeString())
         }
         return sb.toString()
@@ -1198,7 +1198,7 @@ data class MemoryQueryResultData(
     }
 }
 
-/** 自动化配置搜索结果数�?/
+/** 自动化配置搜索结果数?/
 @Serializable
 data class AutomationConfigSearchResult(
     val searchPackageName: String?,
@@ -1247,7 +1247,7 @@ data class AutomationConfigSearchResult(
     }
 }
 
-/** 自动化计划参数结果数�?/
+/** 自动化计划参数结果数?/
 @Serializable
 data class AutomationPlanParametersResult(
     val functionName: String,
@@ -1292,7 +1292,7 @@ data class AutomationPlanParametersResult(
     }
 }
 
-/** 自动化执行结果数�?/
+/** 自动化执行结果数?/
 @Serializable
 data class AutomationExecutionResult(
     val functionName: String,
@@ -1344,7 +1344,7 @@ data class AutomationExecutionResult(
     }
 }
 
-/** 自动化功能列表结果数�?/
+/** 自动化功能列表结果数?/
 @Serializable
 data class AutomationFunctionListResult(
     val packageName: String?,
@@ -1407,7 +1407,7 @@ data class TerminalSessionCloseResultData(
     override fun toString(): String = message
 }
 
-/** 终端会话当前屏幕内容结果数据（仅当前屏，不含历史滚动缓冲�?/
+/** 终端会话当前屏幕内容结果数据（仅当前屏，不含历史滚动缓冲?/
 @Serializable
 data class TerminalSessionScreenResultData(
     val sessionId: String,
@@ -1562,7 +1562,7 @@ data class GrepResultData(
     }
 }
 
-/** 工作流基本信息结果数�?/
+/** 工作流基本信息结果数?/
 @Serializable
 data class WorkflowResultData(
     val id: String,
@@ -1598,7 +1598,7 @@ data class WorkflowResultData(
     }
 }
 
-/** 工作流列表结果数�?/
+/** 工作流列表结果数?/
 @Serializable
 data class WorkflowListResultData(
     val workflows: List<WorkflowResultData>,
@@ -1626,7 +1626,7 @@ data class WorkflowListResultData(
     
     companion object {
         /**
-         * 创建一个空的WorkflowListResultData，用于错误情�?        */
+         * 创建一个空的WorkflowListResultData，用于错误情?        */
         fun empty() = WorkflowListResultData(
             workflows = emptyList(),
             totalCount = 0
@@ -1634,7 +1634,7 @@ data class WorkflowListResultData(
     }
 }
 
-/** 工作流详细信息结果数据（包含完整的节点和连接信息�?/
+/** 工作流详细信息结果数据（包含完整的节点和连接信息?/
 @Serializable
 data class WorkflowDetailResultData(
     val id: String,
@@ -1731,7 +1731,7 @@ data class WorkflowDetailResultData(
     
     companion object {
         /**
-         * 创建一个空的WorkflowDetailResultData，用于错误情�?        */
+         * 创建一个空的WorkflowDetailResultData，用于错误情?        */
         fun empty() = WorkflowDetailResultData(
             id = "",
             name = "",
@@ -1842,7 +1842,7 @@ data class ChatFindResultData(
     }
 }
 
-/** 对话输入状态结果数�?/
+/** 对话输入状态结果数?/
 @Serializable
 data class AgentStatusResultData(
     val chatId: String,
@@ -1919,7 +1919,7 @@ data class ChatMessagesResultData(
     }
 }
 
-/** 发送消息结果数�?/
+/** 发送消息结果数?/
 @Serializable
 data class MessageSendResultData(
     val chatId: String,

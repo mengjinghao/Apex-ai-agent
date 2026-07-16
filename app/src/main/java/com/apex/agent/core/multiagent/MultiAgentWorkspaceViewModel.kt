@@ -192,7 +192,7 @@ class MultiAgentWorkspaceViewModel(
                     }
                 }
             } catch (e: Exception) {
-                _events.emit(WorkspaceEvent.Error(e.message ?: "更新任务状态失�?))
+                _events.emit(WorkspaceEvent.Error(e.message ?: "更新任务状态失?))
             }
         }
     }
@@ -216,7 +216,7 @@ class MultiAgentWorkspaceViewModel(
                 
                 processAgentResponse(content)
             } catch (e: Exception) {
-                _events.emit(WorkspaceEvent.Error(e.message ?: "发送消息失�?))
+                _events.emit(WorkspaceEvent.Error(e.message ?: "发送消息失?))
             }
         }
     }
@@ -253,10 +253,10 @@ class MultiAgentWorkspaceViewModel(
         return when (agent.role.uppercase()) {
             "COORDINATOR" -> "我已经收到您的请求，正在协调团队处理..."
             "ANALYST" -> "${userMessage}"
-            "DEVELOPER" -> "我来帮您实现这个功能�?
+            "DEVELOPER" -> "我来帮您实现这个功能?
             "DESIGNER" -> "基于您的需求，我有以下设计方案..."
-            "TESTER" -> "我来测试一下这个功能的边界情况�?
-            else -> "收到您的消息，我会尽力帮助您�?
+            "TESTER" -> "我来测试一下这个功能的边界情况?
+            else -> "收到您的消息，我会尽力帮助您?
         }
     }
 

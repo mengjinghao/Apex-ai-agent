@@ -6,7 +6,7 @@ import com.apex.agent.core.normal.multimodal.FileType
 import com.apex.agent.core.tools.defaultTool.debugger.name
 
 /**
- * 项目结构分析�?
+ * 项目结构分析?
  * 
  * 分析 GitHub 仓库的结构，识别项目类型、关键文件等
  */
@@ -31,7 +31,7 @@ class ProjectStructureAnalyzer {
     }
     
     /**
-     * 收集所有文件（递归�?
+     * 收集所有文件（递归?
      */
     private fun collectAllFiles(nodes: List<GitHubFileNode>): List<GitHubFileNode.File> {
         val files = mutableListOf<GitHubFileNode.File>()
@@ -47,7 +47,7 @@ class ProjectStructureAnalyzer {
     }
     
     /**
-     * 检测项目类�?
+     * 检测项目类?
      */
     private fun detectProjectType(files: List<GitHubFileNode.File>): ProjectType {
         val fileNames = files.map { it.name }.toSet()
@@ -116,7 +116,7 @@ class ProjectStructureAnalyzer {
     }
     
     /**
-     * 分类和评分文�?
+     * 分类和评分文?
      */
     private fun categorizeAndScoreFile(file: GitHubFileNode.File): KeyFile? {
         val name = file.name.lowercase()
@@ -150,17 +150,17 @@ class ProjectStructureAnalyzer {
                 path = file.path,
                 importance = 0.9f,
                 category = "Build Configuration",
-                reason = "NPM 包配�?
+                reason = "NPM 包配?
             )
             
-            // 主入口文�?
+            // 主入口文?
             path.contains("src/main") && (name.endsWith(".kt") || name.endsWith(".java")) -> {
                 if (name.contains("Main") || name.contains("App") || name.contains("Application")) {
                     KeyFile(
                         path = file.path,
                         importance = 0.85f,
                         category = "Entry Point",
-                        reason = "应用主入�?
+                        reason = "应用主入?
                     )
                 } else {
                     null
@@ -179,7 +179,7 @@ class ProjectStructureAnalyzer {
                 path = file.path,
                 importance = 0.6f,
                 category = "Legal",
-                reason = "许可证文�?
+                reason = "许可证文?
             )
             
             // 测试文件
@@ -213,7 +213,7 @@ class ProjectStructureAnalyzer {
         val paths = files.map { it.path }.toSet()
         
         return when {
-            // MVVM 架构（Android�?
+            // MVVM 架构（Android?
             paths.any { it.contains("/view/") } &&
             paths.any { it.contains("/viewmodel/") } &&
             paths.any { it.contains("/model/") } -> "MVVM"
@@ -233,7 +233,7 @@ class ProjectStructureAnalyzer {
     }
     
     /**
-     * 计算复杂�?
+     * 计算复杂?
      */
     private fun calculateComplexity(files: List<GitHubFileNode.File>): ComplexityScore {
         val fileCount = files.size
@@ -257,8 +257,8 @@ class ProjectStructureAnalyzer {
             appendLine("**项目类型**: ${analysis.projectType}")
             appendLine("**主要语言**: ${analysis.mainLanguage}")
             appendLine("**文件数量**: ${analysis.fileCount}")
-            appendLine("**总大�?*: ${formatSize(analysis.totalSize)}")
-            appendLine("**复杂�?*: ${analysis.complexity}")
+            appendLine("**总大?*: ${formatSize(analysis.totalSize)}")
+            appendLine("**复杂?*: ${analysis.complexity}")
             appendLine()
             
             if (analysis.architecture != null) {

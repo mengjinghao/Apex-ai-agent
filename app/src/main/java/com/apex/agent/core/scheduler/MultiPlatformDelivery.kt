@@ -13,13 +13,13 @@ import com.apex.core.tools.javascript.not
 /**
  * 多平台投递管理器
  * 
- * 支持多种平台的定时任务结果投�?
+ * 支持多种平台的定时任务结果投?
  * - 应用内通知
  * - Telegram
  * - Discord
  * - Email
  * - 微信
- * - 系统推�? */
+ * - 系统推? */
 class MultiPlatformDelivery(private val context: Context) {
 
     companion object {
@@ -42,7 +42,7 @@ class MultiPlatformDelivery(private val context: Context) {
     }
 
     /**
-     * 投递结�?     */
+     * 投递结?     */
     data class DeliveryResult(
         val platform: ScheduledTask.DeliveryPlatform,
         val success: Boolean,
@@ -51,7 +51,7 @@ class MultiPlatformDelivery(private val context: Context) {
     )
     
     /**
-     * 批量投递结�?     */
+     * 批量投递结?     */
     data class BatchDeliveryResult(
         val total: Int,
         val successCount: Int,
@@ -122,11 +122,11 @@ class MultiPlatformDelivery(private val context: Context) {
         context.sendBroadcast(intent)
         AppLogger.d(TAG, "已发送应用内通知: ${taskName}")
         
-        return DeliveryResult(ScheduledTask.DeliveryPlatform.IN_APP, true, "通知已发�?)
+        return DeliveryResult(ScheduledTask.DeliveryPlatform.IN_APP, true, "通知已发?)
     }
     
     /**
-     * Telegram 投�?     */
+     * Telegram 投?     */
     private suspend fun deliverTelegram(
         taskName: String,
         content: String,
@@ -137,11 +137,11 @@ class MultiPlatformDelivery(private val context: Context) {
         val chatId = getConfig("telegram_chat_id")
         
         if (botToken.isNullOrEmpty() || chatId.isNullOrEmpty()) {
-            AppLogger.w(TAG, "Telegram 未配�?(bot_token �?chat_id 未设置）")
+            AppLogger.w(TAG, "Telegram 未配?(bot_token ?chat_id 未设置）")
             return@withContext DeliveryResult(
                 ScheduledTask.DeliveryPlatform.TELEGRAM,
                 false,
-                error = "Telegram 未配�?
+                error = "Telegram 未配?
             )
         }
         
@@ -152,11 +152,11 @@ class MultiPlatformDelivery(private val context: Context) {
                 append(content)
                 append("\n\n")
                 metadata.forEach { (key, value) ->
-                    append("�?${key}: `${value}`\n")
+                    append("?${key}: `${value}`\n")
                 }
             }
             
-            // 发�?HTTP 请求�?Telegram Bot API
+            // 发?HTTP 请求?Telegram Bot API
             val url = "https://api.telegram.org/bot${botToken}/sendMessage"
             val params = mapOf(
                 "chat_id" to chatId,
@@ -167,18 +167,18 @@ class MultiPlatformDelivery(private val context: Context) {
             val response = makeHttpPost(url, params)
             
             if (response.contains("\"ok\":true")) {
-                DeliveryResult(ScheduledTask.DeliveryPlatform.TELEGRAM, true, "消息已发�?)
+                DeliveryResult(ScheduledTask.DeliveryPlatform.TELEGRAM, true, "消息已发?)
             } else {
                 DeliveryResult(ScheduledTask.DeliveryPlatform.TELEGRAM, false, error = response)
             }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "Telegram 投递失�?, e)
+            AppLogger.e(TAG, "Telegram 投递失?, e)
             DeliveryResult(ScheduledTask.DeliveryPlatform.TELEGRAM, false, error = e.message)
         }
     }
     
     /**
-     * Discord 投�?     */
+     * Discord 投?     */
     private suspend fun deliverDiscord(
         taskName: String,
         content: String,
@@ -187,11 +187,11 @@ class MultiPlatformDelivery(private val context: Context) {
         val webhookUrl = getConfig("discord_webhook_url")
         
         if (webhookUrl.isNullOrEmpty()) {
-            AppLogger.w(TAG, "Discord 未配�?(webhook_url 未设置）")
+            AppLogger.w(TAG, "Discord 未配?(webhook_url 未设置）")
             return@withContext DeliveryResult(
                 ScheduledTask.DeliveryPlatform.DISCORD,
                 false,
-                error = "Discord 未配�?
+                error = "Discord 未配?
             )
         }
         
@@ -212,18 +212,18 @@ class MultiPlatformDelivery(private val context: Context) {
             val response = makeHttpPost(webhookUrl, payload, isJson = true)
             
             if (response.isEmpty() || response.contains("\"id\":")) {
-                DeliveryResult(ScheduledTask.DeliveryPlatform.DISCORD, true, "消息已发�?)
+                DeliveryResult(ScheduledTask.DeliveryPlatform.DISCORD, true, "消息已发?)
             } else {
                 DeliveryResult(ScheduledTask.DeliveryPlatform.DISCORD, false, error = response)
             }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "Discord 投递失�?, e)
+            AppLogger.e(TAG, "Discord 投递失?, e)
             DeliveryResult(ScheduledTask.DeliveryPlatform.DISCORD, false, error = e.message)
         }
     }
     
     /**
-     * Email 投�?     */
+     * Email 投?     */
     private suspend fun deliverEmail(
         taskName: String,
         content: String,
@@ -237,30 +237,30 @@ class MultiPlatformDelivery(private val context: Context) {
         val emailPassword = getConfig("email_password")
         
         if (smtpHost.isNullOrEmpty() || emailFrom.isNullOrEmpty() || emailTo.isNullOrEmpty()) {
-            AppLogger.w(TAG, "Email 未配�?)
+            AppLogger.w(TAG, "Email 未配?)
             return@withContext DeliveryResult(
                 ScheduledTask.DeliveryPlatform.EMAIL,
                 false,
-                error = "Email 未配�?
+                error = "Email 未配?
             )
         }
         
         try {
-            // 注意: 这里需要实际的邮件发送实�?            // 简化版本仅记录日志
-            AppLogger.d(TAG, "Email 投�? �?${emailFrom} �?${emailTo}, 主题: ${taskName}")
+            // 注意: 这里需要实际的邮件发送实?            // 简化版本仅记录日志
+            AppLogger.d(TAG, "Email 投? ?${emailFrom} ?${emailTo}, 主题: ${taskName}")
             
-            // 实际实现需要使�?JavaMail 或其他邮件库
+            // 实际实现需要使?JavaMail 或其他邮件库
             // 这里预留接口
             
-            DeliveryResult(ScheduledTask.DeliveryPlatform.EMAIL, true, "邮件已发�?)
+            DeliveryResult(ScheduledTask.DeliveryPlatform.EMAIL, true, "邮件已发?)
         } catch (e: Exception) {
-            AppLogger.e(TAG, "Email 投递失�?, e)
+            AppLogger.e(TAG, "Email 投递失?, e)
             DeliveryResult(ScheduledTask.DeliveryPlatform.EMAIL, false, error = e.message)
         }
     }
     
     /**
-     * 微信投�?(通过企业微信或其�?webhook)
+     * 微信投?(通过企业微信或其?webhook)
      */
     private suspend fun deliverWechat(
         taskName: String,
@@ -270,11 +270,11 @@ class MultiPlatformDelivery(private val context: Context) {
         val webhookUrl = getConfig("wechat_webhook_url")
         
         if (webhookUrl.isNullOrEmpty()) {
-            AppLogger.w(TAG, "微信未配�?(webhook_url 未设置）")
+            AppLogger.w(TAG, "微信未配?(webhook_url 未设置）")
             return@withContext DeliveryResult(
                 ScheduledTask.DeliveryPlatform.WECHAT,
                 false,
-                error = "微信未配�?
+                error = "微信未配?
             )
         }
         
@@ -286,18 +286,18 @@ class MultiPlatformDelivery(private val context: Context) {
             val response = makeHttpPost(webhookUrl, payload, isJson = true)
             
             if (response.isEmpty() || response.contains("\"errcode\":0")) {
-                DeliveryResult(ScheduledTask.DeliveryPlatform.WECHAT, true, "消息已发�?)
+                DeliveryResult(ScheduledTask.DeliveryPlatform.WECHAT, true, "消息已发?)
             } else {
                 DeliveryResult(ScheduledTask.DeliveryPlatform.WECHAT, false, error = response)
             }
         } catch (e: Exception) {
-            AppLogger.e(TAG, "微信投递失�?, e)
+            AppLogger.e(TAG, "微信投递失?, e)
             DeliveryResult(ScheduledTask.DeliveryPlatform.WECHAT, false, error = e.message)
         }
     }
     
     /**
-     * 系统推�?     */
+     * 系统推?     */
     private fun deliverPush(
         taskName: String,
         content: String,
@@ -330,16 +330,16 @@ class MultiPlatformDelivery(private val context: Context) {
         
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
         
-        AppLogger.d(TAG, "系统推送已发�? ${taskName}")
+        AppLogger.d(TAG, "系统推送已发? ${taskName}")
         
-        return DeliveryResult(ScheduledTask.DeliveryPlatform.PUSH, true, "推送已发�?)
+        return DeliveryResult(ScheduledTask.DeliveryPlatform.PUSH, true, "推送已发?)
     }
     
     /**
      * 获取配置
      */
     private fun getConfig(key: String): String? {
-        // �?SharedPreferences 或其他配置源获取
+        // ?SharedPreferences 或其他配置源获取
         val prefs = context.getSharedPreferences("scheduler_config", Context.MODE_PRIVATE)
         return prefs.getString(key, null)
     }
@@ -350,7 +350,7 @@ class MultiPlatformDelivery(private val context: Context) {
     fun saveConfig(key: String, value: String) {
         val prefs = context.getSharedPreferences("scheduler_config", Context.MODE_PRIVATE)
         prefs.edit().putString(key, value).apply()
-        AppLogger.d(TAG, "已保存配�? ${key}")
+        AppLogger.d(TAG, "已保存配? ${key}")
     }
     
     /**
@@ -385,7 +385,7 @@ class MultiPlatformDelivery(private val context: Context) {
      * 简单的 HTTP POST 请求
      */
     private fun makeHttpPost(url: String, params: Map<String, String>): String {
-        // 使用 Java 内置�?HttpURLConnection
+        // 使用 Java 内置?HttpURLConnection
         val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
         connection.requestMethod = "POST"
         connection.doOutput = true

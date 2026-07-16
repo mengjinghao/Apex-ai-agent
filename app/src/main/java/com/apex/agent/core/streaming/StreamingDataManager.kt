@@ -126,7 +126,7 @@ class StreamingDataManager(private val context: Context) {
             AppLogger.d(TAG, "数据流配置已注册: ${config.id}")
             true
         } catch (e: Exception) {
-            AppLogger.e(TAG, "注册数据流失�?, e)
+            AppLogger.e(TAG, "注册数据流失?, e)
             false
         }
     }
@@ -137,7 +137,7 @@ class StreamingDataManager(private val context: Context) {
                 ?.mapNotNull { parseConfig(it) }
                 ?: emptyList()
         } catch (e: Exception) {
-            AppLogger.e(TAG, "加载数据流配置失�?, e)
+            AppLogger.e(TAG, "加载数据流配置失?, e)
             emptyList()
         }
     }
@@ -178,14 +178,14 @@ class StreamingDataManager(private val context: Context) {
                 processingPipeline = pipeline
             )
         } catch (e: Exception) {
-            AppLogger.e(TAG, "解析数据流配置失�? ${file.name}", e)
+            AppLogger.e(TAG, "解析数据流配置失? ${file.name}", e)
             null
         }
     }
 
     fun startStream(config: StreamConfig, callback: (StreamDataPoint) -> Unit) {
         if (activeStreams.containsKey(config.id)) {
-            AppLogger.w(TAG, "数据流已在运�? ${config.id}")
+            AppLogger.w(TAG, "数据流已在运? ${config.id}")
             return
         }
 
@@ -246,7 +246,7 @@ class StreamingDataManager(private val context: Context) {
             dataHistory.getOrPut(dataPoint.sourceId) { mutableListOf() }
                 .add(dataPoint)
 
-            AppLogger.d(TAG, "数据点已持久�? ${dataPoint.id}")
+            AppLogger.d(TAG, "数据点已持久? ${dataPoint.id}")
         } catch (e: Exception) {
             AppLogger.e(TAG, "持久化数据点失败", e)
         }
@@ -287,8 +287,8 @@ class StreamingDataManager(private val context: Context) {
         val history = dataHistory[streamId]?.filter { it.timestamp >= cutoffTime } ?: emptyList()
 
         buildString {
-            appendLine("=== 数据流分析报�?===")
-            appendLine("时间范围: ${daysBack}�?)
+            appendLine("=== 数据流分析报?===")
+            appendLine("时间范围: ${daysBack}?)
             appendLine("数据流ID: ${streamId}")
             appendLine()
 
@@ -297,11 +297,11 @@ class StreamingDataManager(private val context: Context) {
                 return@buildString
             }
 
-            appendLine("【数据统计�?)
+            appendLine("【数据统计?)
             appendLine("总数据点: ${history.size}")
             appendLine()
 
-            appendLine("【告警分布�?)
+            appendLine("【告警分布?)
             val alertCounts = history.groupingBy { it.alertLevel }.eachCount()
             AlertLevel.values().forEach { level ->
                 val count = alertCounts.getOrDefault(level, 0)
@@ -309,7 +309,7 @@ class StreamingDataManager(private val context: Context) {
             }
             appendLine()
 
-            appendLine("【最新数据点�?)
+            appendLine("【最新数据点?)
             history.takeLast(5).reversed().forEach { point ->
                 val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
                 val time = timeFormat.format(Date(point.timestamp))
@@ -331,7 +331,7 @@ class StreamingDataManager(private val context: Context) {
 
                         if (fileDate < cutoffTime) {
                             file.delete()
-                            AppLogger.d(TAG, "清理旧数据文�? ${file.name}")
+                            AppLogger.d(TAG, "清理旧数据文? ${file.name}")
                         }
                     } catch (e: Exception) {
                         AppLogger.w(TAG, "跳过清理文件: ${file.name}", e)

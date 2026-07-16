@@ -10,7 +10,7 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 验证结果数据�? */
+ * 验证结果数据? */
 data class ValidationResult(
     val pass: Boolean,
     val score: Float,
@@ -19,7 +19,7 @@ data class ValidationResult(
 )
 
 /**
- * Pass@K 报告数据�? */
+ * Pass@K 报告数据? */
 data class PassKReport(
     val k: Int,
     val passAtK: Float,
@@ -30,7 +30,7 @@ data class PassKReport(
 
 /**
  * Pass@K 验证循环核心
- * 执行 k 次独立验证，计算 pass@k �?pass^k 指标
+ * 执行 k 次独立验证，计算 pass@k ?pass^k 指标
  */
 object ValidationLoop {
     private const val TAG = "ValidationLoop"
@@ -40,13 +40,13 @@ object ValidationLoop {
     private val validationHistory = ConcurrentHashMap<String, MutableList<PassKReport>>()
 
     /**
-     * 执行 k 次独立验�?     * @param taskId 任务ID
+     * 执行 k 次独立验?     * @param taskId 任务ID
      * @param output 待验证的输出
-     * @param k 验证次数，默�?3
+     * @param k 验证次数，默?3
      * @return Pass@K 报告
      */
     suspend fun executeValidation(taskId: String, output: String, k: Int = 3): PassKReport = withContext(Dispatchers.IO) {
-        AppLogger.i(TAG, "开始执行任�?${taskId} �?${k} 次验�?)
+        AppLogger.i(TAG, "开始执行任?${taskId} ?${k} 次验?)
 
         val results = mutableListOf<ValidationResult>()
         val startTime = System.currentTimeMillis()
@@ -61,9 +61,9 @@ object ValidationLoop {
                 val validationResult = performSingleValidation(output, iteration)
                 results.add(validationResult)
                 
-                AppLogger.d(TAG, "�?${iteration + 1}/${k} 次验证完�? ${if (validationResult.pass) "通过" else "失败"}, 评分 ${validationResult.score}")
+                AppLogger.d(TAG, "?${iteration + 1}/${k} 次验证完? ${if (validationResult.pass) "通过" else "失败"}, 评分 ${validationResult.score}")
             } catch (e: Exception) {
-                AppLogger.e(TAG, "�?${iteration + 1} 次验证异�?, e)
+                AppLogger.e(TAG, "?${iteration + 1} 次验证异?, e)
                 results.add(ValidationResult(
                     pass = false,
                     score = 0f,
@@ -86,7 +86,7 @@ object ValidationLoop {
             averageScore = averageScore
         )
 
-        // 保存到历史记�?        saveToHistory(taskId, report)
+        // 保存到历史记?        saveToHistory(taskId, report)
 
         AppLogger.i(TAG, "任务 ${taskId} 验证完成: pass@${k}=${passAtK}, pass^${k}=${passPowK}, 平均评分=${averageScore}, 总耗时=${totalDuration}ms")
 
@@ -96,7 +96,7 @@ object ValidationLoop {
     /**
      * 计算 pass@k
      * 公式: 1 - C(n-c, k) / C(n, k)
-     * 其中 n 是总尝试次数，c 是通过的次�?     */
+     * 其中 n 是总尝试次数，c 是通过的次?     */
     fun calculatePassAtK(results: List<ValidationResult>): Float {
         if (results.isEmpty()) return 0f
         
@@ -107,7 +107,7 @@ object ValidationLoop {
         if (c == 0) return 0f
         if (c >= n) return 1f
         
-        // 使用组合数公式计�?        // pass@k = 1 - C(n-c, k) / C(n, k)
+        // 使用组合数公式计?        // pass@k = 1 - C(n-c, k) / C(n, k)
         val combination = calculateCombination(n - c, k) / calculateCombination(n, k)
         return (1f - combination).coerceIn(0f, 1f)
     }
@@ -115,7 +115,7 @@ object ValidationLoop {
     /**
      * 计算 pass^k
      * 公式: (c/n)^k
-     * 其中 c 是通过的次数，n 是总次�?     */
+     * 其中 c 是通过的次数，n 是总次?     */
     fun calculatePassPowK(results: List<ValidationResult>): Float {
         if (results.isEmpty()) return 0f
         
@@ -148,9 +148,9 @@ object ValidationLoop {
         
         val details = buildString {
             appendLine("验证详情:")
-            appendLine("- 内容完整�? ${if (hasContent) "�? else "�?}")
-            appendLine("- 结构规范�? ${if (hasStructure) "�? else "�?}")
-            appendLine("- 详细程度: ${if (hasDetails) "�? else "�?}")
+            appendLine("- 内容完整? ${if (hasContent) "? else "?}")
+            appendLine("- 结构规范? ${if (hasStructure) "? else "?}")
+            appendLine("- 详细程度: ${if (hasDetails) "? else "?}")
             appendLine("- 评分: ${score}")
         }
         
@@ -165,7 +165,7 @@ object ValidationLoop {
     }
 
     /**
-     * 计算组合�?C(n, k)
+     * 计算组合?C(n, k)
      */
     private fun calculateCombination(n: Int, k: Int): Double {
         if (k > n) return 0.0
@@ -179,24 +179,24 @@ object ValidationLoop {
     }
 
     /**
-     * 保存到历史记�?     */
+     * 保存到历史记?     */
     private fun saveToHistory(taskId: String, report: PassKReport) {
         validationHistory.getOrPut(taskId) { mutableListOf() }.add(report)
         
         // 实际实现中，这里应该持久化到文件
-        AppLogger.d(TAG, "已保存任�?${taskId} 的验证历史，当前�?${validationHistory[taskId]?.size} 条记�?)
+        AppLogger.d(TAG, "已保存任?${taskId} 的验证历史，当前?${validationHistory[taskId]?.size} 条记?)
     }
 
     /**
-     * 获取任务的验证历�?     */
+     * 获取任务的验证历?     */
     fun getValidationHistory(taskId: String): List<PassKReport> {
         return validationHistory[taskId]?.toList() ?: emptyList()
     }
 
     /**
-     * 清除任务的验证历�?     */
+     * 清除任务的验证历?     */
     fun clearValidationHistory(taskId: String) {
         validationHistory.remove(taskId)
-        AppLogger.d(TAG, "已清除任�?${taskId} 的验证历�?)
+        AppLogger.d(TAG, "已清除任?${taskId} 的验证历?)
     }
 }

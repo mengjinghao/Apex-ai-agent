@@ -9,14 +9,14 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
- * 极速免费联网搜索引�?
- * 基于必应，纯本地请求，无API密钥，极速响�?
+ * 极速免费联网搜索引?
+ * 基于必应，纯本地请求，无API密钥，极速响?
  */
 object QuickSearchEngine {
     private const val TAG = "QuickSearchEngine"
 
     /**
-     * 搜索结果数据�?
+     * 搜索结果数据?
      */
     data class SearchResult(
         val title: String,
@@ -47,7 +47,7 @@ object QuickSearchEngine {
         val timestamp: Long
     )
 
-    // OkHttp客户�?
+    // OkHttp客户?
     private val client by lazy {
         OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
@@ -68,12 +68,12 @@ object QuickSearchEngine {
         }.keys
         expiredKeys.forEach { searchCache.remove(it) }
         if (expiredKeys.isNotEmpty()) {
-            AppLogger.d(TAG, "清理�?${expiredKeys.size} 个过期缓�?)
+            AppLogger.d(TAG, "清理?${expiredKeys.size} 个过期缓?)
         }
     }
 
     /**
-     * 清理超过大小限制的缓�?
+     * 清理超过大小限制的缓?
      */
     private fun cleanOldCacheIfNeeded() {
         if (searchCache.size >= MAX_CACHE_SIZE) {
@@ -85,15 +85,15 @@ object QuickSearchEngine {
                     .take(CLEANUP_BATCH_SIZE)
                     .map { it.key }
                 sortedKeys.forEach { searchCache.remove(it) }
-                AppLogger.d(TAG, "清理�?${sortedKeys.size} 个旧缓存")
+                AppLogger.d(TAG, "清理?${sortedKeys.size} 个旧缓存")
             }
         }
     }
 
     /**
-     * 执行极速搜�?
-     * @param keyword 搜索关键�?
-     * @param count 返回结果数量，默�?�?
+     * 执行极速搜?
+     * @param keyword 搜索关键?
+     * @param count 返回结果数量，默??
      * @return 搜索响应
      */
     suspend fun search(keyword: String, count: Int = 6): SearchResponse = withContext(Dispatchers.IO) {
@@ -106,25 +106,25 @@ object QuickSearchEngine {
                 query = "",
                 time = getCurrentTime(),
                 data = emptyList(),
-                errorMessage = "搜索关键词不能为�?
+                errorMessage = "搜索关键词不能为?
             )
         }
         
-        // 边界情况处理：查询过�?
+        // 边界情况处理：查询过?
         if (query.length < 2) {
             return@withContext SearchResponse(
                 success = false,
                 query = query,
                 time = getCurrentTime(),
                 data = emptyList(),
-                errorMessage = "搜索关键词过短，请输入至�个字�?
+                errorMessage = "搜索关键词过短，请输入至个字?
             )
         }
         
-        // 边界情况处理：结果数量验�?
+        // 边界情况处理：结果数量验?
         val safeCount = count.coerceIn(1, 20)
 
-        // 检查缓�?
+        // 检查缓?
         val cacheKey = "${query}_${safeCount}"
         searchCache[cacheKey]?.let { cached ->
             if (System.currentTimeMillis() - cached.timestamp < CACHE_EXPIRE) {
@@ -135,7 +135,7 @@ object QuickSearchEngine {
             }
         }
 
-        AppLogger.d(TAG, "开始搜�? ${query}")
+        AppLogger.d(TAG, "开始搜? ${query}")
 
         try {
             // 构建请求
@@ -152,7 +152,7 @@ object QuickSearchEngine {
             // 执行请求
             val response = client.newCall(request).execute()
             
-            // 检查响应状�?
+            // 检查响应状?
             if (!response.isSuccessful) {
                 return@withContext SearchResponse(
                     success = false,
@@ -172,7 +172,7 @@ object QuickSearchEngine {
                     query = query,
                     time = getCurrentTime(),
                     data = emptyList(),
-                    errorMessage = "无法获取搜索结果，请检查网络连�?
+                    errorMessage = "无法获取搜索结果，请检查网络连?
                 )
             }
 
@@ -197,11 +197,11 @@ object QuickSearchEngine {
                 )
             }
 
-            // 清理旧缓存并存储新结�?
+            // 清理旧缓存并存储新结?
             cleanOldCacheIfNeeded()
             searchCache[cacheKey] = CachedResult(searchResponse, System.currentTimeMillis())
 
-            AppLogger.d(TAG, "搜索完成，找�?{results.size}个结�?)
+            AppLogger.d(TAG, "搜索完成，找?{results.size}个结?)
             return@withContext searchResponse
 
         } catch (e: java.net.SocketTimeoutException) {
@@ -220,7 +220,7 @@ object QuickSearchEngine {
                 query = query,
                 time = getCurrentTime(),
                 data = emptyList(),
-                errorMessage = "无法连接到网络，请检查网络设�?
+                errorMessage = "无法连接到网络，请检查网络设?
             )
         } catch (e: Exception) {
             AppLogger.e(TAG, "搜索失败", e)
@@ -241,14 +241,14 @@ object QuickSearchEngine {
         val results = mutableListOf<SearchResult>()
 
         try {
-            // 匹配搜索结果�?
+            // 匹配搜索结果?
             val itemPattern = Regex("""<li[^>]*class="[^"]*b_algo[^"]*"[^>]*>[\s\S]*?<\/li>""")
             val items = itemPattern.findAll(html).take(maxCount)
 
             for (item in items) {
                 val itemHtml = item.value
 
-                // 提取标题和链�?
+                // 提取标题和链?
                 val titleMatch = Regex("""<h2[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>([\s\S]*)<\/a>[\s\S]*?<\/h2>""").find(itemHtml)
                 var url = titleMatch?.groupValues?.get(1) ?: ""
                 var title = clearHtml(titleMatch?.groupValues?.get(2) ?: "")
@@ -300,7 +300,7 @@ object QuickSearchEngine {
     }
 
     /**
-     * 获取当前时间字符�?
+     * 获取当前时间字符?
      */
     private fun getCurrentTime(): String {
         return java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.CHINA)
@@ -316,11 +316,11 @@ object QuickSearchEngine {
         }
 
         if (response.data.isEmpty()) {
-            return "未找到关于�?{response.query}」的相关结果"
+            return "未找到关于?{response.query}」的相关结果"
         }
 
         return buildString {
-            append("🔍 搜索�?{response.query}」结果（${response.time}）：\n")
+            append("🔍 搜索?{response.query}」结果（${response.time}）：\n")
             append("───────────────────────\n\n")
 
             response.data.forEachIndexed { index, result ->
@@ -332,7 +332,7 @@ object QuickSearchEngine {
             }
 
             append("───────────────────────\n")
-            append("共找�?{response.data.size}条结�?)
+            append("共找?{response.data.size}条结?)
         }
     }
 }

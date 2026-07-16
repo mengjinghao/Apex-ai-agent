@@ -9,7 +9,7 @@ import com.apex.agent.core.tools.system.action.PermissionStatus
 interface ActionListener {
     /**
      * 开始监听用户UI操作
-     * @param onAction 当用户执行操作时的回�?    * @return 监听是否成功启动
+     * @param onAction 当用户执行操作时的回?    * @return 监听是否成功启动
      */
     suspend fun startListening(onAction: (ActionEvent) -> Unit): ListeningResult
 
@@ -27,16 +27,16 @@ interface ActionListener {
 
     /**
      * 检查监听器是否可用
-     * @return 监听器是否可�?    */
+     * @return 监听器是否可?    */
     suspend fun isAvailable(): Boolean
 
     /**
-     * 请求监听器所需的权�?    * @param onResult 权限请求结果回调
+     * 请求监听器所需的权?    * @param onResult 权限请求结果回调
      */
     suspend fun requestPermission(onResult: (Boolean) -> Unit)
 
     /**
-     * 检查是否已有监听器所需的权�?    * @return 权限状态，包含是否有权限及详细的错误原�?    */
+     * 检查是否已有监听器所需的权?    * @return 权限状态，包含是否有权限及详细的错误原?    */
     suspend fun hasPermission(): PermissionStatus
 
     /** 初始化监听器 */
@@ -48,7 +48,7 @@ interface ActionListener {
      */
     fun isListening(): Boolean
 
-    /** 用户UI操作事件数据�?/
+    /** 用户UI操作事件数据?/
     data class ActionEvent(
         val timestamp: Long,
         val actionType: ActionType,
@@ -82,7 +82,7 @@ interface ActionListener {
         val packageName: String? = null
     )
 
-    /** 监听结果数据�?/
+    /** 监听结果数据?/
     data class ListeningResult(
         val success: Boolean,
         val message: String = if (success) "Listening started" else "Failed to start listening"

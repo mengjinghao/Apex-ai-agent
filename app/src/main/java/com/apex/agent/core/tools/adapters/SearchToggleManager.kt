@@ -6,7 +6,7 @@ import androidx.preference.PreferenceManager
 
 /**
  * 搜索按钮状态管理器
- * 管理搜索按钮的开�关闭状�?
+ * 管理搜索按钮的开关闭状?
  */
 object SearchToggleManager {
     private const val TAG = "SearchToggleManager"
@@ -20,7 +20,7 @@ object SearchToggleManager {
     private var listeners = mutableListOf<OnStateChangeListener>()
 
     /**
-     * 获取搜索按钮状�?
+     * 获取搜索按钮状?
      */
     fun isSearchEnabled(context: Context): Boolean {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -28,7 +28,7 @@ object SearchToggleManager {
     }
 
     /**
-     * 设置搜索按钮状�?
+     * 设置搜索按钮状?
      */
     fun setSearchEnabled(context: Context, enabled: Boolean) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -37,7 +37,7 @@ object SearchToggleManager {
     }
 
     /**
-     * 切换搜索按钮状�?
+     * 切换搜索按钮状?
      */
     fun toggleSearch(context: Context): Boolean {
         val current = isSearchEnabled(context)
@@ -70,13 +70,13 @@ object SearchToggleManager {
     }
 
     /**
-     * 获取状态描�?
+     * 获取状态描?
      */
     fun getStateDescription(context: Context): String {
         return if (isSearchEnabled(context)) {
-            "搜索已开启，发送消息时会自动搜�?
+            "搜索已开启，发送消息时会自动搜?
         } else {
-            "搜索已关闭，点击开�?
+            "搜索已关闭，点击开?
         }
     }
 }

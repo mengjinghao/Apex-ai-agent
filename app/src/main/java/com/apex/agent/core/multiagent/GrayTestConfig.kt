@@ -63,7 +63,7 @@ class GrayTestConfig {
     }
 
     fun getMaxGrayUsers(): Int {
-        // 假设总用户数�?000，根据灰度比例计算最大灰度用户数
+        // 假设总用户数?000，根据灰度比例计算最大灰度用户数
         val totalUsers = 10000
         return (totalUsers * grayPercentage / 100).coerceAtLeast(1)
     }
@@ -95,7 +95,7 @@ class GrayTestConfig {
         clearFeatureFlags()
     }
 
-    // 检查用户是否应该进入灰度测�?   fun shouldUserEnterGrayTest(userId: String): Boolean {
+    // 检查用户是否应该进入灰度测?   fun shouldUserEnterGrayTest(userId: String): Boolean {
         if (!isGrayTestEnabled()) {
             return false
         }

@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * 超级Agent系统集成管理�?
+ * 超级Agent系统集成管理?
  * 统一管理所有Agent系统组件
  */
 class SuperAgentSystemManager private constructor(private val context: Context) {
@@ -28,7 +28,7 @@ class SuperAgentSystemManager private constructor(private val context: Context) 
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    // 核心管理�?
+    // 核心管理?
     val knowledgeGraphManager: KnowledgeGraphManager by lazy { KnowledgeGraphManager(context) }
     val federatedLearningManager: FederatedLearningManager by lazy { FederatedLearningManager(context) }
     val realTimeCollaborationManager: RealTimeCollaborationManager by lazy { RealTimeCollaborationManager(context) }
@@ -43,7 +43,7 @@ class SuperAgentSystemManager private constructor(private val context: Context) 
     // 现有系统
     var multiAgentManager: MultiAgentManager? = null
 
-    // 系统状�?
+    // 系统状?
     private val _systemState = MutableStateFlow(SystemState.INITIALIZING)
     val systemState: StateFlow<SystemState> = _systemState
 
@@ -52,7 +52,7 @@ class SuperAgentSystemManager private constructor(private val context: Context) 
     val performanceMetrics: StateFlow<PerformanceMetrics> = _performanceMetrics
 
     /**
-     * 初始化系�?
+     * 初始化系?
      */
     suspend fun initialize() {
         _systemState.value = SystemState.INITIALIZING
@@ -62,17 +62,17 @@ class SuperAgentSystemManager private constructor(private val context: Context) 
             // 加载性能优化设置
             performanceOptimizationManager.initialize()
 
-            // 初始化自愈系统（首先启动，监控所有其他组�?
+            // 初始化自愈系统（首先启动，监控所有其他组?
             initializeCoreManagers()
 
             // 注册默认Agent
             initializeDefaultAgents()
 
             _systemState.value = SystemState.RUNNING
-            AppLogger.d(TAG, "超级Agent系统初始化完�?)
+            AppLogger.d(TAG, "超级Agent系统初始化完?)
         } catch (e: Exception) {
             _systemState.value = SystemState.ERROR
-            AppLogger.e(TAG, "超级Agent系统初始化失�?, e)
+            AppLogger.e(TAG, "超级Agent系统初始化失?, e)
         }
     }
 
@@ -90,7 +90,7 @@ class SuperAgentSystemManager private constructor(private val context: Context) 
         // 注册默认Agent到所有管理器
         val defaultAgent = Agent(
             id = "default_coordinator",
-            name = "系统协调�?,
+            name = "系统协调?,
             role = "COORDINATOR",
             goal = "确保Agent系统平稳运行",
             backstory = "我是超级Agent系统的协调者，负责确保所有Agent协同工作",
@@ -117,7 +117,7 @@ class SuperAgentSystemManager private constructor(private val context: Context) 
         selfHealingManager.registerAgent(defaultAgent.id)
     }
 
-        // 更新状�?
+        // 更新状?
 
     fun registerAgent(
         id: String,
@@ -169,7 +169,7 @@ class SuperAgentSystemManager private constructor(private val context: Context) 
         onProgress: (ProgressUpdate) -> Unit
     ): Deferred<TaskExecutionResult> = scope.async {
         val startTime = System.currentTimeMillis()
-        onProgress(ProgressUpdate(0.1f, "初始化任�?))
+        onProgress(ProgressUpdate(0.1f, "初始化任?))
         try {
             val taskMetrics = mutableMapOf(
                 "startTime" to startTime,

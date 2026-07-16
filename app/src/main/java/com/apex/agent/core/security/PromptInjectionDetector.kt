@@ -7,7 +7,7 @@ import com.apex.agent.core.normal.toolpreview.RiskLevel
 /**
  * 提示注入检测器
  *
- * 通过规则引擎匹配已知的提示注入模式（中英文），检测试图改�?AI 角色�? * 绕过安全限制等恶意输入�? */
+ * 通过规则引擎匹配已知的提示注入模式（中英文），检测试图改?AI 角色? * 绕过安全限制等恶意输入? */
 class PromptInjectionDetector {
 
     companion object {
@@ -115,19 +115,19 @@ class PromptInjectionDetector {
 
             // ===== 中文模式 =====
             add(InjectionPattern(
-                pattern = Pattern.compile("忽略之前�所有）?(指令|指示|规则|设定�?),
+                pattern = Pattern.compile("忽略之前所有）?(指令|指示|规则|设定?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.9f,
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("无视之前�所有）?(指令|指示|规则|设定�?),
+                pattern = Pattern.compile("无视之前所有）?(指令|指示|规则|设定?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.9f,
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("忘记之前�所有）?(指令|指示|规则|设定|内容�?),
+                pattern = Pattern.compile("忘记之前所有）?(指令|指示|规则|设定|内容?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.85f,
                 severity = RiskLevel.HIGH
@@ -151,43 +151,43 @@ class PromptInjectionDetector {
                 severity = RiskLevel.MEDIUM
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("从现在开始[�?]?�是一个|将成为|扮演�?),
+                pattern = Pattern.compile("从现在开始[?]?是一个|将成为|扮演?),
                 type = InjectionPatternType.ROLE_ASSIGNMENT,
                 baseConfidence = 0.8f,
                 severity = RiskLevel.HIGH
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("新的指令[�?]"),
+                pattern = Pattern.compile("新的指令[?]"),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.85f,
                 severity = RiskLevel.HIGH
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("覆盖(之前|原有|你的�所有）?(指令|规则|设定�?),
+                pattern = Pattern.compile("覆盖(之前|原有|你的所有）?(指令|规则|设定?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.9f,
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("不要遵守(之前|你的|原来的）(任何�?(指令|规则|设定|限制�?),
+                pattern = Pattern.compile("不要遵守(之前|你的|原来的）(任何?(指令|规则|设定|限制?),
                 type = InjectionPatternType.INSTRUCTION_OVERRIDE,
                 baseConfidence = 0.85f,
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("绕过(你的|安全�?(限制|防护|过滤|检查）"),
+                pattern = Pattern.compile("绕过(你的|安全?(限制|防护|过滤|检查）"),
                 type = InjectionPatternType.SAFETY_BYPASS,
                 baseConfidence = 0.9f,
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("进入(开发者|管理员|根|上帝�模式"),
+                pattern = Pattern.compile("进入(开发者|管理员|根|上帝模式"),
                 type = InjectionPatternType.JAILBREAK,
                 baseConfidence = 0.85f,
                 severity = RiskLevel.CRITICAL
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("解除(所有）?(限制|约束|安全限制�?),
+                pattern = Pattern.compile("解除(所有）?(限制|约束|安全限制?),
                 type = InjectionPatternType.SAFETY_BYPASS,
                 baseConfidence = 0.85f,
                 severity = RiskLevel.HIGH
@@ -215,7 +215,7 @@ class PromptInjectionDetector {
                 severity = RiskLevel.HIGH
             ))
             add(InjectionPattern(
-                pattern = Pattern.compile("不再�??:任何�?(?:限制|约束�?),
+                pattern = Pattern.compile("不再??:任何?(?:限制|约束?),
                 type = InjectionPatternType.SAFETY_BYPASS,
                 baseConfidence = 0.85f,
                 severity = RiskLevel.HIGH
@@ -236,9 +236,9 @@ class PromptInjectionDetector {
     }
 
     /**
-     * 检测已知注入模�?     *
+     * 检测已知注入模?     *
      * @param input 待检测的文本
-     * @return 发现的注入模式列�?     */
+     * @return 发现的注入模式列?     */
     fun detectInjectionPatterns(input: String): List<InjectionFinding> {
         if (input.isEmpty()) return emptyList()
 
@@ -265,9 +265,9 @@ class PromptInjectionDetector {
     }
 
     /**
-     * 检测角色劫持模�?     *
+     * 检测角色劫持模?     *
      * @param input 待检测的文本
-     * @return 发现的角色劫持发现列�?     */
+     * @return 发现的角色劫持发现列?     */
     fun detectRoleHijacking(input: String): List<InjectionFinding> {
         if (input.isEmpty()) return emptyList()
 
@@ -305,7 +305,7 @@ class PromptInjectionDetector {
         val allFindings = patternFindings + hijackFindings
 
         if (allFindings.isNotEmpty()) {
-            AppLogger.w(TAG, "检测到 ${allFindings.size} 个提示注�角色劫持模式")
+            AppLogger.w(TAG, "检测到 ${allFindings.size} 个提示注角色劫持模式")
         }
 
         return allFindings
@@ -314,15 +314,15 @@ class PromptInjectionDetector {
 
 /** 注入模式类型 */
 enum class InjectionPatternType {
-    /** 指令覆盖：试图让 AI 忽略之前的指�?*/
+    /** 指令覆盖：试图让 AI 忽略之前的指?*/
     INSTRUCTION_OVERRIDE,
-    /** 角色分配：试图给 AI 分配新角�?*/
+    /** 角色分配：试图给 AI 分配新角?*/
     ROLE_ASSIGNMENT,
-    /** 角色劫持：试图改�?AI 的身份和行为 */
+    /** 角色劫持：试图改?AI 的身份和行为 */
     ROLE_HIJACK,
-    /** 角色标记：伪装系�助手/用户角色标记 */
+    /** 角色标记：伪装系助手/用户角色标记 */
     ROLE_MARKER,
-    /** 安全绕过：试图绕过安全限�?*/
+    /** 安全绕过：试图绕过安全限?*/
     SAFETY_BYPASS,
     /** 越狱：已知的越狱攻击模式 */
     JAILBREAK

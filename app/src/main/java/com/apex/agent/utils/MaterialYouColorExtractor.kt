@@ -4,7 +4,7 @@ import android.graphics.Color
 import androidx.compose.ui.graphics.Color as ComposeColor
 
 /**
- * Material You 色彩提取�?
+ * Material You 色彩提取?
  * 根据源颜色生成完整的 Material You 色彩方案
  */
 object MaterialYouColorExtractor {
@@ -138,7 +138,7 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * 获取默认�?Material You 色彩方案（亮色模式）
+     * 获取默认?Material You 色彩方案（亮色模式）
      */
     fun getDefaultLightColors(): MaterialYouColors {
         return MaterialYouColors(
@@ -178,7 +178,7 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * 获取默认�?Material You 色彩方案（暗色模式）
+     * 获取默认?Material You 色彩方案（暗色模式）
      */
     fun getDefaultDarkColors(): MaterialYouColors {
         return MaterialYouColors(
@@ -218,7 +218,7 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * �?MaterialYouColors 转换�?Compose ColorScheme
+     * ?MaterialYouColors 转换?Compose ColorScheme
      */
     fun toColorScheme(colors: MaterialYouColors): androidx.compose.material3.ColorScheme {
         return if (colors.isDark) {
@@ -293,7 +293,7 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * RGB �?HSL
+     * RGB ?HSL
      */
     private fun rgbToHsl(color: Int): FloatArray {
         val r = ((color shr 16) and 0xFF) / 255f
@@ -321,7 +321,7 @@ object MaterialYouColorExtractor {
     }
 
     /**
-     * HSL �?RGB
+     * HSL ?RGB
      */
     private fun hslToRgb(h: Float, s: Float, l: Float): Int {
         val r: Float

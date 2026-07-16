@@ -19,7 +19,7 @@ import com.apex.agent.core.tools.system.AndroidShellExecutor
 /**
  * 调试级别的UI工具类（重构版）
  * 
- * 智能降级策略�? * 1. 如果指定了display参数或无障碍服务未启动的使用Shell命令
+ * 智能降级策略? * 1. 如果指定了display参数或无障碍服务未启动的使用Shell命令
  * 2. 否则 的使用无障碍服的
  * 
  * 继承自AccessibilityUITools，提供灵活的执行策略
@@ -33,7 +33,7 @@ open class DebuggerUIToolsRefactored(context: Context) : com.apex.agent.core.too
     /** Shell身份标识（可选） */
     protected open val uiShellIdentity: ShellIdentity? = null
 
-    // ==================== 核心功能（带智能降级�?==================
+    // ==================== 核心功能（带智能降级?==================
 
     /**
      * 点击坐标（智能降级）
@@ -81,7 +81,7 @@ open class DebuggerUIToolsRefactored(context: Context) : com.apex.agent.core.too
                 ).toToolResult(tool.name)
             }
 
-            // 5. 隐藏overlay并返回结�?            hideOverlay()
+            // 5. 隐藏overlay并返回结?            hideOverlay()
             
             UIToolsResult.Success(
                 UIActionResultData(
@@ -126,7 +126,7 @@ open class DebuggerUIToolsRefactored(context: Context) : com.apex.agent.core.too
             // 3. 显示长按效果
             showTapOverlay(x, y)
 
-            // 4. 执行Shell长按命令（使用swipe模模�?            val displayArg = getDisplayArg(tool)
+            // 4. 执行Shell长按命令（使用swipe模模?            val displayArg = getDisplayArg(tool)
             val command = "input ${displayArg}swipe ${x} ${y} ${x} ${y} 800"
             val result = executeUiShellCommand(command)
 
@@ -138,7 +138,7 @@ open class DebuggerUIToolsRefactored(context: Context) : com.apex.agent.core.too
                 ).toToolResult(tool.name)
             }
 
-            // 5. 隐藏overlay并返回结�?            hideOverlay()
+            // 5. 隐藏overlay并返回结?            hideOverlay()
             
             UIToolsResult.Success(
                 UIActionResultData(
@@ -199,7 +199,7 @@ open class DebuggerUIToolsRefactored(context: Context) : com.apex.agent.core.too
                 ).toToolResult(tool.name)
             }
 
-            // 5. 隐藏overlay并返回结�?            hideOverlay()
+            // 5. 隐藏overlay并返回结?            hideOverlay()
             
             UIToolsResult.Success(
                 UIActionResultData(

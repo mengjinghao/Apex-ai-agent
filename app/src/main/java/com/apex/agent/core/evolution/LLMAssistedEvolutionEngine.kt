@@ -42,22 +42,22 @@ class LLMAssistedEvolutionEngine(
             当前技能：
             ${gson.toJson(currentSkill.rootNode)}
 
-            任务目标�?            ${taskGoal}
+            任务目标?            ${taskGoal}
 
-            本次执行评估�?            - 评分析{evaluationResult.score}/10
+            本次执行评估?            - 评分析{evaluationResult.score}/10
             - 成功能{evaluationResult.success}
             - 失败原因的{evaluationResult.failureReason}
             - 改进建议的{evaluationResult.improvementSuggestions.joinToString(", ")}
             - 发现模方式{evaluationResult.detectedPatterns.joinToString(", ")}
 
             请以 JSON 格式返回优化后的 EvolutionNode 结构。支持以下节点类型：
-            - ACTION：执行某个工�?content = 工具名，parameters = 参数�?
-            - CONDITION：条件判�?content = 判断描述，children = [true分支, false分支])
-            - LOOP：循�?content = 循环描述，children = 循环�?
-            - PARALLEL：并行执�?children = 多个分支�?
-            - COMPOSITE：复合技�?content = 技能ID)
+            - ACTION：执行某个工?content = 工具名，parameters = 参数?
+            - CONDITION：条件判?content = 判断描述，children = [true分支, false分支])
+            - LOOP：循?content = 循环描述，children = 循环?
+            - PARALLEL：并行执?children = 多个分支?
+            - COMPOSITE：复合技?content = 技能ID)
 
-            返回格方�?            {
+            返回格方?            {
               "skill": {
                 "name": String,
                 "description": String,
@@ -65,8 +65,8 @@ class LLMAssistedEvolutionEngine(
               }
             }
 
-            优化原则�?            1. 调整动作参数使其更合�?            2. 增加必要的条件判断或循环
-            3. 移除无效或冗余步�?            4. 保持逻辑的清晰可理解
+            优化原则?            1. 调整动作参数使其更合?            2. 增加必要的条件判断或循环
+            3. 移除无效或冗余步?            4. 保持逻辑的清晰可理解
         """.trimIndent()
 
         return try {

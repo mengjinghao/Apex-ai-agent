@@ -29,7 +29,7 @@ data class ImageRegistrationOptions(
 
 /**
  * 全局图片池管理器
- * 支持内存缓存和本地持久化缓存，使用LRU策略�?*
+ * 支持内存缓存和本地持久化缓存，使用LRU策略?*
  * 图片在注册入池时会被统一解码、方向归一、缩放、格式转换，
  * 池中仅保存最终发送用的唯一标准图片 */
 object ImagePoolManager {
@@ -140,7 +140,7 @@ object ImagePoolManager {
                 recycleSource = true
             )
         } catch (e: Exception) {
-            AppLogger.e(TAG, "添加图片时发生异�?${filePath}", e)
+            AppLogger.e(TAG, "添加图片时发生异?${filePath}", e)
             "error"
         }
     }
@@ -198,7 +198,7 @@ object ImagePoolManager {
                 imagePool[id] = normalized
                 saveToDisk(id, normalized)
             }
-            AppLogger.d(TAG, "从内存缓存获取图�?${id}")
+            AppLogger.d(TAG, "从内存缓存获取图?${id}")
             return normalized
         }
 
@@ -213,7 +213,7 @@ object ImagePoolManager {
             return normalized
         }
 
-        AppLogger.w(TAG, "图片不存�?${id}")
+        AppLogger.w(TAG, "图片不存?${id}")
         return null
     }
 
@@ -223,7 +223,7 @@ object ImagePoolManager {
     @Synchronized
     fun removeImage(id: String) {
         if (imagePool.remove(id) != null) {
-            AppLogger.d(TAG, "从内存缓存移除图�?${id}")
+            AppLogger.d(TAG, "从内存缓存移除图?${id}")
         }
         deleteFromDisk(id)
     }
@@ -339,7 +339,7 @@ object ImagePoolManager {
 
             AppLogger.d(
                 TAG,
-                "成功添加图片到池�?${id}, mime=${finalMimeType}, size=${imageData.width}x${imageData.height}, sourceMime=${sourceMimeType}"
+                "成功添加图片到池?${id}, mime=${finalMimeType}, size=${imageData.width}x${imageData.height}, sourceMime=${sourceMimeType}"
             )
             return id
         } catch (e: Exception) {
@@ -446,7 +446,7 @@ object ImagePoolManager {
         }
         AppLogger.w(
             TAG,
-            "检测到图片MIME与真实编码不一致，已修�?id=${id}, stored=${imageData.mimeType}, detected=${detectedMimeType}"
+            "检测到图片MIME与真实编码不一致，已修?id=${id}, stored=${imageData.mimeType}, detected=${detectedMimeType}"
         )
         return imageData.copy(mimeType = detectedMimeType)
     }
@@ -615,7 +615,7 @@ object ImagePoolManager {
             FileOutputStream(metaFile).use { it.write(meta.toString().toByteArray()) }
             AppLogger.d(TAG, "图片已保存到磁盘: ${id}")
         } catch (e: Exception) {
-            AppLogger.e(TAG, "保存图片到磁盘失�?${id}", e)
+            AppLogger.e(TAG, "保存图片到磁盘失?${id}", e)
         }
     }
 
@@ -639,7 +639,7 @@ object ImagePoolManager {
                 height = meta.optInt("height", 0)
             )
         } catch (e: Exception) {
-            AppLogger.e(TAG, "从磁盘加载图片失�?${id}", e)
+            AppLogger.e(TAG, "从磁盘加载图片失?${id}", e)
             null
         }
     }
@@ -670,9 +670,9 @@ object ImagePoolManager {
         try {
             File(dir, "${id}.dat").delete()
             File(dir, "${id}.meta").delete()
-            AppLogger.d(TAG, "从磁盘删除图�?${id}")
+            AppLogger.d(TAG, "从磁盘删除图?${id}")
         } catch (e: Exception) {
-            AppLogger.e(TAG, "从磁盘删除图片失�?${id}", e)
+            AppLogger.e(TAG, "从磁盘删除图片失?${id}", e)
         }
     }
 

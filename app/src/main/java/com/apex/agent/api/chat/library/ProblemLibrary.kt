@@ -28,7 +28,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * 问题库管理类 - 提供分析对话内容并存储为结构化记忆图谱的功能�?/
+ * 问题库管理类 - 提供分析对话内容并存储为结构化记忆图谱的功能?/
 object ProblemLibrary {
     private const val TAG = "ProblemLibrary"
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -126,11 +126,11 @@ object ProblemLibrary {
                 return@withLock
             }
             
-            AppLogger.d(TAG, "找到 ${uncategorizedMemories.size} 条未分类记忆，开始批量分�?.")
+            AppLogger.d(TAG, "找到 ${uncategorizedMemories.size} 条未分类记忆，开始批量分?.")
             
-            // 获取现有文件夹列�?          val existingFolders = memoryRepository.getAllFolderPaths()
+            // 获取现有文件夹列?          val existingFolders = memoryRepository.getAllFolderPaths()
             
-            // 分批处理（每�条）
+            // 分批处理（每条）
             val batches = uncategorizedMemories.chunked(10)
             batches.forEachIndexed { batchIndex: Int, batch: List<Memory> ->
                 try {
@@ -146,7 +146,7 @@ object ProblemLibrary {
     }
 
     /**
-     * 使用 AI 为一批记忆分�?   */
+     * 使用 AI 为一批记忆分?   */
     private suspend fun categorizeBatch(
         context: Context,
         memories: List<Memory>,
@@ -186,7 +186,7 @@ object ProblemLibrary {
         // Update request count
         apiPreferences?.incrementRequestCountForProviderModel(aiService.providerModel)
         
-        // 解析 AI 返回复JSON 并更新记�?       parseAndApplyCategorization(result.toString(), memories, repository)
+        // 解析 AI 返回复JSON 并更新记?       parseAndApplyCategorization(result.toString(), memories, repository)
     }
 
     /**
@@ -298,7 +298,7 @@ object ProblemLibrary {
 
             // First, apply any merges to existing memories
             if (analysis.mergedEntities.isNotEmpty()) {
-                AppLogger.d(TAG, "开始合${{analysis.mergedEntities.size} 组记�?.")
+                AppLogger.d(TAG, "开始合${{analysis.mergedEntities.size} 组记?.")
                 analysis.mergedEntities.forEach { merge ->
                     AppLogger.d(TAG, "正在合并: ${merge.sourceTitles.joinToString(", ")} -> '${merge.newTitle}'. 原因: ${merge.reason}")
                     val mergedMemory = memoryRepository.mergeMemories(
@@ -316,7 +316,7 @@ object ProblemLibrary {
 
             // Second, apply any updates to existing memories
             if (analysis.updatedEntities.isNotEmpty()) {
-                AppLogger.d(TAG, "开始更�?{analysis.updatedEntities.size} 个现有记�?.")
+                AppLogger.d(TAG, "开始更?{analysis.updatedEntities.size} 个现有记?.")
                 analysis.updatedEntities.forEach { update ->
                     val memoryToUpdate = memoryRepository.findMemoryByTitle(update.titleToUpdate)
                     if (memoryToUpdate != null) {
@@ -355,8 +355,8 @@ object ProblemLibrary {
                 return@withLock
             }
 
-            AppLogger.d(TAG, "开始构建记忆图�?.")
-            AppLogger.d(TAG, "AI分析结果 - 主要问题: '${analysis.mainProblem.title}', 实体: ${analysis.extractedEntities.size}, 链接: ${analysis.links.size}, 文文�?${analysis.mainProblem.folderPath}'")
+            AppLogger.d(TAG, "开始构建记忆图?.")
+            AppLogger.d(TAG, "AI分析结果 - 主要问题: '${analysis.mainProblem.title}', 实体: ${analysis.extractedEntities.size}, 链接: ${analysis.links.size}, 文文?${analysis.mainProblem.folderPath}'")
 
 
             try {
@@ -364,7 +364,7 @@ object ProblemLibrary {
                 val mainProblemMemory = analysis.mainProblem?.let { mainProblem ->
                     val existingMemory = memoryRepository.findMemoryByTitle(mainProblem.title)
                     if (existingMemory != null) {
-                        AppLogger.d(TAG, "1. 发现同名核心记忆，更新内�?${mainProblem.title}'")
+                        AppLogger.d(TAG, "1. 发现同名核心记忆，更新内?${mainProblem.title}'")
                         existingMemory.content = mainProblem.content
                         memoryRepository.saveMemory(existingMemory)
                         existingMemory
@@ -427,7 +427,7 @@ object ProblemLibrary {
                 }
 
                 // 3. Create links between the memories
-                AppLogger.d(TAG, "3. 开始创建记忆链�?.")
+                AppLogger.d(TAG, "3. 开始创建记忆链?.")
                 analysis.links.forEach { link ->
                     // Try to find source: first in newly created/updated memories, then in existing DB
                     val source = createdMemories[link.sourceTitle] 
@@ -442,7 +442,7 @@ object ProblemLibrary {
                         memoryRepository.linkMemories(source, target, link.type, weight = link.weight, description = link.description)
                     } else {
                         AppLogger.w(TAG, "   -> 无法创建链接，源或目标实体未找到: ${link.sourceTitle} -> ${link.targetTitle}")
-                        if (source == null) AppLogger.w(TAG, "      源节�?${link.sourceTitle}' 未找的）
+                        if (source == null) AppLogger.w(TAG, "      源节?${link.sourceTitle}' 未找的）
                         if (target == null) AppLogger.w(TAG, "      目标节点 '${link.targetTitle}' 未找的）
                     }
                 }
@@ -497,7 +497,7 @@ object ProblemLibrary {
                     "keywordWeight=${searchConfig.keywordWeight}, tagWeight=${searchConfig.tagWeight}, vectorWeight=${searchConfig.vectorWeight}, edgeWeight=${searchConfig.edgeWeight}, " +
                     "searchQueryLen=${contextQuery.length}"
             )
-            AppLogger.d(TAG, "候选检索查询（截断�?${contextQuery.take(220)}")
+            AppLogger.d(TAG, "候选检索查询（截断?${contextQuery.take(220)}")
             if (candidateMemories.isEmpty()) {
                 AppLogger.d(TAG, "候选记忆列表为空（通过阈值过滤后无结果）的）
             } else {
@@ -527,7 +527,7 @@ object ProblemLibrary {
                 FunctionalPrompts.knowledgeGraphNoExistingMemoriesMessage(useEnglish)
             }
 
-            // 获取现有文件夹列�?          val existingFolders = memoryRepository.getAllFolderPaths()
+            // 获取现有文件夹列?          val existingFolders = memoryRepository.getAllFolderPaths()
             val existingFoldersPrompt = FunctionalPrompts.knowledgeGraphExistingFoldersPrompt(
                 existingFolders = existingFolders,
                 useEnglish = useEnglish
@@ -580,7 +580,7 @@ object ProblemLibrary {
 
         val conciseSolution = normalizeCandidateSearchText(solution, maxLen = 180)
 
-        // 优先问题文本，附带少量解答上下文（避免历史记录噪声）�?       return if (conciseSolution.isNotBlank()) {
+        // 优先问题文本，附带少量解答上下文（避免历史记录噪声）?       return if (conciseSolution.isNotBlank()) {
             "${selectedQuestion}\n${conciseSolution}"
         } else {
             selectedQuestion
@@ -861,8 +861,8 @@ object ProblemLibrary {
         val birthDateMatch = "(出生日期|出生年月日|Birth Date|Date of Birth)[:：\\s]+([\\d-]+)".toRegex().find(preferencesText)
         val birthYearMatch = "(出生年份|年龄|Birth year|Age)[:：\\s]+(\\d+)".toRegex().find(preferencesText)
         val genderMatch = "(性别|Gender)[:：\\s]+([^;]+)".toRegex().find(preferencesText)
-        val personalityMatch = "(性格(特点�?|Personality( traits))[:：\\s]+([^;]+)".toRegex().find(preferencesText)
-        val identityMatch = "(身份(认同�?|Identity( recognition))[:：\\s]+([^;]+)".toRegex().find(preferencesText)
+        val personalityMatch = "(性格(特点?|Personality( traits))[:：\\s]+([^;]+)".toRegex().find(preferencesText)
+        val identityMatch = "(身份(认同?|Identity( recognition))[:：\\s]+([^;]+)".toRegex().find(preferencesText)
         val occupationMatch = "(职业|Occupation)[:：\\s]+([^;]+)".toRegex().find(preferencesText)
         val aiStyleMatch = "(AI风格|期待的AI风格|偏好的AI风格|AI Style|Expected AI Style|Preferred AI Style)[:：\\s]+([^;]+)".toRegex().find(preferencesText)
 

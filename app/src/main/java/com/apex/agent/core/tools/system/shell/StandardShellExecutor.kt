@@ -30,7 +30,7 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
     }
 
     override fun requestPermission(onResult: (Boolean) -> Unit) {
-        // 标准监听器不需要额外权�?       onResult(true)
+        // 标准监听器不需要额外权?       onResult(true)
     }
 
     override suspend fun executeCommand(
@@ -156,7 +156,7 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
     /**
      * 检测命令是否包含需要shell解释的特殊操作符
      * @param command 要检查的命令
-     * @return 是否包含shell操作�?    */
+     * @return 是否包含shell操作?    */
     private fun containsShellOperators(command: String): Boolean {
         // 预处理：标记引号内的内容，避免检测引号内的操作符
         var inSingleQuotes = false
@@ -182,7 +182,7 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
             }
             // 只在不在引号内时检测操作符
             else if (!inSingleQuotes && !inDoubleQuotes && !escaped) {
-                // 检测管�?               if (c == '|') {
+                // 检测管?               if (c == '|') {
                     return true
                 }
 
@@ -195,7 +195,7 @@ class StandardShellExecutor(private val context: Context) : ShellExecutor {
                     return true
                 }
 
-                // 检测分�?               if (c == ';') {
+                // 检测分?               if (c == ';') {
                     return true
                 }
             }

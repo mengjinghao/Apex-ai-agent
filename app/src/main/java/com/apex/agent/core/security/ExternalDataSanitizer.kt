@@ -6,9 +6,9 @@ import java.util.regex.Pattern
 import com.apex.agent.core.normal.toolpreview.RiskLevel
 
 /**
- * 外部数据消毒�? *
+ * 外部数据消毒? *
  * 对来自外部数据源（HTML、PDF、DOCX 等提取的文本）进行二次消毒，
- * 检�?HTML 注释负载、Base64 编码内容、脚本引用等潜在威胁�? */
+ * 检?HTML 注释负载、Base64 编码内容、脚本引用等潜在威胁? */
 class ExternalDataSanitizer {
 
     companion object {
@@ -33,7 +33,7 @@ class ExternalDataSanitizer {
             Pattern.compile("vbscript\\s*:", Pattern.CASE_INSENSITIVE)
         )
 
-        // Base64 编码内容检测（至少 20 字符的连�?Base64 字符串）
+        // Base64 编码内容检测（至少 20 字符的连?Base64 字符串）
         private val BASE64_PATTERN: Pattern = Pattern.compile(
             "(?:[A-Za-z0-9+/]{20,}={0,2})"
         )
@@ -53,7 +53,7 @@ class ExternalDataSanitizer {
             "<script[^>]*>", Pattern.CASE_INSENSITIVE
         )
 
-        // 事件处理器属�?        private val EVENT_HANDLER_PATTERN: Pattern = Pattern.compile(
+        // 事件处理器属?        private val EVENT_HANDLER_PATTERN: Pattern = Pattern.compile(
             "\\bon\\w+\\s*=\\s*[\"'][^\"']*[\"']", Pattern.CASE_INSENSITIVE
         )
 
@@ -67,16 +67,16 @@ class ExternalDataSanitizer {
             """<script[^>]+src\s*=\s*["'][^"']+["'][^>]*>""", Pattern.CASE_INSENSITIVE
         )
 
-        // 可疑文件扩展名引�?        private val SUSPICIOUS_FILE_REF_PATTERN: Pattern = Pattern.compile(
+        // 可疑文件扩展名引?        private val SUSPICIOUS_FILE_REF_PATTERN: Pattern = Pattern.compile(
             """(?:href|src|action)\s*=\s*["'][^"']*\.(?:js|vbs|php|asp|jsp|cgi|sh|bat|ps1|exe|dll)["']""",
             Pattern.CASE_INSENSITIVE
         )
 
-        // 条件注释（IE 条件注释，可隐藏恶意代码�?        private val CONDITIONAL_COMMENT_PATTERN: Pattern = Pattern.compile(
+        // 条件注释（IE 条件注释，可隐藏恶意代码?        private val CONDITIONAL_COMMENT_PATTERN: Pattern = Pattern.compile(
             "<!--\\[if\\s+[\\s\\S]*?\\]>", Pattern.CASE_INSENSITIVE
         )
 
-        // 最�?Base64 检测长�?        private const val MIN_BASE64_LENGTH = 20
+        // 最?Base64 检测长?        private const val MIN_BASE64_LENGTH = 20
 
         // Base64 解码后最小可审查长度
         private const val MIN_DECODED_REVIEW_LENGTH = 4
@@ -102,7 +102,7 @@ class ExternalDataSanitizer {
         val findings = mutableListOf<ExternalFinding>()
         var sanitized = input
 
-        // 1. HTML 注释负载检�?        val commentFindings = detectHtmlCommentPayloads(sanitized)
+        // 1. HTML 注释负载检?        val commentFindings = detectHtmlCommentPayloads(sanitized)
         findings.addAll(commentFindings)
 
         // 2. 脚本引用移除
@@ -114,7 +114,7 @@ class ExternalDataSanitizer {
         val base64Findings = detectBase64Content(sanitized)
         findings.addAll(base64Findings)
 
-        // 4. 事件处理器移�?        val eventFindings = detectAndRemoveEventHandlers(sanitized)
+        // 4. 事件处理器移?        val eventFindings = detectAndRemoveEventHandlers(sanitized)
         findings.addAll(eventFindings.findings)
         sanitized = eventFindings.sanitizedText
 
@@ -127,7 +127,7 @@ class ExternalDataSanitizer {
         val isClean = findings.isEmpty()
 
         if (!isClean) {
-            AppLogger.w(TAG, "外部数据消毒发现 ${findings.size} 个潜在威�? 风险等级: ${riskLevel}")
+            AppLogger.w(TAG, "外部数据消毒发现 ${findings.size} 个潜在威? 风险等级: ${riskLevel}")
         }
 
         return ExternalSanitizeResult(
@@ -140,7 +140,7 @@ class ExternalDataSanitizer {
     }
 
     /**
-     * 检�?HTML 注释中的可疑内容
+     * 检?HTML 注释中的可疑内容
      */
     private fun detectHtmlCommentPayloads(input: String): List<ExternalFinding> {
         val findings = mutableListOf<ExternalFinding>()
@@ -157,20 +157,20 @@ class ExternalDataSanitizer {
                             confidence = 0.85f,
                             position = commentMatcher.start(),
                             matchedText = commentMatcher.group().take(200),
-                            description = "HTML 注释中包含可疑内�? ${payloadPattern.pattern()}"
+                            description = "HTML 注释中包含可疑内? ${payloadPattern.pattern()}"
                         )
                     )
                 }
             }
 
-            // 检测条件注�?            if (CONDITIONAL_COMMENT_PATTERN.matcher(commentMatcher.group()).find()) {
+            // 检测条件注?            if (CONDITIONAL_COMMENT_PATTERN.matcher(commentMatcher.group()).find()) {
                 findings.add(
                     ExternalFinding(
                         type = ExternalThreatType.HTML_COMMENT_PAYLOAD,
                         confidence = 0.6f,
                         position = commentMatcher.start(),
                         matchedText = commentMatcher.group().take(200),
-                        description = "检测到 IE 条件注释，可能隐藏恶意代�?
+                        description = "检测到 IE 条件注释，可能隐藏恶意代?
                     )
                 )
             }
@@ -180,11 +180,11 @@ class ExternalDataSanitizer {
     }
 
     /**
-     * 检�?Base64 编码内容并解码审�?     */
+     * 检?Base64 编码内容并解码审?     */
     private fun detectBase64Content(input: String): List<ExternalFinding> {
         val findings = mutableListOf<ExternalFinding>()
 
-        // 检�?data URI 中的 Base64
+        // 检?data URI 中的 Base64
         val dataUriMatcher = BASE64_DATA_URI_PATTERN.matcher(input)
         while (dataUriMatcher.find()) {
             val base64Content = dataUriMatcher.group(1) ?: continue
@@ -194,7 +194,7 @@ class ExternalDataSanitizer {
             }
         }
 
-        // 检查独立的 Base64 字符�?        val base64Matcher = BASE64_PATTERN.matcher(input)
+        // 检查独立的 Base64 字符?        val base64Matcher = BASE64_PATTERN.matcher(input)
         while (base64Matcher.find()) {
             val base64Content = base64Matcher.group()
             if (base64Content.length >= MIN_BASE64_LENGTH) {
@@ -216,7 +216,7 @@ class ExternalDataSanitizer {
             val decoded = Base64.getDecoder().decode(base64Content.trimEnd('='))
             val decodedText = String(decoded, Charsets.UTF_8)
 
-            // 检查解码后的内容是否包含可疑模�?            if (decodedText.length >= MIN_DECODED_REVIEW_LENGTH && decodedText != base64Content) {
+            // 检查解码后的内容是否包含可疑模?            if (decodedText.length >= MIN_DECODED_REVIEW_LENGTH && decodedText != base64Content) {
                 val hasSuspiciousContent = COMMENT_PAYLOAD_PATTERNS.any { it.matcher(decodedText).find() }
                     || SCRIPT_OPEN_TAG_PATTERN.matcher(decodedText).find()
 
@@ -225,7 +225,7 @@ class ExternalDataSanitizer {
                         type = ExternalThreatType.BASE64_ENCODED_CONTENT,
                         confidence = 0.9f,
                         position = position,
-                        matchedText = "Base64 解码后包含可疑内�? ${decodedText.take(100)}",
+                        matchedText = "Base64 解码后包含可疑内? ${decodedText.take(100)}",
                         description = "Base64 编码内容解码后发现脚本或危险标记"
                     )
                 } else null
@@ -257,7 +257,7 @@ class ExternalDataSanitizer {
         }
         sanitized = SCRIPT_TAG_PATTERN.matcher(sanitized).replaceAll("")
 
-        // 检�?script src 引用
+        // 检?script src 引用
         val srcMatcher = SCRIPT_SRC_PATTERN.matcher(input)
         while (srcMatcher.find()) {
             findings.add(
@@ -272,7 +272,7 @@ class ExternalDataSanitizer {
         }
         sanitized = SCRIPT_SRC_PATTERN.matcher(sanitized).replaceAll("")
 
-        // 检测可疑文件引�?        val fileRefMatcher = SUSPICIOUS_FILE_REF_PATTERN.matcher(sanitized)
+        // 检测可疑文件引?        val fileRefMatcher = SUSPICIOUS_FILE_REF_PATTERN.matcher(sanitized)
         while (fileRefMatcher.find()) {
             findings.add(
                 ExternalFinding(
@@ -290,7 +290,7 @@ class ExternalDataSanitizer {
     }
 
     /**
-     * 检测并移除事件处理�?     */
+     * 检测并移除事件处理?     */
     private fun detectAndRemoveEventHandlers(input: String): SanitizeStepResult {
         val findings = mutableListOf<ExternalFinding>()
         val matcher = EVENT_HANDLER_PATTERN.matcher(input)
@@ -302,7 +302,7 @@ class ExternalDataSanitizer {
                     confidence = 0.9f,
                     position = matcher.start(),
                     matchedText = matcher.group().take(200),
-                    description = "检测到事件处理器属性并已移�?
+                    description = "检测到事件处理器属性并已移?
                 )
             )
         }
@@ -358,9 +358,9 @@ class ExternalDataSanitizer {
 enum class ExternalThreatType {
     /** HTML 注释中的可疑负载 */
     HTML_COMMENT_PAYLOAD,
-    /** Base64 编码的可疑内�?*/
+    /** Base64 编码的可疑内?*/
     BASE64_ENCODED_CONTENT,
-    /** 脚本引用（script 标签、外部脚本等�?*/
+    /** 脚本引用（script 标签、外部脚本等?*/
     SCRIPT_REFERENCE,
     /** 事件处理器（onclick, onerror 等） */
     EVENT_HANDLER,

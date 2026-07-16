@@ -19,7 +19,7 @@ import com.apex.agent.core.tools.system.action.ListeningResult
 import com.apex.agent.core.tools.system.action.PermissionStatus
 
 /**
- * 基于无障碍服务的UI操作监听了实现ACCESSIBILITY权限级别的操作监�?* 通过UIHierarchyManager与系统的无障碍服务进行通信，监听系统级的UI事件和用户操�?*/
+ * 基于无障碍服务的UI操作监听了实现ACCESSIBILITY权限级别的操作监?* 通过UIHierarchyManager与系统的无障碍服务进行通信，监听系统级的UI事件和用户操?*/
 class AccessibilityActionListener(private val context: Context) : ActionListener {
     companion object {
         private const val TAG = "AccessibilityActionListener"
@@ -31,7 +31,7 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
     override fun getPermissionLevel(): AndroidPermissionLevel = AndroidPermissionLevel.ACCESSIBILITY
 
     override suspend fun isAvailable(): Boolean {
-        // 使用UIHierarchyManager检查无障碍服务是否启用并连�?       return UIHierarchyManager.isAccessibilityServiceEnabled(context)
+        // 使用UIHierarchyManager检查无障碍服务是否启用并连?       return UIHierarchyManager.isAccessibilityServiceEnabled(context)
     }
 
     override suspend fun hasPermission(): ActionListener.PermissionStatus {
@@ -43,7 +43,7 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
     }
 
     override fun initialize() {
-        AppLogger.d(TAG, "无障碍UI操作监听器已初始�?
+        AppLogger.d(TAG, "无障碍UI操作监听器已初始?
     }
 
     override suspend fun requestPermission(onResult: (Boolean) -> Unit) {
@@ -52,12 +52,12 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
             return
         }
 
-        // 引导用户打开无障碍服务设�?       try {
+        // 引导用户打开无障碍服务设?       try {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
 
-            // 由于无法知道用户是否启用了服务，返回false，让调用者自行处理后续检�?           onResult(false)
+            // 由于无法知道用户是否启用了服务，返回false，让调用者自行处理后续检?           onResult(false)
         } catch (e: Exception) {
             AppLogger.e(TAG, "打开无障碍设置失败：${e.message})
             onResult(false)
@@ -81,7 +81,7 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
 
                 actionCallback = onAction
 
-                // 直接启动监听，不需要注册回�?               isListening.set(true)
+                // 直接启动监听，不需要注册回?               isListening.set(true)
                 AppLogger.d(TAG, "无障碍UI操作监听已启动）
                 ActionListener.ListeningResult.success(context.getString(R.string.a11y_ui_listener_started))
             } catch (e: Exception) {
@@ -111,14 +111,14 @@ class AccessibilityActionListener(private val context: Context) : ActionListener
     }
 
     /**
-     * 处理从远程无障碍服务通过AIDL，调传来的事�?
-     * @param event 无障碍事�?    */
+     * 处理从远程无障碍服务通过AIDL，调传来的事?
+     * @param event 无障碍事?    */
     private fun handleAccessibilityEvent(event: AccessibilityEvent) {
         if (!isListening.get()) return
 
         val callback = actionCallback ?: return
 
-        // 过滤掉不需要的事件类型，避免产生噪�?       // 2048 = TYPE_TOUCH_INTERACTION_START - 触摸交互开始事件，频繁触发
+        // 过滤掉不需要的事件类型，避免产生噪?       // 2048 = TYPE_TOUCH_INTERACTION_START - 触摸交互开始事件，频繁触发
         if (event.eventType == 2048) {
             return
         }

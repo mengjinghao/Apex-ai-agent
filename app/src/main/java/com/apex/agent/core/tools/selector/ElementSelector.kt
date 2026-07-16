@@ -1,12 +1,12 @@
 package com.apex.agent.core.tools.selector
 
 /**
- * UI元素选择�?
+ * UI元素选择?
  * 
  * 用于精确定位UI元素，支持多种选择条件
  */
 data class ElementSelector(
-    /** 资源ID（完整ID或后缀�?*/
+    /** 资源ID（完整ID或后缀?*/
     val resourceId: String? = null,
     
     /** 类名（完整类名或简单类名） */
@@ -21,10 +21,10 @@ data class ElementSelector(
     /** 边界坐标 "[left,top][right,bottom]" */
     val bounds: String? = null,
     
-    /** 匹配索引（当有多个匹配时�?*/
+    /** 匹配索引（当有多个匹配时?*/
     val index: Int = 0,
     
-    /** 是否必须可点�?*/
+    /** 是否必须可点?*/
     val clickable: Boolean? = null,
     
     /** 是否必须可见 */
@@ -32,42 +32,42 @@ data class ElementSelector(
 ) {
     companion object {
         /**
-         * 通过资源ID创建选择�?
+         * 通过资源ID创建选择?
          */
         fun byResourceId(resourceId: String, index: Int = 0): ElementSelector {
             return ElementSelector(resourceId = resourceId, index = index)
         }
         
         /**
-         * 通过类名创建选择�?
+         * 通过类名创建选择?
          */
         fun byClassName(className: String, index: Int = 0): ElementSelector {
             return ElementSelector(className = className, index = index)
         }
         
         /**
-         * 通过文本创建选择�?
+         * 通过文本创建选择?
          */
         fun byText(text: String, exact: Boolean = true, index: Int = 0): ElementSelector {
             return ElementSelector(text = text, index = index)
         }
         
         /**
-         * 通过内容描述创建选择�?
+         * 通过内容描述创建选择?
          */
         fun byContentDesc(contentDesc: String, index: Int = 0): ElementSelector {
             return ElementSelector(contentDesc = contentDesc, index = index)
         }
         
         /**
-         * 通过边界坐标创建选择�?
+         * 通过边界坐标创建选择?
          */
         fun byBounds(bounds: String): ElementSelector {
             return ElementSelector(bounds = bounds)
         }
         
         /**
-         * 组合选择器（AND逻辑�?
+         * 组合选择器（AND逻辑?
          */
         fun combine(
             resourceId: String? = null,
@@ -87,7 +87,7 @@ data class ElementSelector(
     }
     
     /**
-     * 验证选择器是否有�?
+     * 验证选择器是否有?
      * 
      * @return 至少有一个非空的选择条件
      */
@@ -100,7 +100,7 @@ data class ElementSelector(
     }
     
     /**
-     * 获取选择器的描述字符串（用于日志�?
+     * 获取选择器的描述字符串（用于日志?
      */
     fun getDescription(): String {
         val conditions = mutableListOf<String>()
@@ -121,8 +121,8 @@ data class ElementSelector(
     }
     
     /**
-     * 检查另一个选择器是否与当前选择器兼�?
-     * （用于合并多个选择条件�?
+     * 检查另一个选择器是否与当前选择器兼?
+     * （用于合并多个选择条件?
      */
     fun isCompatibleWith(other: ElementSelector): Boolean {
         // 如果两个选择器都指定了相同的字段但值不同，则不兼容
@@ -146,9 +146,9 @@ data class ElementSelector(
     }
     
     /**
-     * 合并两个选择�?
+     * 合并两个选择?
      * 
-     * @param other 另一个选择�?
+     * @param other 另一个选择?
      * @return 合并后的选择器，如果不兼容返回null
      */
     fun merge(other: ElementSelector): ElementSelector? {

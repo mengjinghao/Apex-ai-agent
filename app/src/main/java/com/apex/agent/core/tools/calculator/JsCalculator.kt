@@ -25,7 +25,7 @@ class JsCalculator {
         }
 
         /**
-         * 格式化计算结果为字符�?        *
+         * 格式化计算结果为字符?        *
          * @param result 计算结果
          * @return 格式化后的字符串
          */
@@ -34,44 +34,44 @@ class JsCalculator {
         }
 
         /**
-         * 计算表达式并返回格式化结�?        *
+         * 计算表达式并返回格式化结?        *
          * @param expression 要计算的表达式字符串
-         * @return 格式化后的计算结�?        */
+         * @return 格式化后的计算结?        */
         fun calc(expression: String): String {
             val result = evaluate(expression)
             return formatResult(result)
         }
 
         /**
-         * 设置变量�?        *
-         * @param name 变量�?        * @param value 变量�?        */
+         * 设置变量?        *
+         * @param name 变量?        * @param value 变量?        */
         fun setVariable(name: String, value: Double) {
             ExpressionContext.setVariable(name, value)
         }
 
         /**
-         * 获取变量�?        *
-         * @param name 变量�?        * @return 变量�?        */
+         * 获取变量?        *
+         * @param name 变量?        * @return 变量?        */
         fun getVariable(name: String): Double {
             return ExpressionContext.getVariable(name)
         }
 
-        /** 清除所有变�?/
+        /** 清除所有变?/
         fun clearVariables() {
             ExpressionContext.clearVariables()
         }
 
         /**
-         * 格式化日�?        *
+         * 格式化日?        *
          * @param date 日期对象
-         * @param format 格式字符�?        * @return 格式化后的日期字符串
+         * @param format 格式字符?        * @return 格式化后的日期字符串
          */
         fun formatDate(date: Date, format: String): String {
             val formatter = java.text.SimpleDateFormat(format, java.util.Locale.getDefault())
             return formatter.format(date)
         }
 
-        /** 获取支持的单位转换类�?/
+        /** 获取支持的单位转换类?/
         fun getSupportedUnits(): Map<String, List<String>> {
             return mapOf(
                     "Temperature" to listOf("c (Celsius)", "f (Fahrenheit)", "k (Kelvin)"),
@@ -96,7 +96,7 @@ class JsCalculator {
             )
         }
 
-        /** 获取支持的日期函�?/
+        /** 获取支持的日期函?/
         fun getSupportedDateFunctions(): List<String> {
             return listOf(
                     "today() - Current date",
@@ -111,7 +111,7 @@ class JsCalculator {
             )
         }
 
-        /** 获取支持的统计函�?/
+        /** 获取支持的统计函?/
         fun getSupportedStatFunctions(): List<String> {
             return listOf(
                     "stats.mean(values...) - Calculate average",

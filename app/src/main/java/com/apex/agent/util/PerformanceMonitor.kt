@@ -171,7 +171,7 @@ object PerformanceUtils {
     fun formatLatency(ms: Float): String {
         return when {
             ms < 100 -> "极快"
-            ms < 300 -> "快�?
+            ms < 300 -> "快?
             ms < 500 -> "正常"
             ms < 1000 -> "较慢"
             else -> "很慢"

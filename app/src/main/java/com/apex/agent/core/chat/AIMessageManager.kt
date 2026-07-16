@@ -57,14 +57,14 @@ internal fun logMessageTiming(
 }
 
 /**
- * 单例对象，负责管理与 EnhancedAIService 的所有通信�?*
+ * 单例对象，负责管理与 EnhancedAIService 的所有通信?*
  * 主要职责:
- * - 构建发送给AI的消息请求， * - 发送消息并处理流式响应�?* - 请求生成对话总结�?*
+ * - 构建发送给AI的消息请求， * - 发送消息并处理流式响应?* - 请求生成对话总结?*
  * 设计原则:
- * - **无状�?: 本身不持有任何特定聊天的状态。所有需要的数据都通过方法参数传入�?* - **职责明确**: 仅处理与AI服务的交互，UI更新和数据持久化由调用方负责�?* - **封装逻辑**: 内部封装了与AI交互的策略，如是否需要总结、如何从历史中提取记忆等着 */
+ * - **无状?: 本身不持有任何特定聊天的状态。所有需要的数据都通过方法参数传入?* - **职责明确**: 仅处理与AI服务的交互，UI更新和数据持久化由调用方负责?* - **封装逻辑**: 内部封装了与AI交互的策略，如是否需要总结、如何从历史中提取记忆等着 */
 object AIMessageManager {
     private const val TAG = "AIMessageManager"
-    // 聊天总结的消息数量阈�? 移除硬编码，改用动态设�?   // private const val SUMMARY_CHUNK_SIZE = 4
+    // 聊天总结的消息数量阈? 移除硬编码，改用动态设?   // private const val SUMMARY_CHUNK_SIZE = 4
 
     // 使用独立的协程作用域，确保AI操作的生命周期独立于任何特定的ViewModel
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -102,7 +102,7 @@ object AIMessageManager {
 
     /**
      * 构建用户消息的完整内容，包括附件和记忆标签，     *
-     * @param messageText 用户输入的原始文本，     * @param attachments 附件列表�?    * @param enableMemoryQuery 是否允许AI查询记忆�?    * @param enableWorkspaceAttachment 是否启用工作区附着功能�?    * @param workspacePath 工作区路径，     * @param workspaceEnv 工作区环境，     * @param replyToMessage 回复消息�?    * @param enableDirectImageProcessing 是否将图片附件转换为link标签（用于直接图片处理）�?    * @param enableDirectAudioProcessing 是否将音频附件转换为link标签（用于直接音频处理）�?    * @param enableDirectVideoProcessing 是否将视频附件转换为link标签（用于直接视频处理）�?    * @return 格式化后的完整消息字符串�?    */
+     * @param messageText 用户输入的原始文本，     * @param attachments 附件列表?    * @param enableMemoryQuery 是否允许AI查询记忆?    * @param enableWorkspaceAttachment 是否启用工作区附着功能?    * @param workspacePath 工作区路径，     * @param workspaceEnv 工作区环境，     * @param replyToMessage 回复消息?    * @param enableDirectImageProcessing 是否将图片附件转换为link标签（用于直接图片处理）?    * @param enableDirectAudioProcessing 是否将音频附件转换为link标签（用于直接音频处理）?    * @param enableDirectVideoProcessing 是否将视频附件转换为link标签（用于直接视频处理）?    * @return 格式化后的完整消息字符串?    */
     suspend fun buildUserMessageContent(
         messageText: String,
         proxySenderName: String? = null,
@@ -135,7 +135,7 @@ object AIMessageManager {
                 ""
             }
 
-        // 1. 构建回复标签（如果有回复消息�?       val replyTagStartTime = messageTimingNow()
+        // 1. 构建回复标签（如果有回复消息?       val replyTagStartTime = messageTimingNow()
         val replyTag = replyToMessage?.let { message ->
             val cleanContent = message.content
                 .replace(Regex("<[^>]*>"), "") // 移除XML标签
@@ -184,7 +184,7 @@ object AIMessageManager {
                         MediaLinkBuilder.image(context, imageId)
                     } catch (e: Exception) {
                         AppLogger.e(TAG, "添加图片到池失败: ${attachment.filePath}", e)
-                        // 失败时回退到普通附件格�?                       val attributes = buildString {
+                        // 失败时回退到普通附件格?                       val attributes = buildString {
                             append("id=\"${attachment.filePath}\" ")
                             append("filename=\"${attachment.fileName}\" ")
                             append("type=\"${attachment.mimeType}\"")
@@ -233,7 +233,7 @@ object AIMessageManager {
                         "<attachment ${attributes}>${attachment.content}</attachment>"
                     }
                 } else {
-                    // 非图片或未启用直接图片处理，使用普通附件格�?                   val attributes = buildString {
+                    // 非图片或未启用直接图片处理，使用普通附件格?                   val attributes = buildString {
                         append("id=\"${attachment.filePath}\" ")
                         append("filename=\"${attachment.fileName}\" ")
                         append("type=\"${attachment.mimeType}\"")
@@ -251,7 +251,7 @@ object AIMessageManager {
             details = "attachments=${attachments.size}, length=${attachmentTags.length}, directImage=${enableDirectImageProcessing}, directAudio=${enableDirectAudioProcessing}, directVideo=${enableDirectVideoProcessing}"
         )
 
-        // 5. 组合最终消�?       val finalMessageContent = listOf(proxySenderTag, processedMessageText, attachmentTags, workspaceTag, replyTag)
+        // 5. 组合最终消?       val finalMessageContent = listOf(proxySenderTag, processedMessageText, attachmentTags, workspaceTag, replyTag)
             .filter { it.isNotBlank() }
             .joinToString(" ")
         logMessageTiming(
@@ -263,8 +263,8 @@ object AIMessageManager {
     }
 
     /**
-     * 发送消息给AI服务�?    *
-     * @param enhancedAiService AI服务实例�?    * @param chatId 聊天ID�?    * @param messageContent 已经构建好的完整消息内容�?    * @param chatHistory 完整的聊天历史记录，     * @param workspacePath 当前工作区路径，     * @param promptFunctionType 提示功能类型�?    * @param enableThinking 是否启用思考过程，     * @param thinkingGuidance 是否启用思考引导，     * @param enableMemoryQuery 是否允许AI查询记忆�?    * @param maxTokens 最大token数量�?    * @param tokenUsageThreshold token使用阈值，     * @param onNonFatalError 非致命错误回调用     * @param onTokenLimitExceeded token限制超出回调�?    * @param characterName 角色名称，用于通知�?    * @param avatarUri 角色头像URI，用于通知�?    * @param roleCardId 角色卡片ID�?    * @return 包含AI响应流的ChatMessage对象�?    */
+     * 发送消息给AI服务?    *
+     * @param enhancedAiService AI服务实例?    * @param chatId 聊天ID?    * @param messageContent 已经构建好的完整消息内容?    * @param chatHistory 完整的聊天历史记录，     * @param workspacePath 当前工作区路径，     * @param promptFunctionType 提示功能类型?    * @param enableThinking 是否启用思考过程，     * @param thinkingGuidance 是否启用思考引导，     * @param enableMemoryQuery 是否允许AI查询记忆?    * @param maxTokens 最大token数量?    * @param tokenUsageThreshold token使用阈值，     * @param onNonFatalError 非致命错误回调用     * @param onTokenLimitExceeded token限制超出回调?    * @param characterName 角色名称，用于通知?    * @param avatarUri 角色头像URI，用于通知?    * @param roleCardId 角色卡片ID?    * @return 包含AI响应流的ChatMessage对象?    */
     suspend fun sendMessage(
         enhancedAiService: EnhancedAIService,
         chatId: String? = null,
@@ -313,7 +313,7 @@ object AIMessageManager {
             val userCount = memory.count { it.kind == PromptTurnKind.USER }
             AppLogger.d(
                 TAG,
-                "按角色拆解历�?role=${currentRoleName}, assistant=${assistantCount}, user=${userCount}, total=${memory.size}"
+                "按角色拆解历?role=${currentRoleName}, assistant=${assistantCount}, user=${userCount}, total=${memory.size}"
             )
         }
 
@@ -338,7 +338,7 @@ object AIMessageManager {
             if (beforeMediaLinkCount != afterMediaLinkCount) {
                 AppLogger.d(
                     TAG,
-                    "历史音视频裁剪生�?limit=${maxMediaHistoryUserTurns}, before=${beforeMediaLinkCount}, after=${afterMediaLinkCount}"
+                    "历史音视频裁剪生?limit=${maxMediaHistoryUserTurns}, before=${beforeMediaLinkCount}, after=${afterMediaLinkCount}"
                 )
             }
             logMessageTiming(
@@ -396,7 +396,7 @@ object AIMessageManager {
                 details = "chatKey=${chatKey}, enableStream=${enableStream}"
             )
 
-            // 使用普通模�?           val prepareRequestStartTime = messageTimingNow()
+            // 使用普通模?           val prepareRequestStartTime = messageTimingNow()
             val responseStream = enhancedAiService.sendMessage(
                 message = messageContent,
                 chatId = chatId,
@@ -409,7 +409,7 @@ object AIMessageManager {
                 maxTokens = maxTokens,
                 tokenUsageThreshold = tokenUsageThreshold,
                 onNonFatalError = onNonFatalError,
-                onTokenLimitExceeded = onTokenLimitExceeded, // 传递回�?               characterName = characterName,
+                onTokenLimitExceeded = onTokenLimitExceeded, // 传递回?               characterName = characterName,
                 avatarUri = avatarUri,
                 roleCardId = roleCardId,
                 enableGroupOrchestrationHint = groupOrchestrationMode,
@@ -543,7 +543,7 @@ object AIMessageManager {
     }
 
     /**
-     * 取消当前正在进行的AI操作�?    * 这会同时尝试取消插件接管执行（如果正在进行）和底层的AI流，     */
+     * 取消当前正在进行的AI操作?    * 这会同时尝试取消插件接管执行（如果正在进行）和底层的AI流，     */
     fun cancelCurrentOperation() {
         cancelOperation(lastActiveChatKey)
     }
@@ -570,7 +570,7 @@ object AIMessageManager {
             }
         }
 
-        AppLogger.d(TAG, "AI操作取消请求已发�?chatId=${chatKey}")
+        AppLogger.d(TAG, "AI操作取消请求已发?chatId=${chatKey}")
     }
 
     fun cancelAllOperations() {
@@ -581,8 +581,8 @@ object AIMessageManager {
     }
 
     /**
-     * 请求AI服务生成对话总结�?    *
-     * @param enhancedAiService AI服务实例�?    * @param messages 需要总结的消息列表，     * @param autoContinue 是否为自动续写模式，如果是则在总结消息尾部添加续写提示�?    * @return 包含总结内容的ChatMessage对象，如果无需总结或总结失败则返回null�?    */
+     * 请求AI服务生成对话总结?    *
+     * @param enhancedAiService AI服务实例?    * @param messages 需要总结的消息列表，     * @param autoContinue 是否为自动续写模式，如果是则在总结消息尾部添加续写提示?    * @return 包含总结内容的ChatMessage对象，如果无需总结或总结失败则返回null?    */
     suspend fun summarizeMemory(
         enhancedAiService: EnhancedAIService,
         messages: List<ChatMessage>,
@@ -785,7 +785,7 @@ object AIMessageManager {
 
         // 群聊模式：将消息打包成多角色格式
         val conversationToSummarize = if (isGroupChat) {
-            // 打包所有消息到一条用户消�?           val packedContent = buildString {
+            // 打包所有消息到一条用户消?           val packedContent = buildString {
                 messagesToSummarize.forEach { message ->
                     // 清理消息内容：移，memory 标签，thinking 内容
                     val cleanedContent = if (message.sender == "user") {
@@ -847,7 +847,7 @@ object AIMessageManager {
         }
 
         return try {
-            AppLogger.d(TAG, "开始使用AI生成对话总结：总结 ${messagesToSummarize.size} 条消�?
+            AppLogger.d(TAG, "开始使用AI生成对话总结：总结 ${messagesToSummarize.size} 条消?
             val summary = enhancedAiService.generateSummary(conversationToSummarize, previousSummary)
             AppLogger.d(TAG, "AI生成总结完成: ${summary.take(50)}...")
 
@@ -903,7 +903,7 @@ object AIMessageManager {
         messagesToSummarize: List<ChatMessage>,
         useEnglish: Boolean
     ): String {
-        val title = if (useEnglish) "[Package Warmup]" else "【工具包预热�?
+        val title = if (useEnglish) "[Package Warmup]" else "【工具包预热?
         val topPackages = extractTopPackageUsages(messagesToSummarize, limit = 2)
 
         if (topPackages.isEmpty()) {
@@ -911,7 +911,7 @@ object AIMessageManager {
                 if (useEnglish) {
                     "No package-prefixed tool usage was detected in this summary window, so no package was preheated."
                 } else {
-                    "本次摘要范围内未检测到包工具调用，因此未进行工具包预热�?
+                    "本次摘要范围内未检测到包工具调用，因此未进行工具包预热?
                 }
             return "${title}\n${emptyMessage}"
         }
@@ -942,14 +942,14 @@ object AIMessageManager {
                                 if (useEnglish) {
                                     "use_package returned empty content."
                                 } else {
-                                    "use_package 返回为空�?
+                                    "use_package 返回为空?
                                 }
                             }
 
                     if (useEnglish) {
                         appendLine("${index + 1}. Package ${stat.packageName} (${stat.count} hits)")
                     } else {
-                        appendLine("${index + 1}. �?{stat.packageName}（命�?{stat.count} 次）")
+                        appendLine("${index + 1}. ?{stat.packageName}（命?{stat.count} 次）")
                     }
                     appendLine(indentBlock(resultText, "   "))
                     if (index != topPackages.lastIndex) {
@@ -1055,8 +1055,8 @@ object AIMessageManager {
     }
 
     /**
-     * 判断是否应该生成对话总结�?    *
-     * @param messages 完整的消息列表，     * @param currentTokens 当前上下文的token数量�?    * @param maxTokens 上下文窗口的最大token数量�?    * @return 如果应该生成总结，则返回true�?    */
+     * 判断是否应该生成对话总结?    *
+     * @param messages 完整的消息列表，     * @param currentTokens 当前上下文的token数量?    * @param maxTokens 上下文窗口的最大token数量?    * @return 如果应该生成总结，则返回true?    */
     fun shouldGenerateSummary(
         messages: List<ChatMessage>,
         currentTokens: Int,
@@ -1079,7 +1079,7 @@ object AIMessageManager {
             }
         }
 
-        // 检查消息条数阈值（如果启用�?       if (enableSummaryByMessageCount) {
+        // 检查消息条数阈值（如果启用?       if (enableSummaryByMessageCount) {
             val lastSummaryIndex = messages.indexOfLast { it.sender == "summary" }
             val relevantMessages = if (lastSummaryIndex != -1) {
                 messages.subList(lastSummaryIndex + 1, messages.size)
@@ -1094,13 +1094,13 @@ object AIMessageManager {
             }
         }
 
-        AppLogger.d(TAG, "未达到生成总结的条�?Token使用�?${if (maxTokens > 0) currentTokens.toDouble() / maxTokens else 0.0}")
+        AppLogger.d(TAG, "未达到生成总结的条?Token使用?${if (maxTokens > 0) currentTokens.toDouble() / maxTokens else 0.0}")
         return false
     }
 
     /**
      * 从完整的聊天记录中提取用于AI上下文的“记忆”，     * 这会获取上次总结之后的所有消息，     *
-     * @param messages 完整的聊天记录，     * @return 一个Pair列表，包含角色和内容，用于AI请求�?    */
+     * @param messages 完整的聊天记录，     * @return 一个Pair列表，包含角色和内容，用于AI请求?    */
     fun getMemoryFromMessages(
         messages: List<ChatMessage>,
         splitByRole: Boolean = false,
@@ -1108,7 +1108,7 @@ object AIMessageManager {
         groupOrchestrationMode: Boolean = false
     ): List<PromptTurn> {
         val totalStartTime = messageTimingNow()
-        // 1. 找到最后一条总结消息，只处理总结之后的消�?       val lastSummaryIndex = messages.indexOfLast { it.sender == "summary" }
+        // 1. 找到最后一条总结消息，只处理总结之后的消?       val lastSummaryIndex = messages.indexOfLast { it.sender == "summary" }
         val relevantMessages = if (lastSummaryIndex != -1) {
             messages.subList(lastSummaryIndex, messages.size)
         } else {
@@ -1119,7 +1119,7 @@ object AIMessageManager {
         val isRoleScopedMode = splitByRole && !targetRoleName.isNullOrBlank()
         val normalizedTargetRole = targetRoleName?.trim().orEmpty()
 
-        // 3. 辅助函数：移除状态标�?       fun removeStatusTags(text: String): String {
+        // 3. 辅助函数：移除状态标?       fun removeStatusTags(text: String): String {
             val noStatus = ChatMarkupRegex.statusTag.replace(text, " ")
             return ChatMarkupRegex.statusSelfClosingTag.replace(noStatus, " ").trim()
         }
@@ -1164,7 +1164,7 @@ object AIMessageManager {
         targetRoleName: String,
         removeStatusTags: (String) -> String
     ): PromptTurn? {
-        // 清理思考内�?       val cleanedContent = ChatUtils.removeThinkingContent(message.content).trim()
+        // 清理思考内?       val cleanedContent = ChatUtils.removeThinkingContent(message.content).trim()
         val contentWithoutStatus = removeStatusTags(cleanedContent)
 
         // 非角色隔离模式：直接返回 assistant 消息
@@ -1184,7 +1184,7 @@ object AIMessageManager {
                 content = message.content
             )
         } else {
-            // 其他角色的消息：转换，user 消息，添加角色标�?           val roleLabel = if (messageRoleName.isNotBlank()) messageRoleName else "unknown"
+            // 其他角色的消息：转换，user 消息，添加角色标?           val roleLabel = if (messageRoleName.isNotBlank()) messageRoleName else "unknown"
             val bridgedContent = removeStatusTags(cleanedContent)
             if (bridgedContent.isBlank()) {
                 null
@@ -1217,6 +1217,6 @@ object AIMessageManager {
             }
         }
 
-        // 其他模式：直接返�?       return PromptTurn(kind = PromptTurnKind.USER, content = baseContent)
+        // 其他模式：直接返?       return PromptTurn(kind = PromptTurnKind.USER, content = baseContent)
     }
 }

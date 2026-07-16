@@ -3,8 +3,8 @@ package com.apex.agent.core.trajectory
 import com.apex.core.chat.hooks.PromptTurnKind
 
 /**
- * 工具调用配对保持�? * 
- * 确保 tool_call �?tool_result 配对完整�? * 避免只保留其中一个导致训练信号质量下�? */
+ * 工具调用配对保持? * 
+ * 确保 tool_call ?tool_result 配对完整? * 避免只保留其中一个导致训练信号质量下? */
 class ToolPairPreserver(
     private val preserveAllPairs: Boolean = true,
     private val maxPairsToPreserve: Int = Int.MAX_VALUE
@@ -63,7 +63,7 @@ class ToolPairPreserver(
     /**
      * 检查并修复不完整的配对
      * 
-     * 如果发现 tool_call 没有对应�?tool_result，标记为警告
+     * 如果发现 tool_call 没有对应?tool_result，标记为警告
      */
     fun validatePairs(turns: List<TrajectoryTurn>): PairValidationResult {
         val pairs = analyzePairs(turns)
@@ -81,7 +81,7 @@ class ToolPairPreserver(
     }
 
     /**
-     * 查找孤立�?tool_result（前面没有对应的 tool_call�?     */
+     * 查找孤立?tool_result（前面没有对应的 tool_call?     */
     private fun findOrphanedToolResults(
         turns: List<TrajectoryTurn>,
         pairs: List<ToolCallPair>
@@ -93,19 +93,19 @@ class ToolPairPreserver(
     }
 
     /**
-     * 提取所有工具调�?     */
+     * 提取所有工具调?     */
     fun extractToolCalls(turns: List<TrajectoryTurn>): List<TrajectoryTurn> {
         return turns.filter { it.isToolCall }
     }
 
     /**
-     * 提取所有工具结�?     */
+     * 提取所有工具结?     */
     fun extractToolResults(turns: List<TrajectoryTurn>): List<TrajectoryTurn> {
         return turns.filter { it.isToolResult }
     }
 
     /**
-     * 计算配对保留�?token 总数
+     * 计算配对保留?token 总数
      */
     fun calculatePreservedTokens(turns: List<TrajectoryTurn>): Int {
         val pairs = analyzePairs(turns)

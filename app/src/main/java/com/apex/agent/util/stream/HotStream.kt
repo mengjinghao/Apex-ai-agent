@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 /** 共享Stream接口，类似于SharedFlow */
 interface SharedStream<T> : Stream<T> {
-    /** 当前订阅者数�?/
+    /** 当前订阅者数?/
     val subscriptionCount: Int
 
     /** 重放缓存大小 */
@@ -32,13 +32,13 @@ interface MutableSharedStream<T> : SharedStream<T> {
 
 /** 状态Stream接口，类似于StateFlow */
 interface StateStream<T> : SharedStream<T> {
-    /** 当前�?/
+    /** 当前?/
     val value: T
 }
 
 /** 可变状态Stream接口，类似于MutableStateFlow */
 interface MutableStateStream<T> : StateStream<T>, MutableSharedStream<T> {
-    /** 设置当前�?/
+    /** 设置当前?/
     override var value: T
 
     /** 比较并设置，*/
@@ -79,15 +79,15 @@ class MutableSharedStreamImpl<T>(
 
     internal val internalSubscriptionCountFlow = MutableStateFlow(0)
 
-    // 热流不需要锁定机制，所以这里提供默认实�?   override val isLocked: Boolean = false
+    // 热流不需要锁定机制，所以这里提供默认实?   override val isLocked: Boolean = false
     override val bufferedCount: Int = 0
 
     override suspend fun lock() {
-        // 热流不支持锁定，此处不执行任何操�?       StreamLogger.d("HotStream", "热流不支持锁定操作）
+        // 热流不支持锁定，此处不执行任何操?       StreamLogger.d("HotStream", "热流不支持锁定操作）
     }
 
     override suspend fun unlock() {
-        // 热流不支持锁定，此处不执行任何操�?       StreamLogger.d("HotStream", "热流不支持解锁操作）
+        // 热流不支持锁定，此处不执行任何操?       StreamLogger.d("HotStream", "热流不支持解锁操作）
     }
 
     override fun clearBuffer() {
@@ -229,15 +229,15 @@ class MutableSharedStreamImpl<T>(
 class MutableStateStreamImpl<T>(initialValue: T) : MutableStateStream<T> {
     internal val internalFlow = MutableStateFlow(initialValue)
 
-    // 热流不需要锁定机制，所以这里提供默认实�?   override val isLocked: Boolean = false
+    // 热流不需要锁定机制，所以这里提供默认实?   override val isLocked: Boolean = false
     override val bufferedCount: Int = 0
 
     override suspend fun lock() {
-        // 热流不支持锁定，此处不执行任何操�?       StreamLogger.d("HotStream", "状态流不支持锁定操作）
+        // 热流不支持锁定，此处不执行任何操?       StreamLogger.d("HotStream", "状态流不支持锁定操作）
     }
 
     override suspend fun unlock() {
-        // 热流不支持锁定，此处不执行任何操�?       StreamLogger.d("HotStream", "状态流不支持解锁操作）
+        // 热流不支持锁定，此处不执行任何操?       StreamLogger.d("HotStream", "状态流不支持解锁操作）
     }
 
     override fun clearBuffer() {
@@ -311,8 +311,8 @@ fun <T> Stream<T>.share(
                         try {
                             this@share.collect { value -> sharedStream.emit(value) }
                         } finally {
-                            // 当上游流完成或被取消时，我们不再需要这个共享流�?                           // 但由于SharedFlow本身不会"关闭"，依赖协程的结构化并发来清理是最好的方式�?                           // 此处的finally确保了协程在任何情况下（完成、取消、异常）都能结束�?                           StreamLogger.d("Stream.share", "上游流收集完成或取消，共享流协程结束�?
-                            sharedStream.close() // 关闭流以允许收集器完�?                           onComplete()
+                            // 当上游流完成或被取消时，我们不再需要这个共享流?                           // 但由于SharedFlow本身不会"关闭"，依赖协程的结构化并发来清理是最好的方式?                           // 此处的finally确保了协程在任何情况下（完成、取消、异常）都能结束?                           StreamLogger.d("Stream.share", "上游流收集完成或取消，共享流协程结束?
+                            sharedStream.close() // 关闭流以允许收集器完?                           onComplete()
                         }
                     }
         }
@@ -330,13 +330,13 @@ fun <T> Stream<T>.share(
                                             }
                                         } finally {
                                             StreamLogger.d("Stream.share", "上游，LAZILY)收集完成或取消，)
-                                            sharedStream.close() // 关闭流以允许收集器完�?                                           onComplete()
+                                            sharedStream.close() // 关闭流以允许收集器完?                                           onComplete()
                                         }
                                     }
                         } else if (count == 0) {
-                            // 当没有订阅者时，取消上游流的收�?                           upstreamJob?.cancel()
+                            // 当没有订阅者时，取消上游流的收?                           upstreamJob?.cancel()
                             upstreamJob = null
-                            StreamLogger.d("Stream.share", "没有订阅者，已取消上游流(LAZILY)的收集合�?
+                            StreamLogger.d("Stream.share", "没有订阅者，已取消上游流(LAZILY)的收集合?
                         }
                     }
                 } else {
@@ -348,7 +348,7 @@ fun <T> Stream<T>.share(
                         try {
                             this@share.collect { value -> sharedStream.emit(value) }
                         } finally {
-                            sharedStream.close() // 关闭流以允许收集器完�?                           onComplete()
+                            sharedStream.close() // 关闭流以允许收集器完?                           onComplete()
                         }
                     }
                 }
@@ -402,7 +402,7 @@ fun <T> Stream<T>.state(
     return stateStream
 }
 
-/** 流启动模�?/
+/** 流启动模?/
 enum class StreamStart {
     /** 立即启动 */
     EAGERLY,

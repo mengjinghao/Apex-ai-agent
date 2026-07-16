@@ -9,7 +9,7 @@ import com.apex.agent.core.tools.defaultTool.debugger.name
 
 /**
  * API密钥提供程序接口
- * 抽象了API密钥的获取逻辑，以支持单个密钥和密钥池轮询�?*/
+ * 抽象了API密钥的获取逻辑，以支持单个密钥和密钥池轮询?*/
 interface ApiKeyProvider {
     /** 获取当前可用的API Key */
     suspend fun getApiKey(): String
@@ -26,7 +26,7 @@ class SingleApiKeyProvider(private val apiKey: String) : ApiKeyProvider {
 
 /**
  * 多API Key提供程序，实现密钥的轮询和状态管理， * @param configId 配置ID
- * @param modelConfigManager 用于读取和更新模型配置的管理�?*/
+ * @param modelConfigManager 用于读取和更新模型配置的管理?*/
 class MultiApiKeyProvider(
     private val configId: String,
     private val modelConfigManager: ModelConfigManager
@@ -75,7 +75,7 @@ class MultiApiKeyProvider(
             
             AppLogger.d("ApiKeyProvider", "Config ${config.name}: Using key ${startIndex + 1}/${candidateKeys.size} - '${selectedKey.name}' (sk-...${selectedKey.key.takeLast(4)})")
 
-            // 更新并保存下一个索�?           val nextIndex = (startIndex + 1) % candidateKeys.size
+            // 更新并保存下一个索?           val nextIndex = (startIndex + 1) % candidateKeys.size
             modelConfigManager.updateConfigKeyIndex(configId, nextIndex)
 
             selectedKey.key

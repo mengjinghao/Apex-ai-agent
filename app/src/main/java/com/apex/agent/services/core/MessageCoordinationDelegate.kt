@@ -51,7 +51,7 @@ import com.apex.core.tools.javascript.not
 import com.apex.services.core.PendingAutoContinuationRequest
 
 /**
- * 消息协调委托�?* 负责消息发送、自动总结、附件清理等核心协调逻辑
+ * 消息协调委托?* 负责消息发送、自动总结、附件清理等核心协调逻辑
  */
 class MessageCoordinationDelegate(
     private val context: Context,
@@ -83,7 +83,7 @@ class MessageCoordinationDelegate(
     private val _sendTriggeredSummarizingChatId = MutableStateFlow<String?>(null)
     val sendTriggeredSummarizingChatId: StateFlow<String?> = _sendTriggeredSummarizingChatId.asStateFlow()
 
-    // 保存总结任务，Job 引用，用于取�?   private var summaryJob: Job? = null
+    // 保存总结任务，Job 引用，用于取?   private var summaryJob: Job? = null
     private var sendTriggeredSummaryJob: Job? = null
 
     // 保存当前，promptFunctionType，用于自动继续时保持提示词一致，    private var currentPromptFunctionType: PromptFunctionType = PromptFunctionType.CHAT
@@ -249,7 +249,7 @@ class MessageCoordinationDelegate(
     }
 
     /**
-     * 发送用户消�?    * 检查是否有当前对话，如果没有则自动创建新对�?    */
+     * 发送用户消?    * 检查是否有当前对话，如果没有则自动创建新对?    */
     fun sendUserMessage(
         promptFunctionType: PromptFunctionType = PromptFunctionType.CHAT,
         roleCardIdOverride: String? = null,
@@ -265,7 +265,7 @@ class MessageCoordinationDelegate(
 
             // 使用 coroutineScope 启动协程
             coroutineScope.launch {
-                // 使用现有的createNewChat方法创建新对�?               chatHistoryDelegate.createNewChat()
+                // 使用现有的createNewChat方法创建新对?               chatHistoryDelegate.createNewChat()
 
                 // 等待对话ID更新
                 var waitCount = 0
@@ -275,17 +275,17 @@ class MessageCoordinationDelegate(
                 }
 
                 if (chatHistoryDelegate.currentChatId.value == null) {
-                    AppLogger.e(TAG, "创建新对话超时，无法发送消�?
+                    AppLogger.e(TAG, "创建新对话超时，无法发送消?
                     uiStateDelegate.showErrorMessage(context.getString(R.string.chat_cannot_create_new))
                     return@launch
                 }
 
                 AppLogger.d(
                     TAG,
-                    "新对话创建完成，ID: ${chatHistoryDelegate.currentChatId.value}，现在发送消�?
+                    "新对话创建完成，ID: ${chatHistoryDelegate.currentChatId.value}，现在发送消?
                 )
 
-                // 对话创建完成后，发送消�?               sendMessageInternal(
+                // 对话创建完成后，发送消?               sendMessageInternal(
                     promptFunctionType,
                     roleCardIdOverride = roleCardIdOverride,
                     chatIdOverride = chatIdOverride,
@@ -296,7 +296,7 @@ class MessageCoordinationDelegate(
                 )
             }
         } else {
-            // 已有对话，直接发送消�?           sendMessageInternal(
+            // 已有对话，直接发送消?           sendMessageInternal(
                 promptFunctionType,
                 roleCardIdOverride = roleCardIdOverride,
                 chatIdOverride = chatIdOverride,
@@ -394,7 +394,7 @@ class MessageCoordinationDelegate(
 
         // 获取当前附件列表
         val currentAttachments = if (isBackgroundSend) emptyList() else attachmentDelegate.attachments.value
-        // 角色卡和群组地位相等，都可以及null，优先使，override，否则使用当前活跃的角色卡（可能力null�?       val roleCardId = roleCardIdOverride?.takeIf { it.isNotBlank() }
+        // 角色卡和群组地位相等，都可以及null，优先使，override，否则使用当前活跃的角色卡（可能力null?       val roleCardId = roleCardIdOverride?.takeIf { it.isNotBlank() }
             ?: runBlocking { activePromptManager.resolveActiveCardIdForSend() }
         val (resolvedChatModelConfigIdOverride, resolvedChatModelIndexOverride) = try {
             if (promptFunctionType == PromptFunctionType.CHAT) {
@@ -425,7 +425,7 @@ class MessageCoordinationDelegate(
             currentChatModelIndexOverride = resolvedChatModelIndexOverride
         }
 
-        // 当前请求使用的Token使用率阈值，默认使用配置�?       var tokenUsageThresholdForSend = apiConfigDelegate.summaryTokenThreshold.value.toDouble()
+        // 当前请求使用的Token使用率阈值，默认使用配置?       var tokenUsageThresholdForSend = apiConfigDelegate.summaryTokenThreshold.value.toDouble()
 
         // 如果不是续写，检查是否需要总结
         if (!isBackgroundSend && !isContinuation && !skipSummaryCheck) {
@@ -447,7 +447,7 @@ class MessageCoordinationDelegate(
                 val snapshotMessages = currentMessages.toList()
                 val insertPosition = chatHistoryDelegate.findProperSummaryPosition(snapshotMessages)
 
-                // 异步生成总结，不阻塞当前消息发�?               launchAsyncSummaryForSend(
+                // 异步生成总结，不阻塞当前消息发?               launchAsyncSummaryForSend(
                     snapshotMessages = snapshotMessages,
                     insertPosition = insertPosition,
                     originalChatId = chatId,
@@ -456,7 +456,7 @@ class MessageCoordinationDelegate(
                     chatModelIndexOverride = resolvedChatModelIndexOverride
                 )
 
-                // 本次请求的Token阈值在原基础上增�?.5
+                // 本次请求的Token阈值在原基础上增?.5
                 tokenUsageThresholdForSend += 0.5
             }
         }
@@ -475,7 +475,7 @@ class MessageCoordinationDelegate(
             false
         }
 
-        // 调用messageProcessingDelegate发送消息，并传递附件信息和工作区路�?       messageProcessingDelegate.sendUserMessage(
+        // 调用messageProcessingDelegate发送消息，并传递附件信息和工作区路?       messageProcessingDelegate.sendUserMessage(
             attachments = currentAttachments,
             chatId = chatId,
             messageTextOverride = messageTextOverride,
@@ -502,7 +502,7 @@ class MessageCoordinationDelegate(
             groupParticipantNamesText = groupParticipantNamesText
         )
 
-        // 只有在非续写（即用户主动发送）时才清空附件和UI状�?       if (!isBackgroundSend && !isContinuation) {
+        // 只有在非续写（即用户主动发送）时才清空附件和UI状?       if (!isBackgroundSend && !isContinuation) {
             if (currentAttachments.isNotEmpty()) {
                 attachmentDelegate.clearAttachments()
             }
@@ -661,11 +661,11 @@ class MessageCoordinationDelegate(
             return true
         }
 
-        AppLogger.d(TAG, "回答规划完成: �?{plannedRounds.rounds.size} 轮对象）
+        AppLogger.d(TAG, "回答规划完成: ?{plannedRounds.rounds.size} 轮对象）
 
         // 执行多轮对话
         plannedRounds.rounds.forEachIndexed { roundIndex, roundMembers ->
-            AppLogger.d(TAG, "开始执行第 ${roundIndex + 1} 轮，成员�?${roundMembers.size}")
+            AppLogger.d(TAG, "开始执行第 ${roundIndex + 1} 轮，成员?${roundMembers.size}")
 
             roundMembers.forEachIndexed { memberIndex, plannedMember ->
                 if (!plannedMember.speak) {
@@ -693,7 +693,7 @@ class MessageCoordinationDelegate(
                         ?: Long.MIN_VALUE
                 val targetTurnCounter = messageProcessingDelegate.getTurnCompleteCounter(chatId) + 1L
 
-                // 第一轮第一个成员使用原始用户消息，其他使用空消息（不添加继�?�?               val isFirstMemberOfFirstRound = roundIndex == 0 && memberIndex == 0
+                // 第一轮第一个成员使用原始用户消息，其他使用空消息（不添加继??               val isFirstMemberOfFirstRound = roundIndex == 0 && memberIndex == 0
                 val memberMessage = if (isFirstMemberOfFirstRound) {
                     originalUserText
                 } else {
@@ -702,7 +702,7 @@ class MessageCoordinationDelegate(
 
                 AppLogger.d(
                     TAG,
-                    "回答规划成员发�?round=${roundIndex + 1}, member=${memberName}, targetTurnCounter=${targetTurnCounter}, suppressUserMessage=${userMessageInsertedForCurrentUserTurn}"
+                    "回答规划成员发?round=${roundIndex + 1}, member=${memberName}, targetTurnCounter=${targetTurnCounter}, suppressUserMessage=${userMessageInsertedForCurrentUserTurn}"
                 )
 
                 sendMessageInternal(
@@ -743,7 +743,7 @@ class MessageCoordinationDelegate(
                     if (effectiveSpeech.isNotBlank()) {
                         timeline.add("AI(${memberName})" to shrinkForMemberPrompt(effectiveSpeech))
                     } else {
-                        AppLogger.w(TAG, "回答规划成员完成但消息为�?member=${memberName}")
+                        AppLogger.w(TAG, "回答规划成员完成但消息为?member=${memberName}")
                     }
                 } else {
                     AppLogger.w(TAG, "回答规划成员完成但未捕获到新AI消息: member=${memberName}")
@@ -927,7 +927,7 @@ class MessageCoordinationDelegate(
             .sortedBy { it.orderIndex }
             .mapNotNull { member -> memberCardsById[member.characterCardId]?.name?.trim()?.takeIf { it.isNotBlank() } }
             .distinct() + formattedUserName
-        return if (useEnglish) participantNames.joinToString(", ") else participantNames.joinToString("�?
+        return if (useEnglish) participantNames.joinToString(", ") else participantNames.joinToString("?
     }
 
     private suspend fun resolveTargetGroupForChat(chatId: String): com.apex.data.model.CharacterGroupCard? {
@@ -946,7 +946,7 @@ class MessageCoordinationDelegate(
         if (!boundGroupId.isNullOrBlank()) {
             AppLogger.d(
                 TAG,
-                "发送判定按当前选择执行，忽略会话绑定群�?chatId=${chatId}, boundGroupId=${boundGroupId}"
+                "发送判定按当前选择执行，忽略会话绑定群?chatId=${chatId}, boundGroupId=${boundGroupId}"
             )
         }
         return null
@@ -1012,7 +1012,7 @@ class MessageCoordinationDelegate(
         if (restoreIdleIfPendingState) {
             restoreIdleIfCurrentlySummarizing(chatId)
         }
-        AppLogger.d(TAG, "已取消待派发的自动续�?chatId=${chatId}")
+        AppLogger.d(TAG, "已取消待派发的自动续?chatId=${chatId}")
     }
 
     private fun queuePendingAutoContinuation(
@@ -1059,7 +1059,7 @@ class MessageCoordinationDelegate(
                     if (!isSamePendingAutoContinuation(chatId, request)) {
                         return@launch
                     }
-                    AppLogger.d(TAG, "上一轮已完成，开始派发自动续�?chatId=${chatId}")
+                    AppLogger.d(TAG, "上一轮已完成，开始派发自动续?chatId=${chatId}")
                     sendMessageInternal(
                         promptFunctionType = request.promptFunctionType,
                         isContinuation = true,
@@ -1083,7 +1083,7 @@ class MessageCoordinationDelegate(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    AppLogger.e(TAG, "派发自动续聊时出�?${e.message}", e)
+                    AppLogger.e(TAG, "派发自动续聊时出?${e.message}", e)
                     if (isSamePendingAutoContinuation(chatId, request)) {
                         removePendingAutoContinuation(chatId)
                         messageProcessingDelegate.setSuppressIdleCompletedStateForChat(chatId, false)
@@ -1207,7 +1207,7 @@ class MessageCoordinationDelegate(
         isGroupOrchestrationTurn: Boolean,
         groupParticipantNamesText: String?
     ) {
-        AppLogger.d(TAG, "接收到Token超限信号，开始执行总结并继�?.")
+        AppLogger.d(TAG, "接收到Token超限信号，开始执行总结并继?.")
         summaryJob = coroutineScope.launch {
             summarizeHistory(
                 autoContinue = true,
@@ -1227,7 +1227,7 @@ class MessageCoordinationDelegate(
                 ?.getAIServiceForFunction(FunctionType.SUMMARY)
                 ?.cancelStreaming()
         }.onFailure { throwable ->
-            AppLogger.w(TAG, "取消 SUMMARY 流失�?${throwable.message}")
+            AppLogger.w(TAG, "取消 SUMMARY 流失?${throwable.message}")
         }
         ToolProgressBus.clear()
     }
@@ -1417,7 +1417,7 @@ class MessageCoordinationDelegate(
                 messageProcessingDelegate.setPendingAsyncSummaryUiForChat(originalChatId, false)
                 messageProcessingDelegate.setSuppressIdleCompletedStateForChat(originalChatId, false)
 
-                // 如果当前处于 Summarizing 状态（例如主界面在回复完成后锁定了总结状态）�?               // 当异步总结结束时，主动恢复，Idle
+                // 如果当前处于 Summarizing 状态（例如主界面在回复完成后锁定了总结状态）?               // 当异步总结结束时，主动恢复，Idle
                 val currentState =
                     messageProcessingDelegate.inputProcessingStateByChatId.value[originalChatId]
                 if (currentState is InputProcessingState.Summarizing) {
@@ -1483,7 +1483,7 @@ class MessageCoordinationDelegate(
                 return false
             }
 
-            // 触发 preCompact 钩子，保存关键状�?
+            // 触发 preCompact 钩子，保存关键状?
             if (currentChatId != null) {
                 try {
                     val sessionContext = SessionContext(
@@ -1530,7 +1530,7 @@ class MessageCoordinationDelegate(
             AppLogger.d(TAG, "总结操作被取消）
             throw e // 重新抛出取消异常，让协程正确取消
         } catch (e: Exception) {
-            AppLogger.e(TAG, "生成总结时出�?${e.message}", e)
+            AppLogger.e(TAG, "生成总结时出?${e.message}", e)
             uiStateDelegate.showErrorMessage(
                 context.getString(
                     R.string.chat_summarize_generation_failed,
@@ -1554,7 +1554,7 @@ class MessageCoordinationDelegate(
                     if (currentChatId != null) {
                         val continuationPromptType = promptFunctionType ?: currentPromptFunctionType
                         if (messageProcessingDelegate.isChatLoading(currentChatId)) {
-                            AppLogger.d(TAG, "总结成功，但上一轮仍在处理中，转为排队自动续�?.")
+                            AppLogger.d(TAG, "总结成功，但上一轮仍在处理中，转为排队自动续?.")
                             queuePendingAutoContinuation(
                                 chatId = currentChatId,
                                 promptFunctionType = continuationPromptType,
@@ -1566,7 +1566,7 @@ class MessageCoordinationDelegate(
                             )
                         } else {
                             messageProcessingDelegate.setSuppressIdleCompletedStateForChat(currentChatId, false)
-                            AppLogger.d(TAG, "总结成功，自动继续对�?.")
+                            AppLogger.d(TAG, "总结成功，自动继续对?.")
                             sendMessageInternal(
                                 promptFunctionType = continuationPromptType,
                                 isContinuation = true,
@@ -1592,7 +1592,7 @@ class MessageCoordinationDelegate(
                     }
                 }
             } else if (wasSummarizing) {
-                // 总结未成功时也恢复到Idle，避免卡在Summarizing状�?               if (currentChatId != null) {
+                // 总结未成功时也恢复到Idle，避免卡在Summarizing状?               if (currentChatId != null) {
                     messageProcessingDelegate.setSuppressIdleCompletedStateForChat(currentChatId, false)
                     messageProcessingDelegate.setInputProcessingStateForChat(currentChatId, InputProcessingState.Idle)
                 }

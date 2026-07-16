@@ -46,7 +46,7 @@ class ClaudeProvider(
     private val client: OkHttpClient,
     private val customHeaders: Map<String, String> = emptyMap(),
     private val providerType: ApiProviderType = ApiProviderType.ANTHROPIC,
-    private val enableToolCall: Boolean = false // 是否启用Tool Call接口（预留，Claude有原生tool支持�? : AIService {
+    private val enableToolCall: Boolean = false // 是否启用Tool Call接口（预留，Claude有原生tool支持? : AIService {
     // private val client: OkHttpClient = HttpClientFactory.instance
 
     private val JSON = "application/json".toMediaType()
@@ -54,7 +54,7 @@ class ClaudeProvider(
     private val PROMPT_CACHE_CONTROL_TYPE = "ephemeral"
     private val DEFAULT_MAX_TOKENS = 4096
 
-    // 当前活跃的Call对象，用于取消流式传�?   private var activeCall: Call? = null
+    // 当前活跃的Call对象，用于取消流式传?   private var activeCall: Call? = null
     private var activeResponse: Response? = null
     @Volatile private var isManuallyCancelled = false
 
@@ -63,7 +63,7 @@ class ClaudeProvider(
      */
     class NonRetriableException(message: String, cause: Throwable? = null) : IOException(message, cause)
 
-    // 添加token计数�?   private val tokenCacheManager = TokenCacheManager()
+    // 添加token计数?   private val tokenCacheManager = TokenCacheManager()
 
     // 公开token计数
     override val inputTokenCount: Int
@@ -85,12 +85,12 @@ class ClaudeProvider(
     override fun cancelStreaming() {
         isManuallyCancelled = true
 
-        // 1. 强制关闭 Response（这会立即中断流读取操作�?       activeResponse?.let {
+        // 1. 强制关闭 Response（这会立即中断流读取操作?       activeResponse?.let {
             try {
                 it.close()
-                AppLogger.d("AIService", "已强制关闭Response�?
+                AppLogger.d("AIService", "已强制关闭Response?
             } catch (e: Exception) {
-                AppLogger.w("AIService", "关闭Response时出�?${e.message}")
+                AppLogger.w("AIService", "关闭Response时出?${e.message}")
             }
         }
         activeResponse = null
@@ -99,12 +99,12 @@ class ClaudeProvider(
         activeCall?.let {
             if (!it.isCanceled()) {
                 it.cancel()
-                AppLogger.d("AIService", "已取消当前流式传输，Call已中�?
+                AppLogger.d("AIService", "已取消当前流式传输，Call已中?
             }
         }
         activeCall = null
 
-        AppLogger.d("AIService", "取消标志已设置，流读取将立即被中�?
+        AppLogger.d("AIService", "取消标志已设置，流读取将立即被中?
     }
 
     private fun headersForLog(headers: Headers): String {
@@ -220,7 +220,7 @@ class ClaudeProvider(
     // ==================== Tool Call 支持 ====================
 
     /**
-     * XML转义/反转义工�?    */
+     * XML转义/反转义工?    */
     private object XmlEscaper {
         fun escape(text: String): String {
             return text.replace("&", "&amp;")
@@ -291,7 +291,7 @@ class ClaudeProvider(
                 input.put(paramName, paramValue)
             }
 
-            // 构建tool_use对象（Claude格式�?           val toolNamePart = sanitizeToolCallId(toolName)
+            // 构建tool_use对象（Claude格式?           val toolNamePart = sanitizeToolCallId(toolName)
             val hashPart = stableIdHashPart("${toolName}:${input}")
             val callId = sanitizeToolCallId("toolu_${toolNamePart}_${hashPart}_${callIndex}")
             toolUses.put(JSONObject().apply {
@@ -374,7 +374,7 @@ class ClaudeProvider(
     }
     
     /**
-     * 从结构化参数构建JSON Schema（Claude格式�?    */
+     * 从结构化参数构建JSON Schema（Claude格式?    */
     private fun buildSchemaFromStructured(params: List<com.apex.data.model.ToolParameterSchema>): JSONObject {
         val schema = JSONObject().apply {
             put("type", "object")
@@ -412,13 +412,13 @@ class ClaudeProvider(
         val contentArray = JSONArray()
 
         val textAfterMediaRemoval = if (MediaLinkParser.hasMediaLinks(text)) {
-            AppLogger.w("AIService", "检测到音视频链接，但Claude格式当前仅支持图片，多媒体链接将被移�?
+            AppLogger.w("AIService", "检测到音视频链接，但Claude格式当前仅支持图片，多媒体链接将被移?
             MediaLinkParser.removeMediaLinks(text).trim()
         } else {
             text
         }
         
-        // 检查是否包含图片链�?       if (MediaLinkParser.hasImageLinks(textAfterMediaRemoval)) {
+        // 检查是否包含图片链?       if (MediaLinkParser.hasImageLinks(textAfterMediaRemoval)) {
             val imageLinks = MediaLinkParser.extractImageLinks(textAfterMediaRemoval)
             val textWithoutLinks = MediaLinkParser.removeImageLinks(textAfterMediaRemoval).trim()
             
@@ -434,14 +434,14 @@ class ClaudeProvider(
                 })
             }
             
-            // 添加文本（如果有�?           if (textWithoutLinks.isNotEmpty()) {
+            // 添加文本（如果有?           if (textWithoutLinks.isNotEmpty()) {
                 contentArray.put(JSONObject().apply {
                     put("type", "text")
                     put("text", textWithoutLinks)
                 })
             }
         } else {
-            // 纯文本消�?           contentArray.put(JSONObject().apply {
+            // 纯文本消?           contentArray.put(JSONObject().apply {
                 put("type", "text")
                 put("text", textAfterMediaRemoval)
             })
@@ -891,7 +891,7 @@ class ClaudeProvider(
                 comparableHistory,
                 toolsJson
             )
-        AppLogger.d("AIService", "Claude显式缓存断点已应�?count=${breakpointsApplied}")
+        AppLogger.d("AIService", "Claude显式缓存断点已应?count=${breakpointsApplied}")
         return Triple(
             serializedHistory.messagesArray,
             serializedHistory.systemBlocks,
@@ -927,7 +927,7 @@ class ClaudeProvider(
         )
     }
 
-    // 创建Claude API请求�?   private fun createRequestBody(
+    // 创建Claude API请求?   private fun createRequestBody(
             chatHistory: List<PromptTurn>,
             modelParameters: List<ModelParameter<*>> = emptyList(),
             enableThinking: Boolean,
@@ -959,7 +959,7 @@ class ClaudeProvider(
             if (builtTools.length() > 0) {
                 tools = builtTools
                 jsonObject.put("tools", builtTools)
-                AppLogger.d("AIService", "已添�?{builtTools.length()} ，Claude Tool Definitions")
+                AppLogger.d("AIService", "已添?{builtTools.length()} ，Claude Tool Definitions")
             }
         }
 
@@ -996,7 +996,7 @@ class ClaudeProvider(
             logJson.put("tools", "[${toolsArray.length()} tools omitted for brevity]")
         }
         sanitizeImageDataForLogging(logJson)
-        AppLogger.d("AIService", "Claude请求�?${logJson.toString(4)}")
+        AppLogger.d("AIService", "Claude请求?${logJson.toString(4)}")
         return jsonObject.toString().toByteArray(Charsets.UTF_8).toRequestBody(JSON)
     }
 
@@ -1104,7 +1104,7 @@ class ClaudeProvider(
 
         val request = builder.build()
         AppLogger.d("AIService", "Claude请求URL: ${request.url}")
-        AppLogger.d("AIService", "Claude请求�?\n${headersForLog(request.headers)}")
+        AppLogger.d("AIService", "Claude请求?\n${headersForLog(request.headers)}")
         return request
     }
 
@@ -1130,7 +1130,7 @@ class ClaudeProvider(
             throw exception
         }
         if (isManuallyCancelled) {
-            AppLogger.d("AIService", "【Claude】请求被用户取消，停止重试着�?
+            AppLogger.d("AIService", "【Claude】请求被用户取消，停止重试着?
             throw UserCancellationException(context.getString(R.string.openai_error_request_cancelled), exception)
         }
 
@@ -1150,7 +1150,7 @@ class ClaudeProvider(
         }
 
         val retryDelayMs = LlmRetryPolicy.nextDelayMs(newRetryCount)
-        AppLogger.w("AIService", "【Claude，errorText${retryDelayMs}ms 后进行第 ${newRetryCount} 次重�?.", exception)
+        AppLogger.w("AIService", "【Claude，errorText${retryDelayMs}ms 后进行第 ${newRetryCount} 次重?.", exception)
         onNonFatalError(buildRetryMessage(errorText, newRetryCount))
         delay(retryDelayMs)
         return newRetryCount
@@ -1257,7 +1257,7 @@ class ClaudeProvider(
         AppLogger.d("AIService", "准备连接到Claude AI服务...")
         while (retryCount <= maxRetries) {
             if (isManuallyCancelled) {
-                AppLogger.d("AIService", "【Claude】请求被用户取消，停止重试着�?
+                AppLogger.d("AIService", "【Claude】请求被用户取消，停止重试着?
                 throw UserCancellationException(context.getString(R.string.openai_error_request_cancelled))
             }
 
@@ -1304,13 +1304,13 @@ class ClaudeProvider(
                             throw IOException(context.getString(R.string.openai_error_api_request_failed_with_status, response.code, errorBody))
                         }
 
-                        AppLogger.d("AIService", "连接成功，等待响�?.")
+                        AppLogger.d("AIService", "连接成功，等待响?.")
                         val responseBody = response.body ?: throw IOException(context.getString(R.string.provider_error_response_empty))
 
                         val contentType = response.header("Content-Type") ?: ""
                         AppLogger.d(
                             "AIService",
-                            "Claude响应状�?code=${response.code}, contentType=${contentType}"
+                            "Claude响应状?code=${response.code}, contentType=${contentType}"
                         )
 
                         val preview = runCatching { response.peekBody(4096).string() }.getOrNull().orEmpty()
@@ -1320,7 +1320,7 @@ class ClaudeProvider(
                         val isEventStream = contentType.contains("event-stream", ignoreCase = true)
                         AppLogger.d(
                             "AIService",
-                            "Claude响应格式检�?looksLikeJson=${looksLikeJson}, looksLikeSse=${looksLikeSse}, isEventStream=${isEventStream}"
+                            "Claude响应格式检?looksLikeJson=${looksLikeJson}, looksLikeSse=${looksLikeSse}, isEventStream=${isEventStream}"
                         )
 
                         if (stream && !looksLikeSse && looksLikeJson) {
@@ -1392,7 +1392,7 @@ class ClaudeProvider(
                                 break
                             }
                             if (!line.startsWith("data:")) {
-                                // 某些兼容端点可能直接返回 JSON/JSONL（不，SSE ，data: 前缀�?                               if ((line.startsWith("{") || line.startsWith("[")) &&
+                                // 某些兼容端点可能直接返回 JSON/JSONL（不，SSE ，data: 前缀?                               if ((line.startsWith("{") || line.startsWith("[")) &&
                                     nonSseJsonLinesBuffer.length < 2_000_000
                                 ) {
                                     nonSseJsonLinesBuffer.append(line).append('\n')
@@ -1683,7 +1683,7 @@ class ClaudeProvider(
                         }
                     } finally {
                         response.close()
-                        AppLogger.d("AIService", "【Claude】关闭响应连�?
+                        AppLogger.d("AIService", "【Claude】关闭响应连?
                     }
                 }
 
@@ -1709,8 +1709,8 @@ class ClaudeProvider(
         }
 
         lastException?.let { ex ->
-            AppLogger.e("AIService", "【Claude】重试失败，请检查网络连�? ex)
-        } ?: AppLogger.e("AIService", "【Claude】重试失败，请检查网络连�?
+            AppLogger.e("AIService", "【Claude】重试失败，请检查网络连? ex)
+        } ?: AppLogger.e("AIService", "【Claude】重试失败，请检查网络连?
         throw IOException(
             context.getString(
                 R.string.openai_error_connection_timeout,
@@ -1738,7 +1738,7 @@ class ClaudeProvider(
 
     override suspend fun testConnection(context: Context): Result<String> {
         return try {
-            // 通过发送一条短消息来测试完整的连接、认证和API端点�?           // 这比getModelsList更可靠，因为它直接命中了聊天API�?           // 提供一个通用的系统提示，以防止某些需要它的模型出现错误，            val testHistory = listOf("system" to "You are a helpful assistant.").toPromptTurns()
+            // 通过发送一条短消息来测试完整的连接、认证和API端点?           // 这比getModelsList更可靠，因为它直接命中了聊天API?           // 提供一个通用的系统提示，以防止某些需要它的模型出现错误，            val testHistory = listOf("system" to "You are a helpful assistant.").toPromptTurns()
             val stream = sendMessage(
                 context,
                 testHistory + PromptTurn(kind = PromptTurnKind.USER, content = "Hi"),
@@ -1749,7 +1749,7 @@ class ClaudeProvider(
                 enableRetry = false
             )
 
-            // 消耗流以确保连接有效，            // �?Hi" 的响应应该很短，所以这会很快完成�?           stream.collect { _ -> }
+            // 消耗流以确保连接有效，            // ?Hi" 的响应应该很短，所以这会很快完成?           stream.collect { _ -> }
 
             Result.success(context.getString(R.string.openai_connection_success))
         } catch (e: Exception) {

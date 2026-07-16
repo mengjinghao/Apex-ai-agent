@@ -3,7 +3,7 @@ package com.apex.agent.core.tools.result
 /**
  * UI工具操作结果封装
  * 
- * 提供统一的错误码和结果类型，便于错误处理和调�? */
+ * 提供统一的错误码和结果类型，便于错误处理和调? */
 sealed class UIToolsResult {
     /**
      * 操作成功
@@ -25,7 +25,7 @@ sealed class UIToolsResult {
     object Timeout : UIToolsResult()
     
     /**
-     * 服务不可�?     */
+     * 服务不可?     */
     object ServiceNotAvailable : UIToolsResult()
     
     /**
@@ -94,7 +94,7 @@ sealed class UIToolsResult {
         }
         
         /**
-         * 创建服务不可用结�?         */
+         * 创建服务不可用结?         */
         fun serviceNotAvailable(): UIToolsResult {
             return ServiceNotAvailable
         }
@@ -109,7 +109,7 @@ sealed class UIToolsResult {
 }
 
 /**
- * UI工具错误码枚�? */
+ * UI工具错误码枚? */
 enum class UIToolsErrorCode(val code: Int, val message: String) {
     // 服务相关错误 (1000-1099)
     SERVICE_NOT_ENABLED(1001, "无障碍服务未启用，请在系统设置中启用"),
@@ -148,7 +148,7 @@ enum class UIToolsErrorCode(val code: Int, val message: String) {
     UNKNOWN_ERROR(1599, "未知错误");
     
     /**
-     * 根据错误码获取错误对�?     */
+     * 根据错误码获取错误对?     */
     companion object {
         fun fromCode(code: Int): UIToolsErrorCode {
             return values().find { it.code == code } ?: UNKNOWN_ERROR
@@ -169,9 +169,9 @@ data class OperationLogEntry(
     val errorCode: UIToolsErrorCode? = null
 ) {
     /**
-     * 格式化为可读字符�?     */
+     * 格式化为可读字符?     */
     fun format(): String {
-        val status = if (success) "�?else "�?
+        val status = if (success) "?else "?
         val time = java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.getDefault())
             .format(java.util.Date(timestamp))
         
@@ -191,7 +191,7 @@ data class OperationLogEntry(
 }
 
 /**
- * 操作日志管理�? */
+ * 操作日志管理? */
 class OperationLogger(private val maxEntries: Int = 1000) {
     private val logEntries = mutableListOf<OperationLogEntry>()
     
@@ -209,7 +209,7 @@ class OperationLogger(private val maxEntries: Int = 1000) {
     }
     
     /**
-     * 便捷方法：记录成功操�?     */
+     * 便捷方法：记录成功操?     */
     fun logSuccess(toolName: String, action: String, duration: Long = 0, details: String? = null) {
         log(OperationLogEntry(
             toolName = toolName,
@@ -221,7 +221,7 @@ class OperationLogger(private val maxEntries: Int = 1000) {
     }
     
     /**
-     * 便捷方法：记录失败操�?     */
+     * 便捷方法：记录失败操?     */
     fun logError(toolName: String, action: String, errorCode: UIToolsErrorCode, duration: Long = 0, details: String? = null) {
         log(OperationLogEntry(
             toolName = toolName,
@@ -242,7 +242,7 @@ class OperationLogger(private val maxEntries: Int = 1000) {
     }
     
     /**
-     * 获取所有日志条�?     */
+     * 获取所有日志条?     */
     @Synchronized
     fun getAllLogs(): List<OperationLogEntry> {
         return logEntries.toList()
@@ -257,7 +257,7 @@ class OperationLogger(private val maxEntries: Int = 1000) {
     }
     
     /**
-     * 导出日志为文�?     */
+     * 导出日志为文?     */
     @Synchronized
     fun exportToText(): String {
         return logEntries.joinToString("\n") { it.format() }

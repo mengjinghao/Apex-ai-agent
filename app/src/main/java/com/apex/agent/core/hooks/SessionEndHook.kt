@@ -32,7 +32,7 @@ class SessionEndHook : SessionLifecycleHook {
     /**
      * 生成会话摘要
      * 包括关键决策、学习成果、未完成工作
-     * @param sessionContext 会话上下�?     * @return 会话摘要数据
+     * @param sessionContext 会话上下?     * @return 会话摘要数据
      */
     private fun generateSessionSummary(sessionContext: SessionContext): Map<String, Any> {
         val summary = mutableMapOf<String, Any>()
@@ -56,12 +56,12 @@ class SessionEndHook : SessionLifecycleHook {
             summary["learnings"] = learnings
         }
 
-        // 提取未完成工�?        val incompleteWork = extractIncompleteWork(sessionContext.environmentState)
+        // 提取未完成工?        val incompleteWork = extractIncompleteWork(sessionContext.environmentState)
         if (incompleteWork.isNotEmpty()) {
             summary["incompleteWork"] = incompleteWork
         }
 
-        // 提取环境状态快�?        summary["environmentSnapshot"] = sessionContext.environmentState
+        // 提取环境状态快?        summary["environmentSnapshot"] = sessionContext.environmentState
 
         AppLogger.d(TAG, "Generated session summary with ${summary.keys.size} fields")
         return summary
@@ -99,7 +99,7 @@ class SessionEndHook : SessionLifecycleHook {
     }
 
     /**
-     * 提取未完成工�?     */
+     * 提取未完成工?     */
     private fun extractIncompleteWork(envState: Map<String, String>): List<String> {
         val workJson = envState["incompleteWork"] ?: return emptyList()
         return try {
@@ -113,7 +113,7 @@ class SessionEndHook : SessionLifecycleHook {
 
     /**
      * 持久化会话摘要到文件
-     * @param context Android 上下�?     * @param sessionId 会话 ID
+     * @param context Android 上下?     * @param sessionId 会话 ID
      * @param summary 摘要数据
      */
     private suspend fun saveSummary(
@@ -135,7 +135,7 @@ class SessionEndHook : SessionLifecycleHook {
     }
 
     /**
-     * �?Map 转换�?JSONObject
+     * ?Map 转换?JSONObject
      */
     private fun convertMapToJson(map: Map<String, Any>): JSONObject {
         val json = JSONObject()
@@ -172,11 +172,11 @@ class SessionEndHook : SessionLifecycleHook {
     /**
      * 通知技能系统检查可提取模式
      * 调用 AutoSkillExtractor（如果存在）
-     * @param context Android 上下�?     * @param summary 会话摘要
+     * @param context Android 上下?     * @param summary 会话摘要
      */
     private suspend fun notifySkillSystem(context: Context, summary: Map<String, Any>) {
         try {
-            // 尝试动态加�?AutoSkillExtractor �?            val autoSkillExtractorClass = try {
+            // 尝试动态加?AutoSkillExtractor ?            val autoSkillExtractorClass = try {
                 Class.forName("com.apex.agent.core.skills.AutoSkillExtractor")
             } catch (e: ClassNotFoundException) {
                 AppLogger.d(TAG, "AutoSkillExtractor not found, skipping skill extraction")

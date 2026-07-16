@@ -6,11 +6,11 @@ import com.apex.util.ValidationResult
 
 enum class FootprintLevel(val level: Int, val description: String, val surfaceArea: String) {
     EXTEND_EXISTING(1, "扩展现有代码", "零新增表面积"),
-    CLI_COMMAND_SKILL(2, "CLI 命令 + Skill", "零模型工具足�?),
+    CLI_COMMAND_SKILL(2, "CLI 命令 + Skill", "零模型工具足?),
     SERVICE_GATED_TOOL(3, "Service-gated Tool", "仅配置后出现"),
-    PLUGIN(4, "Plugin", "第三方能�?),
+    PLUGIN(4, "Plugin", "第三方能?),
     MCP_SERVER(5, "MCP Server", "工具化非核心能力"),
-    NEW_CORE_TOOL(6, "New Core Tool", "最后手�?);
+    NEW_CORE_TOOL(6, "New Core Tool", "最后手?);
 
     fun isLowerThan(other: FootprintLevel): Boolean {
         return this.level < other.level
@@ -289,7 +289,7 @@ class CoreNarrowWaistValidator {
     private fun canBeCLI(capability: Capability): Boolean {
         return capability.description.contains("查询") || 
                capability.description.contains("配置") ||
-               capability.description.contains("状�?)
+               capability.description.contains("状?)
     }
 
     private fun isFundamentalCapability(capability: Capability): Boolean {

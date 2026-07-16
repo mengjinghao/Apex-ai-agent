@@ -205,7 +205,7 @@ class LobeHubSkillParser {
 
         // Update spec with parsed sections
         val description = sections["description"] ?: sections["概述"] ?: ""
-        val usage = sections["usage"] ?: sections["使用方法"] ?: sections["使用者輸�?] ?: ""
+        val usage = sections["usage"] ?: sections["使用方法"] ?: sections["使用者輸?] ?: ""
         val inputs = sections["inputs"] ?: sections["輸入"] ?: ""
 
         // If no description in frontmatter, use body

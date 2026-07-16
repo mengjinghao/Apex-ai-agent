@@ -25,7 +25,7 @@ class CronExpressionParser {
             lowerInput.contains("每天") -> parseDaily(lowerInput)
             lowerInput.contains("每周") -> parseWeekly(lowerInput)
             lowerInput.contains("每月") -> parseMonthly(lowerInput)
-            lowerInput.contains("每小�?) -> parseHourly(lowerInput)
+            lowerInput.contains("每小?) -> parseHourly(lowerInput)
             lowerInput.contains("分钟") -> parseMinutely(lowerInput)
             else -> "0 9 * * *"
         }
@@ -54,8 +54,8 @@ class CronExpressionParser {
 
     private fun parseWeekly(input: String): String {
         val dayMap = mapOf(
-            "一" to "1", "�? to "2", "�? to "3",
-            "�? to "4", "�? to "5", "�? to "6", "�? to "0"
+            "一" to "1", "? to "2", "? to "3",
+            "? to "4", "? to "5", "? to "6", "? to "0"
         )
         var day = "1"
         for ((key, value) in dayMap) {

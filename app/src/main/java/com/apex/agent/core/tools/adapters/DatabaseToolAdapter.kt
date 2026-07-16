@@ -27,7 +27,7 @@ class DatabaseToolAdapter : ToolAdapter {
     }
 
     override fun getDescription(): String {
-        return "执行数据库操作，支持查询、插入、更新和删除等操作，包含连接管理和查询缓�?
+        return "执行数据库操作，支持查询、插入、更新和删除等操作，包含连接管理和查询缓?
     }
 
     override suspend fun execute(parameters: Map<String, Any>): ToolResultData = withContext(Dispatchers.IO) {
@@ -58,15 +58,15 @@ class DatabaseToolAdapter : ToolAdapter {
     override fun getParameters(): List<ToolParameter> {
         return listOf(
             ToolParameter("action", "string", "操作类型：connect, query, insert, update, delete, disconnect, list_connections, clear_cache", true),
-            ToolParameter("connection_id", "string", "连接ID，用于管理多个数据库连接（默认：default�? false, "default"),
+            ToolParameter("connection_id", "string", "连接ID，用于管理多个数据库连接（默认：default? false, "default"),
             ToolParameter("url", "string", "数据库连接URL（connect操作需要）", false),
             ToolParameter("username", "string", "数据库用户名（connect操作需要）", false),
             ToolParameter("password", "string", "数据库密码（connect操作需要）", false),
-            ToolParameter("driver", "string", "JDBC驱动类名（connect操作可选，默认：com.mysql.cj.jdbc.Driver�? false, "com.mysql.cj.jdbc.Driver"),
+            ToolParameter("driver", "string", "JDBC驱动类名（connect操作可选，默认：com.mysql.cj.jdbc.Driver? false, "com.mysql.cj.jdbc.Driver"),
             ToolParameter("sql", "string", "SQL语句（query, insert, update, delete操作需要）", false),
             ToolParameter("params", "array", "SQL参数（可选）", false),
-            ToolParameter("use_cache", "boolean", "是否使用查询缓存（query操作可选，默认：true�? false, true),
-            ToolParameter("timeout", "int", "查询超时时间（秒，默认：30�? false, 30)
+            ToolParameter("use_cache", "boolean", "是否使用查询缓存（query操作可选，默认：true? false, true),
+            ToolParameter("timeout", "int", "查询超时时间（秒，默认：30? false, 30)
         )
     }
 
@@ -82,7 +82,7 @@ class DatabaseToolAdapter : ToolAdapter {
         val driver = parameters["driver"] as? String ?: "com.mysql.cj.jdbc.Driver"
 
         try {
-            // 如果连接已存在，先关�?           connections[connectionId]?.let {
+            // 如果连接已存在，先关?           connections[connectionId]?.let {
                 if (!it.isClosed) {
                     it.close()
                 }
@@ -94,7 +94,7 @@ class DatabaseToolAdapter : ToolAdapter {
             // 创建连接
             val connection = DriverManager.getConnection(url, username, password)
             
-            // 设置连接属�?           connection.autoCommit = true
+            // 设置连接属?           connection.autoCommit = true
             
             // 保存连接
             connections[connectionId] = connection
@@ -121,7 +121,7 @@ class DatabaseToolAdapter : ToolAdapter {
             return@withContext StringResultData("错误：连接已关闭，请重新连接")
         }
 
-        // 检查缓�?       val cacheKey = "${connectionId}:${sql}:${params.joinToString(",")}"
+        // 检查缓?       val cacheKey = "${connectionId}:${sql}:${params.joinToString(",")}"
         if (useCache) {
             queryCache[cacheKey]?.let { cached ->
                 if (System.currentTimeMillis() - cached.timestamp < CACHE_EXPIRE_TIME) {
@@ -154,7 +154,7 @@ class DatabaseToolAdapter : ToolAdapter {
                 }
                 result.append("\n")
 
-                // 输出分隔�?               for (i in 1..columnCount) {
+                // 输出分隔?               for (i in 1..columnCount) {
                     val columnNameLength = metaData.getColumnName(i).length
                     result.append("-".repeat(columnNameLength))
                     if (i < columnCount) result.append("\t")
@@ -172,7 +172,7 @@ class DatabaseToolAdapter : ToolAdapter {
                     result.append("\n")
                     rowCount++
                 }
-                result.append("\n，的${rowCount} �?
+                result.append("\n，的${rowCount} ?
             }
 
             statement.close()
@@ -316,13 +316,13 @@ class DatabaseToolAdapter : ToolAdapter {
         }
         
         if (closedConnections.isNotEmpty()) {
-            result.append("\n已关闭连�?{closedConnections.size}):\n")
+            result.append("\n已关闭连?{closedConnections.size}):\n")
             closedConnections.keys.forEach { id ->
                 result.append("  - ${id}\n")
             }
         }
         
-        result.append("\n缓存查询�?${queryCache.size}")
+        result.append("\n缓存查询?${queryCache.size}")
         
         return StringResultData(result.toString())
     }
@@ -330,7 +330,7 @@ class DatabaseToolAdapter : ToolAdapter {
     private fun clearCache(): ToolResultData {
         val cacheSize = queryCache.size
         queryCache.clear()
-        return StringResultData("成功清除查询缓存，清除了 ${cacheSize} 条记�?
+        return StringResultData("成功清除查询缓存，清除了 ${cacheSize} 条记?
     }
 
     private data class CachedQueryResult(

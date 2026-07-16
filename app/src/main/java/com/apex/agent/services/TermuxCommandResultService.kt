@@ -12,7 +12,7 @@ import com.apex.agent.core.tools.system.AndroidShellExecutor
 
 /**
  * Termux命令结果服务
- * 用于接收来自Termux的命令执行结�?*/
+ * 用于接收来自Termux的命令执行结?*/
 class TermuxCommandResultService : IntentService("TermuxCommandResultService") {
     companion object {
         private const val TAG = "TermuxResultService"
@@ -28,7 +28,7 @@ class TermuxCommandResultService : IntentService("TermuxCommandResultService") {
          */
         fun registerCallback(executionId: Int, callback: (CommandResult) -> Unit) {
             callbackMap[executionId] = callback
-            AppLogger.d(TAG, "已注册回调，ID: ${executionId}, 当前回调�?${callbackMap.size}")
+            AppLogger.d(TAG, "已注册回调，ID: ${executionId}, 当前回调?${callbackMap.size}")
         }
         
         /**
@@ -37,7 +37,7 @@ class TermuxCommandResultService : IntentService("TermuxCommandResultService") {
          */
         fun removeCallback(executionId: Int) {
             callbackMap.remove(executionId)
-            AppLogger.d(TAG, "已移除回调，ID: ${executionId}, 当前回调�?${callbackMap.size}")
+            AppLogger.d(TAG, "已移除回调，ID: ${executionId}, 当前回调?${callbackMap.size}")
         }
     }
     
@@ -83,7 +83,7 @@ class TermuxCommandResultService : IntentService("TermuxCommandResultService") {
         if (callback != null) {
             serviceScope.launch {
                 callback(result)
-                // 执行完成后移除回�?               removeCallback(executionId)
+                // 执行完成后移除回?               removeCallback(executionId)
             }
         } else {
             // AppLogger.w(TAG, "未找到ID，的${executionId} 的回复）

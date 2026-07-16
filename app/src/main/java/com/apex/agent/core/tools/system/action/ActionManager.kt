@@ -20,7 +20,7 @@ import com.apex.agent.core.tools.system.action.PermissionStatus
 import com.apex.core.tools.javascript.callback
 
 /**
- * UI操作监听管理�?* 统一管理所有权限级别的UI操作监听器，提供简化的使用接口
+ * UI操作监听管理?* 统一管理所有权限级别的UI操作监听器，提供简化的使用接口
  */
 class ActionManager(private val context: Context) {
     companion object {
@@ -37,25 +37,25 @@ class ActionManager(private val context: Context) {
         }
     }
 
-    // 协程作用�?   private val managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    // 协程作用?   private val managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     
     // 当前活跃的监听器
     private var activeListener: ActionListener? = null
     
-    // 是否正在监听状�?   private val _isListening = MutableStateFlow(false)
+    // 是否正在监听状?   private val _isListening = MutableStateFlow(false)
     val isListening: StateFlow<Boolean> = _isListening.asStateFlow()
     
-    // 当前使用的权限级�?   private val _currentPermissionLevel = MutableStateFlow<AndroidPermissionLevel?>(null)
+    // 当前使用的权限级?   private val _currentPermissionLevel = MutableStateFlow<AndroidPermissionLevel?>(null)
     val currentPermissionLevel: StateFlow<AndroidPermissionLevel?> = _currentPermissionLevel.asStateFlow()
     
     // 事件回调集合
     private val eventCallbacks = ConcurrentHashMap<String, (ActionListener.ActionEvent) -> Unit>()
     
-    // 监听状态变化回�?   private val stateChangeCallbacks = mutableListOf<(Boolean, AndroidPermissionLevel) -> Unit>()
+    // 监听状态变化回?   private val stateChangeCallbacks = mutableListOf<(Boolean, AndroidPermissionLevel) -> Unit>()
 
     /**
      * 开始使用最高可用权限级别进行UI操作监听
-     * @param callback 接收UI操作事件的回�?    * @return 监听启动结果
+     * @param callback 接收UI操作事件的回?    * @return 监听启动结果
      */
     suspend fun startListeningWithHighestPermission(
         callback: (ActionListener.ActionEvent) -> Unit
@@ -79,7 +79,7 @@ class ActionManager(private val context: Context) {
 
     /**
      * 使用指定权限级别开始UI操作监听
-     * @param permissionLevel 指定的权限级�?    * @param callback 接收UI操作事件的回�?    * @return 监听启动结果
+     * @param permissionLevel 指定的权限级?    * @param callback 接收UI操作事件的回?    * @return 监听启动结果
      */
     suspend fun startListeningWithPermissionLevel(
         permissionLevel: AndroidPermissionLevel,
@@ -97,7 +97,7 @@ class ActionManager(private val context: Context) {
     }
 
     /**
-     * 使用指定监听器开始监�?    * @param listener 要使用的监听�?    * @param callback 事件回调
+     * 使用指定监听器开始监?    * @param listener 要使用的监听?    * @param callback 事件回调
      * @return 监听启动结果
      */
     private suspend fun startListeningWithListener(
@@ -122,7 +122,7 @@ class ActionManager(private val context: Context) {
             _isListening.value = true
             _currentPermissionLevel.value = listener.getPermissionLevel()
             
-            // 通知状态变�?           notifyStateChange(true, listener.getPermissionLevel())
+            // 通知状态变?           notifyStateChange(true, listener.getPermissionLevel())
             
             AppLogger.d(TAG, "UI操作监听已启动，权限级别: ${listener.getPermissionLevel()}")
         } else {
@@ -153,7 +153,7 @@ class ActionManager(private val context: Context) {
                 _currentPermissionLevel.value = null
                 eventCallbacks.clear()
                 
-                // 通知状态变�?               notifyStateChange(false, null)
+                // 通知状态变?               notifyStateChange(false, null)
                 
                 AppLogger.d(TAG, "UI操作监听已停止）
             } else {
@@ -162,13 +162,13 @@ class ActionManager(private val context: Context) {
             
             return success
         } catch (e: Exception) {
-            AppLogger.e(TAG, "停止UI操作监听时出�? e)
+            AppLogger.e(TAG, "停止UI操作监听时出? e)
             return false
         }
     }
 
     /**
-     * 注册额外的事件回�?    * @param callbackId 回调标识
+     * 注册额外的事件回?    * @param callbackId 回调标识
      * @param callback 事件回调函数
      */
     fun registerEventCallback(callbackId: String, callback: (ActionListener.ActionEvent) -> Unit) {
@@ -186,20 +186,20 @@ class ActionManager(private val context: Context) {
     }
 
     /**
-     * 注册监听状态变化回�?    * @param callback 状态变化回�?    */
+     * 注册监听状态变化回?    * @param callback 状态变化回?    */
     fun registerStateChangeCallback(callback: (Boolean, AndroidPermissionLevel) -> Unit) {
         stateChangeCallbacks.add(callback)
     }
 
     /**
-     * 移除监听状态变化回�?    * @param callback 要移除的回调
+     * 移除监听状态变化回?    * @param callback 要移除的回调
      */
     fun removeStateChangeCallback(callback: (Boolean, AndroidPermissionLevel) -> Unit) {
         stateChangeCallbacks.remove(callback)
     }
 
     /**
-     * 通知状态变�?    * @param isListening 是否正在监听
+     * 通知状态变?    * @param isListening 是否正在监听
      * @param permissionLevel 当前权限级别
      */
     private fun notifyStateChange(isListening: Boolean, permissionLevel: AndroidPermissionLevel) {
@@ -213,7 +213,7 @@ class ActionManager(private val context: Context) {
     }
 
     /**
-     * 获取所有可用监听器的状态信�?    * @return 权限级别到监听器状态的映射
+     * 获取所有可用监听器的状态信?    * @return 权限级别到监听器状态的映射
      */
     suspend fun getAvailableListenersStatus(): Map<AndroidPermissionLevel, Pair<Boolean, ActionListener.PermissionStatus>> {
         val result = mutableMapOf<AndroidPermissionLevel, Pair<Boolean, ActionListener.PermissionStatus>>()
@@ -226,7 +226,7 @@ class ActionManager(private val context: Context) {
                 
                 result[level] = Pair(available, permissionStatus)
             } catch (e: Exception) {
-                AppLogger.e(TAG, "获取监听器状态失�?${level}", e)
+                AppLogger.e(TAG, "获取监听器状态失?${level}", e)
                 result[level] = Pair(false, ActionListener.PermissionStatus.denied(context.getString(R.string.action_get_status_failed, e.message ?: "")))
             }
         }
@@ -235,7 +235,7 @@ class ActionManager(private val context: Context) {
     }
 
     /**
-     * 请求指定权限级别的权�?    * @param permissionLevel 要请求的权限级别
+     * 请求指定权限级别的权?    * @param permissionLevel 要请求的权限级别
      * @param onResult 结果回调
      */
     fun requestPermission(permissionLevel: AndroidPermissionLevel, onResult: (Boolean) -> Unit) {
@@ -251,7 +251,7 @@ class ActionManager(private val context: Context) {
     }
 
     /**
-     * 获取当前监听器信�?    * @return 当前监听器的信息，如果没有活跃监听器则返回null
+     * 获取当前监听器信?    * @return 当前监听器的信息，如果没有活跃监听器则返回null
      */
     suspend fun getCurrentListenerInfo(): ListenerInfo? {
         val listener = activeListener ?: return null
@@ -265,7 +265,7 @@ class ActionManager(private val context: Context) {
     }
 
     /**
-     * 销毁管理器，清理资�?    */
+     * 销毁管理器，清理资?    */
     fun destroy() {
         managerScope.launch {
             try {
@@ -273,9 +273,9 @@ class ActionManager(private val context: Context) {
                 managerScope.cancel()
                 eventCallbacks.clear()
                 stateChangeCallbacks.clear()
-                AppLogger.d(TAG, "ActionManager已销�?
+                AppLogger.d(TAG, "ActionManager已销?
             } catch (e: Exception) {
-                AppLogger.e(TAG, "销毁ActionManager时出�? e)
+                AppLogger.e(TAG, "销毁ActionManager时出? e)
             }
         }
     }

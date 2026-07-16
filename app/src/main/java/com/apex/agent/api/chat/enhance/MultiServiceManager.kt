@@ -35,7 +35,7 @@ class MultiServiceManager(private val context: Context) {
     private val initMutex = Mutex()
     @Volatile private var isInitialized = false
 
-    // 默认AIService，用于兼容现有代�?   private var defaultService: AIService? = null
+    // 默认AIService，用于兼容现有代?   private var defaultService: AIService? = null
 
     /** 初始化服务管理器，确保配置已经准备好 */
     suspend fun initialize() {
@@ -56,16 +56,16 @@ class MultiServiceManager(private val context: Context) {
     suspend fun getServiceForFunction(functionType: FunctionType): AIService {
         ensureInitialized()
         return serviceMutex.withLock {
-            // 如果缓存中已有该服务实例，直接返�?           serviceInstances[functionType]?.let {
+            // 如果缓存中已有该服务实例，直接返?           serviceInstances[functionType]?.let {
                 return@withLock it
             }
 
-            // 否则，创建新的服务实�?           // 所有功能类型都使用统一的活跃配�?
+            // 否则，创建新的服务实?           // 所有功能类型都使用统一的活跃配?
             val config = modelConfigService.getCurrentConfig() ?: throw IllegalStateException("No active model config found")
             val service = createServiceFromConfig(config, 0) // 使用默认模型索引
             serviceInstances[functionType] = service
 
-            // 如果是CHAT功能类型，也设置为默认服�?           if (functionType == FunctionType.CHAT) {
+            // 如果是CHAT功能类型，也设置为默认服?           if (functionType == FunctionType.CHAT) {
                 defaultService = service
             }
 
@@ -110,7 +110,7 @@ class MultiServiceManager(private val context: Context) {
                 try {
                     service.cancelStreaming()
                 } catch (e: Exception) {
-                    AppLogger.e(TAG, "取消服务流式传输时出�? e)
+                    AppLogger.e(TAG, "取消服务流式传输时出? e)
                 }
             }
         }
@@ -151,28 +151,28 @@ class MultiServiceManager(private val context: Context) {
                 try {
                     oldService.cancelStreaming()
                     oldService.release()
-                    AppLogger.d(TAG, "已释放功能{functionType}的服务资�?
+                    AppLogger.d(TAG, "已释放功能{functionType}的服务资?
                 } catch (e: Exception) {
-                    AppLogger.e(TAG, "释放服务资源时出�? e)
+                    AppLogger.e(TAG, "释放服务资源时出? e)
                 }
             }
 
-            // 移除旧实�?           serviceInstances.remove(functionType)
+            // 移除旧实?           serviceInstances.remove(functionType)
 
-            // 如果是默认服务，也清除默认服务缓�?           if (functionType == FunctionType.CHAT) {
+            // 如果是默认服务，也清除默认服务缓?           if (functionType == FunctionType.CHAT) {
                 defaultService = null
                 customServiceInstances.values.forEach { service ->
                     try {
                         service.cancelStreaming()
                         service.release()
                     } catch (e: Exception) {
-                        AppLogger.e(TAG, "释放自定义CHAT服务资源时出�? e)
+                        AppLogger.e(TAG, "释放自定义CHAT服务资源时出? e)
                     }
                 }
                 customServiceInstances.clear()
             }
 
-            // 不立即创建新实例，而是等到需要时再创�?           AppLogger.d(TAG, "已移除功能{functionType}的服务实例缓存）
+            // 不立即创建新实例，而是等到需要时再创?           AppLogger.d(TAG, "已移除功能{functionType}的服务实例缓存）
         }
     }
 
@@ -186,7 +186,7 @@ class MultiServiceManager(private val context: Context) {
                     service.cancelStreaming()
                     service.release()
                 } catch (e: Exception) {
-                    AppLogger.e(TAG, "释放服务资源时出�? e)
+                    AppLogger.e(TAG, "释放服务资源时出? e)
                 }
             }
             customServiceInstances.values.forEach { service ->
@@ -219,7 +219,7 @@ class MultiServiceManager(private val context: Context) {
         // 根据实际索引选择具体模型
         val selectedModelName = getModelByIndex(config.modelName, actualIndex)
         
-        // 创建一个临时配置，使用选中的模型名�?       val configWithSelectedModel = config.copy(modelName = selectedModelName)
+        // 创建一个临时配置，使用选中的模型名?       val configWithSelectedModel = config.copy(modelName = selectedModelName)
         
         AppLogger.d(TAG, "创建服务: 原始模型='${config.modelName}', 选中模型='${selectedModelName}' (请求索引=${modelIndex}, 实际索引=${actualIndex})")
 
@@ -264,35 +264,35 @@ class MultiServiceManager(private val context: Context) {
     }
 
     /**
-     * 获取指定功能类型的模型参数列�?    * @param functionType 功能类型
+     * 获取指定功能类型的模型参数列?    * @param functionType 功能类型
      * @return 模型参数列表
      */
     suspend fun getModelParametersForFunction(
             functionType: FunctionType
     ): List<com.apex.data.model.ModelParameter<*>> {
         ensureInitialized()
-        // 所有功能类型都使用统一的活跃配�?
+        // 所有功能类型都使用统一的活跃配?
         val config = modelConfigService.getCurrentConfig() ?: throw IllegalStateException("No active model config found")
         return modelConfigManager.getModelParametersForConfig(config.id)
     }
 
     /**
-     * 获取指定功能类型的模型配�?    * @param functionType 功能类型
+     * 获取指定功能类型的模型配?    * @param functionType 功能类型
      * @return 模型配置数据
      */
     suspend fun getModelConfigForFunction(functionType: FunctionType): ModelConfigData {
         ensureInitialized()
-        // 所有功能类型都使用统一的活跃配�?
+        // 所有功能类型都使用统一的活跃配?
         return modelConfigService.getCurrentConfig() ?: throw IllegalStateException("No active model config found")
     }
 
-    /** 获取指定配置ID的模型配�?/
+    /** 获取指定配置ID的模型配?/
     suspend fun getModelConfigForConfig(configId: String): ModelConfigData {
         ensureInitialized()
         return modelConfigManager.getModelConfigFlow(configId).first()
     }
 
-    /** 获取指定配置ID的模型参�?/
+    /** 获取指定配置ID的模型参?/
     suspend fun getModelParametersForConfig(
         configId: String
     ): List<com.apex.data.model.ModelParameter<*>> {

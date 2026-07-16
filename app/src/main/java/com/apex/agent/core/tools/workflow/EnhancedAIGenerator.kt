@@ -53,12 +53,12 @@ class EnhancedAIGenerator {
             ),
             WorkflowTemplate(
                 id = "batch_file_rename",
-                name = "批量文件重命�?
+                name = "批量文件重命?
                 category = "文件",
-                description = "对指定目录的文件进行批量重命�?
+                description = "对指定目录的文件进行批量重命?
                 actions = listOf(
                     WorkflowAction("遍历目录", "list_files", "获取目录中的所有文件）,
-                    WorkflowAction("批量重命�? "batch_rename", "根据规则重命名文件）
+                    WorkflowAction("批量重命? "batch_rename", "根据规则重命名文件）
                 ),
                 complexity = 3
             ),
@@ -66,7 +66,7 @@ class EnhancedAIGenerator {
                 id = "auto_backup",
                 name = "自动备份",
                 category = "系统",
-                description = "定期备份重要文件到指定位�?
+                description = "定期备份重要文件到指定位?
                 actions = listOf(
                     WorkflowAction("检查文件， "check_files", "检查需要备份的文件"),
                     WorkflowAction("压缩文件", "compress_files", "压缩文件为ZIP"),
@@ -77,8 +77,8 @@ class EnhancedAIGenerator {
         )
 
         private val TRIGGER_KEYWORDS = mapOf(
-            "schedule" to listOf("定时", "每天", "每周", "每月", "时间", "�? "的）,
-            "intent" to listOf("收到", "�? "如果", "检查， "触发"),
+            "schedule" to listOf("定时", "每天", "每周", "每月", "时间", "? "的）,
+            "intent" to listOf("收到", "? "如果", "检查， "触发"),
             "screenshot" to listOf("截图", "截屏"),
             "manual" to listOf("手动", "点击", "按钮")
         )
@@ -89,11 +89,11 @@ class EnhancedAIGenerator {
             "capture_screenshot" to listOf("截图", "截屏", "捕获", "屏幕"),
             "ocr_recognize" to listOf("OCR", "识别", "文字", "提取"),
             "list_files" to listOf("列出", "遍历", "文件", "目录"),
-            "batch_rename" to listOf("重命�? "批量", "改名"),
+            "batch_rename" to listOf("重命? "批量", "改名"),
             "compress_files" to listOf("压缩", "打包", "ZIP"),
             "move_file" to listOf("移动", "复制", "转移"),
             "delete_file" to listOf("删除", "移除", "清理"),
-            "create_memory" to listOf("保存", "备忘�? "记录"),
+            "create_memory" to listOf("保存", "备忘? "记录"),
             "wait" to listOf("等待", "延时", "延迟"),
             "condition" to listOf("如果", "条件", "判断"),
             "loop" to listOf("循环", "遍历", "重复")
@@ -112,7 +112,7 @@ class EnhancedAIGenerator {
         } catch (e: Exception) {
             AIGenerateResult(
                 success = false,
-                error = e.message ?: "生成工作流失�?
+                error = e.message ?: "生成工作流失?
             )
         }
     }
@@ -220,7 +220,7 @@ class EnhancedAIGenerator {
             actions.add(
                 ExecuteNode(
                     id = UUID.randomUUID().toString(),
-                    name = "自定义操�?
+                    name = "自定义操?
                     description = "请配置具体的操作内容",
                     actionType = "custom",
                     actionConfig = emptyMap()
@@ -238,11 +238,11 @@ class EnhancedAIGenerator {
             "capture_screenshot" -&gt; "截图"
             "ocr_recognize" -&gt; "OCR识别"
             "list_files" -&gt; "列出文件"
-            "batch_rename" -&gt; "批量重命�?
+            "batch_rename" -&gt; "批量重命?
             "compress_files" -&gt; "压缩文件"
             "move_file" -&gt; "移动文件"
             "delete_file" -&gt; "删除文件"
-            "create_memory" -&gt; "保存备忘�?
+            "create_memory" -&gt; "保存备忘?
             "wait" -&gt; "等待"
             "condition" -&gt; "条件判断"
             "loop" -&gt; "循环"
@@ -256,16 +256,16 @@ class EnhancedAIGenerator {
             "send_notification" -&gt; "发送系统通知"
             "capture_screenshot" -&gt; "截取当前屏幕"
             "ocr_recognize" -&gt; "识别截图中的文字"
-            "list_files" -&gt; "列出指定目录的文�?
-            "batch_rename" -&gt; "批量重命名文�?
+            "list_files" -&gt; "列出指定目录的文?
+            "batch_rename" -&gt; "批量重命名文?
             "compress_files" -&gt; "压缩文件为ZIP"
-            "move_file" -&gt; "移动文件到指定位�?
+            "move_file" -&gt; "移动文件到指定位?
             "delete_file" -&gt; "删除文件"
             "create_memory" -&gt; "保存内容到备忘录"
             "wait" -&gt; "等待指定时间"
             "condition" -&gt; "根据条件执行不同分支"
             "loop" -&gt; "循环执行操作"
-            else -&gt; "执行自定义操�?
+            else -&gt; "执行自定义操?
         }
     }
 
@@ -362,7 +362,7 @@ class EnhancedAIGenerator {
         val triggerNode = TriggerNode(
             id = UUID.randomUUID().toString(),
             name = "手动触发",
-            description = "手动触发工作�?
+            description = "手动触发工作?
             triggerType = "manual",
             triggerConfig = emptyMap()
         )

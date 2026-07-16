@@ -4,7 +4,7 @@ import com.apex.util.AppLogger
 import com.apex.api.chat.enhance.ConversationScenario
 
 /**
- * 动态模型参数适配�?* 根据用户提问类型自动调整模型参数，提升回答质量和适配�?*/
+ * 动态模型参数适配?* 根据用户提问类型自动调整模型参数，提升回答质量和适配?*/
 object DynamicModelParamsAdapter {
     private const val TAG = "DynamicModelParams"
 
@@ -18,7 +18,7 @@ object DynamicModelParamsAdapter {
     }
 
     /**
-     * 模型参数数据�?    */
+     * 模型参数数据?    */
     data class ModelParams(
         val temperature: Double = 0.6,
         val top_p: Double = 0.9,
@@ -44,7 +44,7 @@ object DynamicModelParamsAdapter {
             scenario = ConversationScenario.PROFESSIONAL,
             keywords = listOf(
                 "代码", "编程", "函数", "计算", "数据", "公式", "法律", "医疗",
-                "公文", "报告", "事实", "是什�? "多少", "几号", "算法",
+                "公文", "报告", "事实", "是什? "多少", "几号", "算法",
                 "统计", "分析", "诊断", "合同", "条款", "学术", "论文"
             ),
             params = ModelParams(
@@ -58,7 +58,7 @@ object DynamicModelParamsAdapter {
         ScenarioRule(
             scenario = ConversationScenario.CREATIVE,
             keywords = listOf(
-                "写一�? "创作", "故事", "小说", "文案", "slogan", "广告�?
+                "写一? "创作", "故事", "小说", "文案", "slogan", "广告?
                 "头脑风暴", "创意", "谐音", "段子", "笑话", "灵感", "想象",
                 "虚构", "情节", "角色", "人物", "对话", "剧本"
             ),
@@ -72,7 +72,7 @@ object DynamicModelParamsAdapter {
     )
 
     /**
-     * 通用平衡场景的默认参�?    */
+     * 通用平衡场景的默认参?    */
     private val defaultParams = ModelParams(
         temperature = 0.6,
         top_p = 0.9,
@@ -81,15 +81,15 @@ object DynamicModelParamsAdapter {
     )
 
     /**
-     * 根据用户输入获取适配的模型参�?    * @param userInput 用户输入文本
+     * 根据用户输入获取适配的模型参?    * @param userInput 用户输入文本
      * @return 适配后的模型参数
      */
     fun getDynamicModelParams(userInput: String): ModelParams {
         val inputLower = userInput.lowercase()
         
-        // 检查每个规�?       for (rule in scenarioRules) {
+        // 检查每个规?       for (rule in scenarioRules) {
             if (matchesAnyKeyword(inputLower, rule.keywords)) {
-                AppLogger.d(TAG, "匹配到场�?${rule.scenario.name}, 用户输入: ${userInput.take(50)}")
+                AppLogger.d(TAG, "匹配到场?${rule.scenario.name}, 用户输入: ${userInput.take(50)}")
                 return rule.params
             }
         }

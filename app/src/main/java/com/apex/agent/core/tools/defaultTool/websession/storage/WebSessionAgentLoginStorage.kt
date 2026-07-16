@@ -12,8 +12,8 @@ import kotlinx.serialization.json.Json
  * 
  * 专为 Agent 自动化场景设计：
  * - 简单本地存储（无加密）
- * - Agent 自动管理和调�?
- * - 支持多网站凭�?
+ * - Agent 自动管理和调?
+ * - 支持多网站凭?
  * - 快速读写性能
  */
 internal class WebSessionAgentLoginStorage(
@@ -46,10 +46,10 @@ internal class WebSessionAgentLoginStorage(
     }
     
     /**
-     * 保存网站的登�?Cookie
+     * 保存网站的登?Cookie
      * 
-     * @param siteKey 网站标识（如 "doubao.com"�?
-     * @param cookies Cookie 字符�?
+     * @param siteKey 网站标识（如 "doubao.com"?
+     * @param cookies Cookie 字符?
      * @param url 来源 URL
      */
     fun saveCookies(siteKey: String, cookies: String, url: String = "") {
@@ -73,7 +73,7 @@ internal class WebSessionAgentLoginStorage(
     }
     
     /**
-     * 获取网站的登�?Cookie
+     * 获取网站的登?Cookie
      * 
      * @param siteKey 网站标识
      * @return Cookie 字符串，如果不存在则返回空字符串
@@ -92,7 +92,7 @@ internal class WebSessionAgentLoginStorage(
     }
     
     /**
-     * 删除网站的登�?Cookie
+     * 删除网站的登?Cookie
      * 
      * @param siteKey 网站标识
      */
@@ -107,7 +107,7 @@ internal class WebSessionAgentLoginStorage(
     }
     
     /**
-     * 检查是否有保存�?Cookie
+     * 检查是否有保存?Cookie
      */
     fun hasCookies(siteKey: String): Boolean {
         val key = "cookies_${siteKey}"
@@ -115,7 +115,7 @@ internal class WebSessionAgentLoginStorage(
     }
     
     /**
-     * 获取最后更新时�?
+     * 获取最后更新时?
      */
     fun getLastUpdateTime(siteKey: String): Long {
         try {
@@ -130,7 +130,7 @@ internal class WebSessionAgentLoginStorage(
     }
     
     /**
-     * 列出所有已保存的网�?
+     * 列出所有已保存的网?
      */
     fun listSavedSites(): List<String> {
         val sites = mutableListOf<String>()
@@ -146,7 +146,7 @@ internal class WebSessionAgentLoginStorage(
     }
     
     /**
-     * 清除所有登录信�?
+     * 清除所有登录信?
      */
     fun clearAll() {
         val keysToRemove = prefs.all.keys.filter { it.startsWith("cookies_") }

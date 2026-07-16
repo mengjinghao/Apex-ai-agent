@@ -38,7 +38,7 @@ class ApiConfigDelegate(
     private val functionalConfigManager = FunctionalConfigManager(context)
 
     // State flows
-    private val _isConfigured = MutableStateFlow(true) // 默认已配�?   val isConfigured: StateFlow<Boolean> = _isConfigured.asStateFlow()
+    private val _isConfigured = MutableStateFlow(true) // 默认已配?   val isConfigured: StateFlow<Boolean> = _isConfigured.asStateFlow()
 
     private val _featureToggles = MutableStateFlow<Map<String, Boolean>>(emptyMap())
     val featureToggles: StateFlow<Map<String, Boolean>> = _featureToggles.asStateFlow()
@@ -177,7 +177,7 @@ class ApiConfigDelegate(
                 AppLogger.d(TAG, "模型配置收集监听已取消）
                 _isInitialized.value = true
             } catch (e: Exception) {
-                AppLogger.e(TAG, "收集模型配置时出�? e)
+                AppLogger.e(TAG, "收集模型配置时出? e)
                 _isInitialized.value = true
             }
         }
@@ -307,11 +307,11 @@ class ApiConfigDelegate(
      * @return 总是返回true，因为无需特定配置
      */
     fun useDefaultConfig(): Boolean {
-        // 异步创建服务，避免阻�?       coroutineScope.launch(Dispatchers.IO) {
+        // 异步创建服务，避免阻?       coroutineScope.launch(Dispatchers.IO) {
             AppLogger.d(TAG, "使用默认配置初始化服务）
             val enhancedAiService = EnhancedAIService.getInstance(context)
             withContext(Dispatchers.Main) {
-                // 通知ViewModel配置已更�?               onConfigChanged(enhancedAiService)
+                // 通知ViewModel配置已更?               onConfigChanged(enhancedAiService)
             }
         }
         return true
@@ -332,7 +332,7 @@ class ApiConfigDelegate(
         _modelName.value = modelName
     }
 
-    /** 更新API提供商类�?/
+    /** 更新API提供商类?/
     fun updateApiProviderType(providerType: ApiProviderType) {
         _apiProviderType.value = providerType
     }
@@ -359,9 +359,9 @@ class ApiConfigDelegate(
                     EnhancedAIService.getInstance(context)
                 }
 
-                // 通知ViewModel配置已更�?               onConfigChanged(enhancedAiService)
+                // 通知ViewModel配置已更?               onConfigChanged(enhancedAiService)
 
-                // 更新已配置状�?               _isConfigured.value = true
+                // 更新已配置状?               _isConfigured.value = true
             } catch (e: Exception) {
                 AppLogger.e(TAG, "保存API密钥失败: ${e.message}", e)
             }
@@ -382,7 +382,7 @@ class ApiConfigDelegate(
         }
     }
 
-    /** 切换思考模�?/
+    /** 切换思考模?/
     fun toggleThinkingMode() {
         coroutineScope.launch {
             val newValue = !_enableThinkingMode.value
@@ -393,7 +393,7 @@ class ApiConfigDelegate(
         }
     }
 
-    /** 切换思考引�?/
+    /** 切换思考引?/
     fun toggleThinkingGuidance() {
         coroutineScope.launch {
             val newValue = !_enableThinkingGuidance.value
@@ -457,7 +457,7 @@ class ApiConfigDelegate(
         }
     }
 
-    /** 切换禁用状态标�?/
+    /** 切换禁用状态标?/
     fun toggleDisableStatusTags() {
         coroutineScope.launch {
             val newValue = !_disableStatusTags.value
@@ -466,7 +466,7 @@ class ApiConfigDelegate(
         }
     }
 
-    /** 更新上下文长�?/
+    /** 更新上下文长?/
     fun updateContextLength(length: Float) {
         coroutineScope.launch {
             _contextLength.value = length

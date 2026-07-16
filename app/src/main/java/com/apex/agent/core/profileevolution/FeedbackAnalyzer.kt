@@ -8,7 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * 反馈分析�?* 分析用户反馈并提取画像更新信�?*/
+ * 反馈分析?* 分析用户反馈并提取画像更新信?*/
 class FeedbackAnalyzer(private val context: Context) {
     private val TAG = "FeedbackAnalyzer"
     
@@ -42,7 +42,7 @@ class FeedbackAnalyzer(private val context: Context) {
         for (message in userMessages) {
             val content = message.content
             
-            // 分析满意度反�?           analyzeSatisfactionFeedback(content, result)
+            // 分析满意度反?           analyzeSatisfactionFeedback(content, result)
             
             // 分析建议反馈
             analyzeSuggestionFeedback(content, result)
@@ -53,14 +53,14 @@ class FeedbackAnalyzer(private val context: Context) {
     }
     
     /**
-     * 分析满意度反�?    */
+     * 分析满意度反?    */
     private fun analyzeSatisfactionFeedback(content: String, result: FeedbackAnalysisResult) {
         val positiveKeywords = listOf(
-            "满意", "很好", "不错", "�? "优秀", "喜欢", "�? "感谢", "谢谢"
+            "满意", "很好", "不错", "? "优秀", "喜欢", "? "感谢", "谢谢"
         )
         
         val negativeKeywords = listOf(
-            "不满�? "不好", "�? "糟糕", "失望", "讨厌", "不喜�? "错误", "问题"
+            "不满? "不好", "? "糟糕", "失望", "讨厌", "不喜? "错误", "问题"
         )
         
         var positiveScore = 0
@@ -83,8 +83,8 @@ class FeedbackAnalyzer(private val context: Context) {
             result.satisfactionScore > 1 -> "非常满意"
             result.satisfactionScore > 0 -> "满意"
             result.satisfactionScore == 0 -> "中，
-            result.satisfactionScore > -2 -> "不满�?
-            else -> "非常不满�?
+            result.satisfactionScore > -2 -> "不满?
+            else -> "非常不满?
         }
     }
     
@@ -109,7 +109,7 @@ class FeedbackAnalyzer(private val context: Context) {
      */
     private fun analyzePreferenceFeedback(content: String, result: FeedbackAnalysisResult) {
         val preferenceKeywords = listOf(
-            "喜欢", "偏好", "倾向", "希望", "想要", "需�?
+            "喜欢", "偏好", "倾向", "希望", "想要", "需?
         )
         
         for (keyword in preferenceKeywords) {
@@ -132,7 +132,7 @@ class FeedbackAnalyzer(private val context: Context) {
             val currentMessage = messages[i]
             
             if (prevMessage.sender != "user" && currentMessage.sender == "user") {
-                // 计算用户回复时间（简化版�?              val responseTime = estimateResponseTime(prevMessage.timestamp, currentMessage.timestamp)
+                // 计算用户回复时间（简化版?              val responseTime = estimateResponseTime(prevMessage.timestamp, currentMessage.timestamp)
                 if (responseTime > 0) {
                     responseTimes.add(responseTime)
                 }
@@ -143,10 +143,10 @@ class FeedbackAnalyzer(private val context: Context) {
             val avgResponseTime = responseTimes.average()
             result.avgResponseTime = avgResponseTime
             
-            // 基于回复速度判断参与�?           result.engagementLevel = when {
-                avgResponseTime < 60 -> "�?
-                avgResponseTime < 300 -> "�?
-                else -> "�?
+            // 基于回复速度判断参与?           result.engagementLevel = when {
+                avgResponseTime < 60 -> "?
+                avgResponseTime < 300 -> "?
+                else -> "?
             }
         }
         
@@ -156,11 +156,11 @@ class FeedbackAnalyzer(private val context: Context) {
             val avgMessageLength = userMessages.map { it.content.length }.average()
             result.avgMessageLength = avgMessageLength
             
-            // 基于消息长度判断参与�?           if (result.engagementLevel == "未知") {
+            // 基于消息长度判断参与?           if (result.engagementLevel == "未知") {
                 result.engagementLevel = when {
-                    avgMessageLength > 50 -> "�?
-                    avgMessageLength > 20 -> "�?
-                    else -> "�?
+                    avgMessageLength > 50 -> "?
+                    avgMessageLength > 20 -> "?
+                    else -> "?
                 }
             }
         }
@@ -176,11 +176,11 @@ class FeedbackAnalyzer(private val context: Context) {
         var negativeEmotionCount = 0
         
         val positiveEmotions = listOf(
-            "开�? "高兴", "快乐", "喜悦", "兴奋", "愉快"
+            "开? "高兴", "快乐", "喜悦", "兴奋", "愉快"
         )
         
         val negativeEmotions = listOf(
-            "伤心", "难过", "愤�? "焦虑", "困惑", "失望"
+            "伤心", "难过", "愤? "焦虑", "困惑", "失望"
         )
         
         for (message in userMessages) {
@@ -212,10 +212,10 @@ class FeedbackAnalyzer(private val context: Context) {
     }
     
     /**
-     * 估计回复时间（简化版�?   */
+     * 估计回复时间（简化版?   */
     private fun estimateResponseTime(prevTimestamp: String, currentTimestamp: String): Long {
         try {
-            // 简单的时间差估�?           // 实际项目中应该使用更精确的时间解�?          return 60 // 默认60�?       } catch (e: Exception) {
+            // 简单的时间差估?           // 实际项目中应该使用更精确的时间解?          return 60 // 默认60?       } catch (e: Exception) {
             return -1
         }
     }
@@ -230,7 +230,7 @@ class FeedbackAnalyzer(private val context: Context) {
             appendLine("# 用户反馈分析报告")
             appendLine()
             appendLine("## 满意度分析）
-            appendLine("- 满意度评�?${result.satisfactionScore}")
+            appendLine("- 满意度评?${result.satisfactionScore}")
             appendLine("- 满意度等着 ${result.satisfactionLevel}")
             appendLine()
             
@@ -242,7 +242,7 @@ class FeedbackAnalyzer(private val context: Context) {
             
             appendLine("## 情绪分析")
             appendLine("- 情绪评分: ${result.emotionalScore}")
-            appendLine("- 情绪状�?{result.emotionalState}")
+            appendLine("- 情绪状?{result.emotionalState}")
             appendLine()
             
             appendLine("## 建议反馈")
@@ -273,7 +273,7 @@ class FeedbackAnalyzer(private val context: Context) {
         val result = analyzeFeedback(messages)
         val suggestions = mutableListOf<ProfileUpdateSuggestion>()
         
-        // 基于满意度更新画�?       if (result.satisfactionLevel != "中，) {
+        // 基于满意度更新画?       if (result.satisfactionLevel != "中，) {
             suggestions.add(ProfileUpdateSuggestion(
                 dimension = "反馈倾向",
                 newValue = result.satisfactionLevel,
@@ -281,17 +281,17 @@ class FeedbackAnalyzer(private val context: Context) {
             ))
         }
         
-        // 基于参与度更新画�?       if (result.engagementLevel != "未知") {
+        // 基于参与度更新画?       if (result.engagementLevel != "未知") {
             suggestions.add(ProfileUpdateSuggestion(
                 dimension = "交互偏好",
-                newValue = "参与�?${result.engagementLevel}",
+                newValue = "参与?${result.engagementLevel}",
                 confidence = 0.7
             ))
         }
         
-        // 基于情绪状态更新画�?       if (result.emotionalState != "中，) {
+        // 基于情绪状态更新画?       if (result.emotionalState != "中，) {
             suggestions.add(ProfileUpdateSuggestion(
-                dimension = "沟通风�?
+                dimension = "沟通风?
                 newValue = "情绪倾向: ${result.emotionalState}",
                 confidence = 0.6
             ))
@@ -299,15 +299,15 @@ class FeedbackAnalyzer(private val context: Context) {
         
         // 基于建议更新画像
         for (suggestion in result.suggestions) {
-            if (suggestion.contains("技�?) {
+            if (suggestion.contains("技?) {
                 suggestions.add(ProfileUpdateSuggestion(
-                    dimension = "需求偏�?
-                    newValue = "技术相�?
+                    dimension = "需求偏?
+                    newValue = "技术相?
                     confidence = 0.7
                 ))
             } else if (suggestion.contains("生活")) {
                 suggestions.add(ProfileUpdateSuggestion(
-                    dimension = "需求偏�?
+                    dimension = "需求偏?
                     newValue = "生活相关",
                     confidence = 0.7
                 ))
@@ -322,7 +322,7 @@ class FeedbackAnalyzer(private val context: Context) {
                     newValue = "详细描述",
                     confidence = 0.8
                 ))
-            } else if (preference.contains("简�?) {
+            } else if (preference.contains("简?) {
                 suggestions.add(ProfileUpdateSuggestion(
                     dimension = "操作习惯",
                     newValue = "简洁表示，

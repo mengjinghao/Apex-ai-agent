@@ -132,7 +132,7 @@ fun <T> stream(block: suspend StreamCollector<T>.() -> Unit): Stream<T> = object
             // 其他异常也应该抛出，以便上层可以处理
             throw e
         } finally {
-            // 流收集完成时标记为关�?           markClosed()
+            // 流收集完成时标记为关?           markClosed()
             
             // 如果流在关闭时处于锁定状态，解锁以处理缓冲的数据
             if (isLocked) {
@@ -172,7 +172,7 @@ fun intervalStream(period: Duration, initialDelay: Duration = Duration.ZERO): St
 fun rangeStream(start: Int, count: Int): Stream<Int> = stream {
     StreamLogger.d("rangeStream", "创建范围Stream, 起始: ${start}, 数量: ${count}")
     for (i in start until start + count) {
-        StreamLogger.v("rangeStream", "发射�?${i}")
+        StreamLogger.v("rangeStream", "发射?${i}")
         emit(i)
     }
     StreamLogger.d("rangeStream", "范围Stream完成")

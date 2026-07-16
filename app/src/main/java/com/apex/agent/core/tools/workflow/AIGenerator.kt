@@ -53,14 +53,14 @@ class AIGenerator {
     private fun createTriggerNode(description: String): TriggerNode {
         val triggerType = when {
             description.contains("每天") || description.contains("定时") -> "schedule"
-            description.contains("收到") || description.contains("�?) -> "intent"
+            description.contains("收到") || description.contains("?) -> "intent"
             description.contains("截图") -> "screenshot"
             else -> "manual"
         }
 
         return TriggerNode(
             id = java.util.UUID.randomUUID().toString(),
-            name = "触发�?,
+            name = "触发?,
             description = "自动生成的触发器",
             triggerType = triggerType,
             triggerConfig = extractTriggerConfig(description)
@@ -84,7 +84,7 @@ class AIGenerator {
                     )
                 )
             }
-            description.contains("通知") || description.contains("发�?) -> {
+            description.contains("通知") || description.contains("发?) -> {
                 actions.add(
                     ExecuteNode(
                         id = java.util.UUID.randomUUID().toString(),
@@ -112,11 +112,11 @@ class AIGenerator {
                     )
                 )
             }
-            description.contains("保存") || description.contains("备忘�?) -> {
+            description.contains("保存") || description.contains("备忘?) -> {
                 actions.add(
                     ExecuteNode(
                         id = java.util.UUID.randomUUID().toString(),
-                        name = "保存备忘�?,
+                        name = "保存备忘?,
                         description = "保存到备忘录",
                         actionType = "create_memory"
                     )
@@ -154,7 +154,7 @@ class AIGenerator {
         if (workflow.nodes.size >= 2) confidence += 0.2f
         if (workflow.connections.isNotEmpty()) confidence += 0.15f
 
-        val keywords = listOf("获取", "发�?, "保存", "检�?, "通知")
+        val keywords = listOf("获取", "发?, "保存", "检?, "通知")
         keywords.forEach { keyword ->
             if (description.contains(keyword)) confidence += 0.03f
         }
@@ -188,7 +188,7 @@ class AIGenerator {
             it is ExecuteNode && it.actionConfig.containsKey("on_error")
         }
         if (!hasErrorHandling) {
-            suggestions.add("建议添加错误处理机制以提高稳定�?)
+            suggestions.add("建议添加错误处理机制以提高稳定?)
         }
 
         suggestions

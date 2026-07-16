@@ -12,11 +12,11 @@ import com.apex.agent.core.multiagent.stages.ValidatorAgent
  * 管道阶段枚举
  */
 enum class PipelineStage(val displayName: String, val description: String) {
-    RESEARCH("研究阶段", "信息收集和探�?,
+    RESEARCH("研究阶段", "信息收集和探?,
     PLAN("规划阶段", "任务分解和计划制定）,
     IMPLEMENT("实现阶段", "代码实现"),
-    REVIEW("审查阶段", "代码审查和质量检�?,
-    VALIDATE("验证阶段", "验证和测�?
+    REVIEW("审查阶段", "代码审查和质量检?,
+    VALIDATE("验证阶段", "验证和测?
 }
 
 /**
@@ -33,7 +33,7 @@ data class StageResult(
 )
 
 /**
- * 管道执行上下�?*/
+ * 管道执行上下?*/
 data class PipelineContext(
     val taskId: String = UUID.randomUUID().toString(),
     val originalGoal: String,
@@ -64,7 +64,7 @@ data class PipelineContext(
 }
 
 /**
- * 管道最终结�?*/
+ * 管道最终结?*/
 data class PipelineResult(
     val success: Boolean,
     val finalOutput: String,
@@ -116,13 +116,13 @@ class StagedAgentPipeline {
                 totalDuration = 0,
                 totalTokenCost = 0,
                 loopCount = 0,
-                error = "管道正在执行�?            )
+                error = "管道正在执行?            )
         }
 
         isExecuting = true
         val startTime = System.currentTimeMillis()
 
-        AppLogger.i(TAG, "开始执行管�?${goal}")
+        AppLogger.i(TAG, "开始执行管?${goal}")
         progressListener?.onPipelineStarted(goal)
 
         var context = PipelineContext(
@@ -132,7 +132,7 @@ class StagedAgentPipeline {
         )
 
         try {
-            // 按阶段顺序执�?           val stages = PipelineStage.entries.toList()
+            // 按阶段顺序执?           val stages = PipelineStage.entries.toList()
             var currentStageIndex = 0
 
             while (currentStageIndex < stages.size) {
@@ -157,12 +157,12 @@ class StagedAgentPipeline {
                 if (!stageResult.success) {
                     AppLogger.w(TAG, "阶段执行失败: ${stage.displayName}, 错误: ${stageResult.error}")
 
-                    // 验证阶段失败时回退到实现阶�?                   if (stage == PipelineStage.VALIDATE && context.shouldContinueLoop()) {
+                    // 验证阶段失败时回退到实现阶?                   if (stage == PipelineStage.VALIDATE && context.shouldContinueLoop()) {
                         AppLogger.i(TAG, "验证失败，回退到实现阶段，当前循环: ${context.loopCount}")
                         progressListener?.onLoopBacktrack(context.loopCount + 1)
 
                         context = context.incrementLoop()
-                        // 移除失败的验证结果，回退到实现阶�?                       context.stageResults.removeAt(context.stageResults.size - 1)
+                        // 移除失败的验证结果，回退到实现阶?                       context.stageResults.removeAt(context.stageResults.size - 1)
                         currentStageIndex = stages.indexOf(PipelineStage.IMPLEMENT)
                         continue
                     }
@@ -173,7 +173,7 @@ class StagedAgentPipeline {
                 currentStageIndex++
             }
 
-            // 所有阶段完�?           val finalOutput = generateFinalOutput(context)
+            // 所有阶段完?           val finalOutput = generateFinalOutput(context)
             val totalDuration = System.currentTimeMillis() - startTime
             val totalTokenCost = context.stageResults.sumOf { it.tokenCost }
 
@@ -241,7 +241,7 @@ class StagedAgentPipeline {
 
         context.stageResults.forEach { result ->
             sb.appendLine("### ${result.stage.displayName}")
-            sb.appendLine("- 状�?${if (result.success) "，成�? else "，失�?}")
+            sb.appendLine("- 状?${if (result.success) "，成? else "，失?}")
             sb.appendLine("- 耗时: ${result.duration}ms")
             sb.appendLine("- Token消， ${result.tokenCost}")
             sb.appendLine()
@@ -251,7 +251,7 @@ class StagedAgentPipeline {
         }
 
         sb.appendLine("## 总结")
-        sb.appendLine("- 总循环次�?${context.loopCount}")
+        sb.appendLine("- 总循环次?${context.loopCount}")
         sb.appendLine("- 总耗时: ${System.currentTimeMillis() - context.startTime}ms")
         sb.appendLine("- 总Token消， ${context.stageResults.sumOf { it.tokenCost }}")
 
@@ -281,7 +281,7 @@ class StagedAgentPipeline {
         if (isExecuting) {
             AppLogger.i(TAG, "取消管道执行")
             isExecuting = false
-            // 取消当前正在执行的阶�?           stageAgents.values.forEach { it.cancel() }
+            // 取消当前正在执行的阶?           stageAgents.values.forEach { it.cancel() }
         }
     }
 }
@@ -306,7 +306,7 @@ data class StageAgentResult(
 )
 
 /**
- * 管道进度监听�?*/
+ * 管道进度监听?*/
 interface PipelineProgressListener {
     fun onPipelineStarted(goal: String) {}
     fun onStageStarted(stage: PipelineStage, loopCount: Int) {}
