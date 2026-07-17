@@ -121,6 +121,21 @@
             android:name="com.google.firebase.ml.kit.analytics.collection.enabled"
             android:value="false" />
 
+        <!-- Apex 对话 — 真实 AI 聊天入口 (v2.0.0) -->
+        <activity
+            android:name="com.apex.ai.ui.ApexChatActivity"
+            android:exported="true"
+            android:label="Apex 对话"
+            android:configChanges="orientation|keyboardHidden|screenSize|screenLayout"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.apex.MaterialYou"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name="live.pw.renderX.LatexView"
             tools:node="remove" />

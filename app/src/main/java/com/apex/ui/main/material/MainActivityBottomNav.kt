@@ -1,8 +1,12 @@
 package com.apex.ui.main.material
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -134,8 +138,25 @@ private fun AgentTab() {
                     Spacer(Modifier.size(8.dp))
                     Text("智能AI助手 · 多Agent协作 · 爆发模式引擎", fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
                     Spacer(Modifier.size(12.dp))
-                    Text("v1.0.1 — 多 APK 架构，9 个独立模块协同运行", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f))
+                    Text("v2.0.0 — 多 APK 架构，9 个独立模块协同运行", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f))
                 }
+            }
+        }
+        item {
+            val context = LocalContext.current
+            Button(
+                onClick = {
+                    val intent = Intent(context, com.apex.ai.ui.ApexChatActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 14.dp)
+            ) {
+                Icon(Icons.Filled.Chat, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("开始 AI 对话", color = MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             }
         }
         item { Text("快捷功能", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.padding(top = 8.dp)) }
