@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "com.apex.apk.rage"
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 6
+        versionName = "1.0.5"
     }
 
     buildFeatures {
