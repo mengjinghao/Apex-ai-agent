@@ -111,12 +111,4 @@ include(":code-generator")
 //   - 同一 android:sharedUserId="com.apex.agent.suite"
 //   - 主进程名 com.apex.agent.mainprocess（终端等重 IO 模块可选独立进程 + LocalSocket）
 // ============================================================
-include(":apk:engine")           // 引擎 APK（AIDL + Shizuku + 无障碍服务）
-include(":apk:rage")             // 狂暴模式 APK
-include(":apk:multi-agent")      // 多 Agent 模式 APK
-include(":apk:workflow")         // 工作流 APK
-include(":apk:market")           // 市场 APK（技能 / 插件 / MCP / 模型 / Agent 角色）
-include(":apk:terminal")         // 终端 APK（三块：普通 / 多 Agent / 狂暴）
-include(":apk:working-files")    // 工作文件区 APK
 // 注：诊断功能已合并到主 APK（com.apex.agent.diagnostics 包），不再独立 APK
-include(":apk:voice")            // 语音 APK（语音输入 + TTS + ASR，补充）
