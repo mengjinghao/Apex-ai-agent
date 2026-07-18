@@ -59,6 +59,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -105,6 +106,9 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
+
+    // Core library desugaring (required because :engine enables it)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 
     // Network
     implementation(libs.squareup.okhttp)

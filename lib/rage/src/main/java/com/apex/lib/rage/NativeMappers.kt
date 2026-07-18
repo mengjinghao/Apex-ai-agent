@@ -6,7 +6,7 @@ import com.apex.rage.nativelib.NativeEvent
 import com.apex.rage.nativelib.NativeExecutionResult
 import com.apex.rage.nativelib.NativeMetrics
 import com.apex.rage.nativelib.NativeRageConfig
-import com.apex.rage.nativelib.NativeTask
+import com.apex.rage.nativelib.NativeSubtask
 
 /**
  * Kotlin ↔ Native 类型映射 —— 把 [RageModels] / [RageArchitectTypes] 中的数据类
@@ -15,86 +15,29 @@ import com.apex.rage.nativelib.NativeTask
  * **行为契约**:这些 mapper 是纯函数,不接触 [RageTaskStore] / 不发事件。
  * 由 [RageEngine] 在调用 [com.apex.rage.nativelib.RageNativeBridge] 前后调用。
  *
- * ────────────────────────────────────────────────────────────────────
- * Native 数据类 schema 契约(由 ARCH-2 在 :rage-jni 中实现,字段名须对齐):
- * ────────────────────────────────────────────────────────────────────
+ * **Source of truth**:Native 端 schema 以 [:rage-jni] 的
+ * `com.apex.rage.nativelib.NativeModels` 为准;本文件必须与之对齐,字段名不一致
+ * 会在编译期报错(契约对齐的强制点)。若 Native 端某些字段在 Kotlin 公开类型中
+ * 没有对应,使用合理默认(空集合 / 0 / null)并在下方逐条注释。
  *
- *   package com.apex.rage.nativelib
+ * **当前已知的字段差异** (NativeExecutionResult ↔ [TaskExecutionResult]):
+ * - Native 端 `subtasks: List<NativeSubtask>` → Kotlin 端 `steps: List<AgentStepRecord>`。
+ *   [NativeSubtask] 仅含 id/description/status/output,映射为最小化的
+ *   [AgentStepRecord](agentId=id, agentName="", role="", action=description,
+ *   thought="", output=output, success=(status=="completed"),其余字段填默认值)。
+ * - Native 端不提供 `blackboardSnapshot`,映射为空 Map。
+ * - Native 端不提供 `dynamicAgentCount`,映射为 0。
+ * - Native 端额外提供 `finalOutput`,当前 [TaskExecutionResult] 无对应字段,暂忽略
+ *   (后续若新增 finalOutput 字段需同步更新本 mapper)。
  *
- *   @Serializable
- *   data class NativeTask(
- *       val id: String,
- *       val description: String,
- *       val preset: String
- *   )
- *
- *   @Serializable
- *   data class NativeRageConfig(
- *       val maxConcurrency: Int,
- *       val defaultTimeoutMs: Long,
- *       val maxRetries: Int,
- *       val enableAutoExpand: Boolean,
- *       val enableGitBranching: Boolean,
- *       val enableSandboxExec: Boolean,
- *       val enableGithubSearch: Boolean,
- *       val enableCodeRag: Boolean
- *   )
- *
- *   @Serializable
- *   data class NativeEvent(
- *       val type: String,        // TASK_STARTED / TASK_PROGRESS / TASK_COMPLETED /
- *                                // TASK_FAILED / TASK_CANCELLED / SKILL_INVOKED /
- *                                // AGENT_STEP / BLACKBOARD_UPDATED
- *       val taskId: String? = null,
- *       val progress: Float? = null,
- *       val success: Boolean? = null,
- *       val durationMs: Long? = null,
- *       val message: String? = null,
- *       val payload: Map<String, String> = emptyMap()
- *   )
- *
- *   @Serializable
- *   data class NativeAgentStepRecord(
- *       val agentId: String,
- *       val agentName: String,
- *       val role: String,
- *       val action: String,
- *       val thought: String,
- *       val output: String,
- *       val blackboardUpdates: Map<String, String>,
- *       val success: Boolean,
- *       val errorMessage: String? = null,
- *       val durationMs: Long,
- *       val timestamp: Long
- *   )
- *
- *   @Serializable
- *   data class NativeExecutionResult(
- *       val taskId: String,
- *       val success: Boolean,
- *       val steps: List<NativeAgentStepRecord>,
- *       val blackboardSnapshot: Map<String, String>,
- *       val durationMs: Long,
- *       val retryCount: Int,
- *       val agentInvocations: Int,
- *       val dynamicAgentCount: Int,
- *       val errorMessage: String? = null
- *   )
- *
- *   @Serializable
- *   data class NativeMetrics(
- *       val totalTasks: Long,
- *       val successfulTasks: Long,
- *       val failedTasks: Long,
- *       val cancelledTasks: Long,
- *       val averageExecutionTimeMs: Double,
- *       val successRate: Double,
- *       val currentConcurrency: Int,
- *       val peakConcurrency: Int
- *   )
- * ────────────────────────────────────────────────────────────────────
- * 若 ARCH-2 实际实现与本契约字段名不一致,需在 :rage-jni 侧调整以对齐,
- * 否则本文件的 mapper 会在编译期报错(这是契约对齐的强制点)。
+ * **NativeEvent 字段说明**:所有字段均为非空(默认空串 / 0 / false)。
+ * - `taskId` 非空 → mapper 中以 `taskId.isEmpty()` 判定是否丢弃事件。
+ * - `type` 为原始字符串,本 mapper 按 `TASK_STARTED / TASK_PROGRESS / TASK_COMPLETED /
+ *   TASK_FAILED / TASK_CANCELLED / SKILL_INVOKED / AGENT_STEP / BLACKBOARD_UPDATED`
+ *   分支映射;其余(LLM_REQUEST / SEARCH_REQUEST 等)返回 null。
+ * - SKILL_INVOKED / AGENT_STEP 使用 NativeEvent 上的扁平字段
+ *   (skillId / skillName / agentId / agentName / action)而非 Map payload。
+ *   BLACKBOARD_UPDATED 因 NativeEvent 不携带黑板快照,以空 Map 兜底。
  */
 
 // ============================================================
@@ -117,37 +60,44 @@ fun RageModeConfig.toNative(): NativeRageConfig = NativeRageConfig(
 // NativeExecutionResult → TaskExecutionResult
 // ============================================================
 
-/** 把 C++ 核心返回的 [NativeExecutionResult] 映射回 Kotlin 公开类型 [TaskExecutionResult]。 */
+/**
+ * 把 C++ 核心返回的 [NativeExecutionResult] 映射回 Kotlin 公开类型 [TaskExecutionResult]。
+ *
+ * 属于有损映射 —— NativeExecutionResult 没有原生 blackboard / dynamic agent 数据,
+ * 仅有 [NativeSubtask] 列表(轻量步骤记录),按 [NativeSubtask.toAgentStepRecord]
+ * 映射为 [AgentStepRecord]。
+ */
 fun NativeExecutionResult.toKotlin(): TaskExecutionResult = TaskExecutionResult(
     taskId = taskId,
     success = success,
-    steps = steps.map { it.toKotlin() },
-    blackboardSnapshot = blackboardSnapshot,
+    steps = subtasks.map { it.toAgentStepRecord() },
+    blackboardSnapshot = emptyMap(),
     durationMs = durationMs,
     retryCount = retryCount,
     agentInvocations = agentInvocations,
-    dynamicAgentCount = dynamicAgentCount,
+    dynamicAgentCount = 0,
     errorMessage = errorMessage
 )
 
-// ============================================================
-// NativeAgentStepRecord → AgentStepRecord
-// (NativeAgentStepRecord 在 :rage-jni 的 com.apex.rage.nativelib 包中声明)
-// ============================================================
-
-/** 映射 native 步骤记录 —— 字段与 [AgentStepRecord] 一一对齐。 */
-private fun com.apex.rage.nativelib.NativeAgentStepRecord.toKotlin(): AgentStepRecord = AgentStepRecord(
-    agentId = agentId,
-    agentName = agentName,
-    role = role,
-    action = action,
-    thought = thought,
+/**
+ * 把 [NativeSubtask] 映射为最小化 [AgentStepRecord]。
+ *
+ * [NativeSubtask] 仅含 id/description/status/output,因此 [AgentStepRecord] 的
+ * agentName/role/thought/blackboardUpdates 等字段填默认空值,timestamp/durationMs 填 0。
+ * success 由 status == "completed" 推断(大小写不敏感)。
+ */
+private fun NativeSubtask.toAgentStepRecord(): AgentStepRecord = AgentStepRecord(
+    agentId = id,
+    agentName = "",
+    role = "",
+    action = description,
+    thought = "",
     output = output,
-    blackboardUpdates = blackboardUpdates,
-    success = success,
-    errorMessage = errorMessage,
-    durationMs = durationMs,
-    timestamp = timestamp
+    blackboardUpdates = emptyMap(),
+    success = status.equals("completed", ignoreCase = true),
+    errorMessage = null,
+    durationMs = 0L,
+    timestamp = 0L
 )
 
 // ============================================================
@@ -159,38 +109,39 @@ private fun com.apex.rage.nativelib.NativeAgentStepRecord.toKotlin(): AgentStepR
  *
  * 事件 `type` 取值与映射:
  * - `TASK_STARTED`       → [RageEvent.TaskStarted]           (message 作为 description)
- * - `TASK_PROGRESS`      → [RageEvent.TaskProgress]          (progress / message;
- *   [RageEngine.startTask] 同时用此事件驱动 `onProgress` 回调)
- * - `TASK_COMPLETED`     → [RageEvent.TaskCompleted]         (success / durationMs)
+ * - `TASK_PROGRESS`      → [RageEvent.TaskProgress]          (progress / message)
+ * - `TASK_COMPLETED`     → [RageEvent.TaskCompleted]         (success;durationMs 因 NativeEvent
+ *                                                          不携带,填 0)
  * - `TASK_FAILED`        → [RageEvent.TaskFailed]            (message 作为 error)
  * - `TASK_CANCELLED`     → [RageEvent.TaskCancelled]         (message 作为 reason)
- * - `SKILL_INVOKED`      → [RageEvent.SkillInvoked]          (payload 需包含 skillId / skillName)
- * - `AGENT_STEP`         → [RageEvent.AgentStepEvent]        (payload 需包含 agentId / agentName / action;
- *   success 字段驱动事件 success)
- * - `BLACKBOARD_UPDATED` → [RageEvent.BlackboardUpdated]     (payload 作为黑板快照)
+ * - `SKILL_INVOKED`      → [RageEvent.SkillInvoked]          (skillId / skillName 扁平字段)
+ * - `AGENT_STEP`         → [RageEvent.AgentStepEvent]        (agentId / agentName / action / success 扁平字段)
+ * - `BLACKBOARD_UPDATED` → [RageEvent.BlackboardUpdated]     (NativeEvent 不携带黑板数据,entries 填空 Map)
  * - 其他                 → null(忽略,不转发)
  */
 fun NativeEvent.toRageEvent(): RageEvent? {
-    val id = taskId ?: return null
+    // taskId 在 NativeEvent 中是非空 String(默认空串),空串视为无归属任务 → 丢弃。
+    val id = taskId
+    if (id.isEmpty()) return null
     return when (type) {
-        "TASK_STARTED" -> RageEvent.TaskStarted(id, message ?: "")
-        "TASK_PROGRESS" -> RageEvent.TaskProgress(id, progress ?: 0f, message)
-        "TASK_COMPLETED" -> RageEvent.TaskCompleted(id, success ?: false, durationMs ?: 0L)
-        "TASK_FAILED" -> RageEvent.TaskFailed(id, message ?: "unknown")
+        "TASK_STARTED" -> RageEvent.TaskStarted(id, message)
+        "TASK_PROGRESS" -> RageEvent.TaskProgress(id, progress, message)
+        "TASK_COMPLETED" -> RageEvent.TaskCompleted(id, success, 0L)
+        "TASK_FAILED" -> RageEvent.TaskFailed(id, message.ifEmpty { "unknown" })
         "TASK_CANCELLED" -> RageEvent.TaskCancelled(id, message)
         "SKILL_INVOKED" -> RageEvent.SkillInvoked(
             id = id,
-            skillId = payload["skillId"] ?: "",
-            skillName = payload["skillName"] ?: ""
+            skillId = skillId,
+            skillName = skillName
         )
         "AGENT_STEP" -> RageEvent.AgentStepEvent(
             id = id,
-            agentId = payload["agentId"] ?: "",
-            agentName = payload["agentName"] ?: "",
-            action = payload["action"] ?: "",
-            success = success ?: false
+            agentId = agentId,
+            agentName = agentName,
+            action = action,
+            success = success
         )
-        "BLACKBOARD_UPDATED" -> RageEvent.BlackboardUpdated(id, payload)
+        "BLACKBOARD_UPDATED" -> RageEvent.BlackboardUpdated(id, emptyMap())
         else -> null
     }
 }
