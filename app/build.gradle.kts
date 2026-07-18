@@ -186,4 +186,10 @@ dependencies {
     // :ai-terminal — 提供 CommandRiskAssessor / DangerousCommandPatterns / RiskLevel
     // 用于 SafeShellTool 在执行前做命令风险评估
     implementation(project(":ai-terminal"))
+
+    // ============================================================
+    // Unit tests — kotlin.test.* assertions (assertEquals/assertTrue/...) wired to JUnit 4
+    // ============================================================
+    testImplementation("junit:junit:4.13.2")
+    testImplementation(kotlin("test"))
 }
