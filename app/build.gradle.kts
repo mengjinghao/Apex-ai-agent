@@ -88,6 +88,18 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     kotlinOptions { jvmTarget = "17" }
 }
 
+// Kapt + Kotlin 2.0 compatibility: kapt K1 stub generator cannot load K2
+// module metadata, causing "Could not load module <Error module>" on
+// kaptGenerateStubsDebugUnitTestKotlin. Hilt kapt processor only needs to
+// run for main sources — unit tests (src/test) run on JVM without Android
+// runtime and never use @HiltAndroidTest / @AndroidEntryPoint. Disabling
+// kapt for unit-test tasks lets compileDebugUnitTestKotlin proceed normally.
+tasks.matching {
+    it.name.startsWith("kapt") && it.name.contains("UnitTest")
+}.configureEach {
+    enabled = false
+}
+
 dependencies {
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
