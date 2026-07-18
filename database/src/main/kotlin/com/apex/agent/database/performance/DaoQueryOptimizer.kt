@@ -69,10 +69,8 @@ data class QueryStatistics(
     val p99QueryTimeMs: Double,
     val queriesByType: Map<QueryType, Int>,
     val slowQueries: List<Pair<String, Long>>,
-    readonly val cacheSize: Int
-) {
-    val cacheSizeVal: Int get() = cacheSize
-}
+    val cacheSize: Int
+)
 
 data class IndexRecommendation(
     val tableName: String,
