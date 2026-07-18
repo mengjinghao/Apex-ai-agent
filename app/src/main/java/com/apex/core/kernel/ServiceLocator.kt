@@ -8,8 +8,8 @@ import kotlin.reflect.KClass
  * 支持单例注册、工厂懒加载、作用域隔离。
  */
 class ServiceLocator {
-    private val instances = ConcurrentHashMap<KClass<*>, Any>()
-    private val factories = ConcurrentHashMap<KClass<*>, () -> Any>()
+    @PublishedApi internal val instances = ConcurrentHashMap<KClass<*>, Any>()
+    @PublishedApi internal val factories = ConcurrentHashMap<KClass<*>, () -> Any>()
     private val scopes = ConcurrentHashMap<String, ServiceLocator>()
 
     /** 注册单例 */
@@ -43,7 +43,7 @@ class ServiceLocator {
 
     /** 是否已注册 */
     inline fun <reified T : Any> contains(): Boolean {
-        return T::class in instances || T::class in factories
+        return instances.containsKey(T::class) || factories.containsKey(T::class)
     }
 
     /** 创建命名作用域 */

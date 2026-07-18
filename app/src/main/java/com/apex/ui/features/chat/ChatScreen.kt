@@ -50,7 +50,8 @@ fun ChatScreen(viewModel: ChatViewModel = hiltViewModel()) {
             )
         },
         snackbarHost = {
-            SnackbarHost { data -> Snackbar(snackbarData = data) }
+            val hostState = remember { SnackbarHostState() }
+            SnackbarHost(hostState = hostState) { data -> Snackbar(snackbarData = data) }
         }
     ) { padding ->
         Column(

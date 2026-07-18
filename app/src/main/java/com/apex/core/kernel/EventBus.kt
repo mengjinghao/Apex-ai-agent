@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.filterIsInstance
  * 类型安全的事件总线 — 基于 SharedFlow，支持背压和多订阅者。
  */
 class EventBus {
-    private val _events = MutableSharedFlow<ApexEvent>(extraBufferCapacity = 64)
+    @PublishedApi internal val _events = MutableSharedFlow<ApexEvent>(extraBufferCapacity = 64)
     val events: SharedFlow<ApexEvent> = _events.asSharedFlow()
 
     /** 发布事件 */
