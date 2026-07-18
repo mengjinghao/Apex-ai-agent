@@ -2,24 +2,24 @@
 
 package com.apex.lib.rage
 
-import com.apex.rage.native.NativeEvent
-import com.apex.rage.native.NativeExecutionResult
-import com.apex.rage.native.NativeMetrics
-import com.apex.rage.native.NativeRageConfig
-import com.apex.rage.native.NativeTask
+import com.apex.rage.nativelib.NativeEvent
+import com.apex.rage.nativelib.NativeExecutionResult
+import com.apex.rage.nativelib.NativeMetrics
+import com.apex.rage.nativelib.NativeRageConfig
+import com.apex.rage.nativelib.NativeTask
 
 /**
  * Kotlin ↔ Native 类型映射 —— 把 [RageModels] / [RageArchitectTypes] 中的数据类
- * 与 [:rage-jni] 的 `Native*` 数据类(package `com.apex.rage.native`)相互转换。
+ * 与 [:rage-jni] 的 `Native*` 数据类(package `com.apex.rage.nativelib`)相互转换。
  *
  * **行为契约**:这些 mapper 是纯函数,不接触 [RageTaskStore] / 不发事件。
- * 由 [RageEngine] 在调用 [com.apex.rage.native.RageNativeBridge] 前后调用。
+ * 由 [RageEngine] 在调用 [com.apex.rage.nativelib.RageNativeBridge] 前后调用。
  *
  * ────────────────────────────────────────────────────────────────────
  * Native 数据类 schema 契约(由 ARCH-2 在 :rage-jni 中实现,字段名须对齐):
  * ────────────────────────────────────────────────────────────────────
  *
- *   package com.apex.rage.native
+ *   package com.apex.rage.nativelib
  *
  *   @Serializable
  *   data class NativeTask(
@@ -132,11 +132,11 @@ fun NativeExecutionResult.toKotlin(): TaskExecutionResult = TaskExecutionResult(
 
 // ============================================================
 // NativeAgentStepRecord → AgentStepRecord
-// (NativeAgentStepRecord 在 :rage-jni 的 com.apex.rage.native 包中声明)
+// (NativeAgentStepRecord 在 :rage-jni 的 com.apex.rage.nativelib 包中声明)
 // ============================================================
 
 /** 映射 native 步骤记录 —— 字段与 [AgentStepRecord] 一一对齐。 */
-private fun com.apex.rage.native.NativeAgentStepRecord.toKotlin(): AgentStepRecord = AgentStepRecord(
+private fun com.apex.rage.nativelib.NativeAgentStepRecord.toKotlin(): AgentStepRecord = AgentStepRecord(
     agentId = agentId,
     agentName = agentName,
     role = role,

@@ -1,10 +1,10 @@
 package com.apex.lib.rage
 
-import com.apex.rage.native.NativeEvent
-import com.apex.rage.native.NativeExecutionResult
-import com.apex.rage.native.NativeRageConfig
-import com.apex.rage.native.NativeTask
-import com.apex.rage.native.RageNativeBridge
+import com.apex.rage.nativelib.NativeEvent
+import com.apex.rage.nativelib.NativeExecutionResult
+import com.apex.rage.nativelib.NativeRageConfig
+import com.apex.rage.nativelib.NativeTask
+import com.apex.rage.nativelib.RageNativeBridge
 import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
 import com.apex.sdk.common.BridgeResult

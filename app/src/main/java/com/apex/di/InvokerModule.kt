@@ -8,7 +8,7 @@ import com.apex.engine.chat.StreamEvent
 import com.apex.lib.rage.RageEngine
 import com.apex.lib.workflow.LlmInvoker
 import com.apex.lib.workflow.WorkflowExecutor
-import com.apex.rage.native.RageNativeBridge
+import com.apex.rage.nativelib.RageNativeBridge
 import com.apex.sdk.common.BridgeError
 import com.apex.sdk.common.BridgeResult
 import dagger.Module

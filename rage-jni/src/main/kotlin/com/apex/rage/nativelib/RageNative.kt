@@ -1,4 +1,4 @@
-package com.apex.rage.`native`
+package com.apex.rage.nativelib
 
 /**
  * Low-level JNI surface to the rage-native C++ core (`librage_native.so`).
@@ -9,12 +9,11 @@ package com.apex.rage.`native`
  * wrapper.
  *
  * JNI symbol mangling:
- *   package `com.apex.rage.native` → class `RageNative` →
- *   `Java_com_apex_rage_native_RageNative_<methodName>`.
+ *   package `com.apex.rage.nativelib` → class `RageNative` →
+ *   `Java_com_apex_rage_nativelib_RageNative_<methodName>`.
  *
- * The `native` segment is a Java reserved word but is allowed as a Kotlin
- * package identifier — the JVM bytecode treats it as an ordinary name, and
- * JNI mangling only escapes `_`/`;`/`[`, not Java keywords.
+ * Note: the package was renamed to `nativelib` because AGP rejects the
+ * Java reserved word "native" as a namespace segment.
  */
 object RageNative {
 

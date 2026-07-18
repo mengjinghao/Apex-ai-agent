@@ -11,14 +11,14 @@
 // main thread.
 //
 // JNI symbol naming (must EXACTLY match Kotlin `external fun`):
-//   Package: com.apex.rage.native
+//   Package: com.apex.rage.nativelib
 //   Class:   RageNative
-//   Symbol:  Java_com_apex_rage_native_RageNative_<methodName>
+//   Symbol:  Java_com_apex_rage_nativelib_RageNative_<methodName>
 //
-// Note: Kotlin's package `com.apex.rage.native` is a legal JVM package even
-// though `native` is a Java reserved word — Kotlin emits the package as-is,
-// and JNI mangling only escapes `_` (as `_1`) and `;`/`[` (as `_2`/`_3`).
-// `native` is treated as an ordinary identifier.
+// Note: the package was renamed because the previous final package segment
+// was the Java reserved word "native", which AGP rejects as a namespace.
+// The internal C++ rage::native namespace used below is unrelated to the
+// Kotlin package name and is unchanged.
 
 #include <jni.h>
 
@@ -252,7 +252,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_apex_rage_native_RageNative_nativeInit(JNIEnv* env, jobject /*thiz*/, jobject callback) {
+Java_com_apex_rage_nativelib_RageNative_nativeInit(JNIEnv* env, jobject /*thiz*/, jobject callback) {
     if (gCallbackObj != nullptr) {
         env->DeleteGlobalRef(gCallbackObj);
         gCallbackObj = nullptr;
@@ -293,7 +293,7 @@ Java_com_apex_rage_native_RageNative_nativeInit(JNIEnv* env, jobject /*thiz*/, j
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_apex_rage_native_RageNative_nativeStartTask(JNIEnv* env,
+Java_com_apex_rage_nativelib_RageNative_nativeStartTask(JNIEnv* env,
                                                      jobject /*thiz*/,
                                                      jstring taskJson,
                                                      jstring configJson) {
@@ -340,7 +340,7 @@ Java_com_apex_rage_native_RageNative_nativeStartTask(JNIEnv* env,
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_apex_rage_native_RageNative_nativeCancelTask(JNIEnv* env,
+Java_com_apex_rage_nativelib_RageNative_nativeCancelTask(JNIEnv* env,
                                                       jobject /*thiz*/,
                                                       jstring taskId) {
     if (!taskId) return JNI_FALSE;
@@ -352,7 +352,7 @@ Java_com_apex_rage_native_RageNative_nativeCancelTask(JNIEnv* env,
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_apex_rage_native_RageNative_nativeGetMetrics(JNIEnv* env, jobject /*thiz*/) {
+Java_com_apex_rage_nativelib_RageNative_nativeGetMetrics(JNIEnv* env, jobject /*thiz*/) {
     std::lock_guard<std::mutex> lk(gCoreMutex);
     rage::native::NativeMetrics m;
     if (gMetrics) m = gMetrics->snapshot();
@@ -360,7 +360,7 @@ Java_com_apex_rage_native_RageNative_nativeGetMetrics(JNIEnv* env, jobject /*thi
 }
 
 JNIEXPORT void JNICALL
-Java_com_apex_rage_native_RageNative_nativeDestroy(JNIEnv* /*env*/, jobject /*thiz*/) {
+Java_com_apex_rage_nativelib_RageNative_nativeDestroy(JNIEnv* /*env*/, jobject /*thiz*/) {
     std::lock_guard<std::mutex> lk(gCoreMutex);
     gOrchestrator.reset();
     gScheduler.reset();

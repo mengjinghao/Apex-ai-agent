@@ -1,8 +1,8 @@
 # rage-jni ProGuard rules — keep the JNI bridge API surface.
--keep class com.apex.rage.native.RageNative { *; }
--keep class com.apex.rage.native.NativeCallbacks { *; }
--keep class com.apex.rage.native.RageNativeBridge { *; }
--keep class com.apex.rage.native.** { *; }
+-keep class com.apex.rage.nativelib.RageNative { *; }
+-keep class com.apex.rage.nativelib.NativeCallbacks { *; }
+-keep class com.apex.rage.nativelib.RageNativeBridge { *; }
+-keep class com.apex.rage.nativelib.** { *; }
 
 # kotlinx.serialization
 -keepattributes *Annotation*, InnerClasses

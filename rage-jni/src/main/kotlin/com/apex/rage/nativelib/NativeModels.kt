@@ -1,4 +1,4 @@
-package com.apex.rage.`native`
+package com.apex.rage.nativelib
 
 import kotlinx.serialization.Serializable
 

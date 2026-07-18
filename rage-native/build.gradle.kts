@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.apex.rage.native"
+    namespace = "com.apex.rage.nativelib"
     compileSdk = 35
 
     defaultConfig {
