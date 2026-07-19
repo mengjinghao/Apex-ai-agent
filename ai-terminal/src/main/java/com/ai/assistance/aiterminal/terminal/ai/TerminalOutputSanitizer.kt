@@ -63,7 +63,7 @@ object TerminalOutputSanitizer {
     // The terminal emits this in response to a "Restore Private Mode" query; an attacker
     // who can write to the terminal can craft a query that triggers an echoback containing
     // the terminal's private-mode state (fingerprinting / side-channel).
-    private val decrqssPattern = Regex("""\u001B\[\?[0-9;]*\$p""")
+    private val decrqssPattern = Regex("""\u001B\[\?[0-9;]*\${'$'}p""")
 
     // DECRQCRA cursor checksum response: ESC [ <params> * y
     // Same idea: an attacker can request a checksum of a screen region and read it back,

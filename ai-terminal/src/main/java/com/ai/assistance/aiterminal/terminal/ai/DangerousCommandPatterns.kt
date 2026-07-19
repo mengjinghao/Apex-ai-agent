@@ -357,7 +357,7 @@ object DangerousCommandPatterns {
         ),
         // $IFS trick — classic regex-bypass technique (e.g. cat$IFS/etc/passwd)
         CommandPattern(
-            pattern = Regex("""\$IFS"""),
+            pattern = Regex("""\${'$'}IFS"""),
             riskLevel = RiskLevel.HIGH,
             description = "\$IFS variable — common pattern-matching bypass technique",
             precautions = listOf(
