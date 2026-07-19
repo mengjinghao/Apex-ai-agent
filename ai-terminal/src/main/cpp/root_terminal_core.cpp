@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include "root_session.h"
 
 #define LOG_TAG "RootTerminalCore"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
@@ -93,15 +94,56 @@ JNIEXPORT jint JNICALL
 Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRoot(
         JNIEnv *env,
         jobject thiz,
+        jstring sessionId,
         jint cols,
         jint rows,
         jobjectArray env_array,
         jboolean use_root) {
 
+    // A-2/A-3 + A-15: sessionId is required (used as the key into
+    // g_rootSessions). Null-check before dereferencing.
+    if (sessionId == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      "sessionId must not be null");
+        return -1;
+    }
+    const char* sid = env->GetStringUTFChars(sessionId, nullptr);
+    if (sid == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"),
+                      "GetStringUTFChars returned null");
+        return -1;
+    }
+
+    // A-2/A-3: tear down any existing session with this id BEFORE creating
+    // a new one. Prevents leaking the previous shell + fd. Atomic w.r.t.
+    // concurrent nativeCloseSession / nativeGetSessionPid calls.
+    {
+        std::lock_guard<std::mutex> lock(g_rootSessionsMutex);
+        auto it = g_rootSessions.find(sid);
+        if (it != g_rootSessions.end()) {
+            RootSession& old = it->second;
+            LOGD("nativeCreatePtyRoot: tearing down existing session %s "
+                 "(pid=%d, masterFd=%d)", sid, old.pid, old.masterFd);
+            if (old.pid > 0) {
+                // RACE NOTE (A-4): SIGCHLD handler may reap first; waitpid
+                // returns -1 with ECHILD, which we ignore.
+                kill(old.pid, SIGKILL);
+                int saved_errno = errno;
+                (void)waitpid(old.pid, nullptr, 0);
+                errno = saved_errno;
+            }
+            if (old.masterFd != -1) {
+                (void)close(old.masterFd);
+            }
+            g_rootSessions.erase(it);
+        }
+    }
+
     // 1. 打开 PTY Master
     int master_fd = posix_openpt(O_RDWR | O_CLOEXEC);
     if (master_fd < 0) {
         LOGE("Failed to open PTY master: %s", strerror(errno));
+        env->ReleaseStringUTFChars(sessionId, sid);
         return -1;
     }
     LOGD("PTY master created, fd: %d", master_fd);
@@ -110,17 +152,21 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
     if (grantpt(master_fd) < 0 || unlockpt(master_fd) < 0) {
         LOGE("Failed to grant/unlock PTY: %s", strerror(errno));
         close(master_fd);
+        env->ReleaseStringUTFChars(sessionId, sid);
         return -1;
     }
     LOGD("PTY granted and unlocked");
 
-    // 3. 获取 PTY Slave 路径
-    const char* slave_name = ptsname(master_fd);
-    if (!slave_name) {
+    // 3. 获取 PTY Slave 路径 (A-18: ptsname_r is thread-safe; ptsname()
+    // returns a pointer to a static buffer that races across threads).
+    char slave_name_buf[256];
+    if (ptsname_r(master_fd, slave_name_buf, sizeof(slave_name_buf)) != 0) {
         LOGE("Failed to get PTY slave name: %s", strerror(errno));
         close(master_fd);
+        env->ReleaseStringUTFChars(sessionId, sid);
         return -1;
     }
+    const char* slave_name = slave_name_buf;
     LOGD("PTY slave path: %s", slave_name);
 
     // 4. 设置窗口大小
@@ -134,6 +180,7 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
     if (shell_path_pre == nullptr) {
         LOGE(use_root ? "SU binary not found" : "Shell binary not found");
         close(master_fd);
+        env->ReleaseStringUTFChars(sessionId, sid);
         return -1;
     }
     LOGI("Starting %s shell with: %s", use_root ? "Root" : "Normal", shell_path_pre);
@@ -143,6 +190,7 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
     if (pid < 0) {
         LOGE("Fork failed: %s", strerror(errno));
         close(master_fd);
+        env->ReleaseStringUTFChars(sessionId, sid);
         return -1;
     }
 
@@ -186,6 +234,13 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
         close(master_fd);
 
         // 处理环境变量 (将 Java 数组转为 C char**)
+        // A-15: GetStringUTFChars may return null on OOM — but we are now
+        // in the CHILD branch (post-fork), where calling JNI is unsafe in
+        // general. However the original code already did this; we keep the
+        // behavior but add a null check + _exit on failure (rather than
+        // dereferencing null and crashing). A future refactor should move
+        // env-array processing to the PARENT branch and pass char** to the
+        // child via pre-fork allocation.
         jsize env_len = env->GetArrayLength(env_array);
         char** c_env = (char**) malloc((env_len + 1) * sizeof(char*));
         if (!c_env) {
@@ -197,6 +252,14 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
         for (int i = 0; i < env_len; i++) {
             jstring str = (jstring) env->GetObjectArrayElement(env_array, i);
             const char* c_str = env->GetStringUTFChars(str, nullptr);
+            if (c_str == nullptr) {
+                // OOM in child. Free what we have and bail.
+                for (int j = 0; j < i; j++) free(c_env[j]);
+                free(c_env);
+                const char* m = "nativeCreatePtyRoot: GetStringUTFChars OOM in child\n";
+                (void)write(STDERR_FILENO, m, strlen(m));
+                _exit(127);
+            }
             c_env[i] = strdup(c_str);
             env->ReleaseStringUTFChars(str, c_str);
         }

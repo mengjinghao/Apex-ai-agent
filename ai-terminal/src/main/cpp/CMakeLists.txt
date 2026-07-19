@@ -36,11 +36,37 @@ target_link_libraries(
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 添加编译选项
+# Security (A-19): compiler/linker hardening flags.
+#
+# -fstack-protector-strong: stack canaries on functions with char arrays
+#   or address-taken locals — catches stack buffer overflows at runtime
+#   (abort instead of exploit).
+# -D_FORTIFY_SOURCE=2: compile-time + runtime checks on common libc string
+#   / memory functions (memcpy, strcpy, sprintf, etc.). Requires -O1 or
+#   higher (Android NDK release builds use -O2 by default; debug uses -O0
+#   which silently disables FORTIFY — acceptable trade-off).
+# -fvisibility=hidden: default symbol visibility to hidden; only symbols
+#   marked JNI_EXPORT (or explicitly exported) become public, shrinking
+#   the attack surface and the .dynsym table.
+#
+# Linker:
+# -Wl,-z,relro: read-only relocations (GOT becomes read-only after load).
+# -Wl,-z,now: full RELRO + immediate symbol binding at startup (no lazy
+#   binding, which closes a classic GOT-overwrite exploit vector).
 target_compile_options(
         ai_terminal_jni
         PRIVATE
         -Wall
         -Wextra
         -Wno-unused-parameter
+        -fstack-protector-strong
+        -D_FORTIFY_SOURCE=2
+        -fvisibility=hidden
+)
+
+target_link_options(
+        ai_terminal_jni
+        PRIVATE
+        -Wl,-z,relro
+        -Wl,-z,now
 )

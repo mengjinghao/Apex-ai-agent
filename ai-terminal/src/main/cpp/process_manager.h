@@ -53,6 +53,13 @@ private:
 
     void cleanupLoop();
 
+    // A-11: internal helpers — caller MUST already hold `mtx`. Used by
+    // cleanupSessionProcesses to avoid re-entrant deadlock (it holds mtx
+    // and used to call killProcess + getProcessesBySession which try to
+    // re-lock mtx — std::mutex is non-recursive → deadlock).
+    bool _killProcessUnlocked(pid_t pid, int signal = SIGKILL);
+    std::vector<ProcessInfo> _getProcessesBySessionUnlocked(const std::string& sessionId);
+
 public:
     static ProcessManager& getInstance();
 

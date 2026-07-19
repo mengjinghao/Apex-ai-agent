@@ -84,8 +84,11 @@ bool ProcessManager::updateProcessState(pid_t pid, ProcessState state, int exitC
     return true;
 }
 
-bool ProcessManager::killProcess(pid_t pid, int signal) {
-    std::lock_guard<std::mutex> lock(mtx);
+// A-11: internal helper — caller MUST already hold `mtx`.
+// Used by killProcess() and cleanupSessionProcesses() to avoid re-entrant
+// deadlock (cleanupSessionProcesses holds `mtx` and used to call killProcess
+// which tried to lock `mtx` again — std::mutex is non-recursive → deadlock).
+bool ProcessManager::_killProcessUnlocked(pid_t pid, int signal) {
     auto it = processes.find(pid);
     if (it == processes.end()) {
         return false;
@@ -98,6 +101,11 @@ bool ProcessManager::killProcess(pid_t pid, int signal) {
     // which is a privilege-escalation / DoS vulnerability. Do NOT call ::kill here.
     LOGW("killProcess(%d) ignored — ProcessManager tracks logical tasks, not OS PIDs; killing arbitrary PIDs is a security risk", pid);
     return false;
+}
+
+bool ProcessManager::killProcess(pid_t pid, int signal) {
+    std::lock_guard<std::mutex> lock(mtx);
+    return _killProcessUnlocked(pid, signal);
 }
 
 bool ProcessManager::killProcessGroup(pid_t pgid, int signal) {
@@ -128,8 +136,8 @@ ProcessInfo* ProcessManager::getProcess(pid_t pid) {
     return it != processes.end() ? &it->second : nullptr;
 }
 
-std::vector<ProcessInfo> ProcessManager::getProcessesBySession(const std::string& sessionId) {
-    std::lock_guard<std::mutex> lock(mtx);
+// A-11: internal helper — caller MUST already hold `mtx`.
+std::vector<ProcessInfo> ProcessManager::_getProcessesBySessionUnlocked(const std::string& sessionId) {
     std::vector<ProcessInfo> result;
     for (auto& pair : processes) {
         if (pair.second.sessionId == sessionId) {
@@ -137,6 +145,11 @@ std::vector<ProcessInfo> ProcessManager::getProcessesBySession(const std::string
         }
     }
     return result;
+}
+
+std::vector<ProcessInfo> ProcessManager::getProcessesBySession(const std::string& sessionId) {
+    std::lock_guard<std::mutex> lock(mtx);
+    return _getProcessesBySessionUnlocked(sessionId);
 }
 
 std::vector<ProcessInfo> ProcessManager::getAllProcesses() {
@@ -282,10 +295,14 @@ double ProcessManager::getProcessCpuPercent(pid_t pid) {
 }
 
 void ProcessManager::cleanupSessionProcesses(const std::string& sessionId) {
+    // A-11: previously this method held `mtx` and then called
+    // getProcessesBySession + killProcess — both of which try to lock `mtx`
+    // again. std::mutex is non-recursive, so this was a guaranteed deadlock
+    // on every call. Use the *Unlocked helpers instead.
     std::lock_guard<std::mutex> lock(mtx);
-    auto sessionProcesses = getProcessesBySession(sessionId);
+    auto sessionProcesses = _getProcessesBySessionUnlocked(sessionId);
     for (auto& info : sessionProcesses) {
-        killProcess(info.pid, SIGKILL);
+        _killProcessUnlocked(info.pid, SIGKILL);
     }
     LOGI("Cleaned up processes for session: %s", sessionId.c_str());
 }

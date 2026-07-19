@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <vector>
 #include <signal.h>
+#include <mutex>  // A-7: thread-safety for TerminalSessionPool
 
 // 会话状态枚举
 enum class SessionState {
@@ -55,15 +56,29 @@ struct TerminalSession {
 };
 
 // 会话池管理（单例）
+//
+// Security (A-7): all public methods acquire `m_mutex` to serialize
+// concurrent JNI calls from multi-threaded Kotlin (e.g. coroutine
+// dispatchers). To avoid deadlock, public methods MUST NOT call other
+// public methods while holding the lock — they call private
+// `*Unlocked` helpers instead.
 class TerminalSessionPool {
 private:
     std::unordered_map<std::string, TerminalSession*> sessions;
     std::string currentSessionId; // 当前激活会话
+    std::mutex m_mutex;           // A-7: serializes all public method access
+
     TerminalSessionPool() = default;
+
+    // A-7: internal helpers that assume the caller already holds `m_mutex`.
+    // Used to avoid deadlock when a public method needs to invoke logic
+    // shared with another public method.
+    TerminalSession* getSessionUnlocked(const std::string& sessionId);
+    bool closeSessionUnlocked(const std::string& sessionId);
 public:
     static TerminalSessionPool& getInstance();
 
-    // 会话管理
+    // 会话管理 (all acquire m_mutex internally)
     TerminalSession* createSession(const std::string& sessionId, TerminalEventCallback cb);
     TerminalSession* getSession(const std::string& sessionId);
     TerminalSession* getCurrentSession();

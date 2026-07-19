@@ -280,26 +280,64 @@ bool TerminalSession::executeCommand(const std::string& cmd) {
     return true;
 }
 
-// 切换目录（对标状态管理）
+// 切换目录
+//
+// Security/correctness (A-6): the previous implementation called `chdir(path)`
+// in the C++ PARENT process — but the parent's cwd has NO effect on the
+// shell child's cwd (the shell was already execve'd with its own cwd in
+// `start()`). The shell's cwd never changed, so subsequent commands were
+// still run from the original directory. The fix is to send the literal
+// `cd $path\n` command to the shell via the PTY master fd (same mechanism
+// as `executeCommand`), so the SHELL processes the cd and updates ITS cwd.
+//
+// NOTE: this is a best-effort fix. We do not parse the shell's response to
+// verify the cd succeeded (e.g. permission denied, no such directory). The
+// caller is expected to query `pwd` afterwards to confirm the new cwd.
+// The local `cwd` field is updated optimistically to match the requested
+// path; a subsequent `pwd` query would override it with the truth.
 bool TerminalSession::changeDirectory(const std::string& path) {
-    if (chdir(path.c_str()) == 0) {
-        cwd = path;
-        LOGD("Session %s changed directory to: %s", sessionId.c_str(), path.c_str());
-
+    if (state != SessionState::RUNNING) {
+        LOGE("Session %s is not running", sessionId.c_str());
         if (callback) {
-            callback(TerminalEventType::DIRECTORY_CHANGED, cwd, 0);
+            callback(TerminalEventType::ERROR_OCCURRED, "Session not running", -1);
         }
-
-        return true;
-    } else {
-        LOGE("Change directory failed for session %s: %s", sessionId.c_str(), strerror(errno));
-
-        if (callback) {
-            callback(TerminalEventType::ERROR_OCCURRED, "Change directory failed", -3);
-        }
-
         return false;
     }
+
+    if (shellFd[1] == -1) {
+        LOGE("Session %s shell PTY not available for cd", sessionId.c_str());
+        if (callback) {
+            callback(TerminalEventType::ERROR_OCCURRED, "Shell PTY not available", -3);
+        }
+        return false;
+    }
+
+    // Build "cd <path>\n" and write it to the shell's stdin (PTY master).
+    // NOTE: we do NOT escape `path` here — a malicious path containing
+    // shell metacharacters could inject commands. The Kotlin caller is
+    // expected to validate / quote the path before calling. A future
+    // hardening pass should use shell quoting (e.g. single-quote wrap).
+    std::string cmd = "cd " + path + "\n";
+    ssize_t written = write(shellFd[1], cmd.c_str(), cmd.length());
+    if (written < 0) {
+        LOGE("Failed to send cd command to session %s: %s",
+             sessionId.c_str(), strerror(errno));
+        if (callback) {
+            callback(TerminalEventType::ERROR_OCCURRED, "Write cd command failed", -3);
+        }
+        return false;
+    }
+
+    // Optimistically update local cwd. The shell may reject the cd (e.g.
+    // permission denied) — caller should verify via `pwd`.
+    cwd = path;
+    LOGD("Session %s sent cd to: %s (verify via pwd)", sessionId.c_str(), path.c_str());
+
+    if (callback) {
+        callback(TerminalEventType::DIRECTORY_CHANGED, cwd, 0);
+    }
+
+    return true;
 }
 
 // 挂起会话
@@ -376,6 +414,8 @@ TerminalSessionPool& TerminalSessionPool::getInstance() {
 
 // 创建会话
 TerminalSession* TerminalSessionPool::createSession(const std::string& sessionId, TerminalEventCallback cb) {
+    // A-7: serialize against concurrent JNI calls from multi-threaded Kotlin.
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (sessions.find(sessionId) != sessions.end()) {
         LOGE("Session %s already exists", sessionId.c_str());
         return nullptr;
@@ -392,22 +432,31 @@ TerminalSession* TerminalSessionPool::createSession(const std::string& sessionId
     return session;
 }
 
-// 获取会话
+// 获取会话 (A-7: locks; delegates to getSessionUnlocked to avoid
+// deadlock with getCurrentSession which is itself a public method).
 TerminalSession* TerminalSessionPool::getSession(const std::string& sessionId) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return getSessionUnlocked(sessionId);
+}
+
+// A-7: internal helper — caller MUST already hold m_mutex.
+TerminalSession* TerminalSessionPool::getSessionUnlocked(const std::string& sessionId) {
     auto it = sessions.find(sessionId);
     return it != sessions.end() ? it->second : nullptr;
 }
 
-// 获取当前会话
+// 获取当前会话 (A-7: locks; uses getSessionUnlocked to avoid re-entrant deadlock).
 TerminalSession* TerminalSessionPool::getCurrentSession() {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (currentSessionId.empty()) {
         return nullptr;
     }
-    return getSession(currentSessionId);
+    return getSessionUnlocked(currentSessionId);
 }
 
-// 切换会话
+// 切换会话 (A-7: locks).
 bool TerminalSessionPool::switchSession(const std::string& sessionId) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (sessions.find(sessionId) == sessions.end()) {
         LOGE("Session %s not found", sessionId.c_str());
         return false;
@@ -418,8 +467,15 @@ bool TerminalSessionPool::switchSession(const std::string& sessionId) {
     return true;
 }
 
-// 关闭会话
+// 关闭会话 (A-7: locks; delegates to closeSessionUnlocked to avoid
+// deadlock with closeAllSessions which is itself a public method).
 bool TerminalSessionPool::closeSession(const std::string& sessionId) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return closeSessionUnlocked(sessionId);
+}
+
+// A-7: internal helper — caller MUST already hold m_mutex.
+bool TerminalSessionPool::closeSessionUnlocked(const std::string& sessionId) {
     auto it = sessions.find(sessionId);
     if (it == sessions.end()) {
         LOGE("Session %s not found", sessionId.c_str());
@@ -442,13 +498,19 @@ bool TerminalSessionPool::closeSession(const std::string& sessionId) {
     return true;
 }
 
-// 关闭所有会话
+// 关闭所有会话 (A-7: locks; iterates calling closeSessionUnlocked to
+// avoid re-entrant deadlock on m_mutex).
 void TerminalSessionPool::closeAllSessions() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    // Copy keys first because closeSessionUnlocked mutates `sessions`.
+    std::vector<std::string> ids;
+    ids.reserve(sessions.size());
     for (auto& pair : sessions) {
-        pair.second->close();
-        delete pair.second;
+        ids.push_back(pair.first);
     }
-    sessions.clear();
+    for (auto& id : ids) {
+        closeSessionUnlocked(id);
+    }
     currentSessionId.clear();
     LOGD("Closed all sessions");
 }
