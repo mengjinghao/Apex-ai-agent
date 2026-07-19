@@ -146,7 +146,10 @@ bool TerminalSession::start(const std::string& shellType) {
             while ((entry = readdir(dir)) != nullptr) {
                 int fd = atoi(entry->d_name);
                 if (fd > 2 && fd != dirFd) {
-                    (void)close(fd);
+                    // Qualify with `::` so this resolves to POSIX `close(int)`
+                    // rather than the TerminalSession::close() member (which
+                    // takes 0 args) — see terminal_session.h:54.
+                    (void)::close(fd);
                 }
             }
             (void)closedir(dir);
