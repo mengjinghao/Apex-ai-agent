@@ -120,7 +120,19 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
     // 4. 设置窗口大小
     set_window_size(master_fd, cols, rows);
 
-    // 5. Fork 进程
+    // 5. Pre-compute shell path in the PARENT (before fork).
+    // A-8: find_su_binary / find_shell_binary call __android_log_print which
+    // is NOT async-signal-safe, so they must NOT be called in the child
+    // branch (between fork and exec).
+    const char* shell_path_pre = use_root ? find_su_binary() : find_shell_binary();
+    if (shell_path_pre == nullptr) {
+        LOGE(use_root ? "SU binary not found" : "Shell binary not found");
+        close(master_fd);
+        return -1;
+    }
+    LOGI("Starting %s shell with: %s", use_root ? "Root" : "Normal", shell_path_pre);
+
+    // 6. Fork 进程
     pid_t pid = fork();
     if (pid < 0) {
         LOGE("Fork failed: %s", strerror(errno));
@@ -130,26 +142,30 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
 
     if (pid == 0) {
         // --- 子进程 (这里将变成 Shell) ---
-        LOGD("Child process started, PID: %d", getpid());
+        // A-8/A-9: ONLY async-signal-safe calls allowed between fork and exec.
+        // No LOGD/LOGE/LOGI/LOGW (uses __android_log_print), no exit() (use _exit).
+        // Diagnostics go through write(STDERR_FILENO, ...).
 
         // 新建 Session
         if (setsid() < 0) {
-            LOGE("setsid failed: %s", strerror(errno));
+            const char* m = "nativeCreatePtyRoot: setsid failed\n";
+            (void)write(STDERR_FILENO, m, strlen(m));
             // 继续执行，即使失败了
         }
 
         // 打开 PTY Slave
         int slave_fd = open(slave_name, O_RDWR);
         if (slave_fd < 0) {
-            LOGE("Failed to open PTY slave: %s", strerror(errno));
-            _exit(1);
+            const char* m = "nativeCreatePtyRoot: open slave PTY failed\n";
+            (void)write(STDERR_FILENO, m, strlen(m));
+            _exit(127);
         }
-        LOGD("PTY slave opened, fd: %d", slave_fd);
 
         // 设置 Slave 为控制终端
         if (ioctl(slave_fd, TIOCSCTTY, 0) < 0) {
-            LOGW("ioctl(TIOCSCTTY) failed: %s", strerror(errno));
-            // 继续执行，即使失败了
+            // Best-effort; continue. Use write() for diagnostics (A-8/A-9).
+            const char* m = "nativeCreatePtyRoot: TIOCSCTTY failed\n";
+            (void)write(STDERR_FILENO, m, strlen(m));
         }
 
         // 重定向 STDIN/STDOUT/STDERR
@@ -167,8 +183,9 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
         jsize env_len = env->GetArrayLength(env_array);
         char** c_env = (char**) malloc((env_len + 1) * sizeof(char*));
         if (!c_env) {
-            LOGE("Failed to allocate env array");
-            _exit(1);
+            const char* m = "nativeCreatePtyRoot: malloc env array failed\n";
+            (void)write(STDERR_FILENO, m, strlen(m));
+            _exit(127);
         }
         
         for (int i = 0; i < env_len; i++) {
@@ -178,53 +195,24 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePtyRo
             env->ReleaseStringUTFChars(str, c_str);
         }
         c_env[env_len] = nullptr;
-        LOGD("Environment variables set up, count: %d", env_len);
 
-        // 选择启动 su 或 sh
-        const char* shell_path;
-        char* const* argv;
-
-        if (use_root) {
-            shell_path = find_su_binary();
-            if (shell_path == nullptr) {
-                LOGE("SU binary not found");
-                // 清理后退出
-                for (int i = 0; c_env[i]; i++) free(c_env[i]);
-                free(c_env);
-                _exit(1);
-            }
-            
-            // 尝试多种 su 的调用方式
-            char* const argv_su[] = { (char*)shell_path, nullptr };
-            argv = argv_su;
-            
-            LOGI("Starting Root shell with: %s", shell_path);
-        } else {
-            shell_path = find_shell_binary();
-            if (shell_path == nullptr) {
-                LOGE("Shell binary not found");
-                // 清理后退出
-                for (int i = 0; c_env[i]; i++) free(c_env[i]);
-                free(c_env);
-                _exit(1);
-            }
-            
-            char* const argv_sh[] = { (char*)shell_path, nullptr };
-            argv = argv_sh;
-            
-            LOGI("Starting Normal shell with: %s", shell_path);
-        }
+        // 选择启动 su 或 sh (path was pre-computed in PARENT — see A-8 note above).
+        char* const argv[] = { const_cast<char*>(shell_path_pre), nullptr };
 
         // 执行 shell
-        execve(shell_path, argv, c_env);
-        
-        // execve 只有在出错时才会返回
-        LOGE("execve failed: %s", strerror(errno));
-        
+        execve(shell_path_pre, argv, c_env);
+
+        // execve 只有在出错时才会返回. A-8/A-9: NO LOGE here — async-signal-
+        // unsafe. Report via write() and exit via _exit(127).
+        {
+            const char* m = "nativeCreatePtyRoot: execve failed\n";
+            (void)write(STDERR_FILENO, m, strlen(m));
+        }
+
         // 清理
         for (int i = 0; c_env[i]; i++) free(c_env[i]);
         free(c_env);
-        _exit(1);
+        _exit(127);
     }
 
     // --- 父进程 (继续运行在 App 上下文) ---

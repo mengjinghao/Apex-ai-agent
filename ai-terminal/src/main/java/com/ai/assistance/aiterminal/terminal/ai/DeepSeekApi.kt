@@ -2,6 +2,8 @@ package com.ai.assistance.aiterminal.terminal.ai
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -32,6 +34,16 @@ data class DeepSeekToolCall(
     val arguments: String
 )
 
+/**
+ * DeepSeek Chat Completions client (with optional tool-calling).
+ *
+ * Security (I-1/I-4): the entire request body — including the user prompt,
+ * the model id, the reasoning effort, and every tool name / description /
+ * parameter value — is now built with `org.json.JSONObject` / `JSONArray`.
+ * This replaces the previous manual string-escaping approach which was
+ * brittle and could be broken by edge-case prompt content. JSONObject
+ * guarantees JSON validity regardless of input.
+ */
 class DeepSeekApi(
     private val apiKey: String,
     private val model: DeepSeekModel = DeepSeekModel.V4_PRO,
@@ -57,14 +69,7 @@ class DeepSeekApi(
             connection.readTimeout = 60000
             connection.doOutput = true
 
-            val escapedPrompt = prompt
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\t", "\\t")
-                .replace("\r", "\\r")
-
-            val requestBody = buildJsonBody(escapedPrompt, null)
+            val requestBody = buildJsonBody(prompt, null, null).toString()
 
             OutputStreamWriter(connection.outputStream).use { writer ->
                 writer.write(requestBody)
@@ -101,65 +106,8 @@ class DeepSeekApi(
             connection.readTimeout = 120000
             connection.doOutput = true
 
-            val escapedPrompt = prompt
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\t", "\\t")
-                .replace("\r", "\\r")
-
-            val toolsJson = tools.joinToString(",") { tool ->
-                buildString {
-                    append("""
-                        {
-                            "type": "function",
-                            "function": {
-                                "name": "${tool.name}",
-                                "description": "${tool.description}",
-                                "parameters": {
-                                    "type": "object",
-                                    "properties": {
-                    """.trimIndent())
-                    var first = true
-                    tool.parameters.forEach { (key, value) ->
-                        if (!first) append(",")
-                        first = false
-                        when (value) {
-                            is String -> append("""
-                                "$key": {"type": "string", "description": "$value"}
-                            """.trimIndent())
-                            is Map<*, *> -> {
-                                val paramMap = value as Map<String, String>
-                                append("""
-                                    "$key": {"type": "${paramMap["type"] ?: "string"}", "description": "${paramMap["description"] ?: key}"}
-                                """.trimIndent())
-                            }
-                            else -> append("""
-                                "$key": {"type": "string", "description": "$value"}
-                            """.trimIndent())
-                        }
-                    }
-                    append("""
-                                    },
-                                    "required": [${tool.parameters.keys.joinToString(",") { "\"$it\"" }}]
-                                }
-                            }
-                        }
-                    """.trimIndent())
-                }
-            }
-
-            val requestBody = """
-                {
-                    "model": "${model.modelId}",
-                    "messages": [{"role": "user", "content": "$escapedPrompt"}],
-                    "temperature": $temperature,
-                    "max_tokens": $maxTokens,
-                    "tools": [$toolsJson],
-                    "tool_choice": "$toolChoice"
-                    ${if (reasoningEffort != null) ",\"reasoning_effort\": \"${reasoningEffort.value}\"" else ""}
-                }
-            """.trimIndent()
+            val toolsJsonArray = buildToolsJsonArray(tools)
+            val requestBody = buildJsonBody(prompt, toolsJsonArray, toolChoice).toString()
 
             OutputStreamWriter(connection.outputStream).use { writer ->
                 writer.write(requestBody)
@@ -187,19 +135,83 @@ class DeepSeekApi(
         }
     }
 
-    private fun buildJsonBody(escapedPrompt: String, toolsJson: String?): String {
-        val toolsBlock = if (toolsJson != null) ",\"tools\": [$toolsJson]" else ""
-        val reasoningBlock = if (reasoningEffort != null) ",\"reasoning_effort\": \"${reasoningEffort.value}\"" else ""
-        return """
-            {
-                "model": "${model.modelId}",
-                "messages": [{"role": "user", "content": "$escapedPrompt"}],
-                "temperature": $temperature,
-                "max_tokens": $maxTokens
-                $reasoningBlock
-                $toolsBlock
+    /**
+     * Builds the request body as a JSONObject. All interpolated fields (prompt,
+     * model id, reasoning effort, tool choice) go through JSONObject.put which
+     * guarantees correct JSON escaping.
+     *
+     * - [toolsJsonArray] is null for the plain `generate()` call.
+     * - [toolChoice] is null when no tools are present.
+     */
+    private fun buildJsonBody(
+        prompt: String,
+        toolsJsonArray: JSONArray?,
+        toolChoice: String?
+    ): JSONObject {
+        val messages = JSONArray().put(
+            JSONObject().put("role", "user").put("content", prompt)
+        )
+        val body = JSONObject()
+            .put("model", model.modelId)
+            .put("messages", messages)
+            .put("temperature", temperature)
+            .put("max_tokens", maxTokens)
+            .put("stream", false)
+        if (reasoningEffort != null) {
+            body.put("reasoning_effort", reasoningEffort.value)
+        }
+        if (toolsJsonArray != null) {
+            body.put("tools", toolsJsonArray)
+            if (toolChoice != null) {
+                body.put("tool_choice", toolChoice)
             }
-        """.trimIndent()
+        }
+        return body
+    }
+
+    /**
+     * Builds the `tools` JSON array entirely with JSONObject/JSONArray so that
+     * tool names, descriptions, and parameter values cannot break out of their
+     * JSON fields (I-1: JSON injection).
+     */
+    private fun buildToolsJsonArray(tools: List<ToolDefinition>): JSONArray {
+        val toolsArray = JSONArray()
+        for (tool in tools) {
+            val properties = JSONObject()
+            val required = JSONArray()
+            for ((key, value) in tool.parameters) {
+                val propObj = JSONObject()
+                when (value) {
+                    is Map<*, *> -> {
+                        val paramMap = value as Map<String, Any?>
+                        propObj.put("type", paramMap["type"] ?: "string")
+                        propObj.put("description", paramMap["description"] ?: key)
+                    }
+                    else -> {
+                        propObj.put("type", "string")
+                        propObj.put("description", value?.toString() ?: key)
+                    }
+                }
+                properties.put(key, propObj)
+                required.put(key)
+            }
+            val parametersObj = JSONObject()
+                .put("type", "object")
+                .put("properties", properties)
+                .put("required", required)
+
+            val functionObj = JSONObject()
+                .put("name", tool.name)
+                .put("description", tool.description)
+                .put("parameters", parametersObj)
+
+            val toolObj = JSONObject()
+                .put("type", "function")
+                .put("function", functionObj)
+
+            toolsArray.put(toolObj)
+        }
+        return toolsArray
     }
 
     data class FunctionCallResponse(

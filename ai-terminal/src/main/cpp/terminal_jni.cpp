@@ -455,8 +455,10 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePty(
 
         int slaveFd = open(slaveName, O_RDWR);
         if (slaveFd == -1) {
-            LOGE("Open slave PTY failed: %s", strerror(errno));
-            _exit(1);
+            // A-8/A-9: async-signal-safe error report. NO LOGE here.
+            const char* em = "nativeCreatePty: open slave PTY failed\n";
+            (void)write(STDERR_FILENO, em, strlen(em));
+            _exit(127);
         }
 
         // 设置窗口大小
@@ -476,10 +478,12 @@ Java_com_ai_assistance_aiterminal_terminal_RootTerminalManager_nativeCreatePty(
 
         // 执行 Shell
         execve(shell, argv, envp.data());
-        
-        // 如果 execve 失败
-        LOGE("execve failed: %s", strerror(errno));
-        _exit(1);
+
+        // execve only returns on failure. A-8/A-9: report via async-signal-safe
+        // write() — NO LOGE here (uses __android_log_print which is not safe).
+        const char* em = "nativeCreatePty: execve failed\n";
+        (void)write(STDERR_FILENO, em, strlen(em));
+        _exit(127);
         
     } else if (g_shellPid > 0) {
         // 父进程：成功，返回主设备 FD 的副本

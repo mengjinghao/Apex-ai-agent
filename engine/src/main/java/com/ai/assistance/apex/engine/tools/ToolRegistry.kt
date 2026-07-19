@@ -1,4 +1,4 @@
-﻿package com.ai.assistance.apex.engine.tools
+package com.ai.assistance.apex.engine.tools
 
 import android.content.Context
 import com.ai.assistance.apex.engine.model.ToolInfo
@@ -37,8 +37,11 @@ class ToolRegistry(private val context: Context) {
     }
 
     private fun registerBuiltInTools() {
-        register(FileTool())
-        register(NetworkTool())
+        // Security (G-1/G-2/G-5, H-1/H-2/H-4): FileTool and NetworkTool now require
+        // a Context so they can resolve allowlist base paths (filesDir/cacheDir/sdcard)
+        // and perform canonical path validation.
+        register(FileTool(context))
+        register(NetworkTool(context))
         register(SystemTool(context))
         register(ProcessTool())
         register(CodeExecutionTool())

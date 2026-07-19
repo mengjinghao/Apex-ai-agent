@@ -1,12 +1,23 @@
-﻿package com.ai.assistance.aiterminal.terminal.ai
+package com.ai.assistance.aiterminal.terminal.ai
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
+/**
+ * OpenAI-compatible Chat Completions client.
+ *
+ * Security (I-1/I-4): JSON request body is built with `org.json.JSONObject` so
+ * that the prompt cannot break out of the JSON string field. The previous
+ * implementation used string interpolation (`"content": "$prompt"`) which is
+ * vulnerable to JSON injection — a prompt containing a `"` would corrupt the
+ * payload and could inject attacker-controlled fields.
+ */
 class OpenAIApi(private val apiKey: String, private val model: String = "gpt-4o") : LLMAPI {
     companion object {
         private const val API_URL = "https://api.openai.com/v1/chat/completions"
@@ -24,16 +35,16 @@ class OpenAIApi(private val apiKey: String, private val model: String = "gpt-4o"
             connection.readTimeout = 30000
             connection.doOutput = true
 
-            val requestBody = """
-                {
-                    "model": "$model",
-                    "messages": [
-                        {"role": "user", "content": "$prompt"}
-                    ],
-                    "temperature": 0.7,
-                    "max_tokens": 500
-                }
-            """.trimIndent()
+            val messages = JSONArray().put(
+                JSONObject().put("role", "user").put("content", prompt)
+            )
+            val body = JSONObject()
+                .put("model", model)
+                .put("messages", messages)
+                .put("temperature", 0.7)
+                .put("max_tokens", 500)
+                .put("stream", false)
+            val requestBody = body.toString()
 
             OutputStreamWriter(connection.outputStream).use { writer ->
                 writer.write(requestBody)
@@ -60,6 +71,12 @@ class OpenAIApi(private val apiKey: String, private val model: String = "gpt-4o"
     }
 }
 
+/**
+ * Doubao (Volcengine Ark) Chat Completions client.
+ *
+ * Security (I-1/I-4): JSON request body is built with `org.json.JSONObject`
+ * (see OpenAIApi doc for rationale).
+ */
 class DoubaoApi(private val apiKey: String, private val model: String = "doubao-pro") : LLMAPI {
     companion object {
         private const val API_URL = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
@@ -77,14 +94,14 @@ class DoubaoApi(private val apiKey: String, private val model: String = "doubao-
             connection.readTimeout = 30000
             connection.doOutput = true
 
-            val requestBody = """
-                {
-                    "model": "$model",
-                    "messages": [
-                        {"role": "user", "content": "$prompt"}
-                    ]
-                }
-            """.trimIndent()
+            val messages = JSONArray().put(
+                JSONObject().put("role", "user").put("content", prompt)
+            )
+            val body = JSONObject()
+                .put("model", model)
+                .put("messages", messages)
+                .put("stream", false)
+            val requestBody = body.toString()
 
             OutputStreamWriter(connection.outputStream).use { writer ->
                 writer.write(requestBody)

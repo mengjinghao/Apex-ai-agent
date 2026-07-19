@@ -5,10 +5,39 @@ import com.ai.assistance.aiterminal.terminal.TerminalManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.File
 
 class TerminalToolExecutor(private val context: Context) {
     private val terminalManager by lazy {
         TerminalManager.getInstance(context)
+    }
+
+    /**
+     * Security (G-5): path allowlist for the read_file / write_file tools.
+     * Resolves the path canonically and verifies it lives under one of the
+     * allowed base directories (app filesDir, app cacheDir, or external storage).
+     * Returns true if the path is allowed, false otherwise.
+     *
+     * This prevents the AI from reading/writing arbitrary files (e.g. /etc/passwd,
+     * /data/system/..., sibling app private dirs).
+     */
+    private fun isPathAllowed(path: String): Boolean {
+        return try {
+            val canonical = File(path).canonicalPath
+            val allowedBases = listOfNotNull(
+                runCatching { context.filesDir.canonicalPath }.getOrNull(),
+                runCatching { context.cacheDir.canonicalPath }.getOrNull(),
+                runCatching {
+                    android.os.Environment.getExternalStorageDirectory().canonicalPath
+                }.getOrNull()
+            )
+            allowedBases.any { base ->
+                val baseWithSep = if (base.endsWith(File.separator)) base else base + File.separator
+                canonical == base || canonical.startsWith(baseWithSep)
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 
     suspend fun executeTool(
@@ -129,6 +158,15 @@ class TerminalToolExecutor(private val context: Context) {
             error = "Missing required parameter: file_path"
         )
 
+        // Security (G-5): path allowlist. Reject reads outside app/storage dirs.
+        if (!isPathAllowed(filePath)) {
+            return ToolExecutionResult(
+                success = false,
+                result = "",
+                error = "Blocked: file path '$filePath' is outside allowed directories (app filesDir/cacheDir or external storage)"
+            )
+        }
+
         val maxLines = (parameters["max_lines"] as? Number ?: 1000).toInt()
         val command = "head -n $maxLines \"$filePath\""
         return executeCommand(mapOf("command" to command))
@@ -140,6 +178,15 @@ class TerminalToolExecutor(private val context: Context) {
             result = "",
             error = "Missing required parameter: file_path"
         )
+
+        // Security (G-5): path allowlist. Reject writes outside app/storage dirs.
+        if (!isPathAllowed(filePath)) {
+            return ToolExecutionResult(
+                success = false,
+                result = "",
+                error = "Blocked: file path '$filePath' is outside allowed directories (app filesDir/cacheDir or external storage)"
+            )
+        }
 
         val content = parameters["content"] as? String ?: return ToolExecutionResult(
             success = false,
