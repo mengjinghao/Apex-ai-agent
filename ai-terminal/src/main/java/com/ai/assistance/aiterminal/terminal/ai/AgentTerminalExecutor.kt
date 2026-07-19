@@ -154,9 +154,20 @@ class AgentTerminalExecutor(private val context: Context) {
         val stderrDeferred = scope.async { process.errorStream.bufferedReader().readText() }
 
         val exitCode = process.waitFor()
-        val stdout = stdoutDeferred.await()
-        val stderr = stderrDeferred.await()
+        val rawStdout = stdoutDeferred.await()
+        val rawStderr = stderrDeferred.await()
         val durationMs = System.currentTimeMillis() - startedAt
+
+        // Security (C-1): sanitize shell output before returning to the AI agent.
+        // Strips OSC 52 (clipboard exfil), OSC 8 (hyperlinks), OSC 0/1/2 (title-bar
+        // spoofing), DECRQSS/DECRQCRA echobacks, and DCS payloads. Prevents:
+        //   - prompt injection via escape sequences read back by the LLM
+        //   - silent clipboard exfiltration if the agent ever forwards output to a
+        //     terminal renderer that honors OSC 52
+        //   - storage of dangerous sequences in command history / summaries
+        // See TerminalOutputSanitizer.kt for the full threat model.
+        val stdout = TerminalOutputSanitizer.sanitize(rawStdout)
+        val stderr = TerminalOutputSanitizer.sanitize(rawStderr)
 
         ExecResult(stdout, stderr, exitCode, durationMs, workingDir)
         } ?: ExecResult("", "Timeout after ${timeoutMs}ms", -1, timeoutMs, workingDir)

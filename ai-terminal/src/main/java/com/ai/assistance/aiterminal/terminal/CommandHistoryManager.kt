@@ -84,22 +84,104 @@ class CommandHistoryManager private constructor() {
         if (!sessionHistories.containsKey(sessionId)) {
             sessionHistories[sessionId] = mutableListOf()
         }
-        
+
+        // Security (TERM-FIX-3B / I-6): redact secrets BEFORE storing the command.
+        // Command history is persisted to disk (see saveHistory()) and is also
+        // surfaced to the AI agent for context — both are sensitive sinks.
+        // Without redaction, commands like:
+        //     curl -H "Authorization: Bearer eyJhbGciOi..." https://api.example.com
+        //     git clone https://user:hunter2@github.com/org/repo
+        //     export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+        // would leak long-lived credentials into a world-readable JSON file and
+        // into the LLM's context window.
+        //
+        // See redactSecrets() for the full list of patterns. Redaction is
+        // best-effort (regex-based) — callers should still avoid passing
+        // secrets via command-line args when an env-var / stdin alternative exists.
+        val safeCommand = redactSecrets(command)
+
         // 创建命令记录
         val record = CommandRecord(
-            command = command,
+            command = safeCommand,
             timestamp = System.currentTimeMillis(),
             exitCode = exitCode
         )
-        
+
         // 添加到会话历史
         sessionHistories[sessionId]?.add(record)
-        
-        // 更新频率统计
-        commandFrequency[command] = (commandFrequency[command] ?: 0) + 1
-        
+
+        // 更新频率统计 (key on the redacted form so frequency counts aren't split)
+        commandFrequency[safeCommand] = (commandFrequency[safeCommand] ?: 0) + 1
+
         // 保存历史数据
         saveHistory()
+    }
+
+    /**
+     * Redact common secret patterns from a command string before persistence.
+     *
+     * Security (TERM-FIX-3B / I-6): command history is a sensitive sink — it is
+     * persisted to disk (HISTORY_FILE_PATH) AND surfaced to the LLM as context.
+     * Both can leak long-lived credentials. This function performs best-effort
+     * regex-based redaction of the most common credential formats:
+     *
+     *   - `Authorization: Bearer <token>`          → `Authorization: Bearer [REDACTED]`
+     *   - `password=<value>` / `password: <value>` → `password=[REDACTED]`
+     *   - `secret=<value>`  / `api_key=<value>`    → `secret=[REDACTED]` / etc.
+     *   - `token=<value>`                          → `token=[REDACTED]`
+     *   - `https://user:pass@host`                 → `https://user:[REDACTED]@host`
+     *   - AWS access key IDs `AKIA[0-9A-Z]{16}`    → `[REDACTED_AWS_KEY]`
+     *   - Generic long hex/base64 tokens (40+ chars) → `[REDACTED_TOKEN]`
+     *
+     * Limitations:
+     *   - Regex-based; will NOT catch secrets in unusual formats or secrets
+     *     split across multiple lines / constructed at runtime.
+     *   - The "generic long token" pattern may produce false positives on
+     *     legitimate long hex strings (e.g. SHA-1 commit hashes, file hashes).
+     *     This is an acceptable trade-off for a defense-in-depth layer.
+     *   - Does NOT redact env-var assignments like `export FOO=bar` unless the
+     *     var name matches one of the patterns above.
+     */
+    private fun redactSecrets(command: String): String {
+        var redacted = command
+
+        // Authorization: Bearer <token>
+        redacted = Regex("""(Authorization:\s*Bearer\s+)([^\s]+)""", RegexOption.IGNORE_CASE)
+            .replace(redacted) { "${it.groupValues[1]}[REDACTED]" }
+
+        // password=<value> | password: <value>  (stops at whitespace or &)
+        redacted = Regex("""(password\s*[=:]\s*)([^\s&]+)""", RegexOption.IGNORE_CASE)
+            .replace(redacted) { "${it.groupValues[1]}[REDACTED]" }
+
+        // secret=<value> | secret: <value>
+        redacted = Regex("""(secret\s*[=:]\s*)([^\s&]+)""", RegexOption.IGNORE_CASE)
+            .replace(redacted) { "${it.groupValues[1]}[REDACTED]" }
+
+        // token=<value> | token: <value>
+        redacted = Regex("""(token\s*[=:]\s*)([^\s&]+)""", RegexOption.IGNORE_CASE)
+            .replace(redacted) { "${it.groupValues[1]}[REDACTED]" }
+
+        // api_key=<value> | apikey=<value> | api-key=<value> | api_key: <value>
+        redacted = Regex("""(api_?key\s*[=:]\s*)([^\s&]+)""", RegexOption.IGNORE_CASE)
+            .replace(redacted) { "${it.groupValues[1]}[REDACTED]" }
+
+        // URL-embedded credentials: https://user:pass@host
+        // Keep the username (often non-secret) but redact the password segment.
+        redacted = Regex("""(https?://)([^:\s]+):([^@\s]+)@""")
+            .replace(redacted) { "${it.groupValues[1]}${it.groupValues[2]}:[REDACTED]@" }
+
+        // AWS access key IDs (well-known format: AKIA + 16 uppercase alphanumerics)
+        redacted = Regex("""(AKIA[0-9A-Z]{16})""")
+            .replace(redacted, "[REDACTED_AWS_KEY]")
+
+        // Generic long hex/base64 token — 40+ contiguous hex chars.
+        // Catches: SHA-1 hashes (40), AWS secret keys (40 hex), Git OIDs,
+        // many JWT signatures (43+ base64url), etc. False positives on legit
+        // hashes are an acceptable trade-off for defense-in-depth.
+        redacted = Regex("""\b([a-fA-F0-9]{40,})\b""")
+            .replace(redacted, "[REDACTED_TOKEN]")
+
+        return redacted
     }
     
     /**

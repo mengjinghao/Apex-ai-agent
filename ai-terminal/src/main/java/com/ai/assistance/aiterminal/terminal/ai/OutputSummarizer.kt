@@ -67,17 +67,26 @@ class OutputSummarizer(private val context: Context, private val llmApi: LLMAPI)
         command: String? = null,
         maxLength: Int = 500
     ): OutputSummary = withContext(Dispatchers.IO) {
-        val statistics = analyzeOutput(output)
-        val outputType = detectOutputType(output, command)
-        val keyPoints = extractKeyPoints(output, statistics, outputType)
+        // Security (C-1): sanitize shell output BEFORE passing it to the LLM.
+        // Strips OSC 52 (clipboard exfil), OSC 8 (hyperlinks), OSC 0/1/2 (title-bar
+        // spoofing), DECRQSS/DECRQCRA echobacks, and DCS payloads. This is a
+        // defense-in-depth layer on top of AgentTerminalExecutor's sanitization —
+        // covers callers that pass pre-collected output directly to summarize().
+        // Prevents prompt injection via crafted escape sequences that could
+        // trick the LLM into following instructions embedded in terminal output.
+        val safeOutput = TerminalOutputSanitizer.sanitize(output)
 
-        val summaryPrompt = buildSummaryPrompt(output, statistics, outputType, keyPoints, maxLength)
+        val statistics = analyzeOutput(safeOutput)
+        val outputType = detectOutputType(safeOutput, command)
+        val keyPoints = extractKeyPoints(safeOutput, statistics, outputType)
+
+        val summaryPrompt = buildSummaryPrompt(safeOutput, statistics, outputType, keyPoints, maxLength)
 
         try {
             val aiSummary = llmApi.generate(summaryPrompt)
             parseAISummary(aiSummary, keyPoints, statistics)
         } catch (e: Exception) {
-            generateFallbackSummary(output, statistics, keyPoints, maxLength)
+            generateFallbackSummary(safeOutput, statistics, keyPoints, maxLength)
         }
     }
 
@@ -405,7 +414,11 @@ class OutputSummarizer(private val context: Context, private val llmApi: LLMAPI)
     }
 
     suspend fun quickSummary(output: String): String = withContext(Dispatchers.IO) {
-        val statistics = analyzeOutput(output)
+        // Security (C-1): sanitize shell output before analysis/return — same rationale
+        // as summarize(); quickSummary output may be displayed to the user or fed to
+        // downstream consumers.
+        val safeOutput = TerminalOutputSanitizer.sanitize(output)
+        val statistics = analyzeOutput(safeOutput)
 
         buildString {
             if (statistics.errorCount > 0) {
@@ -420,8 +433,8 @@ class OutputSummarizer(private val context: Context, private val llmApi: LLMAPI)
             }
             append(" (${statistics.nonEmptyLines} 行)")
 
-            if (output.length > 200) {
-                append("\n${output.take(200).lines().lastOrNull()?.take(50) ?: ""}...")
+            if (safeOutput.length > 200) {
+                append("\n${safeOutput.take(200).lines().lastOrNull()?.take(50) ?: ""}...")
             }
         }
     }

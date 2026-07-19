@@ -72,6 +72,139 @@ object DangerousCommandPatterns {
                 "此操作不可逆"
             ),
             reversible = false
+        ),
+        // ===== Defense-in-depth (TERM-FIX-3B / E-3, E-4): expanded pattern set =====
+        // Fork bomb — `:(){ :|:& };:` classic Bash fork bomb
+        CommandPattern(
+            pattern = Regex(""":\s*\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:"""),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Fork bomb — can crash the device",
+            precautions = listOf(
+                "Fork bomb will exhaust process slots / memory",
+                "May require forced reboot to recover"
+            ),
+            reversible = false
+        ),
+        // Write directly to block device via dd (more specific than the existing dd pattern)
+        CommandPattern(
+            pattern = Regex("""dd\s+.*of\s*=\s*/dev/(block/)?(sd|mmcblk|nvme)""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Writing directly to block device — can brick device",
+            precautions = listOf(
+                "Direct writes to block devices bypass filesystem safeguards",
+                "Can permanently brick the device — irreversible"
+            ),
+            reversible = false
+        ),
+        // cat /dev/urandom|zero > /dev/block/...
+        CommandPattern(
+            pattern = Regex("""cat\s+/dev/(urandom|zero)\s*>\s*/dev/(block/)?(sd|mmcblk)""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Writing random/zeros to block device",
+            precautions = listOf(
+                "Will overwrite partition table / filesystem metadata",
+                "Irreversible device brick"
+            ),
+            reversible = false
+        ),
+        // Generic redirect to block device — catches `> /dev/sda`, `> /dev/block/mmcblk0`, etc.
+        CommandPattern(
+            pattern = Regex(""">\s*/dev/(block/)?(sd|mmcblk|nvme)""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Redirecting to block device — can brick device",
+            precautions = listOf(
+                "Redirecting output to a block device corrupts raw storage",
+                "Irreversible"
+            ),
+            reversible = false
+        ),
+        // kill -1 / kill -9 -1 — signal every process the user can signal
+        CommandPattern(
+            pattern = Regex("""kill\s+-9?\s+-1\b""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Killing all processes the user can signal",
+            precautions = listOf(
+                "Will terminate every running process owned by the user",
+                "May crash the system / kill critical services"
+            ),
+            reversible = false
+        ),
+        // killall of Android system critical processes
+        CommandPattern(
+            pattern = Regex("""killall\s+(zygote|system_server|servicemanager|surfaceflinger)""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Killing critical system processes",
+            precautions = listOf(
+                "Killing zygote/system_server will crash the Android framework",
+                "Will likely force a system reboot"
+            ),
+            reversible = false
+        ),
+        // Disabling SELinux — security suicide
+        CommandPattern(
+            pattern = Regex("""setenforce\s+(0|permissive)""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Disabling SELinux enforcement — security suicide",
+            precautions = listOf(
+                "Permissive SELinux disables a major exploit-mitigation layer",
+                "Should only be done for debugging, never in production"
+            ),
+            reversible = true
+        ),
+        // Kernel panic via sysrq-trigger
+        CommandPattern(
+            pattern = Regex("""echo\s+[cb]\s*>\s*/proc/sysrq-trigger""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Triggering kernel panic via sysrq",
+            precautions = listOf(
+                "Will immediately panic the kernel",
+                "May cause filesystem corruption"
+            ),
+            reversible = false
+        ),
+        // find / -delete — recursive delete from root
+        CommandPattern(
+            pattern = Regex("""find\s+/\s+.*-delete""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "find / -delete — recursive delete from root",
+            precautions = listOf(
+                "Will delete every file reachable from /",
+                "Irreversible — system will be destroyed"
+            ),
+            reversible = false
+        ),
+        // find / -exec rm
+        CommandPattern(
+            pattern = Regex("""find\s+/\s+.*-exec\s+rm""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "find / -exec rm — recursive delete from root",
+            precautions = listOf(
+                "Will delete every file reachable from /",
+                "Irreversible — system will be destroyed"
+            ),
+            reversible = false
+        ),
+        // chmod on root directory — breaks permissions system-wide
+        CommandPattern(
+            pattern = Regex("""chmod\s+(-R\s+)?[0-7]+\s+/\s*$""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "chmod on root directory — breaks permissions",
+            precautions = listOf(
+                "Changing permissions on / breaks the entire permission model",
+                "System services will fail to start"
+            ),
+            reversible = true
+        ),
+        // Base64-encoded command execution — classic pattern-matching bypass
+        CommandPattern(
+            pattern = Regex("""\|\s*base64\s+(-d|--decode)\s*\|\s*(sh|bash)""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.CRITICAL,
+            description = "Decoding and executing base64 — bypasses pattern matching",
+            precautions = listOf(
+                "Base64-piped-to-shell is a common exfiltration / dropper technique",
+                "Bypasses static command inspection — block by default"
+            ),
+            reversible = false
         )
     )
 
@@ -165,6 +298,73 @@ object DangerousCommandPatterns {
                 "某些应用可能是其他功能的基础"
             ),
             reversible = true
+        ),
+        // ===== Defense-in-depth (TERM-FIX-3B / E-3, E-4): expanded pattern set =====
+        // Enabling sysrq — opens path to kernel panic
+        CommandPattern(
+            pattern = Regex("""echo\s+[0-9]\s*>\s*/proc/sys/kernel/sysrq""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.HIGH,
+            description = "Enabling sysrq — can trigger kernel panic",
+            precautions = listOf(
+                "sysrq allows direct kernel control including immediate crash",
+                "Should remain disabled on production devices"
+            ),
+            reversible = true
+        ),
+        // Take CPU cores offline — DoS / instability
+        CommandPattern(
+            pattern = Regex("""echo\s+0\s*>\s*/sys/devices/system/cpu/cpu[0-9]+/online""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.HIGH,
+            description = "Taking CPU cores offline",
+            precautions = listOf(
+                "Offlining CPU cores can freeze the system",
+                "May require reboot to recover"
+            ),
+            reversible = true
+        ),
+        // Flush firewall rules — disables network protection
+        CommandPattern(
+            pattern = Regex("""(iptables|ip6tables)\s+-F\b""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.HIGH,
+            description = "Flushing firewall rules — disables network protection",
+            precautions = listOf(
+                "Flushing iptables removes all inbound/outbound filtering",
+                "Exposes services to hostile networks"
+            ),
+            reversible = true
+        ),
+        // Mount tmpfs over system partition — overlay attack
+        CommandPattern(
+            pattern = Regex("""mount\s+.*tmpfs.*(/system|/vendor|/data)\b""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.HIGH,
+            description = "Mounting tmpfs over system partition",
+            precautions = listOf(
+                "Overlaying tmpfs on /system hides the real system files",
+                "Can be used to inject malicious binaries into PATH"
+            ),
+            reversible = true
+        ),
+        // eval of string literal — common obfuscation / bypass technique
+        CommandPattern(
+            pattern = Regex("""\beval\b\s*["']""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.HIGH,
+            description = "eval of string — can bypass pattern matching",
+            precautions = listOf(
+                "eval executes dynamically-constructed strings",
+                "Frequently used to hide the true payload from static inspection"
+            ),
+            reversible = false
+        ),
+        // $IFS trick — classic regex-bypass technique (e.g. cat$IFS/etc/passwd)
+        CommandPattern(
+            pattern = Regex("""\$IFS"""),
+            riskLevel = RiskLevel.HIGH,
+            description = "\$IFS variable — common pattern-matching bypass technique",
+            precautions = listOf(
+                "Substituting whitespace with \$IFS defeats naive tokenization",
+                "Almost always indicates an obfuscation attempt"
+            ),
+            reversible = false
         )
     )
 
@@ -238,6 +438,40 @@ object DangerousCommandPatterns {
                 "确保存储位置安全"
             ),
             reversible = false
+        ),
+        // ===== Defense-in-depth (TERM-FIX-3B / E-4): bypass technique detection =====
+        // Base64 decode (no shell pipe yet) — frequently the precursor to | sh
+        CommandPattern(
+            pattern = Regex("""base64\s+(-d|--decode)\s*""", RegexOption.IGNORE_CASE),
+            riskLevel = RiskLevel.MEDIUM,
+            description = "Base64 decode — may be used to hide malicious commands",
+            precautions = listOf(
+                "Base64 decode alone is not malicious, but is a common obfuscation step",
+                "Flag for review — combine with downstream shell execution to escalate"
+            ),
+            reversible = false
+        ),
+        // $() command substitution with a variable — `$(VAR)` may expand to arbitrary commands
+        CommandPattern(
+            pattern = Regex("""\$\(\s*[a-zA-Z_]\w*\s*\)"""),
+            riskLevel = RiskLevel.MEDIUM,
+            description = "Variable command substitution — may bypass pattern matching",
+            precautions = listOf(
+                "\$(VAR) substitution hides the actual command from static inspection",
+                "Inspect the variable's definition before executing"
+            ),
+            reversible = false
+        ),
+        // Backtick execution — legacy command substitution
+        CommandPattern(
+            pattern = Regex("""`[^`]+`"""),
+            riskLevel = RiskLevel.MEDIUM,
+            description = "Backtick command substitution — may bypass pattern matching",
+            precautions = listOf(
+                "Backtick substitution hides the actual command from static inspection",
+                "Prefer $(...) syntax and review the inner command"
+            ),
+            reversible = false
         )
     )
 
@@ -281,13 +515,31 @@ object DangerousCommandPatterns {
 
     val allPatterns = criticalRiskPatterns + highRiskPatterns + mediumRiskPatterns + lowRiskPatterns
 
+    /**
+     * Match the command against all known patterns and return the HIGHEST-severity match.
+     *
+     * Security (TERM-FIX-3B / E-6): previously this returned the FIRST match — which,
+     * because `allPatterns` is ordered `critical + high + medium + low`, happened to
+     * usually be the highest severity. But that was an implicit dependency on list
+     * ordering: callers that filtered `allPatterns` (e.g. via `getPatternsByLevel`)
+     * or that added a new low-risk pattern that happened to match a command also
+     * matched by a high-risk pattern could silently downgrade the assessment.
+     *
+     * Now we explicitly iterate ALL patterns and return the one with the highest
+     * `RiskLevel` ordinal. RiskLevel ordinal order (see TerminalCommandTemplate.kt:38):
+     *   LOW=0 < MEDIUM=1 < HIGH=2 < CRITICAL=3
+     * Higher ordinal = higher severity, so we use `>` to replace `best`.
+     */
     fun matchPattern(command: String): CommandPattern? {
+        var best: CommandPattern? = null
         for (pattern in allPatterns) {
             if (pattern.pattern.containsMatchIn(command)) {
-                return pattern
+                if (best == null || pattern.riskLevel.ordinal > best.riskLevel.ordinal) {
+                    best = pattern
+                }
             }
         }
-        return null
+        return best
     }
 
     fun getPatternsByLevel(level: RiskLevel): List<CommandPattern> {

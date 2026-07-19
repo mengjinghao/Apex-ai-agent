@@ -18,6 +18,14 @@
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 
 // 尝试寻找 su 二进制的路径
+// Security (TERM-FIX-3B / F-1): /data/local/xbin/su and /data/local/bin/su have
+// been removed from this list. /data/local/* is world-writable on Android (it is
+// the canonical location for `adb push` of temporary binaries) — an attacker who
+// can `adb push` (or a malicious app with shell-group access via Shizuku / etc.)
+// can plant a Trojan-horse `su` binary at /data/local/xbin/su and this function
+// would happily execute it with the caller's privileges. Only system-owned paths
+// are now considered; a real root install (Magisk, etc.) places su in /system/xbin
+// or /system/bin anyway.
 const char* SU_PATHS[] = {
     "/system/xbin/su",
     "/system/bin/su",
@@ -25,8 +33,6 @@ const char* SU_PATHS[] = {
     "/vendor/bin/su",
     "/su/bin/su",
     "/system/su",
-    "/data/local/xbin/su",
-    "/data/local/bin/su",
     nullptr
 };
 

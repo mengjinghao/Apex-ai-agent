@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/resource.h>  // Security (TERM-FIX-3B / J-1): setrlimit for fork-bomb / resource protection
 #include <pwd.h>
 #include <limits.h>
 #include <unistd.h>
@@ -124,6 +125,28 @@ bool TerminalSession::start(const std::string& shellType) {
         // CRITICAL (A-8/A-9): ONLY async-signal-safe calls allowed here.
         // No LOGD/LOGE/LOGI, no malloc-heavy stdlib, no std::cout, no exit().
         // Use write() for diagnostics, _exit() to terminate.
+
+        // Security (TERM-FIX-3B / J-1): apply resource limits BEFORE any other setup.
+        // setrlimit() is async-signal-safe (it is a thin syscall wrapper) and
+        // inherits across exec(), so limits set here apply to the shell and all
+        // its descendants. This is the primary defense against:
+        //   - Fork bombs (`:(){ :|:& };:`) — RLIMIT_NPROC caps total processes
+        //   - Disk-exhaustion DoS (`yes > /sdcard/x`) — RLIMIT_FSIZE caps file size
+        //   - FD-exhaustion DoS — RLIMIT_NOFILE caps open FDs
+        // Limits are intentionally generous (50 processes / 100MB file / 64 FDs)
+        // so legitimate shell pipelines still work, but pathological cases are
+        // bounded. Errors are intentionally ignored — best-effort hardening.
+        //
+        // NOTE: RLIMIT_NPROC counts processes per-UID, not per-session, so on a
+        // multi-user device this limit is shared across all sessions of the same
+        // UID. For a typical Android shell UID (e.g. u0_a123 or shell:2000) this
+        // is the desired behavior.
+        struct rlimit nproc_limit = {50, 100};   // soft=50, hard=100 processes
+        (void)setrlimit(RLIMIT_NPROC, &nproc_limit);
+        struct rlimit fsize_limit = {100 * 1024 * 1024, 200 * 1024 * 1024};  // 100MB / 200MB
+        (void)setrlimit(RLIMIT_FSIZE, &fsize_limit);
+        struct rlimit nofile_limit = {64, 128};  // soft=64, hard=128 open FDs
+        (void)setrlimit(RLIMIT_NOFILE, &nofile_limit);
 
         // Choose shell binary; fall back to /system/bin/sh.
         const char* shellPath = shellType.empty() ? "/system/bin/sh" : shellType.c_str();
