@@ -40,6 +40,12 @@ class EngineService : Service() {
         private val asyncExecutor = java.util.concurrent.Executors.newFixedThreadPool(4) { r ->
             Thread(r, "EngineService-async").apply { isDaemon = true }
         }
+
+        // PERF-36: 默认 admin 的 shell 权限在运行期不会变,首次查询后内存缓存,
+        // 避免每条 shell 命令都 runBlocking 查 Room。若未来 assignRole/revokeRole
+        // 对 userId=1 生效,需在那些路径里把 permissionCached 置 null 失效缓存。
+        @Volatile
+        private var permissionCached: Boolean? = null
     }
 
     private lateinit var containerManager: ContainerManager
@@ -75,8 +81,11 @@ class EngineService : Service() {
                     success = false
                 }
             }
-            val allowed = try {
-                runBlocking { repo.hasPermission(DEFAULT_ADMIN_USER_ID, SHELL_PERMISSION) }
+            val allowed = permissionCached ?: try {
+                // PERF-36: 首次查询后缓存,后续命令直接走内存。默认 admin 权限运行期不变。
+                val r = runBlocking { repo.hasPermission(DEFAULT_ADMIN_USER_ID, SHELL_PERMISSION) }
+                permissionCached = r
+                r
             } catch (e: Exception) {
                 Log.e(TAG, "RBAC check failed: ${e.message}", e)
                 false

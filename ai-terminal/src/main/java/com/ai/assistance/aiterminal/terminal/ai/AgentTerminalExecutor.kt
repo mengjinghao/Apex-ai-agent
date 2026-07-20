@@ -169,12 +169,17 @@ class AgentTerminalExecutor(private val context: Context) {
         val process = processBuilder.start()
         proc = process  // B-12: capture for watchdog destroy on timeout
 
-        val stdoutDeferred = scope.async { process.inputStream.bufferedReader().readText() }
-        val stderrDeferred = scope.async { process.errorStream.bufferedReader().readText() }
+        // PERF-17: 先 await stdout/stderr 再 waitFor。
+        // 原顺序 waitFor() → await() 在输出 > 64KB 时会死锁:子进程写满 pipe buffer 后
+        // 阻塞在 write(),我们没在读 → waitFor 永不返回 → await 永不执行。
+        // 先 drain 流让子进程能正常退出,waitFor 随后立即返回 0。
+        // .use {} 同时修了 PERF-32 类资源泄漏 (BufferedReader 未显式 close)。
+        val stdoutDeferred = scope.async { process.inputStream.bufferedReader().use { it.readText() } }
+        val stderrDeferred = scope.async { process.errorStream.bufferedReader().use { it.readText() } }
 
-        val exitCode = process.waitFor()
         val rawStdout = stdoutDeferred.await()
         val rawStderr = stderrDeferred.await()
+        val exitCode = process.waitFor()
         val durationMs = System.currentTimeMillis() - startedAt
 
         // Security (C-1): sanitize shell output before returning to the AI agent.

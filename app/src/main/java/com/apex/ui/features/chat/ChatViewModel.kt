@@ -69,6 +69,13 @@ class ChatViewModel @Inject constructor(
 
     private var sendJob: Job? = null
 
+    // PERF-21: 流式响应限流。逐 chunk emit StateFlow 会触发 1000+ 次 Compose 重组
+    // (一次 LLM 响应可能 1000+ chunks)。用 StringBuilder 累积当前 AI 气泡内容,
+    // 每 60ms 最多 emit 一次,Done/Error 时做最终 flush。视觉无感知(人眼 <16fps),
+    // 重组次数从 1000 降到 ~17。
+    private val streamingBuffer = StringBuilder()
+    private var lastEmitTime = 0L
+
     init {
         val config = getConfigUseCase.execute()
         val conv = historyUseCase.create(config.systemPrompt)
@@ -95,6 +102,10 @@ class ChatViewModel @Inject constructor(
             return
         }
 
+        // PERF-21: 每次发送重置流式缓冲区与限流计时器
+        streamingBuffer.setLength(0)
+        lastEmitTime = 0L
+
         val userMsg = ChatMessage(role = "user", content = text)
         val aiMsg = ChatMessage(role = "assistant", content = "", isStreaming = true)
         val newMessages = _state.value.messages + userMsg + aiMsg
@@ -118,6 +129,10 @@ class ChatViewModel @Inject constructor(
                     // 当前要追加 chunks 的 AI 气泡索引（每轮新建一个 AI 气泡）
                     val currentAiIndex = _state.value.messages.size - 1
 
+                    // PERF-21: 每轮重置流式缓冲区(每轮写入一个新的 AI 气泡)
+                    streamingBuffer.setLength(0)
+                    lastEmitTime = 0L
+
                     // 构造发送给 LLM 的对话历史：过滤掉 streaming / error / 空内容 assistant 消息
                     val convForApi = _state.value.conversation.copy(
                         messages = _state.value.messages.filter {
@@ -132,13 +147,21 @@ class ChatViewModel @Inject constructor(
                     chatEngine.sendMessage(convForApi, config).collect { event ->
                         when (event) {
                             is StreamEvent.Chunk -> {
-                                val current = _state.value.messages.toMutableList()
-                                if (currentAiIndex < current.size) {
-                                    current[currentAiIndex] = current[currentAiIndex].copy(
-                                        content = current[currentAiIndex].content + event.text,
-                                        isStreaming = true
-                                    )
-                                    _state.update { it.copy(messages = current) }
+                                // PERF-21: 累积到 StringBuilder,每 60ms 最多 emit 一次 StateFlow
+                                streamingBuffer.append(event.text)
+                                val now = System.currentTimeMillis()
+                                if (now - lastEmitTime > 60) {
+                                    lastEmitTime = now
+                                    _state.update { state ->
+                                        val messages = state.messages.toMutableList()
+                                        if (currentAiIndex in messages.indices) {
+                                            messages[currentAiIndex] = messages[currentAiIndex].copy(
+                                                content = streamingBuffer.toString(),
+                                                isStreaming = true
+                                            )
+                                        }
+                                        state.copy(messages = messages)
+                                    }
                                 }
                             }
                             is StreamEvent.Done -> { /* 自然结束，由循环外逻辑处理 */ }
@@ -150,10 +173,14 @@ class ChatViewModel @Inject constructor(
                         }
                     }
 
-                    // 标记当前 AI 气泡为非流式
+                    // PERF-21: 最终 flush — 把完整 streamingBuffer 写回 UI(最后一个 60ms
+                    // 窗口可能未触发),同时标记非流式
                     val cur = _state.value.messages.toMutableList()
                     if (currentAiIndex in cur.indices) {
-                        cur[currentAiIndex] = cur[currentAiIndex].copy(isStreaming = false)
+                        cur[currentAiIndex] = cur[currentAiIndex].copy(
+                            content = streamingBuffer.toString(),
+                            isStreaming = false
+                        )
                         _state.update { it.copy(messages = cur) }
                     }
 
@@ -231,10 +258,16 @@ class ChatViewModel @Inject constructor(
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message ?: "发送失败") }
             } finally {
-                // 兜底：把最后一个 streaming 气泡标记为完成
+                // PERF-21: 兜底 flush — 取消/异常时 collect 中断,前面 60ms 窗口的
+                // final flush 可能没执行。把 streamingBuffer 完整内容写回最后一个
+                // streaming 气泡(若已 flush 过则 isStreaming=false,此处 if 跳过)。
                 val cur = _state.value.messages.toMutableList()
                 if (cur.isNotEmpty() && cur.last().isStreaming) {
-                    cur[cur.size - 1] = cur.last().copy(isStreaming = false)
+                    val lastIdx = cur.size - 1
+                    cur[lastIdx] = cur[lastIdx].copy(
+                        content = streamingBuffer.toString().ifEmpty { cur[lastIdx].content },
+                        isStreaming = false
+                    )
                     _state.update { it.copy(messages = cur) }
                 }
                 _state.update { it.copy(isSending = false) }
@@ -245,9 +278,14 @@ class ChatViewModel @Inject constructor(
     private fun cancelSend() {
         sendJob?.cancel()
         chatEngine.cancel()
+        // PERF-21: 取消时也 flush streamingBuffer,保留已收到的部分内容
         val current = _state.value.messages.toMutableList()
         if (current.isNotEmpty() && current.last().isStreaming) {
-            current[current.size - 1] = current.last().copy(isStreaming = false)
+            val lastIdx = current.size - 1
+            current[lastIdx] = current[lastIdx].copy(
+                content = streamingBuffer.toString().ifEmpty { current[lastIdx].content },
+                isStreaming = false
+            )
             _state.update { it.copy(messages = current, isSending = false) }
         }
     }

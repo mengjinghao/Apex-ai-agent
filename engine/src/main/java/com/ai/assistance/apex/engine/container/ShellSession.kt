@@ -154,16 +154,20 @@ class ShellSession(private val context: Context, private val rootfsPath: String)
             }
 
             val maxWaitTime = startTime + timeoutMs
-            var bufferSnapshot = ""
             var sentinelIndex = -1
+            // PERF-14: 原实现在 synchronized 块里 outputBuffer.toString() 每 50ms 复制整个
+            // buffer (O(n) + 分配)。改为 synchronized 块内只做 indexOf (O(n) 但零分配),
+            // sentinel 找到后再做一次 toString 解析。长输出场景下 GC 压力大幅下降。
+            var timeoutSnapshot: String? = null
             while (System.currentTimeMillis() < maxWaitTime) {
-                synchronized(outputBuffer) {
-                    bufferSnapshot = outputBuffer.toString()
+                val idx = synchronized(outputBuffer) { outputBuffer.indexOf(sentinelPrefix) }
+                if (idx >= 0) {
+                    sentinelIndex = idx
+                    break
                 }
-                sentinelIndex = bufferSnapshot.indexOf(sentinelPrefix)
-                if (sentinelIndex >= 0) break
                 if (process?.isAlive != true) {
-                    // Shell 在产出 sentinel 前就退出了 — 不再等待
+                    // Shell 在产出 sentinel 前就退出了 — 抓一次快照用于错误返回,然后停止等待
+                    timeoutSnapshot = synchronized(outputBuffer) { outputBuffer.toString() }
                     break
                 }
                 try {
@@ -178,9 +182,11 @@ class ShellSession(private val context: Context, private val rootfsPath: String)
 
             if (sentinelIndex < 0) {
                 // 超时或 shell 退出,未拿到 sentinel — 返回已收集到的输出
+                val snapshot = timeoutSnapshot
+                    ?: synchronized(outputBuffer) { outputBuffer.toString() }
                 return ExecutionResult().apply {
                     exitCode = -1
-                    this.output = bufferSnapshot
+                    this.output = snapshot
                     this.error = if (process?.isAlive != true)
                         "Shell process exited before command completed"
                     else "Command timed out after ${timeoutMs}ms"
@@ -189,30 +195,33 @@ class ShellSession(private val context: Context, private val rootfsPath: String)
                 }
             }
 
-            // 解析 exit code: sentinel 后紧跟 ":<digits>" 直到行尾
-            val afterSentinel = bufferSnapshot.substring(sentinelIndex + sentinelPrefix.length)
-            val newlineIdx = afterSentinel.indexOf('\n')
-            val exitCodeStr = if (newlineIdx >= 0)
-                afterSentinel.substring(0, newlineIdx).trim()
-            else
-                afterSentinel.trim()
-            val parsedExitCode = exitCodeStr.toIntOrNull() ?: 0
-
-            // 真实命令输出 = sentinel 之前的全部内容 (去掉末尾换行)
-            var actualOutput = bufferSnapshot.substring(0, sentinelIndex)
-            while (actualOutput.endsWith('\n')) {
-                actualOutput = actualOutput.removeSuffix("\n")
-            }
-
-            // 从共享 buffer 中移除 sentinel 行,保持 getOutput() 干净
-            synchronized(outputBuffer) {
+            // PERF-14: sentinel 已找到 — 在单个 synchronized 块内完成解析 + buffer 清理,
+            // 避免重复 toString。这是唯一一次完整复制,且只在命令结束时发生(非每 50ms)。
+            val (actualOutput, parsedExitCode) = synchronized(outputBuffer) {
                 val full = outputBuffer.toString()
+                // 解析 exit code: sentinel 后紧跟 ":<digits>" 直到行尾
+                val afterSentinel = full.substring(sentinelIndex + sentinelPrefix.length)
+                val newlineIdx = afterSentinel.indexOf('\n')
+                val exitCodeStr = if (newlineIdx >= 0)
+                    afterSentinel.substring(0, newlineIdx).trim()
+                else
+                    afterSentinel.trim()
+                val code = exitCodeStr.toIntOrNull() ?: 0
+
+                // 真实命令输出 = sentinel 之前的全部内容 (去掉末尾换行)
+                var actualOut = full.substring(0, sentinelIndex)
+                while (actualOut.endsWith('\n')) {
+                    actualOut = actualOut.removeSuffix("\n")
+                }
+
+                // 从共享 buffer 中移除 sentinel 行,保持 getOutput() 干净
                 val lineEnd = full.indexOf('\n', sentinelIndex)
                 outputBuffer.setLength(0)
                 outputBuffer.append(full.substring(0, sentinelIndex))
                 if (lineEnd >= 0 && lineEnd + 1 < full.length) {
                     outputBuffer.append(full.substring(lineEnd + 1))
                 }
+                Pair(actualOut, code)
             }
 
             ExecutionResult().apply {

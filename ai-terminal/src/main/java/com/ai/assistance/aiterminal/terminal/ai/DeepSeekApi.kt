@@ -2,12 +2,14 @@ package com.ai.assistance.aiterminal.terminal.ai
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
+import java.util.concurrent.TimeUnit
 
 enum class DeepSeekModel(val modelId: String, val description: String) {
     V4_PRO("deepseek-v4-pro", "1.6T MoE, 49B active, best for complex agent tasks"),
@@ -54,35 +56,35 @@ class DeepSeekApi(
     companion object {
         private const val API_URL = "https://api.deepseek.com/chat/completions"
         private const val TAG = "DeepSeekApi"
+
+        // PERF-56: 共享 OkHttpClient — 连接池复用,省 TLS 握手 (每请求省 ~100-300ms)。
+        // 原 HttpURLConnection 每次新建连接 + 握手,批量 LLM 调用场景下开销显著。
+        private val httpClient by lazy {
+            OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .build()
+        }
     }
 
     override suspend fun generate(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            val url = URL(API_URL)
-            val connection = url.openConnection() as HttpsURLConnection
-
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.setRequestProperty("Authorization", "Bearer $apiKey")
-            connection.setRequestProperty("Accept", "application/json")
-            connection.connectTimeout = 30000
-            connection.readTimeout = 60000
-            connection.doOutput = true
-
             val requestBody = buildJsonBody(prompt, null, null).toString()
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val request = Request.Builder()
+                .url(API_URL)
+                .post(requestBody.toRequestBody(mediaType))
+                .addHeader("Authorization", "Bearer $apiKey")
+                .addHeader("Accept", "application/json")
+                .build()
 
-            OutputStreamWriter(connection.outputStream).use { writer ->
-                writer.write(requestBody)
-                writer.flush()
-            }
-
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                extractContentFromResponse(response)
-            } else {
-                val error = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                "Error: HTTP $responseCode - model=${model.modelId}, ${error.take(300)}"
+            httpClient.newCall(request).execute().use { response ->
+                val body = response.body?.string() ?: ""
+                if (response.code == HttpURLConnection.HTTP_OK) {
+                    extractContentFromResponse(body)
+                } else {
+                    "Error: HTTP ${response.code} - model=${model.modelId}, ${body.take(300)}"
+                }
             }
         } catch (e: Exception) {
             "Error: ${e.message}"
@@ -95,36 +97,27 @@ class DeepSeekApi(
         toolChoice: String = "auto"
     ): FunctionCallResponse = withContext(Dispatchers.IO) {
         try {
-            val url = URL(API_URL)
-            val connection = url.openConnection() as HttpsURLConnection
-
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.setRequestProperty("Authorization", "Bearer $apiKey")
-            connection.setRequestProperty("Accept", "application/json")
-            connection.connectTimeout = 30000
-            connection.readTimeout = 120000
-            connection.doOutput = true
-
             val toolsJsonArray = buildToolsJsonArray(tools)
             val requestBody = buildJsonBody(prompt, toolsJsonArray, toolChoice).toString()
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val request = Request.Builder()
+                .url(API_URL)
+                .post(requestBody.toRequestBody(mediaType))
+                .addHeader("Authorization", "Bearer $apiKey")
+                .addHeader("Accept", "application/json")
+                .build()
 
-            OutputStreamWriter(connection.outputStream).use { writer ->
-                writer.write(requestBody)
-                writer.flush()
-            }
-
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                parseFunctionCallResponse(response)
-            } else {
-                val error = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                FunctionCallResponse(
-                    content = "Error: HTTP $responseCode",
-                    toolCalls = emptyList(),
-                    isToolCall = false
-                )
+            httpClient.newCall(request).execute().use { response ->
+                val body = response.body?.string() ?: ""
+                if (response.code == HttpURLConnection.HTTP_OK) {
+                    parseFunctionCallResponse(body)
+                } else {
+                    FunctionCallResponse(
+                        content = "Error: HTTP ${response.code}",
+                        toolCalls = emptyList(),
+                        isToolCall = false
+                    )
+                }
             }
         } catch (e: Exception) {
             FunctionCallResponse(

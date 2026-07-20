@@ -5,8 +5,11 @@ import com.ai.assistance.aiterminal.terminal.model.Session
 import com.ai.assistance.aiterminal.terminal.model.SessionState
 import com.ai.assistance.aiterminal.terminal.model.TerminalEvent
 import com.ai.assistance.aiterminal.terminal.model.TerminalState
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +52,12 @@ class TerminalManager private constructor() {
     // 终端全局状态（响应式，对标状态管理）
     private val _terminalState = MutableStateFlow(TerminalState())
     val terminalState: StateFlow<TerminalState> = _terminalState.asStateFlow()
+
+    // PERF-11: 每命令 StateFlow emit 会分配新 HashMap + 触发所有终端 UI 重组。
+    // 改为 SharedFlow<CommandEvent> 投递单命令事件,terminalState 只在会话增删/状态变化时 emit。
+    // 需要逐命令通知的调用方订阅 commandEvents 而非 terminalState。
+    private val _commandEvents = MutableSharedFlow<CommandEvent>(extraBufferCapacity = 256)
+    val commandEvents: SharedFlow<CommandEvent> = _commandEvents.asSharedFlow()
 
     // 事件流（对标事件通知）
     val eventFlow = jni.eventFlow
@@ -134,13 +143,13 @@ class TerminalManager private constructor() {
     fun executeCommand(sessionId: String, command: String): Boolean {
         val success = jni.executeCommand(sessionId, command)
         if (success) {
-            _terminalState.update { state ->
-                val newSessions = state.sessions.toMutableMap()
-                newSessions[sessionId]?.commandHistory?.add(command)
-                state.copy(sessions = newSessions)
-            }
+            // PERF-11: 不再每命令 _terminalState.update (会分配新 HashMap + 触发全量重组)。
+            // commandHistory 原地追加 (Session 内部状态,向后兼容 getRecentCommands)。
+            _terminalState.value.sessions[sessionId]?.commandHistory?.add(command)
             // 记录命令到历史管理器
             CommandHistoryManager.instance.recordCommand(sessionId, command)
+            // 逐命令事件投递给订阅者 (替代原 terminalState emit)
+            _commandEvents.tryEmit(CommandEvent.Executed(sessionId, command))
             // D-3: refresh idle timer so the reaper does not close an active session.
             touchSession(sessionId)
         }
@@ -295,7 +304,16 @@ class TerminalManager private constructor() {
     // D-3: refresh lastActivityAt for a session so the idle reaper does
     // not close it. Creates a new Session instance (copy) so StateFlow
     // equality is violated and collectors actually receive the update.
+    //
+    // PERF-11: 限流 — 1s 内多次 touchSession 只 emit 一次 StateFlow。
+    // reaper 每 60s 扫描一次,1s 粒度绰绰有余。executeCommand 高频调用时
+    // terminalState 不再逐命令重组。
+    @Volatile
+    private var lastTouchEmitTime = 0L
     private fun touchSession(sessionId: String) {
+        val now = System.currentTimeMillis()
+        if (now - lastTouchEmitTime < 1000) return
+        lastTouchEmitTime = now
         _terminalState.update { state ->
             val existing = state.sessions[sessionId] ?: return@update state
             val updated = existing.copy(lastActivityAt = System.currentTimeMillis())
@@ -355,4 +373,14 @@ class TerminalManager private constructor() {
             currentState.copy(sessions = newSessions)
         }
     }
+}
+
+/**
+ * PERF-11: 逐命令事件流。替代原 executeCommand 内的 _terminalState.update —
+ * 调用方按需订阅 [TerminalManager.commandEvents] 获取单命令通知,
+ * 不再触发 terminalState 全量重组 (避免每命令分配新 HashMap)。
+ */
+sealed class CommandEvent {
+    /** 命令已成功提交到会话。 */
+    data class Executed(val sessionId: String, val command: String) : CommandEvent()
 }

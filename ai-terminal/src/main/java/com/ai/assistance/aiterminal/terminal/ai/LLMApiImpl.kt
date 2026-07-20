@@ -2,12 +2,25 @@ package com.ai.assistance.aiterminal.terminal.ai
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
+import java.util.concurrent.TimeUnit
+
+/**
+ * 共享 OkHttpClient — PERF-56。连接池复用,省 TLS 握手 (每请求省 ~100-300ms)。
+ * OpenAIApi / DoubaoApi 共用同一个 client 实例。
+ */
+private val sharedHttpClient by lazy {
+    OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .build()
+}
 
 /**
  * OpenAI-compatible Chat Completions client.
@@ -25,16 +38,6 @@ class OpenAIApi(private val apiKey: String, private val model: String = "gpt-4o"
 
     override suspend fun generate(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            val url = URL(API_URL)
-            val connection = url.openConnection() as HttpsURLConnection
-
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.setRequestProperty("Authorization", "Bearer $apiKey")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 30000
-            connection.doOutput = true
-
             val messages = JSONArray().put(
                 JSONObject().put("role", "user").put("content", prompt)
             )
@@ -45,19 +48,20 @@ class OpenAIApi(private val apiKey: String, private val model: String = "gpt-4o"
                 .put("max_tokens", 500)
                 .put("stream", false)
             val requestBody = body.toString()
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val request = Request.Builder()
+                .url(API_URL)
+                .post(requestBody.toRequestBody(mediaType))
+                .addHeader("Authorization", "Bearer $apiKey")
+                .build()
 
-            OutputStreamWriter(connection.outputStream).use { writer ->
-                writer.write(requestBody)
-                writer.flush()
-            }
-
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                extractContentFromResponse(response)
-            } else {
-                val error = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                "Error: HTTP $responseCode - ${error.take(200)}"
+            sharedHttpClient.newCall(request).execute().use { response ->
+                val respBody = response.body?.string() ?: ""
+                if (response.code == HttpURLConnection.HTTP_OK) {
+                    extractContentFromResponse(respBody)
+                } else {
+                    "Error: HTTP ${response.code} - ${respBody.take(200)}"
+                }
             }
         } catch (e: Exception) {
             "Error: ${e.message}"
@@ -84,16 +88,6 @@ class DoubaoApi(private val apiKey: String, private val model: String = "doubao-
 
     override suspend fun generate(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            val url = URL(API_URL)
-            val connection = url.openConnection() as HttpURLConnection
-
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.setRequestProperty("Authorization", "Bearer $apiKey")
-            connection.connectTimeout = 15000
-            connection.readTimeout = 30000
-            connection.doOutput = true
-
             val messages = JSONArray().put(
                 JSONObject().put("role", "user").put("content", prompt)
             )
@@ -102,19 +96,20 @@ class DoubaoApi(private val apiKey: String, private val model: String = "doubao-
                 .put("messages", messages)
                 .put("stream", false)
             val requestBody = body.toString()
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val request = Request.Builder()
+                .url(API_URL)
+                .post(requestBody.toRequestBody(mediaType))
+                .addHeader("Authorization", "Bearer $apiKey")
+                .build()
 
-            OutputStreamWriter(connection.outputStream).use { writer ->
-                writer.write(requestBody)
-                writer.flush()
-            }
-
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                extractContentFromResponse(response)
-            } else {
-                val error = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                "Error: HTTP $responseCode - ${error.take(200)}"
+            sharedHttpClient.newCall(request).execute().use { response ->
+                val respBody = response.body?.string() ?: ""
+                if (response.code == HttpURLConnection.HTTP_OK) {
+                    extractContentFromResponse(respBody)
+                } else {
+                    "Error: HTTP ${response.code} - ${respBody.take(200)}"
+                }
             }
         } catch (e: Exception) {
             "Error: ${e.message}"

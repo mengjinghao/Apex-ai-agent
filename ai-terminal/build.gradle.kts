@@ -62,6 +62,9 @@ dependencies {
     implementation(project(":sdk:process-bridge"))
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
 
+    // PERF-56: 共享 OkHttpClient (连接池复用,省 TLS 握手)。供 DeepSeekApi / LLMApiImpl 使用。
+    implementation(libs.squareup.okhttp)
+
     // Compose
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
     implementation(composeBom)
