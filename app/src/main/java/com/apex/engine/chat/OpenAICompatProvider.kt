@@ -26,17 +26,34 @@ import java.util.concurrent.atomic.AtomicBoolean
  * 协议将工具元信息序列化进 request body 的 `tools` 字段，并把 `tool_choice`
  * 设为 `"auto"`，让模型自行决定是否发起工具调用。返回的 [StreamEvent.ToolCallEvent]
  * 由调用方（如 [com.apex.ui.features.chat.ChatViewModel]）消费。
+ *
+ * PERF-38: 全局共享 [SHARED_CLIENT]，确保 Hilt 注入的 Provider 与
+ * ServiceLocator 通过 ChatEngine 默认构造器创建的 Provider 复用同一个
+ * OkHttp 客户端 —— 即同一个 ConnectionPool + 同一个 Dispatcher 线程池，
+ * 避免重复创建带来的连接/线程浪费。
  */
 class OpenAICompatProvider : LLMProvider {
 
-    private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(120, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .build()
+    private val client: OkHttpClient = SHARED_CLIENT
 
     private var currentCall: okhttp3.Call? = null
     private val cancelled = AtomicBoolean(false)
+
+    companion object {
+        /**
+         * 进程级单例 OkHttpClient —— 所有 [OpenAICompatProvider] 实例共享。
+         * lazy 确保首次构造发生在实际使用时（而非 class load），且线程安全。
+         * 配置 pingInterval=40s 维持 keepalive，避免空闲连接被对端关闭。
+         */
+        private val SHARED_CLIENT: OkHttpClient by lazy {
+            OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .pingInterval(40, TimeUnit.SECONDS)  // keepalive
+                .build()
+        }
+    }
 
     override fun stream(
         messages: List<ChatMessage>,

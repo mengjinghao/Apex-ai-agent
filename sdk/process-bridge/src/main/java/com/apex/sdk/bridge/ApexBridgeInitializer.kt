@@ -49,11 +49,38 @@ class ApexBridgeInitializer : ContentProvider() {
      */
     private val recoveryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    /**
+     * PERF-49: 后台初始化 scope —— 把 ContentProvider.onCreate 中的重活儿
+     * (包扫描 / Watchdog 反射启动 / 心跳启动 / 必装 APK 检查) 异步化，
+     * 避免阻塞主线程的冷启动路径（典型节省 50-200ms）。
+     * SupervisorJob 保证单个后台任务失败不影响其他任务或自愈 scope。
+     */
+    private val initScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    companion object {
+        /**
+         * PERF-49: 缓存 Watchdog / HeartbeatReporter 的 Class 引用，
+         * 避免每次 onCreate / subscribeWatchdogForSelfHealing 重复 Class.forName。
+         * :sdk:process-bridge 不硬依赖 :sdk:watchdog（见 build.gradle.kts），
+         * 故仍走反射；缓存仅省 lookup 开销，不改变耦合关系。
+         * Class.forName 在 watchdog SDK 不在 classpath 时返回 null，
+         * 后续调用方各自降级处理。
+         */
+        private val watchdogClass: Class<*>? by lazy {
+            try { Class.forName("com.apex.sdk.watchdog.Watchdog") }
+            catch (e: Throwable) { null }
+        }
+        private val heartbeatReporterClass: Class<*>? by lazy {
+            try { Class.forName("com.apex.sdk.watchdog.HeartbeatReporter") }
+            catch (e: Throwable) { null }
+        }
+    }
+
     override fun onCreate(): Boolean {
         val ctx = context ?: return false
         val apkId = detectApkId(ctx)
 
-        // 注册身份
+        // 注册身份（轻量、同步）
         ApkIdentityRegistry.register(
             ApkIdentity(
                 id = apkId,
@@ -65,59 +92,14 @@ class ApexBridgeInitializer : ContentProvider() {
         )
         ApexLog.i(apkId, "[BridgeInitializer] onCreate (pid=${android.os.Process.myPid()}, pkg=${ctx.packageName})")
 
-        // 启动心跳和看门狗（通过反射加载，避免循环依赖）
-        try {
-            val hrClass = Class.forName("com.apex.sdk.watchdog.HeartbeatReporter")
-            val hrCtor = hrClass.getConstructor(String::class.java)
-            val hr = hrCtor.newInstance(apkId)
-            hrClass.getMethod("start").invoke(hr)
-            heartbeat = hr
-
-            val wdClass = Class.forName("com.apex.sdk.watchdog.Watchdog")
-            // Kotlin object 的方法是实例方法，需要通过 INSTANCE 字段拿 receiver；
-            // 旧实现 invoke(null) 会抛 NPE 被外层 catch 静默吞掉，导致 Watchdog 实际未启动。
-            val wdInstance = wdClass.getField("INSTANCE").get(null)
-            wdClass.getMethod("start").invoke(wdInstance)
-        } catch (e: ClassNotFoundException) {
-            // watchdog SDK not available in classpath, skip
-            ApexLog.d(apkId, "[BridgeInitializer] watchdog SDK not available, skipping")
-        } catch (e: Exception) {
-            ApexLog.w(apkId, "[BridgeInitializer] watchdog init failed: ${e.message}")
-        }
-
-        // 注册包监听（监听套件中 APK 的安装/卸载）
-        ApkPackageMonitor.register(ctx)
-
-        // 刷新安装状态快照
-        com.apex.sdk.common.ApkDependencyManager.refreshInstallState(ctx)
-
         // 主 APK 自身：启动 BridgeRegistryService（其他 APK bindService 到此）
         // 非 主 APK：bindService 到主 APK 的 Registry
+        // —— 这两步是 Bridge 接受连接的前提，必须同步完成。
         if (apkId == ApexSuite.ApkId.MAIN) {
             BridgeRegistryService.startInMainApp(ctx)
             // 同时也 bindToRegistry（bind 到自己）
             BridgeConnection.bindToRegistry(ctx) { connected ->
                 ApexLog.i(apkId, "[BridgeInitializer] self-bridge bound = $connected")
-            }
-
-            // 订阅 Watchdog.events — 收到 ApkDied 后延迟 2s 重新 bindToRegistry，
-            // 触发自愈：远程 APK 重启并重新注册服务时，本主 APK 的 Registry 能及时拿到新 Binder。
-            subscribeWatchdogForSelfHealing(ctx)
-
-            // 主 APK 启动时检查必须 APK 是否已安装
-            val missing = com.apex.sdk.common.ApkDependencyManager.checkRequiredApks(ctx)
-            if (missing.isNotEmpty()) {
-                ApexLog.w(apkId, "[BridgeInitializer] ${missing.size} required APKs missing: ${missing.map { it.apkId }}")
-                // 发布事件让 UI 显示提示
-                SuiteEventBus.publish(
-                    type = SuiteEventTypes.APK_REQUIRED_MISSING,
-                    payload = mapOf(
-                        "missingApkIds" to missing.map { it.apkId },
-                        "missingDisplayNames" to missing.map { it.displayName },
-                        "summary" to com.apex.sdk.common.ApkDependencyManager.buildMissingApksMessage(missing)
-                    ),
-                    sourceApk = apkId
-                )
             }
         } else {
             BridgeConnection.bindToRegistry(ctx) { connected ->
@@ -125,7 +107,71 @@ class ApexBridgeInitializer : ContentProvider() {
             }
         }
 
+        // PERF-49: 重活儿全部丢到后台 initScope —— 不阻塞 ContentProvider.onCreate
+        // （即不阻塞 Application.onCreate 与冷启动）。
+        // 顺序保证：先启动 Watchdog，再订阅 events（订阅依赖 Watchdog 已 start），
+        // 再做包扫描 / 必装 APK 检查。任一步失败不影响后续步骤。
+        initScope.launch {
+            startWatchdogAndHeartbeat(apkId)
+            if (apkId == ApexSuite.ApkId.MAIN) {
+                subscribeWatchdogForSelfHealing(ctx)
+            }
+            ApkPackageMonitor.register(ctx)
+            com.apex.sdk.common.ApkDependencyManager.refreshInstallState(ctx)
+            if (apkId == ApexSuite.ApkId.MAIN) {
+                val missing = com.apex.sdk.common.ApkDependencyManager.checkRequiredApks(ctx)
+                if (missing.isNotEmpty()) {
+                    ApexLog.w(apkId, "[BridgeInitializer] ${missing.size} required APKs missing: ${missing.map { it.apkId }}")
+                    // 发布事件让 UI 显示提示
+                    SuiteEventBus.publish(
+                        type = SuiteEventTypes.APK_REQUIRED_MISSING,
+                        payload = mapOf(
+                            "missingApkIds" to missing.map { it.apkId },
+                            "missingDisplayNames" to missing.map { it.displayName },
+                            "summary" to com.apex.sdk.common.ApkDependencyManager.buildMissingApksMessage(missing)
+                        ),
+                        sourceApk = apkId
+                    )
+                }
+            }
+        }
+
         return true
+    }
+
+    /**
+     * PERF-49: 反射启动 HeartbeatReporter + Watchdog —— 从 onCreate 主线程
+     * 移到 [initScope] 后台调用。使用 [companion object] 中缓存的 Class 引用，
+     * 避免 Class.forName 重复查找。watchdog SDK 不在 classpath 时静默降级。
+     */
+    private fun startWatchdogAndHeartbeat(apkId: String) {
+        // HeartbeatReporter
+        try {
+            val hrClass = heartbeatReporterClass
+            if (hrClass != null) {
+                val hrCtor = hrClass.getConstructor(String::class.java)
+                val hr = hrCtor.newInstance(apkId)
+                hrClass.getMethod("start").invoke(hr)
+                heartbeat = hr
+            } else {
+                ApexLog.d(apkId, "[BridgeInitializer] watchdog SDK not available, skipping")
+            }
+        } catch (e: Exception) {
+            ApexLog.w(apkId, "[BridgeInitializer] heartbeat init failed: ${e.message}")
+        }
+
+        // Watchdog (Kotlin object)
+        try {
+            val wdClass = watchdogClass
+            if (wdClass != null) {
+                // Kotlin object 的方法是实例方法，需要通过 INSTANCE 字段拿 receiver；
+                // 旧实现 invoke(null) 会抛 NPE 被外层 catch 静默吞掉，导致 Watchdog 实际未启动。
+                val wdInstance = wdClass.getField("INSTANCE").get(null)
+                wdClass.getMethod("start").invoke(wdInstance)
+            }
+        } catch (e: Exception) {
+            ApexLog.w(apkId, "[BridgeInitializer] watchdog init failed: ${e.message}")
+        }
     }
 
     /**
@@ -140,8 +186,15 @@ class ApexBridgeInitializer : ContentProvider() {
      * 但其他 BridgeRegistry 功能不受影响。
      */
     private fun subscribeWatchdogForSelfHealing(ctx: Context) {
+        // PERF-49: 复用 companion object 缓存的 watchdogClass，避免重复 Class.forName
+        val wdClass = watchdogClass ?: run {
+            ApexLog.d(
+                ApexSuite.ApkId.MAIN,
+                "[BridgeInitializer] Watchdog not on classpath, self-healing disabled"
+            )
+            return
+        }
         try {
-            val wdClass = Class.forName("com.apex.sdk.watchdog.Watchdog")
             val wdInstance = wdClass.getField("INSTANCE").get(null)
             @Suppress("UNCHECKED_CAST")
             val events = wdClass.getMethod("getEvents").invoke(wdInstance) as? Flow<Any?>
@@ -160,11 +213,6 @@ class ApexBridgeInitializer : ContentProvider() {
             ApexLog.i(
                 ApexSuite.ApkId.MAIN,
                 "[BridgeInitializer] subscribed to Watchdog.events for self-healing"
-            )
-        } catch (e: ClassNotFoundException) {
-            ApexLog.d(
-                ApexSuite.ApkId.MAIN,
-                "[BridgeInitializer] Watchdog not on classpath, self-healing disabled"
             )
         } catch (e: Throwable) {
             ApexLog.w(

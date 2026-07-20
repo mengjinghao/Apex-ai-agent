@@ -66,6 +66,23 @@ class TerminalContextCollector(private val context: Context) {
     private var lastCollectTime: Long = 0
     private val cacheValidityMs: Long = 5000
 
+    companion object {
+        /**
+         * PERF-25: 缓存 android.os.SystemProperties.get(String, String) 的 Method 引用。
+         * 该方法每次调用读取 ro.* 属性只需一次 binder 调用（且系统内部有缓存），
+         * 相比 spawn `getprop` 子进程（fork+exec）节省 ~5-15ms/次 × 10 次。
+         * SystemProperties 是 hidden API，反射访问在所有 Android 版本上稳定可用。
+         */
+        private val systemPropertiesGet: java.lang.reflect.Method? by lazy {
+            try {
+                val clazz = Class.forName("android.os.SystemProperties")
+                clazz.getMethod("get", String::class.java, String::class.java)
+            } catch (e: Throwable) {
+                null
+            }
+        }
+    }
+
     // J-14: Root 可用性在会话生命周期内不会变化,缓存首次结果不再每 5s spawn `su -c id`
     // (spawn su 成本高 + 频繁弹授权框)。null = 尚未计算。
     @Volatile
@@ -218,11 +235,16 @@ class TerminalContextCollector(private val context: Context) {
         }
     }
 
+    /**
+     * PERF-25: 通过反射调用 android.os.SystemProperties.get(key, def) 读取系统属性，
+     * 避免每次 spawn `getprop` 子进程（fork+exec ~5-15ms/次）。
+     * Method 引用在 [companion object] 中缓存，仅首次反射一次。
+     * 反射失败（极少数 ROM 限制）时返回空串，行为与原 getprop 失败一致。
+     */
     private fun getSystemProperty(prop: String): String {
         return try {
-            val process = Runtime.getRuntime().exec(arrayOf("getprop", prop))
-            BufferedReader(InputStreamReader(process.inputStream)).readLine()?.trim() ?: ""
-        } catch (e: Exception) {
+            systemPropertiesGet?.invoke(null, prop, "") as? String ?: ""
+        } catch (e: Throwable) {
             ""
         }
     }
@@ -299,14 +321,14 @@ class TerminalContextCollector(private val context: Context) {
         }
     }
 
+    /**
+     * PERF-25: 用 SystemProperties 读取 SELinux 状态，避免 spawn `getenforce` 子进程。
+     * ro.boot.selinux 反映启动时的 enforcing 策略；运行时 setenforce 切换不会被反映，
+     * 但终端上下文采集只需要“设备出厂策略”这一近似值即可，准确度足够。
+     */
     private fun checkSELinuxStatus(): Boolean {
-        return try {
-            val process = Runtime.getRuntime().exec(arrayOf("getenforce"))
-            val output = BufferedReader(InputStreamReader(process.inputStream)).readText()
-            output.trim().equals("Enforcing", ignoreCase = true)
-        } catch (e: Exception) {
-            false
-        }
+        val v = getSystemProperty("ro.boot.selinux")
+        return v.trim().equals("enforcing", ignoreCase = true)
     }
 
     fun buildContextPrompt(context: TerminalContext, includeHistory: Boolean = true): String {
