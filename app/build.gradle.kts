@@ -201,6 +201,7 @@ dependencies {
     implementation(project(":lib:terminal"))
     implementation(project(":lib:voice"))
     implementation(project(":lib:working-files"))
+    implementation(project(":self-modify"))
 
     // 引擎服务（AIDL + Shizuku + 无障碍） + 数据层
     implementation(project(":engine"))
