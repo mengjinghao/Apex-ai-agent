@@ -918,16 +918,16 @@ object ApexClient {
     // ============================================================
 
     /**
-     * Agent 自改源码客户端 — 镜像 [com.apex.selfmodify.SelfModifyService] 的公开 API。
+     * Agent 自改源码客户端 — 镜像 SelfModifyService 的公开 API。
      *
-     * Per AGENT_SELF_MODIFY_SPEC §8.2。所有方法通过通用 `selfmodify/*` method 路由，
-     * 经 [ApexBridge.invoke] 调用 SelfModifyService（同进程走 InProcessRegistry 零延迟，
+     * Per AGENT_SELF_MODIFY_SPEC §8.2。所有方法通过 "selfmodify/" 前缀的 method 路由，
+     * 经 ApexBridge.invoke 调用 SelfModifyService（同进程走 InProcessRegistry 零延迟，
      * 跨进程走 AIDL）。
      *
-     * **注意（Phase 4 状态）**：本客户端的 method 路由（`IApkBridgeInternal` 注册
-     * `selfmodify/*` → SelfModifyService）属于 Phase 5 工作，尚未接线。当前调用会返回
-     * `BridgeResult.Failure(BridgeError.methodNotFound(...))`。Phase 5 将在 Engine APK
-     * 的 BridgeModule 中注册路由并补全端到端集成测试。
+     * 注意（Phase 4 状态）：本客户端的 method 路由（IApkBridgeInternal 注册
+     * selfmodify 系列方法 -> SelfModifyService）属于 Phase 5 工作，尚未接线。当前调用
+     * 会返回 BridgeResult.Failure。Phase 5 将在 Engine APK 的 BridgeModule 中注册路由
+     * 并补全端到端集成测试。
      */
     class SelfModifyClient {
 
@@ -947,11 +947,7 @@ object ApexClient {
         suspend fun findReferences(symbol: String): BridgeResult<String> =
             invoke("selfmodify/findReferences", mapOf("symbol" to symbol))
 
-        /**
-         * 应用一个修改计划。planJson 形如：
-         * `{"changes":[{"path":"...","type":"MODIFY","newContent":"..."}],"reason":"...","risk":"MEDIUM"}`
-         * 触发完整流程：snapshot → write → compile gate → reload → audit（失败自动回滚）。
-         */
+        /** 应用一个修改计划，触发完整流程：snapshot -> write -> compile gate -> reload -> audit（失败自动回滚）。 */
         suspend fun applyPlan(planJson: String): BridgeResult<String> =
             invoke("selfmodify/applyPlan", mapOf("planJson" to planJson))
 
