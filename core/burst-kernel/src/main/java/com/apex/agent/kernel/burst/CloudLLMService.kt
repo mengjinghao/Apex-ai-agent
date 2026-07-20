@@ -5,6 +5,8 @@ import com.apex.agent.plugins.burst.base.ILLMService
 import com.apex.agent.plugins.burst.base.LLMConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -46,21 +48,17 @@ class CloudLLMService(
             connection.readTimeout = timeoutMs.toInt()
             connection.doOutput = true
 
-            val escaped = prompt
-                .replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\t", "\\t")
-
-            val body = """
-                {
-                    "model": "$modelName",
-                    "messages": [{"role": "user", "content": "$escaped"}],
-                    "temperature": $defaultTemperature,
-                    "max_tokens": ${maxTokens.coerceAtMost(defaultMaxTokens)}
-                }
-            """.trimIndent()
+            val body = JSONObject()
+                .put("model", modelName)
+                .put("messages", JSONArray().put(
+                    JSONObject().put("role", "user").put("content", prompt)
+                ))
+                .put("temperature", defaultTemperature)
+                .put("max_tokens", maxTokens.coerceAtMost(defaultMaxTokens))
+            val requestBody = body.toString()
 
             OutputStreamWriter(connection.outputStream).use {
-                it.write(body); it.flush()
+                it.write(requestBody); it.flush()
             }
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
@@ -92,39 +90,41 @@ class CloudLLMService(
             connection.readTimeout = timeoutMs.toInt() * 2
             connection.doOutput = true
 
-            val escaped = prompt
-                .replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\t", "\\t")
-
-            val body = """
-                {
-                    "model": "$modelName",
-                    "messages": [{"role": "user", "content": "$escaped"}],
-                    "temperature": $defaultTemperature,
-                    "max_tokens": ${maxTokens.coerceAtMost(defaultMaxTokens)},
-                    "stream": true
-                }
-            """.trimIndent()
+            val body = JSONObject()
+                .put("model", modelName)
+                .put("messages", JSONArray().put(
+                    JSONObject().put("role", "user").put("content", prompt)
+                ))
+                .put("temperature", defaultTemperature)
+                .put("max_tokens", maxTokens.coerceAtMost(defaultMaxTokens))
+                .put("stream", true)
+            val requestBody = body.toString()
 
             OutputStreamWriter(connection.outputStream).use {
-                it.write(body); it.flush()
+                it.write(requestBody); it.flush()
             }
 
             val reader = connection.inputStream.bufferedReader()
             var continueReading = true
             while (continueReading) {
                 val line = reader.readLine() ?: break
-                if (line.startsWith("data: ")) {
-                    val data = line.removePrefix("data: ").trim()
-                    if (data == "[DONE]") break
-                    val contentMatch = """"content"\s*:\s*"([^"]*)"""".toRegex().find(data)
-                    contentMatch?.let {
-                        val token = it.groupValues[1]
-                            .replace("\\n", "\n").replace("\\\"", "\"")
+                if (!line.startsWith("data: ")) continue
+                val data = line.removePrefix("data: ").trim()
+                if (data == "[DONE]") break
+                try {
+                    val obj = JSONObject(data)
+                    val delta = obj
+                        .optJSONArray("choices")
+                        ?.optJSONObject(0)
+                        ?.optJSONObject("delta")
+                    if (delta != null && delta.has("content") && !delta.isNull("content")) {
+                        val token = delta.optString("content")
                         if (token.isNotEmpty()) {
                             continueReading = onToken(token)
                         }
                     }
+                } catch (_: Exception) {
+                    // 忽略无法解析的行
                 }
             }
             true
@@ -145,24 +145,20 @@ class CloudLLMService(
             connection.readTimeout = timeoutMs.toInt()
             connection.doOutput = true
 
-            val msgs = messages.joinToString(",") { msg ->
-                val escaped = msg.content
-                    .replace("\\", "\\\\").replace("\"", "\\\"")
-                    .replace("\n", "\\n").replace("\t", "\\t")
-                """{"role": "${msg.role}", "content": "$escaped"}"""
+            val msgs = JSONArray()
+            for (msg in messages) {
+                msgs.put(JSONObject().put("role", msg.role).put("content", msg.content))
             }
 
-            val body = """
-                {
-                    "model": "$modelName",
-                    "messages": [$msgs],
-                    "temperature": $defaultTemperature,
-                    "max_tokens": ${maxTokens.coerceAtMost(defaultMaxTokens)}
-                }
-            """.trimIndent()
+            val body = JSONObject()
+                .put("model", modelName)
+                .put("messages", msgs)
+                .put("temperature", defaultTemperature)
+                .put("max_tokens", maxTokens.coerceAtMost(defaultMaxTokens))
+            val requestBody = body.toString()
 
             OutputStreamWriter(connection.outputStream).use {
-                it.write(body); it.flush()
+                it.write(requestBody); it.flush()
             }
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
@@ -183,15 +179,23 @@ class CloudLLMService(
     }
 
     private fun extractContent(response: String): String {
-        val nullContent = "\"content\":\\s*null".toRegex()
-        if (nullContent.containsMatchIn(response)) return ""
-
-        val contentPattern = "\"content\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-        val match = contentPattern.find(response)
-        return match?.groupValues?.get(1)
-            ?.replace("\\n", "\n")
-            ?.replace("\\\"", "\"")
-            ?.replace("\\t", "\t")
-            ?: "No content"
+        return try {
+            val json = JSONObject(response)
+            val message = json
+                .optJSONArray("choices")
+                ?.optJSONObject(0)
+                ?.optJSONObject("message")
+            if (message == null) {
+                "No content"
+            } else if (message.has("content") && message.isNull("content")) {
+                ""
+            } else if (message.has("content")) {
+                message.optString("content")
+            } else {
+                "No content"
+            }
+        } catch (_: Exception) {
+            "No content"
+        }
     }
 }

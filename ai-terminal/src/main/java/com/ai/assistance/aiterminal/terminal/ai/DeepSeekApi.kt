@@ -216,29 +216,34 @@ class DeepSeekApi(
     private fun parseFunctionCallResponse(response: String): FunctionCallResponse {
         val content = extractContentFromResponse(response)
         val toolCalls = mutableListOf<DeepSeekToolCall>()
-
-        val toolCallsPattern = "\"tool_calls\"\\s*:\\s*\\[".toRegex()
-        if (toolCallsPattern.containsMatchIn(response)) {
-            val idPattern = "\"id\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-            val namePattern = "\"name\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-            val argsPattern = "\"arguments\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-
-            val ids = idPattern.findAll(response).map { it.groupValues[1] }.toList()
-            val names = namePattern.findAll(response).map { it.groupValues[1] }.toList()
-            val args = argsPattern.findAll(response).map {
-                it.groupValues[1].replace("\\n", "\n").replace("\\\"", "\"")
-            }.toList()
-
-            val count = minOf(ids.size, names.size, args.size)
-            for (i in 0 until count) {
-                toolCalls.add(DeepSeekToolCall(
-                    toolCallId = ids[i],
-                    functionName = names[i],
-                    arguments = args[i]
-                ))
+        try {
+            val json = JSONObject(response)
+            val message = json
+                .optJSONArray("choices")
+                ?.optJSONObject(0)
+                ?.optJSONObject("message")
+            val toolCallsArray = message?.optJSONArray("tool_calls")
+            if (toolCallsArray != null) {
+                for (i in 0 until toolCallsArray.length()) {
+                    val tc = toolCallsArray.optJSONObject(i) ?: continue
+                    val id = tc.optString("id")
+                    val function = tc.optJSONObject("function")
+                    val name = function?.optString("name") ?: ""
+                    // OpenAI/DeepSeek 协议: arguments 是 escaped JSON 字符串。
+                    // opt("arguments")?.toString() 兼容服务端偶尔返回 JSONObject 的情况。
+                    val arguments = function?.opt("arguments")?.toString() ?: ""
+                    if (id.isNotEmpty() || name.isNotEmpty()) {
+                        toolCalls.add(DeepSeekToolCall(
+                            toolCallId = id,
+                            functionName = name,
+                            arguments = arguments
+                        ))
+                    }
+                }
             }
+        } catch (_: Exception) {
+            // 非 JSON 响应 — 退化为无工具调用
         }
-
         return FunctionCallResponse(
             content = content,
             toolCalls = toolCalls,
@@ -247,49 +252,46 @@ class DeepSeekApi(
     }
 
     private fun extractContentFromResponse(response: String): String {
-        val contentPattern = "\"content\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-        val match = contentPattern.find(response)
-        val content = match?.groupValues?.get(1)
-            ?.replace("\\n", "\n")
-            ?.replace("\\\"", "\"")
-            ?.replace("\\t", "\t")
-            ?.replace("\\r", "\r")
-            ?.replace("\\\\", "\\")
-        if (content != null) return content
-
-        val nullContent = "\"content\":\\s*null".toRegex()
-        if (nullContent.containsMatchIn(response)) return ""
-
-        val reasoningPattern = "\"reasoning_content\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-        val reasoningMatch = reasoningPattern.find(response)
-        if (reasoningMatch != null) {
-            return reasoningMatch.groupValues.get(1)
-                .replace("\\n", "\n")
-                .replace("\\\"", "\"")
+        try {
+            val json = JSONObject(response)
+            val message = json
+                .optJSONArray("choices")
+                ?.optJSONObject(0)
+                ?.optJSONObject("message")
+            if (message != null) {
+                if (message.has("content") && !message.isNull("content")) {
+                    return message.optString("content")
+                }
+                if (message.has("reasoning_content") && !message.isNull("reasoning_content")) {
+                    return message.optString("reasoning_content")
+                }
+            }
+        } catch (_: Exception) {
+            // 非 JSON — fall through to SSE 流式解析
         }
-
         return extractFromStreamedResponse(response)
     }
 
     private fun extractFromStreamedResponse(response: String): String {
-        val lines = response.lines()
-        val contents = mutableListOf<String>()
-        for (line in lines) {
-            if (line.startsWith("data: ")) {
-                val jsonStr = line.removePrefix("data: ").trim()
-                if (jsonStr == "[DONE]") continue
-                val deltaMatch = "\"content\"\\s*:\\s*\"([^\"]*)\"".toRegex().find(jsonStr)
-                deltaMatch?.let {
-                    contents.add(it.groupValues.get(1))
+        // 即便 stream=false,某些代理/网关会返回 SSE 多行格式。逐行解析为 JSONObject。
+        val sb = StringBuilder()
+        for (line in response.lines()) {
+            if (!line.startsWith("data: ")) continue
+            val jsonStr = line.removePrefix("data: ").trim()
+            if (jsonStr == "[DONE]") continue
+            try {
+                val obj = JSONObject(jsonStr)
+                val delta = obj
+                    .optJSONArray("choices")
+                    ?.optJSONObject(0)
+                    ?.optJSONObject("delta")
+                if (delta != null && delta.has("content") && !delta.isNull("content")) {
+                    sb.append(delta.optString("content"))
                 }
+            } catch (_: Exception) {
+                // 忽略无法解析的行
             }
         }
-        return if (contents.isNotEmpty()) {
-            contents.joinToString("")
-                .replace("\\n", "\n")
-                .replace("\\\"", "\"")
-        } else {
-            "No content found in response"
-        }
+        return if (sb.isNotEmpty()) sb.toString() else "No content found in response"
     }
 }

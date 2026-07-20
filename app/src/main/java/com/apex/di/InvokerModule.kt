@@ -19,7 +19,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.flow.collect
 
 /**
  * Hilt module —— 把 :app 的 [LLMProvider]（OpenAICompatProvider）适配为
@@ -40,7 +40,8 @@ import kotlinx.coroutines.flow.fold
  * `config` 参数覆盖（仅在非空时生效）。
  *
  * 注：[LLMProvider.stream] 可能发射多次 [StreamEvent.Chunk] + 一次 [StreamEvent.Done]，
- * 这里用 [fold] 把所有 Chunk.text 拼接成最终响应。错误用 [StreamEvent.Error] 表达：
+ * 这里用 [StringBuilder] + [collect] 把所有 Chunk.text 拼接成最终响应（PERF-39: 替代
+ * 原来的 `fold(""){ acc + event.text }` 写法，O(n²)→O(n)）。错误用 [StreamEvent.Error] 表达：
  * - WorkflowExecutor 路径：转成 [BridgeResult.Failure] 返回。
  * - RageNativeBridge 路径：抛 [RuntimeException]（让 bridge 暴露给 C++ 侧）。
  *
@@ -90,14 +91,17 @@ object InvokerModule {
                         ?: baseConfig.temperature,
                     maxTokens = (config?.get("maxTokens") as? Number)?.toInt()
                 )
-                val responseText = provider.stream(messages, emptyList(), reqConfig).fold("") { acc, event ->
+                // PERF-39: 用 StringBuilder + collect 替代 fold(""){ acc + event.text } (O(n²)→O(n))。
+                // 长输出场景下原写法每 chunk 都新建 String,GC 压力 + 拷贝开销显著。
+                val sb = StringBuilder()
+                provider.stream(messages, emptyList(), reqConfig).collect { event ->
                     when (event) {
-                        is StreamEvent.Chunk -> acc + event.text
+                        is StreamEvent.Chunk -> sb.append(event.text)
                         is StreamEvent.Error -> throw RuntimeException(event.message)
-                        else -> acc
+                        else -> {}
                     }
                 }
-                BridgeResult.Success(responseText)
+                BridgeResult.Success(sb.toString())
             } catch (e: Exception) {
                 BridgeResult.Failure(BridgeError.fromThrowable(e))
             }
@@ -140,13 +144,16 @@ object InvokerModule {
             )
             // 失败时抛异常 —— C++ 侧通过 JNI ExceptionCheck 检测,
             // 由 AgentOrchestrator 决定是否重试 (受 maxRetries 约束)
-            provider.stream(messages, emptyList(), reqConfig).fold("") { acc, event ->
+            // PERF-39: StringBuilder + collect 替代 fold(+) (O(n²)→O(n))
+            val sb = StringBuilder()
+            provider.stream(messages, emptyList(), reqConfig).collect { event ->
                 when (event) {
-                    is StreamEvent.Chunk -> acc + event.text
+                    is StreamEvent.Chunk -> sb.append(event.text)
                     is StreamEvent.Error -> throw RuntimeException(event.message)
-                    else -> acc
+                    else -> {}
                 }
             }
+            sb.toString()
         }
         return RageNativeBridge(
             llmInvoker = llmInvoker,

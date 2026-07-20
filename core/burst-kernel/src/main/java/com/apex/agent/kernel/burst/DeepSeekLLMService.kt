@@ -5,6 +5,8 @@ import com.apex.agent.plugins.burst.base.ILLMService
 import com.apex.agent.plugins.burst.base.LLMConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -55,24 +57,18 @@ class DeepSeekLLMService : ILLMService {
             connection.readTimeout = 60000
             connection.doOutput = true
 
-            val escaped = prompt
-                .replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\t", "\\t")
-
-            val reasoningBlock = reasoningEffort?.let { ",\"reasoning_effort\": \"$it\"" } ?: ""
-
-            val body = """
-                {
-                    "model": "$modelName",
-                    "messages": [{"role": "user", "content": "$escaped"}],
-                    "temperature": $temperature,
-                    "max_tokens": ${maxTokens.coerceAtMost(this@DeepSeekLLMService.maxTokens)}
-                    $reasoningBlock
-                }
-            """.trimIndent()
+            val body = JSONObject()
+                .put("model", modelName)
+                .put("messages", JSONArray().put(
+                    JSONObject().put("role", "user").put("content", prompt)
+                ))
+                .put("temperature", temperature)
+                .put("max_tokens", maxTokens.coerceAtMost(this@DeepSeekLLMService.maxTokens))
+            if (reasoningEffort != null) body.put("reasoning_effort", reasoningEffort)
+            val requestBody = body.toString()
 
             OutputStreamWriter(connection.outputStream).use {
-                it.write(body); it.flush()
+                it.write(requestBody); it.flush()
             }
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
@@ -104,42 +100,42 @@ class DeepSeekLLMService : ILLMService {
             connection.readTimeout = 120000
             connection.doOutput = true
 
-            val escaped = prompt
-                .replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\t", "\\t")
-
-            val reasoningBlock = reasoningEffort?.let { ",\"reasoning_effort\": \"$it\"" } ?: ""
-
-            val body = """
-                {
-                    "model": "$modelName",
-                    "messages": [{"role": "user", "content": "$escaped"}],
-                    "temperature": $temperature,
-                    "max_tokens": ${maxTokens.coerceAtMost(this@DeepSeekLLMService.maxTokens)},
-                    "stream": true
-                    $reasoningBlock
-                }
-            """.trimIndent()
+            val body = JSONObject()
+                .put("model", modelName)
+                .put("messages", JSONArray().put(
+                    JSONObject().put("role", "user").put("content", prompt)
+                ))
+                .put("temperature", temperature)
+                .put("max_tokens", maxTokens.coerceAtMost(this@DeepSeekLLMService.maxTokens))
+                .put("stream", true)
+            if (reasoningEffort != null) body.put("reasoning_effort", reasoningEffort)
+            val requestBody = body.toString()
 
             OutputStreamWriter(connection.outputStream).use {
-                it.write(body); it.flush()
+                it.write(requestBody); it.flush()
             }
 
             val reader = connection.inputStream.bufferedReader()
             var continueReading = true
             while (continueReading) {
                 val line = reader.readLine() ?: break
-                if (line.startsWith("data: ")) {
-                    val data = line.removePrefix("data: ").trim()
-                    if (data == "[DONE]") break
-                    val contentMatch = "\"content\"\\s*:\\s*\"([^\"]*)\"".toRegex().find(data)
-                    contentMatch?.let {
-                        val token = it.groupValues[1]
-                            .replace("\\n", "\n").replace("\\\"", "\"")
+                if (!line.startsWith("data: ")) continue
+                val data = line.removePrefix("data: ").trim()
+                if (data == "[DONE]") break
+                try {
+                    val obj = JSONObject(data)
+                    val delta = obj
+                        .optJSONArray("choices")
+                        ?.optJSONObject(0)
+                        ?.optJSONObject("delta")
+                    if (delta != null && delta.has("content") && !delta.isNull("content")) {
+                        val token = delta.optString("content")
                         if (token.isNotEmpty()) {
                             continueReading = onToken(token)
                         }
                     }
+                } catch (_: Exception) {
+                    // 忽略无法解析的行
                 }
             }
             true
@@ -160,27 +156,21 @@ class DeepSeekLLMService : ILLMService {
             connection.readTimeout = 60000
             connection.doOutput = true
 
-            val msgs = messages.joinToString(",") { msg ->
-                val escaped = msg.content
-                    .replace("\\", "\\\\").replace("\"", "\\\"")
-                    .replace("\n", "\\n").replace("\t", "\\t")
-                """{"role": "${msg.role}", "content": "$escaped"}"""
+            val msgs = JSONArray()
+            for (msg in messages) {
+                msgs.put(JSONObject().put("role", msg.role).put("content", msg.content))
             }
 
-            val reasoningBlock = reasoningEffort?.let { ",\"reasoning_effort\": \"$it\"" } ?: ""
-
-            val body = """
-                {
-                    "model": "$modelName",
-                    "messages": [$msgs],
-                    "temperature": $temperature,
-                    "max_tokens": ${maxTokens.coerceAtMost(this@DeepSeekLLMService.maxTokens)}
-                    $reasoningBlock
-                }
-            """.trimIndent()
+            val body = JSONObject()
+                .put("model", modelName)
+                .put("messages", msgs)
+                .put("temperature", temperature)
+                .put("max_tokens", maxTokens.coerceAtMost(this@DeepSeekLLMService.maxTokens))
+            if (reasoningEffort != null) body.put("reasoning_effort", reasoningEffort)
+            val requestBody = body.toString()
 
             OutputStreamWriter(connection.outputStream).use {
-                it.write(body); it.flush()
+                it.write(requestBody); it.flush()
             }
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
@@ -203,16 +193,24 @@ class DeepSeekLLMService : ILLMService {
     }
 
     private fun extractContent(response: String): String {
-        val nullContent = "\"content\":\\s*null".toRegex()
-        if (nullContent.containsMatchIn(response)) return ""
-
-        val contentPattern = "\"content\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-        val match = contentPattern.find(response)
-        return match?.groupValues?.get(1)
-            ?.replace("\\n", "\n")
-            ?.replace("\\\"", "\"")
-            ?.replace("\\t", "\t")
-            ?: "No content"
+        return try {
+            val json = JSONObject(response)
+            val message = json
+                .optJSONArray("choices")
+                ?.optJSONObject(0)
+                ?.optJSONObject("message")
+            if (message == null) {
+                "No content"
+            } else if (message.has("content") && message.isNull("content")) {
+                ""
+            } else if (message.has("content")) {
+                message.optString("content")
+            } else {
+                "No content"
+            }
+        } catch (_: Exception) {
+            "No content"
+        }
     }
 
     private fun fallbackGenerate(prompt: String): String {
