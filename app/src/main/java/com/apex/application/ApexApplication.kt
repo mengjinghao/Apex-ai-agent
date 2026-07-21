@@ -7,6 +7,10 @@ import com.apex.engine.chat.ChatEngine
 import com.apex.engine.tools.ToolRegistry
 import com.apex.engine.tools.builtin.BuiltInTools
 import dagger.hilt.android.HiltAndroidApp
+import com.apex.bridge.SelfModifyBridgeHandler
+import com.apex.di.SelfModifyEntryPoint
+import com.apex.sdk.bridge.InProcessRegistry
+import dagger.hilt.android.EntryPointAccessors
 
 /**
  * Apex Application — @HiltAndroidApp 触发 Hilt 单例组件的代码生成。
@@ -38,5 +42,15 @@ class ApexApplication : Application() {
         locator.singleton<ToolRegistry>(toolRegistry)
 
         Log.i(TAG, "内核初始化完成 — ${toolRegistry.list().size} 个工具已注册")
+
+        // 注册 SelfModify bridge handler — 让 ApexClient.selfModify.* 可用
+        try {
+            val entryPoint = EntryPointAccessors.fromApplication(this, SelfModifyEntryPoint::class.java)
+            val selfModifySvc = entryPoint.selfModifyService()
+            InProcessRegistry.register("selfModify", SelfModifyBridgeHandler(selfModifySvc))
+            Log.i(TAG, "SelfModify bridge handler 已注册")
+        } catch (e: Exception) {
+            Log.w(TAG, "SelfModify bridge 注册失败: ${e.message}")
+        }
     }
 }
