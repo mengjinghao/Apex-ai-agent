@@ -1,9 +1,12 @@
 package com.apex.selfmodify.plan
 
 import com.apex.selfmodify.workspace.FileChange
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class RiskLevel { LOW, MEDIUM, HIGH, CRITICAL }
 
+@Serializable
 data class ModificationPlan(
     val id: String,
     val changes: List<FileChange>,

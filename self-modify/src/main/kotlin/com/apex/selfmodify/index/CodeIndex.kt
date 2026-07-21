@@ -1,6 +1,10 @@
 package com.apex.selfmodify.index
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SymbolLocation(val file: String, val line: Int, val column: Int)
+@Serializable
 data class ReferenceLocation(val file: String, val line: Int, val symbol: String)
 
 interface CodeIndex {

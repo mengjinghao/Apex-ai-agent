@@ -4,8 +4,10 @@ import com.apex.sdk.common.ApexLog
 import com.apex.sdk.common.ApexSuite
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import java.io.File
 
+@Serializable
 data class SnapshotInfo(
     val sha: String,
     val tag: String,

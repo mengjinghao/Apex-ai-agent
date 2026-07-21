@@ -31,6 +31,15 @@ object SelfModifyModule {
     @Singleton
     fun provideSelfModifyService(@ApplicationContext ctx: Context): SelfModifyService {
         val svc = SelfModifyService(ctx)
+        // Phase 5a: register an in-process bridge handler so that
+        // `ApexClient.selfModify.readFile(...)` (and friends) route to this
+        // service via ApexBridge.invoke("selfmodify/..."). The service-name key
+        // MUST be "selfmodify" (all-lowercase) to match the SelfModifyClient's
+        // method prefix. See AGENT_SELF_MODIFY_SPEC §8.2.
+        com.apex.sdk.bridge.InProcessRegistry.register(
+            "selfmodify",
+            com.apex.bridge.SelfModifyBridgeHandler(svc)
+        )
         // Fire-and-forget background init: git init + watcher start + full reindex.
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { svc.init() }
         return svc

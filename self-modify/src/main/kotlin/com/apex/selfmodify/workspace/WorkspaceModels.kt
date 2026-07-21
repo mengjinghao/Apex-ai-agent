@@ -1,5 +1,6 @@
 package com.apex.selfmodify.workspace
 
+import kotlinx.serialization.Serializable
 import java.io.File
 
 data class WorkspaceConfig(
@@ -10,6 +11,7 @@ data class WorkspaceConfig(
     val auditDir: File
 )
 
+@Serializable
 data class FileChange(
     val path: String,
     val type: ChangeType,
@@ -17,8 +19,10 @@ data class FileChange(
     val oldContent: String? = null
 )
 
+@Serializable
 enum class ChangeType { CREATE, MODIFY, DELETE, MOVE }
 
+@Serializable
 data class Snapshot(
     val id: String,
     val tag: String,
