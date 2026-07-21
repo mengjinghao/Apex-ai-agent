@@ -2,7 +2,6 @@ package com.apex.selfmodify
 
 import android.content.Context
 import com.apex.selfmodify.audit.AuditLog
-import com.apex.selfmodify.confirm.ConfirmationManager
 import com.apex.selfmodify.index.CodeIndex
 import com.apex.selfmodify.index.CodeIndexer
 import com.apex.selfmodify.index.InMemoryCodeIndex
@@ -46,7 +45,6 @@ class SelfModifyService(
     val indexer: CodeIndexer = CodeIndexer(workspace)
     val index: CodeIndex = InMemoryCodeIndex(indexer)
     val audit: AuditLog = AuditLog(workspace)
-    val confirmation: ConfirmationManager = ConfirmationManager()
     val rollback: RollbackManager = RollbackManager(workspace.config.rootDir)
     val reloader: HotReloader = DexHotReloader(workspace.config.indexDir)
 
@@ -69,15 +67,8 @@ class SelfModifyService(
 
     // ---- Modify API ----
     suspend fun apply(plan: ModificationPlan): ApplyResult {
-        // Per §7.2: HIGH / CRITICAL plans require interactive user confirmation.
-        // The old Phase-1 stub auto-rejected these; Phase 5c routes them through
-        // ConfirmationManager which suspends here until the Compose dialog resolves.
         if (plan.riskLevel in setOf(RiskLevel.HIGH, RiskLevel.CRITICAL) && plan.requiresUserConfirm) {
-            val approved = confirmation.requestConfirmation(plan)
-            if (!approved) {
-                audit.record(plan.id, plan.agentId, plan.changes.map { it.path }, false, null)
-                return ApplyResult.Rejected("Rejected by user")
-            }
+            return ApplyResult.Rejected("Requires user confirmation for ${plan.riskLevel} risk")
         }
         return planExecutor.execute(plan)
     }
