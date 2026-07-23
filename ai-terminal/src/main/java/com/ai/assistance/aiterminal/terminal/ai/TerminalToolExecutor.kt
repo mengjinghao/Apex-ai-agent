@@ -119,9 +119,7 @@ class TerminalToolExecutor(private val context: Context) {
         }
     }
 
-    private fun escapeShellCommand(command: String): String {
-        return command.replace("'", "'\\''")
-    }
+    private fun escapeShellCommand(command: String): String = ShellEscape.singleQuote(command)
 
     private suspend fun listFiles(parameters: Map<String, Any>): ToolExecutionResult {
         val path = parameters["path"] as? String ?: "."

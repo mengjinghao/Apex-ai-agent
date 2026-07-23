@@ -15,11 +15,11 @@ class ShellSession(private val context: Context, private val rootfsPath: String)
         private const val TAG = "ShellSession"
     }
 
-    private var process: Process? = null
+    @Volatile private var process: Process? = null
     private var outputBuffer = StringBuilder()
-    private var inputWriter: OutputStreamWriter? = null
-    private var outputListener: ((String) -> Unit)? = null
-    private var errorListener: ((String) -> Unit)? = null
+    @Volatile private var inputWriter: OutputStreamWriter? = null
+    @Volatile private var outputListener: ((String) -> Unit)? = null
+    @Volatile private var errorListener: ((String) -> Unit)? = null
     private var pidValue: Int = -1
 
     val pid: Int get() {

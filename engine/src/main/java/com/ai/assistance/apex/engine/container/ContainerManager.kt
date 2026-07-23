@@ -29,10 +29,10 @@ class ContainerManager(private val context: Context) {
         private const val COMMAND_TIMEOUT_MS = 30000L
     }
 
-    private var shellSession: ShellSession? = null
-    private var outputListener: ((String) -> Unit)? = null
-    private var statusListener: ((Int) -> Unit)? = null
-    private var errorListener: ((String) -> Unit)? = null
+    @Volatile private var shellSession: ShellSession? = null
+    @Volatile private var outputListener: ((String) -> Unit)? = null
+    @Volatile private var statusListener: ((Int) -> Unit)? = null
+    @Volatile private var errorListener: ((String) -> Unit)? = null
     private val executor = Executors.newSingleThreadExecutor()
     private val isRunning = AtomicBoolean(false)
 

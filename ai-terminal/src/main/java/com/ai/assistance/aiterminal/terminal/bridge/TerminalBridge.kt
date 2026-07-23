@@ -228,7 +228,7 @@ class TerminalBridge(
      * Security (B-2): escape single quotes for safe interpolation inside a single-quoted
      * shell argument. Standard POSIX technique: replace ' with '\''.
      */
-    private fun escapeShellSingleQuote(s: String): String = s.replace("'", "'\\''")
+    private fun escapeShellSingleQuote(s: String): String = com.ai.assistance.aiterminal.terminal.ai.ShellEscape.singleQuote(s)
 
     private fun assessRisk(command: String): RiskLevel {
         // Security (E-2): delegate to the thorough ai.DangerousCommandPatterns library

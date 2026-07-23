@@ -55,6 +55,7 @@ class EngineService : Service() {
     // RBAC 仓储 — 在 onCreate 中由 AppDatabase 派生。
     // :engine 不引入 Hilt（保持纯 Service），直接用 AppDatabase.getDatabase() 单例。
     @Volatile
+    @Volatile
     private var databaseRepository: DatabaseRepository? = null
 
     private val containerCallbacks = RemoteCallbackList<IContainerCallback>()
