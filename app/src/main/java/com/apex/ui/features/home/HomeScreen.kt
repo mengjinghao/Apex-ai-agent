@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -52,7 +53,8 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
         }
         item {
             SecondaryActionsRow(
-                onConfigClick = { onNavigate(ApexRoute.Settings.path) }
+                onConfigClick = { onNavigate(ApexRoute.Settings.path) },
+                onAuditClick = { onNavigate(ApexRoute.AuditLog.path) }
             )
         }
         item { StatsCard() }
@@ -152,7 +154,7 @@ private fun PrimaryActionCard(title: String, subtitle: String, enabled: Boolean,
 }
 
 @Composable
-private fun SecondaryActionsRow(onConfigClick: () -> Unit) {
+private fun SecondaryActionsRow(onConfigClick: () -> Unit, onAuditClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -167,6 +169,12 @@ private fun SecondaryActionsRow(onConfigClick: () -> Unit) {
             icon = Icons.Default.Bolt,
             label = "狂暴模式",
             onClick = { /* TODO: rage mode */ },
+            modifier = Modifier.weight(1f)
+        )
+        ActionChip(
+            icon = Icons.Default.Security,
+            label = "自改审计",
+            onClick = onAuditClick,
             modifier = Modifier.weight(1f)
         )
     }
